@@ -181,7 +181,7 @@ async def home(request: Request):
     try:
         return templates.TemplateResponse(
             "index.html",
-            {"request": request, "app_name": settings.APP_NAME}
+            {"request": request, "app_name": settings.APP_NAME, "app_version": settings.APP_VERSION}
         )
     except Exception as e:
         logger.error(f"Failed to serve home page: {e}")
@@ -197,7 +197,7 @@ async def results_page(request: Request):
     try:
         return templates.TemplateResponse(
             "results.html",
-            {"request": request, "app_name": settings.APP_NAME}
+            {"request": request, "app_name": settings.APP_NAME, "app_version": settings.APP_VERSION}
         )
     except Exception as e:
         logger.error(f"Failed to serve results page: {e}")
