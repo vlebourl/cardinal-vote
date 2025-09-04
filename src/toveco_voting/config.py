@@ -9,7 +9,7 @@ class Settings:
 
     # Application settings
     APP_NAME: str = "ToV'éCo Logo Voting Platform"
-    APP_VERSION: str = "1.1.0"
+    APP_VERSION: str = "1.1.1"
     DEBUG: bool = os.getenv("DEBUG", "false").lower() == "true"
 
     # Server settings
