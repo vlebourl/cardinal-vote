@@ -158,8 +158,8 @@ class DatabaseManager:
                 "total_score": logo_totals[logo]
             }
 
-        # Sort by average rating (descending) and add rankings
-        sorted_logos = sorted(summary.items(), key=lambda x: x[1]['average'], reverse=True)
+        # Sort by total score (descending) and add rankings
+        sorted_logos = sorted(summary.items(), key=lambda x: x[1]['total_score'], reverse=True)
         for rank, (_logo, stats) in enumerate(sorted_logos, 1):
             stats["ranking"] = rank
 

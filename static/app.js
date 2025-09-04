@@ -1059,24 +1059,24 @@ class ResultsApp {
         const resultsGrid = document.getElementById('results-grid');
         if (resultsGrid && data.summary) {
             const sortedResults = Object.entries(data.summary)
-                .sort((a, b) => (b[1].average || 0) - (a[1].average || 0));
+                .sort((a, b) => (b[1].total_score || 0) - (a[1].total_score || 0));
 
             // Calculate score distribution for color coding
-            const scores = sortedResults.map(([, stats]) => stats.average || 0);
+            const scores = sortedResults.map(([, stats]) => stats.total_score || 0);
             const colorClasses = this.calculateColorClasses(scores);
                 
             const resultsHTML = sortedResults
                 .map(([logo, stats], index) => {
                     const ranking = index + 1;
-                    const scoreClass = stats.average > 0 ? 'positive' : 
-                                     stats.average < 0 ? 'negative' : 'neutral';
-                    const scoreText = stats.average > 0 ? `+${stats.average.toFixed(1)}` : 
-                                    stats.average.toFixed(1);
+                    const scoreClass = stats.total_score > 0 ? 'positive' : 
+                                     stats.total_score < 0 ? 'negative' : 'neutral';
+                    const scoreText = stats.total_score > 0 ? `+${stats.total_score}` : 
+                                    `${stats.total_score}`;
                     const isWinner = ranking === 1;
                     const colorClass = colorClasses[index];
                     
                     return `
-                        <div class="result-card ${isWinner ? 'winner' : ''} ${colorClass}" role="listitem" aria-label="Rang ${ranking}: Logo avec note moyenne ${scoreText}">
+                        <div class="result-card ${isWinner ? 'winner' : ''} ${colorClass}" role="listitem" aria-label="Rang ${ranking}: Logo avec score total ${scoreText}">
                             <div class="result-rank">${ranking}</div>
                             <img src="/logos/${logo}" alt="Logo classement ${ranking}" class="result-logo" loading="lazy">
                             <div class="result-info">
