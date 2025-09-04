@@ -1,0 +1,262 @@
+{% extends "admin/base.html" %}
+
+{% block title %}Tableau de bord{% endblock %}
+
+{% block content %}
+<div class="admin-dashboard">
+    <div class="dashboard-header">
+        <h1 class="page-title">
+            <i class="fas fa-tachometer-alt"></i>
+            Tableau de bord
+        </h1>
+        <p class="page-subtitle">Vue d'ensemble du système ToV'éCo</p>
+    </div>
+
+    <!-- Statistics Cards -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-icon">
+                <i class="fas fa-vote-yea"></i>
+            </div>
+            <div class="stat-content">
+                <h3 class="stat-number">{{ stats.total_votes }}</h3>
+                <p class="stat-label">Total des votes</p>
+            </div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-icon">
+                <i class="fas fa-users"></i>
+            </div>
+            <div class="stat-content">
+                <h3 class="stat-number">{{ stats.total_voters }}</h3>
+                <p class="stat-label">Votants uniques</p>
+            </div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-icon">
+                <i class="fas fa-images"></i>
+            </div>
+            <div class="stat-content">
+                <h3 class="stat-number">{{ logo_count }}</h3>
+                <p class="stat-label">Logos disponibles</p>
+            </div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-icon">
+                <i class="fas fa-database"></i>
+            </div>
+            <div class="stat-content">
+                <h3 class="stat-number">{{ stats.database_size }}</h3>
+                <p class="stat-label">Taille de la base</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Activity and System Info -->
+    <div class="dashboard-grid">
+        <!-- Recent Votes -->
+        <div class="dashboard-card">
+            <div class="card-header">
+                <h2 class="card-title">
+                    <i class="fas fa-clock"></i>
+                    Votes récents
+                </h2>
+                <a href="/admin/votes" class="card-link">Voir tout</a>
+            </div>
+            <div class="card-content">
+                {% if recent_votes %}
+                <div class="votes-list">
+                    {% for vote in recent_votes %}
+                    <div class="vote-item">
+                        <div class="vote-info">
+                            <strong>{{ vote.voter_name }}</strong>
+                            <span class="vote-time">{{ vote.timestamp }}</span>
+                        </div>
+                        <div class="vote-summary">
+                            {% set ratings = vote.ratings %}
+                            {% set positive_count = namespace(value=0) %}
+                            {% set negative_count = namespace(value=0) %}
+                            {% for rating in ratings.values() %}
+                                {% if rating >= 1 %}
+                                    {% set positive_count.value = positive_count.value + 1 %}
+                                {% elif rating <= -1 %}
+                                    {% set negative_count.value = negative_count.value + 1 %}
+                                {% endif %}
+                            {% endfor %}
+                            <span class="vote-stat positive">+{{ positive_count.value }}</span>
+                            <span class="vote-stat negative">-{{ negative_count.value }}</span>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="empty-state">
+                    <i class="fas fa-inbox"></i>
+                    <p>Aucun vote enregistré</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- System Information -->
+        <div class="dashboard-card">
+            <div class="card-header">
+                <h2 class="card-title">
+                    <i class="fas fa-server"></i>
+                    Informations système
+                </h2>
+            </div>
+            <div class="card-content">
+                <div class="system-info">
+                    {% if stats.uptime != "Unknown" %}
+                    <div class="info-item">
+                        <span class="info-label">Temps de fonctionnement</span>
+                        <span class="info-value">{{ stats.uptime }}</span>
+                    </div>
+                    {% endif %}
+                    
+                    {% if stats.last_vote %}
+                    <div class="info-item">
+                        <span class="info-label">Dernier vote</span>
+                        <span class="info-value">{{ stats.last_vote }}</span>
+                    </div>
+                    {% endif %}
+                    
+                    {% if stats.disk_usage and stats.disk_usage.logos_directory_size_mb %}
+                    <div class="info-item">
+                        <span class="info-label">Stockage logos</span>
+                        <span class="info-value">{{ stats.disk_usage.logos_directory_size_mb }} MB</span>
+                    </div>
+                    {% endif %}
+                    
+                    {% if stats.memory_usage and stats.memory_usage.used_percent %}
+                    <div class="info-item">
+                        <span class="info-label">Utilisation mémoire</span>
+                        <span class="info-value">{{ stats.memory_usage.used_percent }}%</span>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="dashboard-card">
+        <div class="card-header">
+            <h2 class="card-title">
+                <i class="fas fa-bolt"></i>
+                Actions rapides
+            </h2>
+        </div>
+        <div class="card-content">
+            <div class="quick-actions">
+                <a href="/admin/logos" class="quick-action">
+                    <i class="fas fa-upload"></i>
+                    <span>Ajouter un logo</span>
+                </a>
+                
+                <button class="quick-action" onclick="exportVotes('csv')">
+                    <i class="fas fa-download"></i>
+                    <span>Exporter votes (CSV)</span>
+                </button>
+                
+                
+                <a href="/results" target="_blank" class="quick-action">
+                    <i class="fas fa-chart-bar"></i>
+                    <span>Voir résultats</span>
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Auto-refresh dashboard data every 30 seconds
+let refreshInterval;
+
+function startAutoRefresh() {
+    refreshInterval = setInterval(async () => {
+        try {
+            const response = await fetch('/admin/api/stats', {
+                headers: {
+                    'X-CSRF-Token': window.csrfToken
+                }
+            });
+            
+            if (response.ok) {
+                const data = await response.json();
+                if (data.success) {
+                    updateDashboardStats(data.stats);
+                }
+            }
+        } catch (error) {
+            console.error('Auto-refresh error:', error);
+        }
+    }, 30000); // 30 seconds
+}
+
+function updateDashboardStats(stats) {
+    // Update stat cards
+    const statNumbers = document.querySelectorAll('.stat-number');
+    if (statNumbers[0]) statNumbers[0].textContent = stats.total_votes;
+    if (statNumbers[1]) statNumbers[1].textContent = stats.total_voters;
+    if (statNumbers[2]) statNumbers[2].textContent = stats.total_logos;
+    if (statNumbers[3]) statNumbers[3].textContent = stats.database_size;
+}
+
+// Quick action functions
+async function exportVotes(format) {
+    try {
+        showLoading();
+        
+        const response = await fetch(`/admin/votes/export/${format}`, {
+            headers: {
+                'X-CSRF-Token': window.csrfToken
+            }
+        });
+        
+        if (response.ok) {
+            // Trigger download
+            const blob = await response.blob();
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `votes_export_${new Date().toISOString().slice(0, 10)}.${format}`;
+            document.body.appendChild(a);
+            a.click();
+            window.URL.revokeObjectURL(url);
+            document.body.removeChild(a);
+            
+            showMessage('Export réussi', 'success');
+        } else {
+            showMessage('Erreur lors de l\'export', 'error');
+        }
+    } catch (error) {
+        console.error('Export error:', error);
+        showMessage('Erreur lors de l\'export', 'error');
+    } finally {
+        hideLoading();
+    }
+}
+
+
+// Start auto-refresh when page loads
+document.addEventListener('DOMContentLoaded', function() {
+    startAutoRefresh();
+});
+
+// Stop auto-refresh when page is hidden
+document.addEventListener('visibilitychange', function() {
+    if (document.hidden) {
+        clearInterval(refreshInterval);
+    } else {
+        startAutoRefresh();
+    }
+});
+</script>
+{% endblock %}

@@ -1,0 +1,93 @@
+version: '3.8'
+
+# Standalone production deployment for ToV'éCo voting platform
+# Usage: docker-compose -f docker-compose.standalone.yml up -d
+
+services:
+  toveco-voting:
+    image: toveco-voting:latest
+    ports:
+      - "${PORT:-8000}:8000"
+    
+    # Environment variables from .env file
+    environment:
+      - HOST=${HOST:-0.0.0.0}
+      - PORT=${PORT:-8000}
+      - DEBUG=${DEBUG:-false}
+      - DATABASE_PATH=${DATABASE_PATH:-/app/data/votes.db}
+      - TOVECO_ENV=${TOVECO_ENV:-production}
+      - APP_NAME=${APP_NAME:-ToV'éCo Logo Voting Platform}
+      - APP_VERSION=${APP_VERSION:-0.1.0}
+      
+      # Security settings
+      - SECURE_HEADERS=${SECURE_HEADERS:-true}
+      - ENABLE_RATE_LIMITING=${ENABLE_RATE_LIMITING:-true}
+      - MAX_VOTES_PER_IP_PER_HOUR=${MAX_VOTES_PER_IP_PER_HOUR:-5}
+      - ALLOWED_ORIGINS=${ALLOWED_ORIGINS:-http://localhost:8000}
+      
+      # Admin credentials - MUST be set in .env file!
+      - ADMIN_USERNAME=${ADMIN_USERNAME}
+      - ADMIN_PASSWORD=${ADMIN_PASSWORD}
+      - SESSION_SECRET_KEY=${SESSION_SECRET_KEY}
+      - SESSION_LIFETIME_HOURS=${SESSION_LIFETIME_HOURS:-8}
+      - MAX_LOGIN_ATTEMPTS=${MAX_LOGIN_ATTEMPTS:-5}
+      
+      # Voting configuration
+      - MIN_RATING=${MIN_RATING:--2}
+      - MAX_RATING=${MAX_RATING:-2}
+      - MAX_VOTER_NAME_LENGTH=${MAX_VOTER_NAME_LENGTH:-50}
+      - EXPECTED_LOGO_COUNT=${EXPECTED_LOGO_COUNT:-11}
+      - LOGO_PREFIX=${LOGO_PREFIX:-toveco}
+      - LOGO_EXTENSION=${LOGO_EXTENSION:-.png}
+    
+    # Persistent data storage
+    volumes:
+      - toveco_data:/app/data
+      - toveco_logs:/app/logs
+    
+    # Resource limits
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 512M
+        reservations:
+          cpus: '0.25'
+          memory: 128M
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+        window: 120s
+    
+    # Health check
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    
+    # Logging configuration
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "50m"
+        max-file: "5"
+        compress: "true"
+    
+    # Restart policy
+    restart: unless-stopped
+
+# Named volumes for data persistence
+volumes:
+  toveco_data:
+    driver: local
+    labels:
+      - "backup.enable=true"
+      - "backup.path=/app/data"
+  
+  toveco_logs:
+    driver: local
+    labels:
+      - "backup.enable=false"

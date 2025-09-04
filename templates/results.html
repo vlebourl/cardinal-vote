@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+    <title>Résultats - ToV'éCo</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <meta name="description" content="Résultats du vote pour le logo ToV'éCo - Classement et statistiques">
+    <meta name="theme-color" content="#2D5820">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📊</text></svg>">
+</head>
+<body>
+    <!-- Skip link for accessibility -->
+    <a href="#main-content" class="skip-link">Passer au contenu principal</a>
+    
+    <div class="results-container" role="main" id="main-content">
+        <!-- Loading state -->
+        <div id="loading-state" class="loading" role="status" aria-live="polite">
+            <div class="spinner" aria-hidden="true"></div>
+            <span>Chargement des résultats...</span>
+        </div>
+        
+        <!-- Error state -->
+        <div id="error-state" class="error-state" style="display: none;" role="alert">
+            <div class="error-icon" aria-hidden="true">⚠️</div>
+            <h2>Erreur de chargement</h2>
+            <p id="error-message">Impossible de charger les résultats. Veuillez réessayer.</p>
+            <div class="error-actions">
+                <button id="retry-btn" class="btn btn-primary" onclick="window.location.reload()">Réessayer</button>
+                <a href="/" class="btn btn-secondary">Retour à l'accueil</a>
+            </div>
+        </div>
+        
+        <!-- Results content -->
+        <div id="results-content" style="display: none;">
+            <header class="results-header">
+                <h1 id="results-title">Résultats du vote ToV'éCo</h1>
+                <p class="results-subtitle">Classement des logos par note moyenne</p>
+            </header>
+            
+            <!-- Summary statistics -->
+            <section class="results-stats" aria-labelledby="stats-title">
+                <h2 id="stats-title" class="sr-only">Statistiques du vote</h2>
+                <div class="stats-grid">
+                    <div class="stat-card" role="img" aria-labelledby="total-voters-label">
+                        <span id="total-voters" class="stat-number" aria-describedby="total-voters-desc">0</span>
+                        <span id="total-voters-label" class="stat-label">Votants</span>
+                        <span id="total-voters-desc" class="sr-only">Nombre total de personnes ayant voté</span>
+                    </div>
+                    <div class="stat-card" role="img" aria-labelledby="total-logos-label">
+                        <span id="total-logos" class="stat-number" aria-describedby="total-logos-desc">0</span>
+                        <span id="total-logos-label" class="stat-label">Logos</span>
+                        <span id="total-logos-desc" class="sr-only">Nombre total de logos évalués</span>
+                    </div>
+                    <div class="stat-card" role="img" aria-labelledby="total-votes-label">
+                        <span id="total-votes" class="stat-number" aria-describedby="total-votes-desc">0</span>
+                        <span id="total-votes-label" class="stat-label">Évaluations</span>
+                        <span id="total-votes-desc" class="sr-only">Nombre total d'évaluations données</span>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- Results grid -->
+            <section class="results-section" aria-labelledby="ranking-title">
+                <h2 id="ranking-title">Classement des logos</h2>
+                <div id="results-grid" class="results-grid" role="list" aria-label="Classement des logos par note moyenne">
+                    <!-- Results will be populated by JavaScript -->
+                </div>
+            </section>
+            
+            <!-- Detailed voting table -->
+            <section class="detailed-votes-section" aria-labelledby="detailed-votes-title">
+                <div class="detailed-votes-header">
+                    <h2 id="detailed-votes-title">Détail des votes individuels</h2>
+                    <button id="toggle-detailed-votes" class="btn btn-secondary toggle-btn" aria-expanded="false" aria-controls="detailed-votes-content">
+                        <span class="toggle-text">Afficher</span>
+                        <span class="toggle-icon" aria-hidden="true">▼</span>
+                    </button>
+                </div>
+                <div id="detailed-votes-content" class="detailed-votes-content" style="display: none;" aria-labelledby="detailed-votes-title">
+                    <div class="table-container">
+                        <table id="detailed-votes-table" class="detailed-votes-table" role="table" aria-label="Tableau détaillé des votes individuels">
+                            <!-- Table will be populated by JavaScript -->
+                        </table>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- Actions -->
+            <footer class="results-actions">
+                <nav aria-label="Actions disponibles">
+                    <a href="/" class="btn btn-primary">Voter à nouveau</a>
+                    <button id="share-results" class="btn btn-secondary" aria-describedby="share-help">Partager</button>
+                    <button id="export-results" class="btn btn-secondary" aria-describedby="export-help">Exporter</button>
+                </nav>
+                <div id="share-help" class="sr-only">Partager les résultats sur les réseaux sociaux</div>
+                <div id="export-help" class="sr-only">Exporter les résultats au format PDF</div>
+            </footer>
+        </div>
+    </div>
+    
+    <!-- Live region for screen reader announcements -->
+    <div id="live-region" class="sr-only" aria-live="polite" aria-atomic="true"></div>
+    
+    <!-- Share modal -->
+    <div id="share-modal" class="modal" role="dialog" aria-labelledby="share-modal-title" aria-hidden="true" style="display: none;">
+        <div class="modal-content">
+            <header class="modal-header">
+                <h3 id="share-modal-title">Partager les résultats</h3>
+                <button id="close-share-modal" class="modal-close" aria-label="Fermer la modal">&times;</button>
+            </header>
+            <div class="modal-body">
+                <div class="share-options">
+                    <button class="share-option" data-platform="twitter" aria-label="Partager sur Twitter">
+                        <span class="share-icon">🐦</span>
+                        <span>Twitter</span>
+                    </button>
+                    <button class="share-option" data-platform="facebook" aria-label="Partager sur Facebook">
+                        <span class="share-icon">📘</span>
+                        <span>Facebook</span>
+                    </button>
+                    <button class="share-option" data-platform="linkedin" aria-label="Partager sur LinkedIn">
+                        <span class="share-icon">💼</span>
+                        <span>LinkedIn</span>
+                    </button>
+                    <button class="share-option" data-platform="copy" aria-label="Copier le lien">
+                        <span class="share-icon">📋</span>
+                        <span>Copier le lien</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Footer -->
+    <footer class="app-footer">
+        <div class="footer-content">
+            <span class="app-version">ToV'éCo v1.0.5</span>
+            <span class="footer-separator">•</span>
+            <span class="footer-text">Résultats du vote</span>
+        </div>
+    </footer>
+    
+    <script src="/static/app.js"></script>
+</body>
+</html>

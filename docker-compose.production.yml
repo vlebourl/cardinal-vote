@@ -1,0 +1,50 @@
+version: '3.8'
+
+services:
+  toveco-voting:
+    # Use the pre-built image instead of building
+    image: toveco-voting:latest
+    ports:
+      - "${EXTERNAL_PORT:-8000}:8000"
+    environment:
+      # These will use values from .env file, with fallbacks if not set
+      - HOST=${HOST:-0.0.0.0}
+      - PORT=${PORT:-8000}
+      - DEBUG=${DEBUG:-false}
+      - DATABASE_PATH=${DATABASE_PATH:-/app/data/votes.db}
+      - TOVECO_ENV=${TOVECO_ENV:-production}
+      # Admin credentials - MUST be set in .env file!
+      - ADMIN_USERNAME=${ADMIN_USERNAME:-admin}
+      - ADMIN_PASSWORD=${ADMIN_PASSWORD:-toveco_admin_2025}
+      - SESSION_SECRET_KEY=${SESSION_SECRET_KEY:-toveco_secret_key_change_in_production_123456789}
+      # CORS settings for production
+      - ALLOWED_ORIGINS=${ALLOWED_ORIGINS:-https://toveco.tiarkaerell.com}
+    volumes:
+      # Persistent storage for database
+      - toveco_data:/app/data
+      # Persistent storage for logs
+      - toveco_logs:/app/logs
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    restart: unless-stopped
+    networks:
+      - toveco-network
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+volumes:
+  toveco_data:
+    driver: local
+  toveco_logs:
+    driver: local
+
+networks:
+  toveco-network:
+    driver: bridge

@@ -1,0 +1,79 @@
+version: '3.8'
+
+services:
+  toveco-voting:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: production
+    ports:
+      - "8000:8000"
+    environment:
+      # These will use values from .env file, with fallbacks if not set
+      - HOST=${HOST:-0.0.0.0}
+      - PORT=${PORT:-8000}
+      - DEBUG=${DEBUG:-false}
+      - DATABASE_PATH=${DATABASE_PATH:-/app/data/votes.db}
+      - TOVECO_ENV=${TOVECO_ENV:-docker}
+      # Admin credentials - MUST be set in .env file!
+      - ADMIN_USERNAME=${ADMIN_USERNAME:-admin}
+      - ADMIN_PASSWORD=${ADMIN_PASSWORD:-toveco_admin_2025}
+      - SESSION_SECRET_KEY=${SESSION_SECRET_KEY:-toveco_secret_key_change_in_production_123456789}
+    volumes:
+      # Persistent storage for database
+      - toveco_data:/app/data
+      # Persistent storage for logs
+      - toveco_logs:/app/logs
+      # Optional: mount custom logos (uncomment if needed)
+      # - ./logos:/app/logos:ro
+      # Optional: mount custom templates (uncomment if needed)
+      # - ./templates:/app/templates:ro
+      # Optional: mount custom static files (uncomment if needed)
+      # - ./static:/app/static:ro
+    healthcheck:
+      test: ["CMD", "python", "-c", "import requests; requests.get('http://localhost:8000/api/health', timeout=5)"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    restart: unless-stopped
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.toveco.rule=Host(`toveco.localhost`)"
+      - "traefik.http.services.toveco.loadbalancer.server.port=8000"
+    networks:
+      - toveco-network
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # Optional: Traefik reverse proxy for production-like setup
+  traefik:
+    image: traefik:v3.0
+    command:
+      - "--api.insecure=true"
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--entrypoints.web.address=:80"
+    ports:
+      - "80:80"
+      - "8080:8080"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    networks:
+      - toveco-network
+    restart: unless-stopped
+    profiles:
+      - traefik
+
+volumes:
+  toveco_data:
+    driver: local
+  toveco_logs:
+    driver: local
+
+networks:
+  toveco-network:
+    driver: bridge
