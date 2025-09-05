@@ -12,14 +12,14 @@
 <body>
     <!-- Skip link for accessibility -->
     <a href="#main-content" class="skip-link">Passer au contenu principal</a>
-    
+
     <div class="results-container" role="main" id="main-content">
         <!-- Loading state -->
         <div id="loading-state" class="loading" role="status" aria-live="polite">
             <div class="spinner" aria-hidden="true"></div>
             <span>Chargement des résultats...</span>
         </div>
-        
+
         <!-- Error state -->
         <div id="error-state" class="error-state" style="display: none;" role="alert">
             <div class="error-icon" aria-hidden="true">⚠️</div>
@@ -30,14 +30,14 @@
                 <a href="/" class="btn btn-secondary">Retour à l'accueil</a>
             </div>
         </div>
-        
+
         <!-- Results content -->
         <div id="results-content" style="display: none;">
             <header class="results-header">
                 <h1 id="results-title">Résultats du vote ToV'éCo</h1>
                 <p class="results-subtitle">Classement des logos par score total</p>
             </header>
-            
+
             <!-- Summary statistics -->
             <section class="results-stats" aria-labelledby="stats-title">
                 <h2 id="stats-title" class="sr-only">Statistiques du vote</h2>
@@ -59,7 +59,7 @@
                     </div>
                 </div>
             </section>
-            
+
             <!-- Results grid -->
             <section class="results-section" aria-labelledby="ranking-title">
                 <h2 id="ranking-title">Classement des logos</h2>
@@ -67,7 +67,7 @@
                     <!-- Results will be populated by JavaScript -->
                 </div>
             </section>
-            
+
             <!-- Detailed voting table -->
             <section class="detailed-votes-section" aria-labelledby="detailed-votes-title">
                 <div class="detailed-votes-header">
@@ -85,7 +85,7 @@
                     </div>
                 </div>
             </section>
-            
+
             <!-- Actions -->
             <footer class="results-actions">
                 <nav aria-label="Actions disponibles">
@@ -98,10 +98,10 @@
             </footer>
         </div>
     </div>
-    
+
     <!-- Live region for screen reader announcements -->
     <div id="live-region" class="sr-only" aria-live="polite" aria-atomic="true"></div>
-    
+
     <!-- Share modal -->
     <div id="share-modal" class="modal" role="dialog" aria-labelledby="share-modal-title" aria-hidden="true" style="display: none;">
         <div class="modal-content">
@@ -131,7 +131,7 @@
             </div>
         </div>
     </div>
-    
+
     <!-- Footer -->
     <footer class="app-footer">
         <div class="footer-content">
@@ -140,7 +140,7 @@
             <span class="footer-text">Résultats du vote</span>
         </div>
     </footer>
-    
+
     <script src="/static/app.js"></script>
 </body>
 </html>

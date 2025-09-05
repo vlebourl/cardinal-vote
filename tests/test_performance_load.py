@@ -56,14 +56,18 @@ class PerformanceMetrics:
         if not self.response_times:
             return {}
 
-        total_time = self.end_time - self.start_time if self.end_time and self.start_time else 0
+        total_time = (
+            self.end_time - self.start_time if self.end_time and self.start_time else 0
+        )
         total_requests = len(self.response_times)
 
         return {
             "total_requests": total_requests,
             "successful_requests": self.success_count,
             "failed_requests": self.error_count,
-            "success_rate": (self.success_count / total_requests * 100) if total_requests > 0 else 0,
+            "success_rate": (self.success_count / total_requests * 100)
+            if total_requests > 0
+            else 0,
             "total_time": total_time,
             "requests_per_second": total_requests / total_time if total_time > 0 else 0,
             "response_times": {
@@ -74,7 +78,7 @@ class PerformanceMetrics:
                 "p95": self._percentile(self.response_times, 95),
                 "p99": self._percentile(self.response_times, 99),
             },
-            "errors": self.errors[:10]  # First 10 errors
+            "errors": self.errors[:10],  # First 10 errors
         }
 
     def _percentile(self, data: list[float], percentile: int) -> float:
@@ -112,7 +116,7 @@ class TestBasicPerformance:
                 "toveco9.png": -1,
                 "toveco10.png": 1,
                 "toveco11.png": 0,
-            }
+            },
         }
 
     def test_health_check_response_time(self, client):
@@ -135,13 +139,17 @@ class TestBasicPerformance:
         p95_response_time = sorted(response_times)[int(0.95 * len(response_times))]
 
         print("Health check performance:")
-        print(f"  Average: {avg_response_time*1000:.1f}ms")
-        print(f"  Max: {max_response_time*1000:.1f}ms")
-        print(f"  P95: {p95_response_time*1000:.1f}ms")
+        print(f"  Average: {avg_response_time * 1000:.1f}ms")
+        print(f"  Max: {max_response_time * 1000:.1f}ms")
+        print(f"  P95: {p95_response_time * 1000:.1f}ms")
 
         # Performance assertions
-        assert avg_response_time < 0.1, f"Average response time too slow: {avg_response_time*1000:.1f}ms"
-        assert p95_response_time < 0.2, f"P95 response time too slow: {p95_response_time*1000:.1f}ms"
+        assert (
+            avg_response_time < 0.1
+        ), f"Average response time too slow: {avg_response_time * 1000:.1f}ms"
+        assert (
+            p95_response_time < 0.2
+        ), f"P95 response time too slow: {p95_response_time * 1000:.1f}ms"
 
     def test_logos_endpoint_response_time(self, client):
         """Test logos endpoint response time."""
@@ -163,10 +171,12 @@ class TestBasicPerformance:
         max_response_time = max(response_times)
 
         print("Logos endpoint performance:")
-        print(f"  Average: {avg_response_time*1000:.1f}ms")
-        print(f"  Max: {max_response_time*1000:.1f}ms")
+        print(f"  Average: {avg_response_time * 1000:.1f}ms")
+        print(f"  Max: {max_response_time * 1000:.1f}ms")
 
-        assert avg_response_time < 0.5, f"Logos endpoint too slow: {avg_response_time*1000:.1f}ms"
+        assert (
+            avg_response_time < 0.5
+        ), f"Logos endpoint too slow: {avg_response_time * 1000:.1f}ms"
 
     def test_vote_submission_response_time(self, client, sample_vote_data):
         """Test vote submission response time."""
@@ -192,10 +202,12 @@ class TestBasicPerformance:
 
         avg_response_time = statistics.mean(response_times)
         print("Vote submission performance:")
-        print(f"  Average: {avg_response_time*1000:.1f}ms")
+        print(f"  Average: {avg_response_time * 1000:.1f}ms")
         print(f"  Successful submissions: {successful_submissions}/10")
 
-        assert avg_response_time < 1.0, f"Vote submission too slow: {avg_response_time*1000:.1f}ms"
+        assert (
+            avg_response_time < 1.0
+        ), f"Vote submission too slow: {avg_response_time * 1000:.1f}ms"
 
     def test_results_calculation_response_time(self, client):
         """Test results calculation response time."""
@@ -215,10 +227,12 @@ class TestBasicPerformance:
         max_response_time = max(response_times)
 
         print("Results calculation performance:")
-        print(f"  Average: {avg_response_time*1000:.1f}ms")
-        print(f"  Max: {max_response_time*1000:.1f}ms")
+        print(f"  Average: {avg_response_time * 1000:.1f}ms")
+        print(f"  Max: {max_response_time * 1000:.1f}ms")
 
-        assert avg_response_time < 0.5, f"Results calculation too slow: {avg_response_time*1000:.1f}ms"
+        assert (
+            avg_response_time < 0.5
+        ), f"Results calculation too slow: {avg_response_time * 1000:.1f}ms"
 
 
 class TestConcurrentLoad:
@@ -241,11 +255,17 @@ class TestConcurrentLoad:
                 "toveco9.png": 1,
                 "toveco10.png": 0,
                 "toveco11.png": -1,
-            }
+            },
         }
 
-    def _make_request(self, base_url: str, endpoint: str, method: str = "GET",
-                     data: dict = None, user_id: int = 0) -> tuple[float, bool, str]:
+    def _make_request(
+        self,
+        base_url: str,
+        endpoint: str,
+        method: str = "GET",
+        data: dict = None,
+        user_id: int = 0,
+    ) -> tuple[float, bool, str]:
         """Make a single HTTP request and return timing info."""
         start_time = time.time()
         try:
@@ -288,8 +308,12 @@ class TestConcurrentLoad:
                 time.sleep(0.1)  # Small delay between requests
 
         # Run concurrent user simulations
-        with concurrent.futures.ThreadPoolExecutor(max_workers=concurrent_users) as executor:
-            futures = [executor.submit(user_simulation, i) for i in range(concurrent_users)]
+        with concurrent.futures.ThreadPoolExecutor(
+            max_workers=concurrent_users
+        ) as executor:
+            futures = [
+                executor.submit(user_simulation, i) for i in range(concurrent_users)
+            ]
 
             try:
                 # Wait for all users to complete
@@ -305,13 +329,21 @@ class TestConcurrentLoad:
         print(f"  Total requests: {stats['total_requests']}")
         print(f"  Success rate: {stats['success_rate']:.1f}%")
         print(f"  Requests/second: {stats['requests_per_second']:.1f}")
-        print(f"  Average response time: {stats['response_times']['mean']*1000:.1f}ms")
-        print(f"  P95 response time: {stats['response_times']['p95']*1000:.1f}ms")
+        print(
+            f"  Average response time: {stats['response_times']['mean'] * 1000:.1f}ms"
+        )
+        print(f"  P95 response time: {stats['response_times']['p95'] * 1000:.1f}ms")
 
         # Performance assertions
-        assert stats['success_rate'] >= 95, f"Success rate too low: {stats['success_rate']:.1f}%"
-        assert stats['requests_per_second'] >= 50, f"Throughput too low: {stats['requests_per_second']:.1f} req/s"
-        assert stats['response_times']['mean'] < 0.5, f"Average response time too slow: {stats['response_times']['mean']*1000:.1f}ms"
+        assert (
+            stats["success_rate"] >= 95
+        ), f"Success rate too low: {stats['success_rate']:.1f}%"
+        assert (
+            stats["requests_per_second"] >= 50
+        ), f"Throughput too low: {stats['requests_per_second']:.1f} req/s"
+        assert (
+            stats["response_times"]["mean"] < 0.5
+        ), f"Average response time too slow: {stats['response_times']['mean'] * 1000:.1f}ms"
 
     @pytest.mark.slow
     def test_concurrent_vote_submissions(self, sample_vote_data):
@@ -333,8 +365,13 @@ class TestConcurrentLoad:
             metrics.add_result(response_time, success, error)
 
         # Run concurrent vote submissions
-        with concurrent.futures.ThreadPoolExecutor(max_workers=concurrent_users) as executor:
-            futures = [executor.submit(user_vote_submission, i) for i in range(concurrent_users)]
+        with concurrent.futures.ThreadPoolExecutor(
+            max_workers=concurrent_users
+        ) as executor:
+            futures = [
+                executor.submit(user_vote_submission, i)
+                for i in range(concurrent_users)
+            ]
 
             try:
                 for future in concurrent.futures.as_completed(futures, timeout=30):
@@ -348,11 +385,17 @@ class TestConcurrentLoad:
         print("Concurrent vote submission results:")
         print(f"  Total votes: {stats['total_requests']}")
         print(f"  Success rate: {stats['success_rate']:.1f}%")
-        print(f"  Average response time: {stats['response_times']['mean']*1000:.1f}ms")
+        print(
+            f"  Average response time: {stats['response_times']['mean'] * 1000:.1f}ms"
+        )
 
         # More lenient assertions for vote submissions
-        assert stats['success_rate'] >= 80, f"Vote success rate too low: {stats['success_rate']:.1f}%"
-        assert stats['response_times']['mean'] < 2.0, f"Vote submission too slow: {stats['response_times']['mean']*1000:.1f}ms"
+        assert (
+            stats["success_rate"] >= 80
+        ), f"Vote success rate too low: {stats['success_rate']:.1f}%"
+        assert (
+            stats["response_times"]["mean"] < 2.0
+        ), f"Vote submission too slow: {stats['response_times']['mean'] * 1000:.1f}ms"
 
     @pytest.mark.slow
     def test_mixed_workload(self, sample_vote_data):
@@ -387,8 +430,13 @@ class TestConcurrentLoad:
                 time.sleep(0.05)  # Small delay between requests
 
         # Run mixed workload simulation
-        with concurrent.futures.ThreadPoolExecutor(max_workers=concurrent_users) as executor:
-            futures = [executor.submit(mixed_user_simulation, i) for i in range(concurrent_users)]
+        with concurrent.futures.ThreadPoolExecutor(
+            max_workers=concurrent_users
+        ) as executor:
+            futures = [
+                executor.submit(mixed_user_simulation, i)
+                for i in range(concurrent_users)
+            ]
 
             try:
                 for future in concurrent.futures.as_completed(futures, timeout=45):
@@ -403,10 +451,14 @@ class TestConcurrentLoad:
         print(f"  Total requests: {stats['total_requests']}")
         print(f"  Success rate: {stats['success_rate']:.1f}%")
         print(f"  Requests/second: {stats['requests_per_second']:.1f}")
-        print(f"  Average response time: {stats['response_times']['mean']*1000:.1f}ms")
-        print(f"  P95 response time: {stats['response_times']['p95']*1000:.1f}ms")
+        print(
+            f"  Average response time: {stats['response_times']['mean'] * 1000:.1f}ms"
+        )
+        print(f"  P95 response time: {stats['response_times']['p95'] * 1000:.1f}ms")
 
-        assert stats['success_rate'] >= 85, f"Mixed workload success rate too low: {stats['success_rate']:.1f}%"
+        assert (
+            stats["success_rate"] >= 85
+        ), f"Mixed workload success rate too low: {stats['success_rate']:.1f}%"
 
 
 class TestDatabasePerformance:
@@ -418,7 +470,7 @@ class TestDatabasePerformance:
         import os
         import tempfile
 
-        with tempfile.NamedTemporaryFile(suffix='.db', delete=False) as f:
+        with tempfile.NamedTemporaryFile(suffix=".db", delete=False) as f:
             temp_db_path = f.name
 
         try:
@@ -449,7 +501,9 @@ class TestDatabasePerformance:
         print(f"  {votes_per_second:.1f} votes/second")
 
         # Performance assertion
-        assert votes_per_second >= 100, f"Vote insertion too slow: {votes_per_second:.1f} votes/s"
+        assert (
+            votes_per_second >= 100
+        ), f"Vote insertion too slow: {votes_per_second:.1f} votes/s"
 
     def test_large_results_calculation_performance(self, temp_db):
         """Test results calculation with large dataset."""
@@ -478,10 +532,13 @@ class TestDatabasePerformance:
         assert len(results["summary"]) == 11
 
         # Performance assertion
-        assert calculation_time < 1.0, f"Results calculation too slow: {calculation_time:.3f}s"
+        assert (
+            calculation_time < 1.0
+        ), f"Results calculation too slow: {calculation_time:.3f}s"
 
     def test_concurrent_database_operations(self, temp_db):
         """Test concurrent database read/write operations."""
+
         def write_votes(start_id, count):
             """Write votes to database."""
             for i in range(count):
@@ -501,10 +558,7 @@ class TestDatabasePerformance:
 
         with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
             # Start writers
-            write_futures = [
-                executor.submit(write_votes, i * 10, 10)
-                for i in range(3)
-            ]
+            write_futures = [executor.submit(write_votes, i * 10, 10) for i in range(3)]
 
             # Start readers
             read_future = executor.submit(read_operations)
@@ -553,7 +607,9 @@ class TestMemoryAndResources:
                 memory_growth = current_memory - initial_memory
 
                 # Memory growth should be reasonable
-                assert memory_growth < 50, f"Memory growth too high: {memory_growth:.1f}MB"
+                assert (
+                    memory_growth < 50
+                ), f"Memory growth too high: {memory_growth:.1f}MB"
 
         final_memory = process.memory_info().rss / 1024 / 1024
         total_growth = final_memory - initial_memory
@@ -570,7 +626,7 @@ class TestMemoryAndResources:
         import os
         import tempfile
 
-        with tempfile.NamedTemporaryFile(suffix='.db', delete=False) as f:
+        with tempfile.NamedTemporaryFile(suffix=".db", delete=False) as f:
             temp_db_path = f.name
 
         try:
@@ -596,7 +652,9 @@ class TestMemoryAndResources:
             print(f"  Bytes per vote: {bytes_per_vote:.1f}")
 
             # Size growth should be reasonable
-            assert bytes_per_vote < 1000, f"Database growth too high: {bytes_per_vote:.1f} bytes/vote"
+            assert (
+                bytes_per_vote < 1000
+            ), f"Database growth too high: {bytes_per_vote:.1f} bytes/vote"
 
         finally:
             if os.path.exists(temp_db_path):
@@ -620,19 +678,23 @@ class TestStressScenarios:
                 try:
                     response = requests.get(f"{base_url}/api/health", timeout=5)
                     end_time = time.time()
-                    results.append({
-                        "response_time": end_time - start_time,
-                        "status_code": response.status_code,
-                        "success": response.status_code == 200
-                    })
+                    results.append(
+                        {
+                            "response_time": end_time - start_time,
+                            "status_code": response.status_code,
+                            "success": response.status_code == 200,
+                        }
+                    )
                 except Exception as e:
                     end_time = time.time()
-                    results.append({
-                        "response_time": end_time - start_time,
-                        "status_code": 0,
-                        "success": False,
-                        "error": str(e)
-                    })
+                    results.append(
+                        {
+                            "response_time": end_time - start_time,
+                            "status_code": 0,
+                            "success": False,
+                            "error": str(e),
+                        }
+                    )
             return results
 
         # Execute burst test
@@ -646,11 +708,13 @@ class TestStressScenarios:
         print(f"  Burst size: {burst_size} requests")
         print(f"  Successful: {successful_requests}/{burst_size}")
         print(f"  Success rate: {success_rate:.1f}%")
-        print(f"  Average response time: {avg_response_time*1000:.1f}ms")
+        print(f"  Average response time: {avg_response_time * 1000:.1f}ms")
 
         # System should handle bursts gracefully
         assert success_rate >= 90, f"Burst success rate too low: {success_rate:.1f}%"
-        assert avg_response_time < 1.0, f"Burst response time too slow: {avg_response_time*1000:.1f}ms"
+        assert (
+            avg_response_time < 1.0
+        ), f"Burst response time too slow: {avg_response_time * 1000:.1f}ms"
 
     @pytest.mark.slow
     def test_sustained_load(self):
@@ -692,11 +756,17 @@ class TestStressScenarios:
         print(f"  Total requests: {stats['total_requests']}")
         print(f"  Success rate: {stats['success_rate']:.1f}%")
         print(f"  Requests/second: {stats['requests_per_second']:.1f}")
-        print(f"  Average response time: {stats['response_times']['mean']*1000:.1f}ms")
+        print(
+            f"  Average response time: {stats['response_times']['mean'] * 1000:.1f}ms"
+        )
 
         # System should maintain performance under sustained load
-        assert stats['success_rate'] >= 95, f"Sustained load success rate too low: {stats['success_rate']:.1f}%"
-        assert stats['requests_per_second'] >= 8, f"Sustained throughput too low: {stats['requests_per_second']:.1f} req/s"
+        assert (
+            stats["success_rate"] >= 95
+        ), f"Sustained load success rate too low: {stats['success_rate']:.1f}%"
+        assert (
+            stats["requests_per_second"] >= 8
+        ), f"Sustained throughput too low: {stats['requests_per_second']:.1f} req/s"
 
 
 # Performance test runner that can be used standalone
@@ -729,12 +799,7 @@ class PerformanceTestRunner:
 
     def _test_basic_response_times(self) -> dict[str, Any]:
         """Test basic response times."""
-        endpoints = [
-            "/api/health",
-            "/api/stats",
-            "/api/results",
-            "/api/logos"
-        ]
+        endpoints = ["/api/health", "/api/stats", "/api/results", "/api/logos"]
 
         results = {}
 
@@ -762,11 +827,13 @@ class PerformanceTestRunner:
                 results[endpoint] = {
                     "avg_response_time": statistics.mean(response_times),
                     "max_response_time": max(response_times),
-                    "success_rate": successful_requests / len(response_times) * 100
+                    "success_rate": successful_requests / len(response_times) * 100,
                 }
 
-                print(f"  {endpoint}: {results[endpoint]['avg_response_time']*1000:.1f}ms avg, "
-                      f"{results[endpoint]['success_rate']:.1f}% success")
+                print(
+                    f"  {endpoint}: {results[endpoint]['avg_response_time'] * 1000:.1f}ms avg, "
+                    f"{results[endpoint]['success_rate']:.1f}% success"
+                )
 
         return results
 
@@ -790,7 +857,9 @@ class PerformanceTestRunner:
                     return False
             return response_times
 
-        with concurrent.futures.ThreadPoolExecutor(max_workers=concurrent_users) as executor:
+        with concurrent.futures.ThreadPoolExecutor(
+            max_workers=concurrent_users
+        ) as executor:
             futures = [executor.submit(user_requests) for _ in range(concurrent_users)]
             results_list = [future.result() for future in futures]
 
@@ -805,7 +874,7 @@ class PerformanceTestRunner:
                 "total_requests": len(all_response_times),
                 "avg_response_time": statistics.mean(all_response_times),
                 "max_response_time": max(all_response_times),
-                "concurrent_users": concurrent_users
+                "concurrent_users": concurrent_users,
             }
 
         return {}
@@ -847,7 +916,7 @@ class PerformanceTestRunner:
                 "successful_requests": successful_requests,
                 "success_rate": successful_requests / len(response_times) * 100,
                 "requests_per_second": len(response_times) / total_time,
-                "avg_response_time": statistics.mean(response_times)
+                "avg_response_time": statistics.mean(response_times),
             }
 
         return {}
@@ -867,7 +936,7 @@ def run_performance_tests():
         for metric, value in test_results.items():
             if isinstance(value, float):
                 if "time" in metric:
-                    print(f"  {metric}: {value*1000:.1f}ms")
+                    print(f"  {metric}: {value * 1000:.1f}ms")
                 else:
                     print(f"  {metric}: {value:.2f}")
             else:

@@ -2,9 +2,9 @@ name: CI Pipeline
 
 on:
   push:
-    branches: [ main, develop ]
+    branches: [main, develop]
   pull_request:
-    branches: [ main, develop ]
+    branches: [main, develop]
     types: [opened, synchronize, reopened, ready_for_review]
 
 env:
@@ -15,161 +15,161 @@ jobs:
     name: Test Suite
     runs-on: ubuntu-latest
     if: github.event.pull_request.draft == false
-    
+
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-    - name: Set up Python
-      uses: actions/setup-python@v4
-      with:
-        python-version: ${{ env.PYTHON_VERSION }}
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
 
-    - name: Install uv
-      uses: astral-sh/setup-uv@v3
-      with:
-        enable-cache: true
+      - name: Install uv
+        uses: astral-sh/setup-uv@v3
+        with:
+          enable-cache: true
 
-    - name: Install dependencies
-      run: |
-        uv sync --dev
+      - name: Install dependencies
+        run: |
+          uv sync --dev
 
-    - name: Run linting (ruff)
-      run: |
-        uv run ruff check src/ tests/
+      - name: Run linting (ruff)
+        run: |
+          uv run ruff check src/ tests/
 
-    - name: Run formatting check (ruff format)
-      run: |
-        uv run ruff format --check src/ tests/
+      - name: Run formatting check (ruff format)
+        run: |
+          uv run ruff format --check src/ tests/
 
-    - name: Run type checking (mypy)
-      run: |
-        uv run mypy src/
+      - name: Run type checking (mypy)
+        run: |
+          uv run mypy src/
 
-    - name: Run tests with coverage
-      run: |
-        uv run pytest --cov=src --cov-report=xml --cov-report=term-missing
+      - name: Run tests with coverage
+        run: |
+          uv run pytest --cov=src --cov-report=xml --cov-report=term-missing
 
-    - name: Upload coverage to Codecov
-      uses: codecov/codecov-action@v3
-      with:
-        file: ./coverage.xml
-        fail_ci_if_error: true
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v3
+        with:
+          file: ./coverage.xml
+          fail_ci_if_error: true
 
   security:
     name: Security Scan
     runs-on: ubuntu-latest
     if: github.event.pull_request.draft == false
-    
+
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-    - name: Set up Python
-      uses: actions/setup-python@v4
-      with:
-        python-version: ${{ env.PYTHON_VERSION }}
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
 
-    - name: Install uv
-      uses: astral-sh/setup-uv@v3
+      - name: Install uv
+        uses: astral-sh/setup-uv@v3
 
-    - name: Install dependencies
-      run: |
-        uv sync --dev
+      - name: Install dependencies
+        run: |
+          uv sync --dev
 
-    - name: Run security scan (bandit)
-      run: |
-        uv add --dev bandit[toml]
-        uv run bandit -r src/ -f json -o bandit-report.json || true
+      - name: Run security scan (bandit)
+        run: |
+          uv add --dev bandit[toml]
+          uv run bandit -r src/ -f json -o bandit-report.json || true
 
-    - name: Run dependency vulnerability scan
-      run: |
-        uv add --dev safety
-        uv run safety check --json || true
+      - name: Run dependency vulnerability scan
+        run: |
+          uv add --dev safety
+          uv run safety check --json || true
 
   docker-build:
     name: Docker Build Test
     runs-on: ubuntu-latest
     if: github.event.pull_request.draft == false
-    
+
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-    - name: Set up Docker Buildx
-      uses: docker/setup-buildx-action@v3
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
 
-    - name: Build Docker image
-      uses: docker/build-push-action@v5
-      with:
-        context: .
-        load: true
-        push: false
-        tags: toveco-voting:test
-        cache-from: type=gha
-        cache-to: type=gha,mode=max
+      - name: Build Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          load: true
+          push: false
+          tags: toveco-voting:test
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
 
-    - name: Test Docker image
-      run: |
-        # Create test environment file
-        cat > test.env << EOF
-        ADMIN_USERNAME=test-admin
-        ADMIN_PASSWORD=test-password-123
-        SESSION_SECRET_KEY=test-session-key-for-testing-only
-        DATABASE_PATH=/app/data/votes.db
-        EOF
-        
-        # Run container health check
-        docker run --rm \
-          --env-file test.env \
-          -v $(pwd)/logos:/app/logos:ro \
-          toveco-voting:test \
-          python -c "from src.toveco_voting.config import settings; settings.validate_security(); print('✓ Configuration validation passed')"
+      - name: Test Docker image
+        run: |
+          # Create test environment file
+          cat > test.env << EOF
+          ADMIN_USERNAME=test-admin
+          ADMIN_PASSWORD=test-password-123
+          SESSION_SECRET_KEY=test-session-key-for-testing-only
+          DATABASE_PATH=/app/data/votes.db
+          EOF
+
+          # Run container health check
+          docker run --rm \
+            --env-file test.env \
+            -v $(pwd)/logos:/app/logos:ro \
+            toveco-voting:test \
+            python -c "from src.toveco_voting.config import settings; settings.validate_security(); print('✓ Configuration validation passed')"
 
   integration:
     name: Integration Tests
     runs-on: ubuntu-latest
     if: github.event.pull_request.draft == false
     needs: [test, docker-build]
-    
+
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-    - name: Set up Python
-      uses: actions/setup-python@v4
-      with:
-        python-version: ${{ env.PYTHON_VERSION }}
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
 
-    - name: Install uv
-      uses: astral-sh/setup-uv@v3
+      - name: Install uv
+        uses: astral-sh/setup-uv@v3
 
-    - name: Install dependencies
-      run: |
-        uv sync --dev
+      - name: Install dependencies
+        run: |
+          uv sync --dev
 
-    - name: Run integration tests
-      run: |
-        export ADMIN_USERNAME=test-admin
-        export ADMIN_PASSWORD=test-password-123  
-        export SESSION_SECRET_KEY=test-session-key-for-testing-only
-        uv run pytest tests/ -v --tb=short -k "integration or end_to_end"
-      env:
-        DATABASE_PATH: test_votes.db
+      - name: Run integration tests
+        run: |
+          export ADMIN_USERNAME=test-admin
+          export ADMIN_PASSWORD=test-password-123
+          export SESSION_SECRET_KEY=test-session-key-for-testing-only
+          uv run pytest tests/ -v --tb=short -k "integration or end_to_end"
+        env:
+          DATABASE_PATH: test_votes.db
 
   pr-quality-gate:
     name: PR Quality Gate
     runs-on: ubuntu-latest
     if: github.event_name == 'pull_request'
     needs: [test, security, docker-build, integration]
-    
+
     steps:
-    - name: PR Quality Check Passed
-      run: |
-        echo "✅ All quality checks passed!"
-        echo "✅ Tests passed"
-        echo "✅ Security scan completed" 
-        echo "✅ Docker build successful"
-        echo "✅ Integration tests passed"
-        echo ""
-        echo "This PR is ready for review! 🎉"
+      - name: PR Quality Check Passed
+        run: |
+          echo "✅ All quality checks passed!"
+          echo "✅ Tests passed"
+          echo "✅ Security scan completed"
+          echo "✅ Docker build successful"
+          echo "✅ Integration tests passed"
+          echo ""
+          echo "This PR is ready for review! 🎉"

@@ -81,11 +81,7 @@ async def admin_login_page(request: Request):
 
     return templates.TemplateResponse(
         "admin/login.html",
-        {
-            "request": request,
-            "app_name": settings.APP_NAME,
-            "error": None
-        }
+        {"request": request, "app_name": settings.APP_NAME, "error": None},
     )
 
 
@@ -105,10 +101,7 @@ async def admin_login(
         login_data = AdminLogin(username=username, password=password)
 
         session_token = auth_manager.authenticate_user(
-            login_data.username,
-            login_data.password,
-            ip_address,
-            user_agent
+            login_data.username, login_data.password, ip_address, user_agent
         )
 
         if not session_token:
@@ -117,9 +110,9 @@ async def admin_login(
                 {
                     "request": request,
                     "app_name": settings.APP_NAME,
-                    "error": "Nom d'utilisateur ou mot de passe incorrect"
+                    "error": "Nom d'utilisateur ou mot de passe incorrect",
                 },
-                status_code=401
+                status_code=401,
             )
 
         # Set secure session cookie and redirect
@@ -130,7 +123,7 @@ async def admin_login(
             max_age=settings.SESSION_LIFETIME_HOURS * 3600,
             httponly=True,
             secure=not settings.DEBUG,
-            samesite="lax"
+            samesite="lax",
         )
 
         logger.info(f"Successful admin login: {username} from {ip_address}")
@@ -143,9 +136,9 @@ async def admin_login(
             {
                 "request": request,
                 "app_name": settings.APP_NAME,
-                "error": "Erreur de connexion. Veuillez réessayer."
+                "error": "Erreur de connexion. Veuillez réessayer.",
             },
-            status_code=500
+            status_code=500,
         )
 
 
@@ -187,14 +180,14 @@ async def admin_dashboard(request: Request):
                 "recent_votes": recent_votes,
                 "logo_count": len(logo_details),
                 "csrf_token": csrf_token,
-                "app_name": settings.APP_NAME
-            }
+                "app_name": settings.APP_NAME,
+            },
         )
     except Exception as e:
         logger.error(f"Dashboard error: {e}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Failed to load dashboard"
+            detail="Failed to load dashboard",
         ) from e
 
 
@@ -217,14 +210,14 @@ async def admin_logos_page(request: Request):
                 "logos": logo_details,
                 "csrf_token": csrf_token,
                 "app_name": settings.APP_NAME,
-                "max_upload_size_mb": settings.MAX_UPLOAD_SIZE_MB
-            }
+                "max_upload_size_mb": settings.MAX_UPLOAD_SIZE_MB,
+            },
         )
     except Exception as e:
         logger.error(f"Logos page error: {e}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Failed to load logos page"
+            detail="Failed to load logos page",
         ) from e
 
 
@@ -237,21 +230,16 @@ async def get_admin_stats(request: Request):
         stats = admin_manager.get_system_stats()
         active_sessions = auth_manager.get_active_sessions_count()
 
-        return {
-            "success": True,
-            "stats": stats,
-            "active_sessions": active_sessions
-        }
+        return {"success": True, "stats": stats, "active_sessions": active_sessions}
 
     except HTTPException:
         raise
     except Exception as e:
         logger.error(f"Admin stats API error: {e}")
-        return JSONResponse({
-            "success": False,
-            "message": "Failed to get statistics",
-            "error": str(e)
-        }, status_code=500)
+        return JSONResponse(
+            {"success": False, "message": "Failed to get statistics", "error": str(e)},
+            status_code=500,
+        )
 
 
 @admin_router.get("/votes", response_class=HTMLResponse)
@@ -263,10 +251,14 @@ async def admin_votes_page(request: Request):
 
     try:
         # Get all votes from database
-        votes = admin_manager.get_recent_activity(limit=1000)  # Get all votes, not just recent
+        votes = admin_manager.get_recent_activity(
+            limit=1000
+        )  # Get all votes, not just recent
 
         # Calculate statistics
-        unique_voters = len({vote.get("voter_name", "") for vote in votes}) if votes else 0
+        unique_voters = (
+            len({vote.get("voter_name", "") for vote in votes}) if votes else 0
+        )
 
         # Calculate average rating
         avg_rating = 0.0
@@ -282,6 +274,7 @@ async def admin_votes_page(request: Request):
         recent_votes_count = 0
         if votes:
             from datetime import datetime, timedelta
+
             cutoff = datetime.now() - timedelta(hours=24)
             for vote in votes:
                 try:
@@ -289,9 +282,15 @@ async def admin_votes_page(request: Request):
                     vote_time_str = vote.get("timestamp", "")
                     if vote_time_str:
                         # Try different timestamp formats
-                        for fmt in ("%Y-%m-%d %H:%M:%S", "%Y-%m-%dT%H:%M:%S", "%Y-%m-%d %H:%M:%S.%f"):
+                        for fmt in (
+                            "%Y-%m-%d %H:%M:%S",
+                            "%Y-%m-%dT%H:%M:%S",
+                            "%Y-%m-%d %H:%M:%S.%f",
+                        ):
                             try:
-                                vote_time = datetime.strptime(vote_time_str.split('.')[0], fmt)
+                                vote_time = datetime.strptime(
+                                    vote_time_str.split(".")[0], fmt
+                                )
                                 if vote_time >= cutoff:
                                     recent_votes_count += 1
                                 break
@@ -313,14 +312,14 @@ async def admin_votes_page(request: Request):
                 "avg_rating": avg_rating,
                 "recent_votes_count": recent_votes_count,
                 "csrf_token": csrf_token,
-                "app_name": settings.APP_NAME
-            }
+                "app_name": settings.APP_NAME,
+            },
         )
     except Exception as e:
         logger.error(f"Votes page error: {e}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Failed to load votes page"
+            detail="Failed to load votes page",
         ) from e
 
 
@@ -336,22 +335,25 @@ async def export_votes_download(request: Request, format: str):
         result = admin_manager.export_votes(format)
 
         if not result.get("success"):
-            raise HTTPException(status_code=500, detail=result.get("message", "Export failed"))
+            raise HTTPException(
+                status_code=500, detail=result.get("message", "Export failed")
+            )
 
         content = result["content"]
         filename = f"votes_export_{datetime.now().strftime('%Y%m%d_%H%M%S')}.{format}"
 
         if format == "csv":
             from fastapi.responses import StreamingResponse
+
             return StreamingResponse(
                 io.StringIO(content),
                 media_type="text/csv",
-                headers={"Content-Disposition": f"attachment; filename={filename}"}
+                headers={"Content-Disposition": f"attachment; filename={filename}"},
             )
         else:  # json
             return JSONResponse(
                 content=json.loads(content),
-                headers={"Content-Disposition": f"attachment; filename={filename}"}
+                headers={"Content-Disposition": f"attachment; filename={filename}"},
             )
 
     except HTTPException:
@@ -369,21 +371,24 @@ async def clear_all_votes(request: Request):
 
         result = admin_manager.reset_all_votes()
 
-        logger.info(f"All votes cleared by admin: {admin_user.get('username', 'unknown')}")
+        logger.info(
+            f"All votes cleared by admin: {admin_user.get('username', 'unknown')}"
+        )
 
-        return JSONResponse({
-            "success": result.get("success", False),
-            "message": result.get("message", "Operation completed")
-        })
+        return JSONResponse(
+            {
+                "success": result.get("success", False),
+                "message": result.get("message", "Operation completed"),
+            }
+        )
 
     except HTTPException:
         raise
     except Exception as e:
         logger.error(f"Clear votes error: {e}")
-        return JSONResponse({
-            "success": False,
-            "message": "Failed to clear votes"
-        }, status_code=500)
+        return JSONResponse(
+            {"success": False, "message": "Failed to clear votes"}, status_code=500
+        )
 
 
 @admin_router.get("/votes/{vote_id}")
@@ -394,10 +399,10 @@ async def get_vote_details(request: Request, vote_id: str):
         admin_user = get_admin_user_or_redirect(request)
         if isinstance(admin_user, RedirectResponse):
             # For API calls, return JSON error instead of redirect
-            return JSONResponse({
-                "success": False,
-                "message": "Authentication required"
-            }, status_code=401)
+            return JSONResponse(
+                {"success": False, "message": "Authentication required"},
+                status_code=401,
+            )
 
         # Get all votes and find the specific one by ID
         votes = admin_manager.get_recent_activity(limit=1000)
@@ -410,24 +415,19 @@ async def get_vote_details(request: Request, vote_id: str):
                 break
 
         if vote:
-            return JSONResponse({
-                "success": True,
-                "vote": vote
-            })
+            return JSONResponse({"success": True, "vote": vote})
 
-        return JSONResponse({
-            "success": False,
-            "message": "Vote not found"
-        }, status_code=404)
+        return JSONResponse(
+            {"success": False, "message": "Vote not found"}, status_code=404
+        )
 
     except HTTPException:
         raise
     except Exception as e:
         logger.error(f"Get vote details error: {e}")
-        return JSONResponse({
-            "success": False,
-            "message": "Failed to get vote details"
-        }, status_code=500)
+        return JSONResponse(
+            {"success": False, "message": "Failed to get vote details"}, status_code=500
+        )
 
 
 @admin_router.delete("/votes/{vote_id}")
@@ -440,25 +440,28 @@ async def delete_vote(request: Request, vote_id: str):
         try:
             vote_id_int = int(vote_id)
         except ValueError:
-            return JSONResponse({
-                "success": False,
-                "message": "Invalid vote ID format"
-            }, status_code=400)
+            return JSONResponse(
+                {"success": False, "message": "Invalid vote ID format"}, status_code=400
+            )
 
         # Delete the vote using AdminManager
         result = admin_manager.delete_single_vote(vote_id_int)
 
         if result["success"]:
-            logger.info(f"Vote {vote_id} deleted by admin user {admin_user['username']}")
+            logger.info(
+                f"Vote {vote_id} deleted by admin user {admin_user['username']}"
+            )
             return JSONResponse(result)
         else:
-            return JSONResponse(result, status_code=404 if "not found" in result["message"].lower() else 500)
+            return JSONResponse(
+                result,
+                status_code=404 if "not found" in result["message"].lower() else 500,
+            )
 
     except HTTPException:
         raise
     except Exception as e:
         logger.error(f"Delete vote error: {e}")
-        return JSONResponse({
-            "success": False,
-            "message": "Failed to delete vote"
-        }, status_code=500)
+        return JSONResponse(
+            {"success": False, "message": "Failed to delete vote"}, status_code=500
+        )

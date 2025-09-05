@@ -86,7 +86,7 @@ def get_db_manager() -> DatabaseManager:
     if db_manager is None:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Database manager not initialized"
+            detail="Database manager not initialized",
         )
     return db_manager
 
@@ -96,7 +96,7 @@ app = FastAPI(
     title=settings.APP_NAME,
     version=settings.APP_VERSION,
     description="A logo voting platform using value voting methodology (-2 to +2 scale)",
-    lifespan=lifespan
+    lifespan=lifespan,
 )
 
 # Add CORS middleware
@@ -108,12 +108,14 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+
 # Add admin security middleware (will be initialized in lifespan)
 def get_admin_middleware():
     """Get admin middleware after initialization."""
     if admin_auth_manager is None:
         return None
     return AdminSecurityMiddleware(app, admin_auth_manager)
+
 
 # We'll add the middleware after initialization
 
@@ -144,8 +146,8 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
         content={
             "success": False,
             "message": "Données invalides",
-            "details": error_details
-        }
+            "details": error_details,
+        },
     )
 
 
@@ -157,8 +159,8 @@ async def database_exception_handler(request: Request, exc: DatabaseError):
         status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
         content={
             "success": False,
-            "message": "Erreur de base de données. Veuillez réessayer."
-        }
+            "message": "Erreur de base de données. Veuillez réessayer.",
+        },
     )
 
 
@@ -168,10 +170,7 @@ async def custom_validation_exception_handler(request: Request, exc: ValidationE
     logger.warning(f"Custom validation error for {request.url}: {exc}")
     return JSONResponse(
         status_code=status.HTTP_400_BAD_REQUEST,
-        content={
-            "success": False,
-            "message": str(exc)
-        }
+        content={"success": False, "message": str(exc)},
     )
 
 
@@ -181,13 +180,17 @@ async def home(request: Request):
     try:
         return templates.TemplateResponse(
             "index.html",
-            {"request": request, "app_name": settings.APP_NAME, "app_version": settings.APP_VERSION}
+            {
+                "request": request,
+                "app_name": settings.APP_NAME,
+                "app_version": settings.APP_VERSION,
+            },
         )
     except Exception as e:
         logger.error(f"Failed to serve home page: {e}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Failed to load voting page"
+            detail="Failed to load voting page",
         ) from e
 
 
@@ -197,13 +200,17 @@ async def results_page(request: Request):
     try:
         return templates.TemplateResponse(
             "results.html",
-            {"request": request, "app_name": settings.APP_NAME, "app_version": settings.APP_VERSION}
+            {
+                "request": request,
+                "app_name": settings.APP_NAME,
+                "app_version": settings.APP_VERSION,
+            },
         )
     except Exception as e:
         logger.error(f"Failed to serve results page: {e}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Failed to load results page"
+            detail="Failed to load results page",
         ) from e
 
 
@@ -216,8 +223,7 @@ async def get_logos_api() -> LogoListResponse:
         if not logo_files:
             logger.error("No logo files found")
             raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="Aucun logo trouvé"
+                status_code=status.HTTP_404_NOT_FOUND, detail="Aucun logo trouvé"
             )
 
         # Randomize order for each request
@@ -226,8 +232,7 @@ async def get_logos_api() -> LogoListResponse:
 
         logger.info(f"Returning {len(randomized_logos)} randomized logos")
         return LogoListResponse(
-            logos=randomized_logos,
-            total_count=len(randomized_logos)
+            logos=randomized_logos, total_count=len(randomized_logos)
         )
 
     except HTTPException:
@@ -236,14 +241,13 @@ async def get_logos_api() -> LogoListResponse:
         logger.error(f"Failed to get logos: {e}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Impossible de récupérer la liste des logos"
+            detail="Impossible de récupérer la liste des logos",
         ) from e
 
 
 @app.post("/api/vote", response_model=VoteResponse, tags=["API"])
 async def submit_vote(
-    vote: VoteSubmission,
-    db: DatabaseManager = Depends(get_db_manager)
+    vote: VoteSubmission, db: DatabaseManager = Depends(get_db_manager)
 ) -> VoteResponse:
     """Submit a complete vote with voter name and ratings."""
     try:
@@ -265,18 +269,15 @@ async def submit_vote(
             )
 
         # Save vote to database
-        vote_id = db.save_vote(vote.voter_first_name, vote.voter_last_name, vote.ratings)
-
-        full_name = f"{vote.voter_first_name} {vote.voter_last_name}"
-        logger.info(
-            f"Vote submitted successfully by '{full_name}' "
-            f"with ID {vote_id}"
+        vote_id = db.save_vote(
+            vote.voter_first_name, vote.voter_last_name, vote.ratings
         )
 
+        full_name = f"{vote.voter_first_name} {vote.voter_last_name}"
+        logger.info(f"Vote submitted successfully by '{full_name}' with ID {vote_id}")
+
         return VoteResponse(
-            success=True,
-            message="Vote enregistré avec succès!",
-            vote_id=vote_id
+            success=True, message="Vote enregistré avec succès!", vote_id=vote_id
         )
 
     except ValidationError as e:
@@ -287,14 +288,13 @@ async def submit_vote(
         logger.error(f"Unexpected error during vote submission: {e}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Erreur lors de l'enregistrement du vote"
+            detail="Erreur lors de l'enregistrement du vote",
         ) from e
 
 
 @app.get("/api/results", response_model=VoteResults, tags=["API"])
 async def get_results(
-    include_votes: bool = False,
-    db: DatabaseManager = Depends(get_db_manager)
+    include_votes: bool = False, db: DatabaseManager = Depends(get_db_manager)
 ) -> VoteResults:
     """Get aggregated voting results."""
     try:
@@ -302,8 +302,7 @@ async def get_results(
 
         # Create response model
         response = VoteResults(
-            summary=results_data["summary"],
-            total_voters=results_data["total_voters"]
+            summary=results_data["summary"], total_voters=results_data["total_voters"]
         )
 
         # Include individual votes if requested (admin feature)
@@ -319,7 +318,7 @@ async def get_results(
         logger.error(f"Failed to get results: {e}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Impossible de récupérer les résultats"
+            detail="Impossible de récupérer les résultats",
         ) from e
 
 
@@ -334,15 +333,11 @@ async def health_check(db: DatabaseManager = Depends(get_db_manager)) -> dict[st
             "status": "healthy" if db_healthy else "unhealthy",
             "database": "connected" if db_healthy else "disconnected",
             "logos_available": logo_count,
-            "version": settings.APP_VERSION
+            "version": settings.APP_VERSION,
         }
     except Exception as e:
         logger.error(f"Health check failed: {e}")
-        return {
-            "status": "unhealthy",
-            "error": str(e),
-            "version": settings.APP_VERSION
-        }
+        return {"status": "unhealthy", "error": str(e), "version": settings.APP_VERSION}
 
 
 @app.get("/api/stats", tags=["API"])
@@ -355,16 +350,13 @@ async def get_stats(db: DatabaseManager = Depends(get_db_manager)) -> dict[str, 
         return {
             "total_votes": vote_count,
             "total_logos": logo_count,
-            "voting_scale": {
-                "min": settings.MIN_RATING,
-                "max": settings.MAX_RATING
-            }
+            "voting_scale": {"min": settings.MIN_RATING, "max": settings.MAX_RATING},
         }
     except Exception as e:
         logger.error(f"Failed to get stats: {e}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Impossible de récupérer les statistiques"
+            detail="Impossible de récupérer les statistiques",
         ) from e
 
 
@@ -375,10 +367,9 @@ def main() -> None:
         host=settings.HOST,
         port=settings.PORT,
         reload=settings.DEBUG,
-        log_level="info" if not settings.DEBUG else "debug"
+        log_level="info" if not settings.DEBUG else "debug",
     )
 
 
 if __name__ == "__main__":
     main()
-

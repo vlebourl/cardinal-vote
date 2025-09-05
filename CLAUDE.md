@@ -57,6 +57,7 @@ toveco-voting/
 ### Workflow Steps
 
 #### 1. Creating Feature Branches
+
 ```bash
 # Always start from main
 git checkout main
@@ -64,11 +65,12 @@ git pull origin main
 
 # Create feature branch with descriptive name
 git checkout -b feature/add-vote-validation
-git checkout -b fix/admin-login-bug  
+git checkout -b fix/admin-login-bug
 git checkout -b docs/update-deployment-guide
 ```
 
 #### 2. Development Process
+
 ```bash
 # Make your changes
 # Test locally first
@@ -89,6 +91,7 @@ git push -u origin feature/add-vote-validation
 ```
 
 #### 3. Pull Request Creation
+
 - Use the PR template (automatically loaded)
 - Fill out all required sections
 - Link to related issues
@@ -96,20 +99,24 @@ git push -u origin feature/add-vote-validation
 - Assign reviewers and labels
 
 #### 4. CI/CD Validation
+
 All PRs must pass:
+
 - ✅ **Linting** (ruff)
-- ✅ **Type checking** (mypy)  
+- ✅ **Type checking** (mypy)
 - ✅ **Unit tests** (pytest)
 - ✅ **Security scan** (bandit, safety)
 - ✅ **Docker build test**
 - ✅ **Integration tests**
 
 #### 5. Code Review
+
 - At least 1 approval required
 - Address all review comments
 - Keep PR updated with main branch
 
 #### 6. Merge Process
+
 - Use "Squash and merge" (default)
 - Write clear merge commit message
 - Delete feature branch automatically
@@ -117,6 +124,7 @@ All PRs must pass:
 ### Branch Protection Rules
 
 The `main` branch has the following protections:
+
 - ❌ **No direct pushes allowed**
 - ✅ **Require PR with 1 approval**
 - ✅ **Require all CI checks to pass**
@@ -126,6 +134,7 @@ The `main` branch has the following protections:
 ## Development Commands
 
 ### Local Development
+
 ```bash
 # Install dependencies
 uv sync --dev
@@ -141,11 +150,12 @@ uv run pytest
 
 # Code quality checks
 uv run ruff check src/ tests/      # Linting
-uv run ruff format src/ tests/     # Formatting  
+uv run ruff format src/ tests/     # Formatting
 uv run mypy src/                   # Type checking
 ```
 
 ### Docker Development
+
 ```bash
 # Build and run with Docker Compose
 docker-compose up --build
@@ -158,6 +168,7 @@ docker-compose up app
 ## Testing Requirements
 
 ### Running Tests
+
 ```bash
 # Run all tests
 uv run pytest
@@ -171,6 +182,7 @@ uv run pytest -k "integration"
 ```
 
 ### Test Requirements for PRs
+
 - ✅ **All existing tests must pass**
 - ✅ **New features must have tests**
 - ✅ **Bug fixes must have regression tests**
@@ -179,11 +191,13 @@ uv run pytest -k "integration"
 ## Security Requirements
 
 ### Environment Variables
+
 All sensitive configuration MUST be via environment variables:
+
 ```bash
 # Required for application startup
 ADMIN_USERNAME=your-admin-username
-ADMIN_PASSWORD=your-secure-password  
+ADMIN_PASSWORD=your-secure-password
 SESSION_SECRET_KEY=your-session-secret
 
 # Optional configurations
@@ -194,6 +208,7 @@ DEBUG=false
 ```
 
 ### Security Validation
+
 - ❌ **No hardcoded secrets in code**
 - ✅ **All credentials via environment variables**
 - ✅ **Security scans must pass in CI**
@@ -202,6 +217,7 @@ DEBUG=false
 ## Release Process
 
 ### Creating Releases
+
 1. **Create release branch**: `git checkout -b release/v1.2.0`
 2. **Update version**: Update version in `pyproject.toml`
 3. **Create PR**: Follow normal PR process
@@ -210,7 +226,9 @@ DEBUG=false
 6. **GitHub Release**: Automatically triggers build and deployment package
 
 ### Automatic Release Pipeline
+
 When tags are pushed (`v*.*.*`):
+
 - ✅ **Multi-architecture Docker images built**
 - ✅ **Security scanning with Trivy**
 - ✅ **Deployment package created**
@@ -219,12 +237,14 @@ When tags are pushed (`v*.*.*`):
 ## Code Style and Standards
 
 ### Python Code Style
+
 - **Formatter**: ruff format
 - **Linter**: ruff (replaces flake8, isort, etc.)
 - **Type Checker**: mypy
 - **Line Length**: 88 characters (Black standard)
 
 ### Commit Message Format
+
 ```
 <type>: <description>
 
@@ -236,6 +256,7 @@ When tags are pushed (`v*.*.*`):
 Types: feat, fix, docs, style, refactor, test, chore
 
 Example:
+
 ```
 feat: add real-time vote results dashboard
 
@@ -250,12 +271,14 @@ Closes #123
 ## Documentation Requirements
 
 ### Code Documentation
+
 - ✅ **Docstrings for all public functions/classes**
 - ✅ **Type hints for all function signatures**
 - ✅ **README updates for new features**
 - ✅ **API documentation updates**
 
-### PR Documentation  
+### PR Documentation
+
 - ✅ **Clear description of changes**
 - ✅ **Testing instructions**
 - ✅ **Security considerations**
@@ -264,12 +287,14 @@ Closes #123
 ## Deployment
 
 ### Production Deployment
+
 - Use Docker images from GitHub Container Registry
 - Follow deployment documentation in `DEPLOYMENT.md`
 - Use environment-specific configuration files
 - Monitor applications logs and health checks
 
-### Development Deployment  
+### Development Deployment
+
 - Use docker-compose for local development
 - Mount source code volumes for hot reloading
 - Use separate database for development data
@@ -279,6 +304,7 @@ Closes #123
 When working on this repository, Claude Code should:
 
 ### Always Use Feature Branches
+
 ```bash
 # ❌ NEVER do this
 git checkout main
@@ -286,15 +312,16 @@ git checkout main
 git commit -m "fix something"
 git push origin main
 
-# ✅ ALWAYS do this  
+# ✅ ALWAYS do this
 git checkout -b fix/specific-issue-description
 # make changes
-git commit -m "descriptive commit message"  
+git commit -m "descriptive commit message"
 git push -u origin fix/specific-issue-description
 # Then create PR through GitHub
 ```
 
 ### Follow PR Process
+
 1. **Create feature branch** from latest main
 2. **Make focused changes** (single feature/fix per PR)
 3. **Write comprehensive tests**
@@ -305,6 +332,7 @@ git push -u origin fix/specific-issue-description
 8. **Squash merge** when approved
 
 ### Quality Gates
+
 - ✅ **All tests pass locally before pushing**
 - ✅ **Code formatted with ruff**
 - ✅ **No linting errors**
@@ -312,7 +340,9 @@ git push -u origin fix/specific-issue-description
 - ✅ **Security considerations documented**
 
 ### Emergency Procedures
+
 For critical security fixes only:
+
 1. Create hotfix branch from main
 2. Make minimal required changes
 3. Fast-track review process
@@ -323,7 +353,7 @@ For critical security fixes only:
 - **NEVER commit secrets or credentials**
 - **ALWAYS test Docker builds before pushing**
 - **KEEP feature branches small and focused**
-- **UPDATE tests for any behavioral changes**  
+- **UPDATE tests for any behavioral changes**
 - **WRITE clear commit messages and PR descriptions**
 - **FOLLOW the security validation checklist**
 

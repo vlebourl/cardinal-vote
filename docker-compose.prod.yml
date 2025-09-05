@@ -1,4 +1,4 @@
-version: '3.8'
+version: "3.8"
 
 # Production overrides for docker-compose.yml
 # Usage: docker-compose -f docker-compose.yml -f docker-compose.prod.yml up -d
@@ -7,7 +7,7 @@ services:
   toveco-voting:
     # Use pre-built image in production (build separately)
     image: toveco-voting:latest
-    
+
     # Production environment variables
     # These will use values from .env file, with fallbacks if not set
     environment:
@@ -25,30 +25,36 @@ services:
       - ADMIN_USERNAME=${ADMIN_USERNAME}
       - ADMIN_PASSWORD=${ADMIN_PASSWORD}
       - SESSION_SECRET_KEY=${SESSION_SECRET_KEY}
-    
+
     # Production resource limits
     deploy:
       resources:
         limits:
-          cpus: '1.0'
+          cpus: "1.0"
           memory: 512M
         reservations:
-          cpus: '0.25'
+          cpus: "0.25"
           memory: 128M
       restart_policy:
         condition: on-failure
         delay: 5s
         max_attempts: 3
         window: 120s
-    
+
     # Production healthcheck (more frequent)
     healthcheck:
-      test: ["CMD", "python", "-c", "import requests; requests.get('http://localhost:8000/api/health', timeout=3)"]
+      test:
+        [
+          "CMD",
+          "python",
+          "-c",
+          "import requests; requests.get('http://localhost:8000/api/health', timeout=3)",
+        ]
       interval: 15s
       timeout: 5s
       retries: 5
       start_period: 30s
-    
+
     # Production logging
     logging:
       driver: "json-file"
@@ -56,7 +62,7 @@ services:
         max-size: "50m"
         max-file: "10"
         compress: "true"
-    
+
     # Production labels for monitoring and routing
     labels:
       - "traefik.enable=true"
@@ -106,7 +112,7 @@ services:
     ports:
       - "80:80"
       - "443:443"
-      - "127.0.0.1:8080:8080"  # Dashboard only on localhost
+      - "127.0.0.1:8080:8080" # Dashboard only on localhost
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
       - traefik_letsencrypt:/letsencrypt
@@ -114,10 +120,10 @@ services:
     deploy:
       resources:
         limits:
-          cpus: '0.5'
+          cpus: "0.5"
           memory: 256M
         reservations:
-          cpus: '0.1'
+          cpus: "0.1"
           memory: 64M
     labels:
       # Dashboard
@@ -145,10 +151,10 @@ services:
     deploy:
       resources:
         limits:
-          cpus: '1.0'
+          cpus: "1.0"
           memory: 512M
         reservations:
-          cpus: '0.25'
+          cpus: "0.25"
           memory: 128M
     profiles:
       - postgres
@@ -163,10 +169,10 @@ services:
     deploy:
       resources:
         limits:
-          cpus: '0.5'
+          cpus: "0.5"
           memory: 256M
         reservations:
-          cpus: '0.1'
+          cpus: "0.1"
           memory: 32M
     profiles:
       - redis
@@ -175,10 +181,10 @@ services:
   prometheus:
     image: prom/prometheus:latest
     command:
-      - '--config.file=/etc/prometheus/prometheus.yml'
-      - '--storage.tsdb.path=/prometheus'
-      - '--web.console.libraries=/etc/prometheus/console_libraries'
-      - '--web.console.templates=/etc/prometheus/consoles'
+      - "--config.file=/etc/prometheus/prometheus.yml"
+      - "--storage.tsdb.path=/prometheus"
+      - "--web.console.libraries=/etc/prometheus/console_libraries"
+      - "--web.console.templates=/etc/prometheus/consoles"
     volumes:
       - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
       - prometheus_data:/prometheus
@@ -186,10 +192,10 @@ services:
     deploy:
       resources:
         limits:
-          cpus: '1.0'
+          cpus: "1.0"
           memory: 1G
         reservations:
-          cpus: '0.25'
+          cpus: "0.25"
           memory: 256M
     profiles:
       - monitoring
@@ -215,10 +221,10 @@ services:
     deploy:
       resources:
         limits:
-          cpus: '0.5'
+          cpus: "0.5"
           memory: 512M
         reservations:
-          cpus: '0.1'
+          cpus: "0.1"
           memory: 128M
     profiles:
       - monitoring
@@ -237,24 +243,24 @@ volumes:
     labels:
       - "backup.enable=true"
       - "backup.cron=0 2 * * *"
-  
+
   postgres_data:
     driver: local
     labels:
       - "backup.enable=true"
       - "backup.cron=0 3 * * *"
-  
+
   redis_data:
     driver: local
     labels:
       - "backup.enable=true"
       - "backup.cron=0 4 * * *"
-  
+
   prometheus_data:
     driver: local
     labels:
       - "backup.enable=false"
-  
+
   grafana_data:
     driver: local
     labels:

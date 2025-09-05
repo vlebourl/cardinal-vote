@@ -75,12 +75,16 @@ class TestDataGenerator:
         elif pattern == "positive_bias":
             # Bias toward positive ratings
             for logo in logos:
-                ratings[logo] = random.choices([-2, -1, 0, 1, 2], weights=[1, 2, 3, 6, 8])[0]
+                ratings[logo] = random.choices(
+                    [-2, -1, 0, 1, 2], weights=[1, 2, 3, 6, 8]
+                )[0]
 
         elif pattern == "negative_bias":
             # Bias toward negative ratings
             for logo in logos:
-                ratings[logo] = random.choices([-2, -1, 0, 1, 2], weights=[8, 6, 3, 2, 1])[0]
+                ratings[logo] = random.choices(
+                    [-2, -1, 0, 1, 2], weights=[8, 6, 3, 2, 1]
+                )[0]
 
         else:
             # Default to random
@@ -96,15 +100,19 @@ class TestDataGenerator:
         return {logo: random.randint(-2, 2) for logo in logos_to_rate}
 
     @staticmethod
-    def generate_vote_submission(voter_name: str = None, ratings: dict[str, int] = None) -> dict[str, Any]:
+    def generate_vote_submission(
+        voter_name: str = None, ratings: dict[str, int] = None
+    ) -> dict[str, Any]:
         """Generate a complete vote submission."""
         return {
             "voter_name": voter_name or TestDataGenerator.generate_voter_name(),
-            "ratings": ratings or TestDataGenerator.generate_random_ratings()
+            "ratings": ratings or TestDataGenerator.generate_random_ratings(),
         }
 
     @staticmethod
-    def generate_bulk_votes(count: int, pattern: str = "random") -> list[dict[str, Any]]:
+    def generate_bulk_votes(
+        count: int, pattern: str = "random"
+    ) -> list[dict[str, Any]]:
         """Generate multiple votes for bulk testing."""
         votes = []
 
@@ -116,7 +124,7 @@ class TestDataGenerator:
 
             vote = {
                 "voter_name": TestDataGenerator.generate_voter_name(i + 1, "BulkUser"),
-                "ratings": ratings
+                "ratings": ratings,
             }
             votes.append(vote)
 
@@ -127,34 +135,31 @@ class TestDataGenerator:
         """Generate edge case test data."""
         return [
             # Empty voter name
-            {
-                "voter_name": "",
-                "ratings": TestDataGenerator.generate_random_ratings()
-            },
+            {"voter_name": "", "ratings": TestDataGenerator.generate_random_ratings()},
             # Very long voter name
             {
                 "voter_name": "x" * 150,
-                "ratings": TestDataGenerator.generate_random_ratings()
+                "ratings": TestDataGenerator.generate_random_ratings(),
             },
             # Special characters in name
             {
                 "voter_name": "Test User with émojis 🎉 and 'quotes'",
-                "ratings": TestDataGenerator.generate_random_ratings()
+                "ratings": TestDataGenerator.generate_random_ratings(),
             },
             # Non-Latin characters
             {
                 "voter_name": "Тест Пользователь",
-                "ratings": TestDataGenerator.generate_random_ratings()
+                "ratings": TestDataGenerator.generate_random_ratings(),
             },
             # Chinese characters
             {
                 "voter_name": "测试用户",
-                "ratings": TestDataGenerator.generate_random_ratings()
+                "ratings": TestDataGenerator.generate_random_ratings(),
             },
             # Missing logo ratings
             {
                 "voter_name": "Incomplete User",
-                "ratings": TestDataGenerator.generate_incomplete_ratings(3)
+                "ratings": TestDataGenerator.generate_incomplete_ratings(3),
             },
             # Extra logo ratings
             {
@@ -162,19 +167,22 @@ class TestDataGenerator:
                 "ratings": {
                     **TestDataGenerator.generate_random_ratings(),
                     "invalid_logo.png": 1,
-                    "another_invalid.png": -1
-                }
+                    "another_invalid.png": -1,
+                },
             },
             # All neutral ratings
             {
                 "voter_name": "Neutral User",
-                "ratings": TestDataGenerator.generate_specific_ratings("neutral")
+                "ratings": TestDataGenerator.generate_specific_ratings("neutral"),
             },
             # All extreme ratings
             {
                 "voter_name": "Extreme User",
-                "ratings": {logo: random.choice([-2, 2]) for logo in TestDataGenerator.LOGO_FILES}
-            }
+                "ratings": {
+                    logo: random.choice([-2, 2])
+                    for logo in TestDataGenerator.LOGO_FILES
+                },
+            },
         ]
 
     @staticmethod
@@ -184,33 +192,30 @@ class TestDataGenerator:
             # Invalid rating values
             {
                 "voter_name": "Invalid Ratings User",
-                "ratings": {"toveco1.png": 5, "toveco2.png": -5}  # Out of range
+                "ratings": {"toveco1.png": 5, "toveco2.png": -5},  # Out of range
             },
             # Non-integer ratings
             {
                 "voter_name": "Float Ratings User",
-                "ratings": {"toveco1.png": 1.5, "toveco2.png": -1.7}
+                "ratings": {"toveco1.png": 1.5, "toveco2.png": -1.7},
             },
             # String ratings
             {
                 "voter_name": "String Ratings User",
-                "ratings": {"toveco1.png": "good", "toveco2.png": "bad"}
+                "ratings": {"toveco1.png": "good", "toveco2.png": "bad"},
             },
             # Invalid logo names
             {
                 "voter_name": "Invalid Logos User",
-                "ratings": {"not_a_logo.jpg": 1, "invalid.gif": -1}
+                "ratings": {"not_a_logo.jpg": 1, "invalid.gif": -1},
             },
             # Empty ratings
-            {
-                "voter_name": "Empty Ratings User",
-                "ratings": {}
-            },
+            {"voter_name": "Empty Ratings User", "ratings": {}},
             # None values
             {
                 "voter_name": "None Ratings User",
-                "ratings": {"toveco1.png": None, "toveco2.png": 1}
-            }
+                "ratings": {"toveco1.png": None, "toveco2.png": 1},
+            },
         ]
 
 
@@ -220,7 +225,7 @@ class MockDatabaseHelper:
     @staticmethod
     def create_temp_database() -> tuple[DatabaseManager, str]:
         """Create a temporary database for testing."""
-        temp_file = tempfile.NamedTemporaryFile(suffix='.db', delete=False)
+        temp_file = tempfile.NamedTemporaryFile(suffix=".db", delete=False)
         temp_db_path = temp_file.name
         temp_file.close()
 
@@ -246,7 +251,9 @@ class MockDatabaseHelper:
         return vote_ids
 
     @staticmethod
-    def create_populated_database(vote_count: int = 10, pattern: str = "random") -> tuple[DatabaseManager, str]:
+    def create_populated_database(
+        vote_count: int = 10, pattern: str = "random"
+    ) -> tuple[DatabaseManager, str]:
         """Create and populate a temporary database."""
         db_manager, db_path = MockDatabaseHelper.create_temp_database()
 
@@ -267,48 +274,83 @@ class TestScenarios:
             {
                 "voter_name": "Alice",
                 "ratings": {
-                    "toveco1.png": 2, "toveco2.png": 1, "toveco3.png": 0,
-                    "toveco4.png": -1, "toveco5.png": -2, "toveco6.png": 1,
-                    "toveco7.png": 0, "toveco8.png": 2, "toveco9.png": 1,
-                    "toveco10.png": -1, "toveco11.png": 0,
-                }
+                    "toveco1.png": 2,
+                    "toveco2.png": 1,
+                    "toveco3.png": 0,
+                    "toveco4.png": -1,
+                    "toveco5.png": -2,
+                    "toveco6.png": 1,
+                    "toveco7.png": 0,
+                    "toveco8.png": 2,
+                    "toveco9.png": 1,
+                    "toveco10.png": -1,
+                    "toveco11.png": 0,
+                },
             },
             {
                 "voter_name": "Bob",
                 "ratings": {
-                    "toveco1.png": 1, "toveco2.png": 2, "toveco3.png": -1,
-                    "toveco4.png": 0, "toveco5.png": 1, "toveco6.png": -2,
-                    "toveco7.png": 1, "toveco8.png": 0, "toveco9.png": 2,
-                    "toveco10.png": 1, "toveco11.png": -1,
-                }
+                    "toveco1.png": 1,
+                    "toveco2.png": 2,
+                    "toveco3.png": -1,
+                    "toveco4.png": 0,
+                    "toveco5.png": 1,
+                    "toveco6.png": -2,
+                    "toveco7.png": 1,
+                    "toveco8.png": 0,
+                    "toveco9.png": 2,
+                    "toveco10.png": 1,
+                    "toveco11.png": -1,
+                },
             },
             {
                 "voter_name": "Charlie",
                 "ratings": {
-                    "toveco1.png": 0, "toveco2.png": -1, "toveco3.png": 2,
-                    "toveco4.png": 1, "toveco5.png": 0, "toveco6.png": 2,
-                    "toveco7.png": -2, "toveco8.png": 1, "toveco9.png": 0,
-                    "toveco10.png": 2, "toveco11.png": 1,
-                }
+                    "toveco1.png": 0,
+                    "toveco2.png": -1,
+                    "toveco3.png": 2,
+                    "toveco4.png": 1,
+                    "toveco5.png": 0,
+                    "toveco6.png": 2,
+                    "toveco7.png": -2,
+                    "toveco8.png": 1,
+                    "toveco9.png": 0,
+                    "toveco10.png": 2,
+                    "toveco11.png": 1,
+                },
             },
             {
                 "voter_name": "Diana",
                 "ratings": {
-                    "toveco1.png": -2, "toveco2.png": 0, "toveco3.png": 1,
-                    "toveco4.png": 2, "toveco5.png": -1, "toveco6.png": 0,
-                    "toveco7.png": 1, "toveco8.png": -2, "toveco9.png": -1,
-                    "toveco10.png": 0, "toveco11.png": 2,
-                }
+                    "toveco1.png": -2,
+                    "toveco2.png": 0,
+                    "toveco3.png": 1,
+                    "toveco4.png": 2,
+                    "toveco5.png": -1,
+                    "toveco6.png": 0,
+                    "toveco7.png": 1,
+                    "toveco8.png": -2,
+                    "toveco9.png": -1,
+                    "toveco10.png": 0,
+                    "toveco11.png": 2,
+                },
             },
             {
                 "voter_name": "Eve",
                 "ratings": {
-                    "toveco1.png": 1, "toveco2.png": -2, "toveco3.png": 0,
-                    "toveco4.png": -1, "toveco5.png": 2, "toveco6.png": 1,
-                    "toveco7.png": 0, "toveco8.png": -1, "toveco9.png": 2,
-                    "toveco10.png": -2, "toveco11.png": 1,
-                }
-            }
+                    "toveco1.png": 1,
+                    "toveco2.png": -2,
+                    "toveco3.png": 0,
+                    "toveco4.png": -1,
+                    "toveco5.png": 2,
+                    "toveco6.png": 1,
+                    "toveco7.png": 0,
+                    "toveco8.png": -1,
+                    "toveco9.png": 2,
+                    "toveco10.png": -2,
+                    "toveco11.png": 1,
+                },
+            },
         ]
 
     @staticmethod
@@ -325,10 +367,7 @@ class TestScenarios:
                 else:  # Last 5 logos
                     ratings[logo] = random.choice([-2, -1])
 
-            votes.append({
-                "voter_name": f"Group1_User_{i+1}",
-                "ratings": ratings
-            })
+            votes.append({"voter_name": f"Group1_User_{i + 1}", "ratings": ratings})
 
         # Group 2: Opposite preferences
         for i in range(5):
@@ -339,10 +378,7 @@ class TestScenarios:
                 else:  # Last 5 logos
                     ratings[logo] = random.choice([1, 2])
 
-            votes.append({
-                "voter_name": f"Group2_User_{i+1}",
-                "ratings": ratings
-            })
+            votes.append({"voter_name": f"Group2_User_{i + 1}", "ratings": ratings})
 
         return votes
 
@@ -364,10 +400,7 @@ class TestScenarios:
                 if logo not in ratings:
                     ratings[logo] = random.choice([-1, 0, 1])
 
-            votes.append({
-                "voter_name": f"Unanimous_User_{i+1}",
-                "ratings": ratings
-            })
+            votes.append({"voter_name": f"Unanimous_User_{i + 1}", "ratings": ratings})
 
         return votes
 
@@ -383,13 +416,12 @@ class TestScenarios:
         ]
 
         for i, pattern in enumerate(patterns * 3):  # 6 votes total
-            ratings = dict.fromkeys(TestDataGenerator.LOGO_FILES, 0)  # Neutral for others
+            ratings = dict.fromkeys(
+                TestDataGenerator.LOGO_FILES, 0
+            )  # Neutral for others
             ratings.update(pattern)
 
-            votes.append({
-                "voter_name": f"Tie_User_{i+1}",
-                "ratings": ratings
-            })
+            votes.append({"voter_name": f"Tie_User_{i + 1}", "ratings": ratings})
 
         return votes
 
@@ -405,10 +437,9 @@ class TestScenarios:
             pattern = patterns[i % len(patterns)]
             ratings = TestDataGenerator.generate_specific_ratings(pattern)
 
-            votes.append({
-                "voter_name": f"LargeScale_User_{i+1:03d}",
-                "ratings": ratings
-            })
+            votes.append(
+                {"voter_name": f"LargeScale_User_{i + 1:03d}", "ratings": ratings}
+            )
 
         return votes
 
@@ -447,7 +478,9 @@ def complete_vote_data():
     """Provide complete valid vote data with all logos."""
     return {
         "voter_name": "Complete Test User",
-        "ratings": {logo: random.randint(-2, 2) for logo in TestDataGenerator.LOGO_FILES}
+        "ratings": {
+            logo: random.randint(-2, 2) for logo in TestDataGenerator.LOGO_FILES
+        },
     }
 
 
@@ -516,7 +549,8 @@ def mock_templates_directory(tmp_path):
 
     # Create mock template files
     index_html = templates_dir / "index.html"
-    index_html.write_text("""
+    index_html.write_text(
+        """
     <!DOCTYPE html>
     <html>
     <head><title>ToVéCo Mock</title></head>
@@ -525,10 +559,12 @@ def mock_templates_directory(tmp_path):
         <div id="voting-screen" style="display: none;">Voting</div>
     </body>
     </html>
-    """)
+    """
+    )
 
     results_html = templates_dir / "results.html"
-    results_html.write_text("""
+    results_html.write_text(
+        """
     <!DOCTYPE html>
     <html>
     <head><title>ToVéCo Results Mock</title></head>
@@ -536,7 +572,8 @@ def mock_templates_directory(tmp_path):
         <div id="results-content">Results</div>
     </body>
     </html>
-    """)
+    """
+    )
 
     return templates_dir
 
@@ -626,7 +663,7 @@ def calculate_expected_results(votes: list[dict[str, Any]]) -> dict[str, Any]:
         summary[logo] = {
             "average": round(average, 2),
             "total_votes": logo_counts[logo],
-            "total_score": logo_totals[logo]
+            "total_score": logo_totals[logo],
         }
 
     # Add rankings
@@ -634,10 +671,7 @@ def calculate_expected_results(votes: list[dict[str, Any]]) -> dict[str, Any]:
     for rank, (_logo, stats) in enumerate(sorted_logos, 1):
         stats["ranking"] = rank
 
-    return {
-        "summary": dict(sorted_logos),
-        "total_voters": len(votes)
-    }
+    return {"summary": dict(sorted_logos), "total_voters": len(votes)}
 
 
 if __name__ == "__main__":
@@ -653,7 +687,7 @@ if __name__ == "__main__":
     print("\n2. Edge Case Examples:")
     edge_cases = TestDataGenerator.generate_edge_case_data()
     for i, case in enumerate(edge_cases[:3]):
-        print(f"   Case {i+1}: {case['voter_name']}")
+        print(f"   Case {i + 1}: {case['voter_name']}")
 
     print("\n3. Small Voting Session Results:")
     small_session = TestScenarios.small_voting_session()
@@ -662,7 +696,8 @@ if __name__ == "__main__":
     print(f"   Logos evaluated: {len(expected['summary'])}")
 
     # Top 3 logos
-    top_logos = sorted(expected['summary'].items(),
-                      key=lambda x: x[1]['average'], reverse=True)[:3]
+    top_logos = sorted(
+        expected["summary"].items(), key=lambda x: x[1]["average"], reverse=True
+    )[:3]
     for rank, (logo, stats) in enumerate(top_logos, 1):
         print(f"   #{rank}: {logo} (avg: {stats['average']})")

@@ -1,7 +1,6 @@
 """Tests for the main application module."""
 
 from fastapi.testclient import TestClient
-
 from toveco_voting.main import app
 
 client = TestClient(app)

@@ -36,7 +36,7 @@ class WorkflowValidator:
         self.workflow_state[step_name] = {
             "passed": condition,
             "message": message,
-            "timestamp": time.time()
+            "timestamp": time.time(),
         }
 
         if not condition:
@@ -50,8 +50,10 @@ class WorkflowValidator:
         return {
             "total_steps": total_steps,
             "passed_steps": passed_steps,
-            "success_rate": (passed_steps / total_steps * 100) if total_steps > 0 else 0,
-            "steps": self.workflow_state
+            "success_rate": (passed_steps / total_steps * 100)
+            if total_steps > 0
+            else 0,
+            "steps": self.workflow_state,
         }
 
 
@@ -79,7 +81,7 @@ class TestCompleteVotingWorkflow:
         validator.validate_step(
             "homepage_access",
             response.status_code == 200,
-            f"Homepage returned status {response.status_code}"
+            f"Homepage returned status {response.status_code}",
         )
 
         # Step 2: Get available logos
@@ -91,27 +93,27 @@ class TestCompleteVotingWorkflow:
             validator.validate_step(
                 "logos_retrieval",
                 len(logos) == 11,
-                f"Expected 11 logos, got {len(logos)}"
+                f"Expected 11 logos, got {len(logos)}",
             )
         else:
             # Skip if logos not available in test environment
             validator.validate_step(
                 "logos_retrieval",
                 True,
-                "Skipped - logos not available in test environment"
+                "Skipped - logos not available in test environment",
             )
             logos = [f"toveco{i}.png" for i in range(1, 12)]
 
         # Step 3: Prepare vote data
         vote_data = {
             "voter_name": "E2E Test User",
-            "ratings": {logo: (hash(logo) % 5) - 2 for logo in logos}
+            "ratings": {logo: (hash(logo) % 5) - 2 for logo in logos},
         }
 
         validator.validate_step(
             "vote_preparation",
             len(vote_data["ratings"]) == 11,
-            f"Vote data prepared for {len(vote_data['ratings'])} logos"
+            f"Vote data prepared for {len(vote_data['ratings'])} logos",
         )
 
         # Step 4: Submit vote
@@ -122,21 +124,21 @@ class TestCompleteVotingWorkflow:
             validator.validate_step(
                 "vote_submission",
                 vote_response.get("success") is True,
-                f"Vote submission response: {vote_response.get('message', 'No message')}"
+                f"Vote submission response: {vote_response.get('message', 'No message')}",
             )
 
             vote_id = vote_response.get("vote_id")
             validator.validate_step(
                 "vote_id_received",
                 vote_id is not None and vote_id > 0,
-                f"Received vote ID: {vote_id}"
+                f"Received vote ID: {vote_id}",
             )
         else:
             # Handle case where vote submission fails in test environment
             validator.validate_step(
                 "vote_submission",
                 response.status_code in [400, 422],
-                f"Vote submission failed as expected in test env: {response.status_code}"
+                f"Vote submission failed as expected in test env: {response.status_code}",
             )
 
         # Step 5: Verify results can be retrieved
@@ -144,7 +146,7 @@ class TestCompleteVotingWorkflow:
         validator.validate_step(
             "results_retrieval",
             response.status_code == 200,
-            f"Results retrieval status: {response.status_code}"
+            f"Results retrieval status: {response.status_code}",
         )
 
         if response.status_code == 200:
@@ -152,7 +154,7 @@ class TestCompleteVotingWorkflow:
             validator.validate_step(
                 "results_structure",
                 "summary" in results_data and "total_voters" in results_data,
-                "Results have expected structure"
+                "Results have expected structure",
             )
 
         # Step 6: Access results page
@@ -160,7 +162,7 @@ class TestCompleteVotingWorkflow:
         validator.validate_step(
             "results_page_access",
             response.status_code == 200,
-            f"Results page status: {response.status_code}"
+            f"Results page status: {response.status_code}",
         )
 
         # Workflow summary
@@ -169,7 +171,9 @@ class TestCompleteVotingWorkflow:
         print(f"  Steps passed: {summary['passed_steps']}/{summary['total_steps']}")
         print(f"  Success rate: {summary['success_rate']:.1f}%")
 
-        assert summary["success_rate"] >= 80, f"Workflow success rate too low: {summary['success_rate']:.1f}%"
+        assert (
+            summary["success_rate"] >= 80
+        ), f"Workflow success rate too low: {summary['success_rate']:.1f}%"
 
     def test_multiple_users_workflow(self, workflow_validator):
         """Test workflow with multiple users voting."""
@@ -182,7 +186,7 @@ class TestCompleteVotingWorkflow:
         validator.validate_step(
             "test_data_preparation",
             len(voting_session) == 5,
-            f"Prepared {len(voting_session)} test votes"
+            f"Prepared {len(voting_session)} test votes",
         )
 
         successful_votes = 0
@@ -192,7 +196,7 @@ class TestCompleteVotingWorkflow:
         for i, vote_data in enumerate(voting_session):
             response = validator.client.post("/api/vote", json=vote_data)
 
-            step_name = f"vote_submission_user_{i+1}"
+            step_name = f"vote_submission_user_{i + 1}"
 
             if response.status_code == 200:
                 vote_response = response.json()
@@ -203,27 +207,27 @@ class TestCompleteVotingWorkflow:
                     validator.validate_step(
                         step_name,
                         True,
-                        f"User {vote_data['voter_name']} vote successful"
+                        f"User {vote_data['voter_name']} vote successful",
                     )
                 else:
                     validator.validate_step(
                         step_name,
                         False,
-                        f"Vote failed for {vote_data['voter_name']}: {vote_response.get('message')}"
+                        f"Vote failed for {vote_data['voter_name']}: {vote_response.get('message')}",
                     )
             else:
                 # Accept certain failures in test environment
                 validator.validate_step(
                     step_name,
                     response.status_code in [400, 422],
-                    f"Vote submission failed as expected: {response.status_code}"
+                    f"Vote submission failed as expected: {response.status_code}",
                 )
 
         # Validate that at least some votes succeeded
         validator.validate_step(
             "multiple_votes_success",
             successful_votes > 0,
-            f"{successful_votes} out of {len(voting_session)} votes succeeded"
+            f"{successful_votes} out of {len(voting_session)} votes succeeded",
         )
 
         # Get and validate results
@@ -234,7 +238,7 @@ class TestCompleteVotingWorkflow:
             validator.validate_step(
                 "results_after_multiple_votes",
                 results_data.get("total_voters") == successful_votes,
-                f"Results show {results_data.get('total_voters')} voters (expected {successful_votes})"
+                f"Results show {results_data.get('total_voters')} voters (expected {successful_votes})",
             )
 
             # Validate results structure
@@ -242,7 +246,7 @@ class TestCompleteVotingWorkflow:
             validator.validate_step(
                 "results_summary_structure",
                 len(summary) > 0,
-                f"Results summary contains {len(summary)} logos"
+                f"Results summary contains {len(summary)} logos",
             )
 
             # Validate ranking logic
@@ -253,7 +257,7 @@ class TestCompleteVotingWorkflow:
                 validator.validate_step(
                     "ranking_logic",
                     unique_rankings == len(rankings),  # All rankings should be unique
-                    f"Rankings are properly assigned: {sorted(rankings)}"
+                    f"Rankings are properly assigned: {sorted(rankings)}",
                 )
 
         # Workflow summary
@@ -263,7 +267,9 @@ class TestCompleteVotingWorkflow:
         print(f"  Success rate: {summary['success_rate']:.1f}%")
         print(f"  Successful votes: {successful_votes}/{len(voting_session)}")
 
-        assert summary["success_rate"] >= 70, f"Multi-user workflow success rate too low: {summary['success_rate']:.1f}%"
+        assert (
+            summary["success_rate"] >= 70
+        ), f"Multi-user workflow success rate too low: {summary['success_rate']:.1f}%"
 
     def test_edge_case_workflow(self, workflow_validator):
         """Test workflow with edge cases and error conditions."""
@@ -271,66 +277,74 @@ class TestCompleteVotingWorkflow:
         validator.reset_workflow()
 
         # Test 1: Empty voter name
-        response = validator.client.post("/api/vote", json={
-            "voter_name": "",
-            "ratings": {"toveco1.png": 1}
-        })
+        response = validator.client.post(
+            "/api/vote", json={"voter_name": "", "ratings": {"toveco1.png": 1}}
+        )
 
         validator.validate_step(
             "empty_name_handling",
             response.status_code == 422,
-            f"Empty name properly rejected: {response.status_code}"
+            f"Empty name properly rejected: {response.status_code}",
         )
 
         # Test 2: Invalid ratings
-        response = validator.client.post("/api/vote", json={
-            "voter_name": "Edge Case User",
-            "ratings": {"toveco1.png": 5}  # Out of range
-        })
+        response = validator.client.post(
+            "/api/vote",
+            json={
+                "voter_name": "Edge Case User",
+                "ratings": {"toveco1.png": 5},  # Out of range
+            },
+        )
 
         validator.validate_step(
             "invalid_rating_handling",
             response.status_code == 422,
-            f"Invalid rating properly rejected: {response.status_code}"
+            f"Invalid rating properly rejected: {response.status_code}",
         )
 
         # Test 3: Missing logos
-        response = validator.client.post("/api/vote", json={
-            "voter_name": "Incomplete User",
-            "ratings": {"toveco1.png": 1}  # Missing other logos
-        })
+        response = validator.client.post(
+            "/api/vote",
+            json={
+                "voter_name": "Incomplete User",
+                "ratings": {"toveco1.png": 1},  # Missing other logos
+            },
+        )
 
         validator.validate_step(
             "incomplete_vote_handling",
             response.status_code == 400,  # ValidationError
-            f"Incomplete vote properly rejected: {response.status_code}"
+            f"Incomplete vote properly rejected: {response.status_code}",
         )
 
         # Test 4: Extra logos
         complete_ratings = {f"toveco{i}.png": 1 for i in range(1, 12)}
         complete_ratings["invalid_logo.png"] = 1
 
-        response = validator.client.post("/api/vote", json={
-            "voter_name": "Extra Logos User",
-            "ratings": complete_ratings
-        })
+        response = validator.client.post(
+            "/api/vote",
+            json={"voter_name": "Extra Logos User", "ratings": complete_ratings},
+        )
 
         validator.validate_step(
             "extra_logo_handling",
             response.status_code == 400,  # ValidationError
-            f"Extra logos properly rejected: {response.status_code}"
+            f"Extra logos properly rejected: {response.status_code}",
         )
 
         # Test 5: Very long name
-        response = validator.client.post("/api/vote", json={
-            "voter_name": "x" * 150,
-            "ratings": {f"toveco{i}.png": 1 for i in range(1, 12)}
-        })
+        response = validator.client.post(
+            "/api/vote",
+            json={
+                "voter_name": "x" * 150,
+                "ratings": {f"toveco{i}.png": 1 for i in range(1, 12)},
+            },
+        )
 
         validator.validate_step(
             "long_name_handling",
             response.status_code == 422,
-            f"Long name properly rejected: {response.status_code}"
+            f"Long name properly rejected: {response.status_code}",
         )
 
         # Workflow summary
@@ -339,7 +353,9 @@ class TestCompleteVotingWorkflow:
         print(f"  Steps passed: {summary['passed_steps']}/{summary['total_steps']}")
         print(f"  Success rate: {summary['success_rate']:.1f}%")
 
-        assert summary["success_rate"] >= 90, f"Edge case handling success rate too low: {summary['success_rate']:.1f}%"
+        assert (
+            summary["success_rate"] >= 90
+        ), f"Edge case handling success rate too low: {summary['success_rate']:.1f}%"
 
 
 class TestDataConsistency:
@@ -368,7 +384,7 @@ class TestDataConsistency:
                 "toveco9.png": -1,
                 "toveco10.png": 1,
                 "toveco11.png": 0,
-            }
+            },
         }
 
         # Submit vote
@@ -395,7 +411,9 @@ class TestDataConsistency:
         result_logos = set(results_data["summary"].keys())
 
         # Our logos should be a subset of result logos
-        assert our_logos.issubset(result_logos), f"Missing logos in results: {our_logos - result_logos}"
+        assert our_logos.issubset(
+            result_logos
+        ), f"Missing logos in results: {our_logos - result_logos}"
 
         # Verify statistics make sense
         for logo, _rating in test_vote["ratings"].items():
@@ -413,16 +431,16 @@ class TestDataConsistency:
         test_votes = [
             {
                 "voter_name": "Math User 1",
-                "ratings": {"toveco1.png": 2, "toveco2.png": -1}
+                "ratings": {"toveco1.png": 2, "toveco2.png": -1},
             },
             {
                 "voter_name": "Math User 2",
-                "ratings": {"toveco1.png": 1, "toveco2.png": 0}
+                "ratings": {"toveco1.png": 1, "toveco2.png": 0},
             },
             {
                 "voter_name": "Math User 3",
-                "ratings": {"toveco1.png": -1, "toveco2.png": 1}
-            }
+                "ratings": {"toveco1.png": -1, "toveco2.png": 1},
+            },
         ]
 
         successful_submissions = 0
@@ -448,11 +466,12 @@ class TestDataConsistency:
             # toveco1: (2 + 1 + (-1)) / 3 = 2/3 ≈ 0.67
             if "toveco1.png" in results_data["summary"]:
                 logo1_stats = results_data["summary"]["toveco1.png"]
-                expected_avg = 2/3
+                expected_avg = 2 / 3
                 actual_avg = logo1_stats["average"]
 
-                assert abs(actual_avg - expected_avg) < 0.01, \
-                    f"toveco1 average wrong: expected {expected_avg:.2f}, got {actual_avg}"
+                assert (
+                    abs(actual_avg - expected_avg) < 0.01
+                ), f"toveco1 average wrong: expected {expected_avg:.2f}, got {actual_avg}"
 
             # toveco2: (-1 + 0 + 1) / 3 = 0
             if "toveco2.png" in results_data["summary"]:
@@ -460,8 +479,9 @@ class TestDataConsistency:
                 expected_avg = 0.0
                 actual_avg = logo2_stats["average"]
 
-                assert abs(actual_avg - expected_avg) < 0.01, \
-                    f"toveco2 average wrong: expected {expected_avg:.2f}, got {actual_avg}"
+                assert (
+                    abs(actual_avg - expected_avg) < 0.01
+                ), f"toveco2 average wrong: expected {expected_avg:.2f}, got {actual_avg}"
 
 
 class TestSystemIntegration:
@@ -481,7 +501,7 @@ class TestSystemIntegration:
             ("/api/logos", "GET"),
             ("/api/stats", "GET"),
             ("/api/results", "GET"),
-            ("/api/vote", "POST")
+            ("/api/vote", "POST"),
         ]
 
         for endpoint, method in required_endpoints:
@@ -491,12 +511,14 @@ class TestSystemIntegration:
                 # Use minimal valid data for POST test
                 test_data = {
                     "voter_name": "API Test",
-                    "ratings": {f"toveco{i}.png": 0 for i in range(1, 12)}
+                    "ratings": {f"toveco{i}.png": 0 for i in range(1, 12)},
                 }
                 response = client.post(endpoint, json=test_data)
 
             # API should respond (may not be 200 in all test environments)
-            assert response.status_code < 500, f"Server error on {method} {endpoint}: {response.status_code}"
+            assert (
+                response.status_code < 500
+            ), f"Server error on {method} {endpoint}: {response.status_code}"
 
             # Content type should be JSON for API endpoints
             if response.status_code == 200:
@@ -506,7 +528,10 @@ class TestSystemIntegration:
         """Test that static files are properly served."""
         # Test JavaScript file
         response = client.get("/static/app.js")
-        assert response.status_code in [200, 404], f"Unexpected status for app.js: {response.status_code}"
+        assert response.status_code in [
+            200,
+            404,
+        ], f"Unexpected status for app.js: {response.status_code}"
 
         # Test logo files (if available)
         response = client.get("/logos/toveco1.png")
@@ -543,7 +568,7 @@ class TestBusinessLogicValidation:
         for rating in valid_ratings:
             vote_data = {
                 "voter_name": f"Valid Rating Test {rating}",
-                "ratings": {f"toveco{i}.png": rating for i in range(1, 12)}
+                "ratings": {f"toveco{i}.png": rating for i in range(1, 12)},
             }
 
             response = client.post("/api/vote", json=vote_data)
@@ -553,8 +578,9 @@ class TestBusinessLogicValidation:
                 # If it fails validation, check it's not due to rating values
                 error_data = response.json()
                 error_message = str(error_data).lower()
-                assert "rating" not in error_message or "range" not in error_message, \
-                    f"Valid rating {rating} was rejected"
+                assert (
+                    "rating" not in error_message or "range" not in error_message
+                ), f"Valid rating {rating} was rejected"
 
         # Test invalid ratings
         invalid_ratings = [-3, 3, 5, -10]
@@ -562,7 +588,7 @@ class TestBusinessLogicValidation:
         for rating in invalid_ratings:
             vote_data = {
                 "voter_name": f"Invalid Rating Test {rating}",
-                "ratings": {"toveco1.png": rating}
+                "ratings": {"toveco1.png": rating},
             }
 
             response = client.post("/api/vote", json=vote_data)
@@ -573,7 +599,7 @@ class TestBusinessLogicValidation:
         # Test incomplete vote (missing logos)
         incomplete_vote = {
             "voter_name": "Incomplete Vote Test",
-            "ratings": {"toveco1.png": 1}  # Missing other 10 logos
+            "ratings": {"toveco1.png": 1},  # Missing other 10 logos
         }
 
         response = client.post("/api/vote", json=incomplete_vote)
@@ -584,8 +610,8 @@ class TestBusinessLogicValidation:
             "voter_name": "Extra Vote Test",
             "ratings": {
                 **{f"toveco{i}.png": 1 for i in range(1, 12)},
-                "extra_logo.png": 1
-            }
+                "extra_logo.png": 1,
+            },
         }
 
         response = client.post("/api/vote", json=extra_vote)
@@ -598,13 +624,13 @@ class TestBusinessLogicValidation:
             {
                 "voter_name": "Ranking Test User",
                 "ratings": {
-                    "toveco1.png": 2,   # Should rank highest
-                    "toveco2.png": 1,   # Should rank second
-                    "toveco3.png": 0,   # Should rank third
+                    "toveco1.png": 2,  # Should rank highest
+                    "toveco2.png": 1,  # Should rank second
+                    "toveco3.png": 0,  # Should rank third
                     "toveco4.png": -1,  # Should rank fourth
                     "toveco5.png": -2,  # Should rank lowest among these
-                    **{f"toveco{i}.png": 0 for i in range(6, 12)}  # Neutral for others
-                }
+                    **{f"toveco{i}.png": 0 for i in range(6, 12)},  # Neutral for others
+                },
             }
         ]
 
@@ -628,7 +654,13 @@ class TestBusinessLogicValidation:
 
         if len(summary) >= 5:
             # Check that logos with higher ratings have better rankings
-            test_logos = ["toveco1.png", "toveco2.png", "toveco3.png", "toveco4.png", "toveco5.png"]
+            test_logos = [
+                "toveco1.png",
+                "toveco2.png",
+                "toveco3.png",
+                "toveco4.png",
+                "toveco5.png",
+            ]
 
             rankings = {}
             averages = {}
@@ -640,12 +672,15 @@ class TestBusinessLogicValidation:
 
             # Verify ranking order matches average order
             if len(rankings) >= 2:
-                sorted_by_avg = sorted(rankings.keys(), key=lambda x: averages[x], reverse=True)
+                sorted_by_avg = sorted(
+                    rankings.keys(), key=lambda x: averages[x], reverse=True
+                )
                 sorted_by_rank = sorted(rankings.keys(), key=lambda x: rankings[x])
 
                 # The order should match (higher average = better ranking = lower ranking number)
-                assert sorted_by_avg == sorted_by_rank, \
-                    f"Ranking order doesn't match average order: {sorted_by_avg} vs {sorted_by_rank}"
+                assert (
+                    sorted_by_avg == sorted_by_rank
+                ), f"Ranking order doesn't match average order: {sorted_by_avg} vs {sorted_by_rank}"
 
 
 # Integration test runner

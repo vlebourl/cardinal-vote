@@ -25,7 +25,7 @@ class TestComprehensiveAPI:
     @pytest.fixture(scope="function")
     def temp_db(self):
         """Create a temporary database for testing."""
-        with tempfile.NamedTemporaryFile(suffix='.db', delete=False) as f:
+        with tempfile.NamedTemporaryFile(suffix=".db", delete=False) as f:
             temp_db_path = f.name
 
         try:
@@ -54,7 +54,7 @@ class TestComprehensiveAPI:
                 "toveco9.png": -1,
                 "toveco10.png": 1,
                 "toveco11.png": 0,
-            }
+            },
         }
 
     @pytest.fixture
@@ -64,30 +64,51 @@ class TestComprehensiveAPI:
             {
                 "voter_name": "Alice",
                 "ratings": {
-                    "toveco1.png": 2, "toveco2.png": 1, "toveco3.png": 0,
-                    "toveco4.png": -1, "toveco5.png": -2, "toveco6.png": 1,
-                    "toveco7.png": 0, "toveco8.png": 2, "toveco9.png": 1,
-                    "toveco10.png": -1, "toveco11.png": 0,
-                }
+                    "toveco1.png": 2,
+                    "toveco2.png": 1,
+                    "toveco3.png": 0,
+                    "toveco4.png": -1,
+                    "toveco5.png": -2,
+                    "toveco6.png": 1,
+                    "toveco7.png": 0,
+                    "toveco8.png": 2,
+                    "toveco9.png": 1,
+                    "toveco10.png": -1,
+                    "toveco11.png": 0,
+                },
             },
             {
                 "voter_name": "Bob",
                 "ratings": {
-                    "toveco1.png": 1, "toveco2.png": 2, "toveco3.png": -1,
-                    "toveco4.png": 0, "toveco5.png": 1, "toveco6.png": -2,
-                    "toveco7.png": 1, "toveco8.png": 0, "toveco9.png": 2,
-                    "toveco10.png": 1, "toveco11.png": -1,
-                }
+                    "toveco1.png": 1,
+                    "toveco2.png": 2,
+                    "toveco3.png": -1,
+                    "toveco4.png": 0,
+                    "toveco5.png": 1,
+                    "toveco6.png": -2,
+                    "toveco7.png": 1,
+                    "toveco8.png": 0,
+                    "toveco9.png": 2,
+                    "toveco10.png": 1,
+                    "toveco11.png": -1,
+                },
             },
             {
                 "voter_name": "Charlie",
                 "ratings": {
-                    "toveco1.png": 0, "toveco2.png": -1, "toveco3.png": 2,
-                    "toveco4.png": 1, "toveco5.png": 0, "toveco6.png": 2,
-                    "toveco7.png": -2, "toveco8.png": 1, "toveco9.png": 0,
-                    "toveco10.png": 2, "toveco11.png": 1,
-                }
-            }
+                    "toveco1.png": 0,
+                    "toveco2.png": -1,
+                    "toveco3.png": 2,
+                    "toveco4.png": 1,
+                    "toveco5.png": 0,
+                    "toveco6.png": 2,
+                    "toveco7.png": -2,
+                    "toveco8.png": 1,
+                    "toveco9.png": 0,
+                    "toveco10.png": 2,
+                    "toveco11.png": 1,
+                },
+            },
         ]
 
     # ============ HEALTH CHECK TESTS ============
@@ -184,8 +205,9 @@ class TestComprehensiveAPI:
         for logo in data["logos"]:
             assert logo.startswith("toveco"), f"Logo {logo} doesn't start with 'toveco'"
             assert logo.endswith(".png"), f"Logo {logo} doesn't end with '.png'"
-            assert logo.replace("toveco", "").replace(".png", "").isdigit(), \
-                f"Logo {logo} doesn't have numeric identifier"
+            assert (
+                logo.replace("toveco", "").replace(".png", "").isdigit()
+            ), f"Logo {logo} doesn't have numeric identifier"
 
     def test_get_logos_randomization(self, client):
         """Test logos are returned in different orders (randomized)."""
@@ -427,7 +449,7 @@ class TestComprehensiveAPI:
         response = client.post(
             "/api/vote",
             data="invalid json",
-            headers={"Content-Type": "application/json"}
+            headers={"Content-Type": "application/json"},
         )
         assert response.status_code == 422
 
@@ -441,10 +463,16 @@ class TestComprehensiveAPI:
         """Test handling of oversized requests."""
         huge_data = {
             "voter_name": "Test",
-            "ratings": {f"toveco{i}.png": 1 for i in range(1, 1000)}  # Way too many logos
+            "ratings": {
+                f"toveco{i}.png": 1 for i in range(1, 1000)
+            },  # Way too many logos
         }
         response = client.post("/api/vote", json=huge_data)
-        assert response.status_code in [400, 422, 413]  # Bad request or payload too large
+        assert response.status_code in [
+            400,
+            422,
+            413,
+        ]  # Bad request or payload too large
 
     def test_sql_injection_attempt(self, client, complete_vote_data):
         """Test protection against SQL injection in voter names."""
@@ -475,8 +503,10 @@ class TestComprehensiveAPI:
 
         # Submit votes concurrently
         with concurrent.futures.ThreadPoolExecutor(max_workers=3) as executor:
-            futures = [executor.submit(submit_vote, vote_data)
-                      for vote_data in multiple_votes_data]
+            futures = [
+                executor.submit(submit_vote, vote_data)
+                for vote_data in multiple_votes_data
+            ]
             responses = [future.result() for future in futures]
 
         # Check that all requests were handled
@@ -516,7 +546,7 @@ class TestDatabaseIntegrity:
     @pytest.fixture
     def temp_db(self):
         """Create a temporary database for testing."""
-        with tempfile.NamedTemporaryFile(suffix='.db', delete=False) as f:
+        with tempfile.NamedTemporaryFile(suffix=".db", delete=False) as f:
             temp_db_path = f.name
 
         try:
@@ -554,7 +584,7 @@ class TestDatabaseIntegrity:
         votes_data = [
             ("Alice", {"toveco1.png": 2, "toveco2.png": 1}),
             ("Bob", {"toveco1.png": -1, "toveco2.png": 0}),
-            ("Charlie", {"toveco1.png": 1, "toveco2.png": 2})
+            ("Charlie", {"toveco1.png": 1, "toveco2.png": 2}),
         ]
 
         # Save all votes
@@ -602,11 +632,14 @@ class TestDatabaseIntegrity:
     def test_rankings_correctness(self, temp_db):
         """Test that ranking logic works correctly."""
         # Create votes with clear ranking order
-        temp_db.save_vote("Voter 1", {
-            "toveco1.png": 2,   # Should rank 1st (average: 2.0)
-            "toveco2.png": 1,   # Should rank 2nd (average: 1.0)
-            "toveco3.png": -1   # Should rank 3rd (average: -1.0)
-        })
+        temp_db.save_vote(
+            "Voter 1",
+            {
+                "toveco1.png": 2,  # Should rank 1st (average: 2.0)
+                "toveco2.png": 1,  # Should rank 2nd (average: 1.0)
+                "toveco3.png": -1,  # Should rank 3rd (average: -1.0)
+            },
+        )
 
         results = temp_db.calculate_results()
         summary = results["summary"]

@@ -51,7 +51,9 @@ class Settings:
     SESSION_SECRET_KEY: str = os.getenv("SESSION_SECRET_KEY", "")
     SESSION_LIFETIME_HOURS: int = int(os.getenv("SESSION_LIFETIME_HOURS", "8"))
     MAX_LOGIN_ATTEMPTS: int = int(os.getenv("MAX_LOGIN_ATTEMPTS", "5"))
-    LOGIN_ATTEMPT_WINDOW_MINUTES: int = int(os.getenv("LOGIN_ATTEMPT_WINDOW_MINUTES", "15"))
+    LOGIN_ATTEMPT_WINDOW_MINUTES: int = int(
+        os.getenv("LOGIN_ATTEMPT_WINDOW_MINUTES", "15")
+    )
 
     # File upload settings
     MAX_UPLOAD_SIZE_MB: int = int(os.getenv("MAX_UPLOAD_SIZE_MB", "5"))
@@ -64,7 +66,7 @@ class Settings:
         directories = [
             ("LOGOS_DIR", cls.LOGOS_DIR),
             ("TEMPLATES_DIR", cls.TEMPLATES_DIR),
-            ("STATIC_DIR", cls.STATIC_DIR)
+            ("STATIC_DIR", cls.STATIC_DIR),
         ]
 
         missing_dirs = []
@@ -111,4 +113,3 @@ class Settings:
 
 
 settings = Settings()
-

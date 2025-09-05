@@ -29,7 +29,7 @@ class TestDatabaseSchema:
     @pytest.fixture
     def temp_db(self):
         """Create a temporary database for testing."""
-        with tempfile.NamedTemporaryFile(suffix='.db', delete=False) as f:
+        with tempfile.NamedTemporaryFile(suffix=".db", delete=False) as f:
             temp_db_path = f.name
 
         try:
@@ -48,13 +48,15 @@ class TestDatabaseSchema:
         cursor = conn.cursor()
 
         # Check that votes table exists
-        cursor.execute("""
+        cursor.execute(
+            """
             SELECT name FROM sqlite_master
             WHERE type='table' AND name='votes'
-        """)
+        """
+        )
         tables = cursor.fetchall()
         assert len(tables) == 1
-        assert tables[0][0] == 'votes'
+        assert tables[0][0] == "votes"
 
         conn.close()
 
@@ -71,7 +73,7 @@ class TestDatabaseSchema:
 
         # Expected columns: id, voter_name, timestamp, ratings
         column_names = [col[1] for col in columns]
-        expected_columns = ['id', 'voter_name', 'timestamp', 'ratings']
+        expected_columns = ["id", "voter_name", "timestamp", "ratings"]
 
         for col in expected_columns:
             assert col in column_names, f"Missing column: {col}"
@@ -79,7 +81,7 @@ class TestDatabaseSchema:
         # Check primary key
         pk_columns = [col for col in columns if col[5] == 1]  # pk flag
         assert len(pk_columns) == 1
-        assert pk_columns[0][1] == 'id'
+        assert pk_columns[0][1] == "id"
 
         conn.close()
 
@@ -102,7 +104,7 @@ class TestDataValidation:
     @pytest.fixture
     def temp_db(self):
         """Create a temporary database for testing."""
-        with tempfile.NamedTemporaryFile(suffix='.db', delete=False) as f:
+        with tempfile.NamedTemporaryFile(suffix=".db", delete=False) as f:
             temp_db_path = f.name
 
         try:
@@ -214,7 +216,7 @@ class TestConcurrentAccess:
     @pytest.fixture
     def temp_db(self):
         """Create a temporary database for testing."""
-        with tempfile.NamedTemporaryFile(suffix='.db', delete=False) as f:
+        with tempfile.NamedTemporaryFile(suffix=".db", delete=False) as f:
             temp_db_path = f.name
 
         try:
@@ -226,6 +228,7 @@ class TestConcurrentAccess:
 
     def test_concurrent_vote_submissions(self, temp_db):
         """Test multiple threads submitting votes simultaneously."""
+
         def submit_vote(thread_id):
             voter_name = f"Concurrent User {thread_id}"
             ratings = {f"toveco{(thread_id % 11) + 1}.png": 1}
@@ -276,6 +279,7 @@ class TestConcurrentAccess:
 
     def test_database_locking(self, temp_db):
         """Test that database properly handles locking."""
+
         def long_transaction():
             # Simulate a longer database operation
             temp_db.save_vote("Long Transaction User", {"toveco1.png": 2})
@@ -304,7 +308,7 @@ class TestDataIntegrity:
     @pytest.fixture
     def temp_db(self):
         """Create a temporary database for testing."""
-        with tempfile.NamedTemporaryFile(suffix='.db', delete=False) as f:
+        with tempfile.NamedTemporaryFile(suffix=".db", delete=False) as f:
             temp_db_path = f.name
 
         try:
@@ -328,8 +332,7 @@ class TestDataIntegrity:
             with db_manager.get_session() as session:
                 # Add a vote
                 vote_record = VoteRecord(
-                    voter_name="Error User",
-                    ratings=json.dumps({"toveco1.png": 1})
+                    voter_name="Error User", ratings=json.dumps({"toveco1.png": 1})
                 )
                 session.add(vote_record)
                 session.flush()
@@ -374,10 +377,13 @@ class TestDataIntegrity:
         cursor = conn.cursor()
 
         try:
-            cursor.execute("""
+            cursor.execute(
+                """
                 INSERT INTO votes (voter_name, timestamp, ratings)
                 VALUES (?, datetime('now'), ?)
-            """, ("Malformed User", "invalid json"))
+            """,
+                ("Malformed User", "invalid json"),
+            )
             conn.commit()
         finally:
             conn.close()
@@ -419,7 +425,7 @@ class TestResultsCalculation:
     @pytest.fixture
     def temp_db(self):
         """Create a temporary database for testing."""
-        with tempfile.NamedTemporaryFile(suffix='.db', delete=False) as f:
+        with tempfile.NamedTemporaryFile(suffix=".db", delete=False) as f:
             temp_db_path = f.name
 
         try:
@@ -467,13 +473,16 @@ class TestResultsCalculation:
     def test_ranking_algorithm(self, temp_db):
         """Test ranking algorithm correctness."""
         # Create votes with clear ranking order
-        temp_db.save_vote("Ranker", {
-            "best.png": 2,      # Should rank 1st
-            "good.png": 1,      # Should rank 2nd
-            "neutral.png": 0,   # Should rank 3rd
-            "bad.png": -1,      # Should rank 4th
-            "worst.png": -2,    # Should rank 5th
-        })
+        temp_db.save_vote(
+            "Ranker",
+            {
+                "best.png": 2,  # Should rank 1st
+                "good.png": 1,  # Should rank 2nd
+                "neutral.png": 0,  # Should rank 3rd
+                "bad.png": -1,  # Should rank 4th
+                "worst.png": -2,  # Should rank 5th
+            },
+        )
 
         results = temp_db.calculate_results()
         summary = results["summary"]
@@ -520,6 +529,7 @@ class TestResultsCalculation:
         """Test results calculation with large number of votes."""
         # Generate many votes
         import random
+
         logos = [f"logo{i}.png" for i in range(1, 12)]
 
         for i in range(100):
@@ -570,7 +580,7 @@ class TestErrorHandling:
 
     def test_corrupted_database_recovery(self):
         """Test recovery from corrupted database."""
-        with tempfile.NamedTemporaryFile(suffix='.db', delete=False) as f:
+        with tempfile.NamedTemporaryFile(suffix=".db", delete=False) as f:
             temp_db_path = f.name
 
         try:
@@ -579,7 +589,7 @@ class TestErrorHandling:
             db_manager.save_vote("Test User", {"logo1.png": 1})
 
             # Corrupt the database file
-            with open(temp_db_path, 'wb') as f:
+            with open(temp_db_path, "wb") as f:
                 f.write(b"corrupted data")
 
             # Try to create new manager with corrupted file

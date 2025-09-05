@@ -53,13 +53,13 @@ class TestDockerBuild:
                 tag=image_tag,
                 rm=True,
                 forcerm=True,
-                dockerfile="Dockerfile"
+                dockerfile="Dockerfile",
             )
 
             # Print build logs for debugging
             for log in build_logs:
-                if 'stream' in log:
-                    print(log['stream'].strip())
+                if "stream" in log:
+                    print(log["stream"].strip())
 
             yield image
 
@@ -92,7 +92,9 @@ class TestDockerBuild:
         # Should ignore common development files
         expected_ignores = [".git", "__pycache__", "*.pyc", ".pytest_cache"]
         for ignore_pattern in expected_ignores:
-            assert ignore_pattern in content, f"Missing {ignore_pattern} in .dockerignore"
+            assert (
+                ignore_pattern in content
+            ), f"Missing {ignore_pattern} in .dockerignore"
 
     def test_image_builds_successfully(self, built_image):
         """Test that Docker image builds without errors."""
@@ -112,7 +114,7 @@ class TestDockerBuild:
     def test_image_size_reasonable(self, built_image):
         """Test that Docker image size is reasonable."""
         # Get image size in bytes
-        size = built_image.attrs['Size']
+        size = built_image.attrs["Size"]
         size_mb = size / (1024 * 1024)
 
         # Image should be less than 1GB (reasonable for Python app)
@@ -147,24 +149,17 @@ class TestContainerOperations:
         try:
             # Build image
             image, _ = docker_client.images.build(
-                path=str(project_root),
-                tag=image_tag,
-                rm=True,
-                forcerm=True
+                path=str(project_root), tag=image_tag, rm=True, forcerm=True
             )
 
             # Create container (don't start yet)
             container = docker_client.containers.create(
                 image_tag,
                 name="toveco-test-container",
-                ports={'8000/tcp': None},  # Random port mapping
-                environment={
-                    "DEBUG": "false",
-                    "PORT": "8000",
-                    "HOST": "0.0.0.0"
-                },
+                ports={"8000/tcp": None},  # Random port mapping
+                environment={"DEBUG": "false", "PORT": "8000", "HOST": "0.0.0.0"},
                 detach=True,
-                remove=True
+                remove=True,
             )
 
             yield container
@@ -205,18 +200,18 @@ class TestContainerOperations:
         time.sleep(2)
 
         test_container.reload()
-        ports = test_container.attrs['NetworkSettings']['Ports']
+        ports = test_container.attrs["NetworkSettings"]["Ports"]
 
-        assert '8000/tcp' in ports
-        assert ports['8000/tcp'] is not None
-        assert len(ports['8000/tcp']) > 0
+        assert "8000/tcp" in ports
+        assert ports["8000/tcp"] is not None
+        assert len(ports["8000/tcp"]) > 0
 
     def test_container_logs(self, test_container):
         """Test that container generates expected logs."""
         test_container.start()
         time.sleep(5)  # Wait for startup
 
-        logs = test_container.logs().decode('utf-8')
+        logs = test_container.logs().decode("utf-8")
 
         # Check for expected startup messages
         assert "uvicorn" in logs.lower() or "fastapi" in logs.lower()
@@ -229,12 +224,14 @@ class TestContainerOperations:
         time.sleep(5)
 
         test_container.reload()
-        ports = test_container.attrs['NetworkSettings']['Ports']
-        host_port = ports['8000/tcp'][0]['HostPort']
+        ports = test_container.attrs["NetworkSettings"]["Ports"]
+        host_port = ports["8000/tcp"][0]["HostPort"]
 
         try:
             # Try to reach health endpoint
-            response = requests.get(f"http://localhost:{host_port}/api/health", timeout=10)
+            response = requests.get(
+                f"http://localhost:{host_port}/api/health", timeout=10
+            )
             assert response.status_code == 200
 
             data = response.json()
@@ -250,26 +247,23 @@ class TestContainerOperations:
         try:
             # Build image
             docker_client.images.build(
-                path=str(project_root),
-                tag=image_tag,
-                rm=True,
-                forcerm=True
+                path=str(project_root), tag=image_tag, rm=True, forcerm=True
             )
 
             # Test different environment configurations
             test_envs = [
                 {"DEBUG": "true", "PORT": "8080"},
                 {"DEBUG": "false", "HOST": "127.0.0.1"},
-                {"DATABASE_PATH": "/app/custom.db"}
+                {"DATABASE_PATH": "/app/custom.db"},
             ]
 
             for env_vars in test_envs:
                 container = docker_client.containers.run(
                     image_tag,
                     environment=env_vars,
-                    ports={'8000/tcp': None},
+                    ports={"8000/tcp": None},
                     detach=True,
-                    remove=True
+                    remove=True,
                 )
 
                 try:
@@ -278,7 +272,7 @@ class TestContainerOperations:
                     assert container.status == "running"
 
                     # Check logs for environment-specific behavior
-                    logs = container.logs().decode('utf-8')
+                    logs = container.logs().decode("utf-8")
                     if "DEBUG" in env_vars:
                         if env_vars["DEBUG"] == "true":
                             assert "debug" in logs.lower()
@@ -301,23 +295,21 @@ class TestContainerOperations:
         try:
             # Build image
             docker_client.images.build(
-                path=str(project_root),
-                tag=image_tag,
-                rm=True,
-                forcerm=True
+                path=str(project_root), tag=image_tag, rm=True, forcerm=True
             )
 
             # Create temporary directory for volume
             import tempfile
+
             with tempfile.TemporaryDirectory() as temp_dir:
                 # Run container with volume mount
                 container = docker_client.containers.run(
                     image_tag,
-                    volumes={temp_dir: {'bind': '/app/data', 'mode': 'rw'}},
+                    volumes={temp_dir: {"bind": "/app/data", "mode": "rw"}},
                     environment={"DATABASE_PATH": "/app/data/votes.db"},
-                    ports={'8000/tcp': None},
+                    ports={"8000/tcp": None},
                     detach=True,
-                    remove=True
+                    remove=True,
                 )
 
                 try:
@@ -406,7 +398,7 @@ class TestDockerCompose:
                 ["docker-compose", "-f", str(compose_file), "config"],
                 capture_output=True,
                 text=True,
-                timeout=30
+                timeout=30,
             )
 
             if result.returncode != 0:
@@ -435,8 +427,8 @@ class TestProductionReadiness:
             assert "USER" in content, "Dockerfile should specify non-root user"
 
             # Should not run as root
-            lines = content.split('\n')
-            user_lines = [line for line in lines if line.strip().startswith('USER')]
+            lines = content.split("\n")
+            user_lines = [line for line in lines if line.strip().startswith("USER")]
             if user_lines:
                 last_user = user_lines[-1]
                 assert "root" not in last_user.lower(), "Should not run as root user"
@@ -452,7 +444,9 @@ class TestProductionReadiness:
             assert "curl" not in content.lower() or "wget" not in content.lower()
 
             # Should use specific base image versions
-            from_lines = [line for line in content.split('\n') if line.strip().startswith('FROM')]
+            from_lines = [
+                line for line in content.split("\n") if line.strip().startswith("FROM")
+            ]
             for from_line in from_lines:
                 if ":" not in from_line:
                     pytest.fail("Should use specific image versions, not 'latest'")
@@ -481,19 +475,23 @@ class TestProductionReadiness:
 
             # Should have HEALTHCHECK instruction
             if "HEALTHCHECK" in content:
-                assert "/api/health" in content, "Health check should use health endpoint"
+                assert (
+                    "/api/health" in content
+                ), "Health check should use health endpoint"
             else:
                 # Health check might be in compose file instead
                 compose_file = project_root / "docker-compose.yml"
                 if compose_file.exists():
                     compose_content = compose_file.read_text()
-                    assert "healthcheck" in compose_content, "No health check configured"
+                    assert (
+                        "healthcheck" in compose_content
+                    ), "No health check configured"
 
     def test_logging_configuration(self, project_root):
         """Test that logging is properly configured."""
         compose_files = [
             project_root / "docker-compose.yml",
-            project_root / "docker-compose.prod.yml"
+            project_root / "docker-compose.prod.yml",
         ]
 
         for compose_file in compose_files:
@@ -504,7 +502,9 @@ class TestProductionReadiness:
                 if "logging:" in content:
                     # Should not use default logging driver for production
                     if "prod" in compose_file.name:
-                        assert "json-file" in content, "Production should use json-file logging"
+                        assert (
+                            "json-file" in content
+                        ), "Production should use json-file logging"
 
     def test_secrets_management(self, project_root):
         """Test that secrets are not hardcoded."""
@@ -517,11 +517,17 @@ class TestProductionReadiness:
             sensitive_patterns = ["password", "secret", "key", "token"]
             for pattern in sensitive_patterns:
                 # Look for hardcoded values (not environment variables)
-                lines = content.split('\n')
+                lines = content.split("\n")
                 for line in lines:
-                    if pattern in line.lower() and "=" in line and not line.strip().startswith('#'):
+                    if (
+                        pattern in line.lower()
+                        and "=" in line
+                        and not line.strip().startswith("#")
+                    ):
                         if not ("ENV" in line or "$" in line):
-                            pytest.fail(f"Possible hardcoded secret in Dockerfile: {line}")
+                            pytest.fail(
+                                f"Possible hardcoded secret in Dockerfile: {line}"
+                            )
 
 
 class TestNetworkConfiguration:
@@ -561,7 +567,9 @@ class TestNetworkConfiguration:
                 service_count = content.count("image:") + content.count("build:")
                 if service_count > 1:
                     # Should define custom networks for security
-                    assert "networks:" in content, "Multi-service setup should use custom networks"
+                    assert (
+                        "networks:" in content
+                    ), "Multi-service setup should use custom networks"
 
 
 # Integration test that can be run manually
@@ -586,7 +594,7 @@ class DockerDeploymentValidator:
             "health": False,
             "api": False,
             "logs": [],
-            "errors": []
+            "errors": [],
         }
 
         container = None
@@ -596,10 +604,7 @@ class DockerDeploymentValidator:
             # Step 1: Build image
             print("Building Docker image...")
             image, build_logs = self.docker_client.images.build(
-                path=str(self.project_root),
-                tag=image_tag,
-                rm=True,
-                forcerm=True
+                path=str(self.project_root), tag=image_tag, rm=True, forcerm=True
             )
             results["build"] = True
 
@@ -607,14 +612,10 @@ class DockerDeploymentValidator:
             print("Starting container...")
             container = self.docker_client.containers.run(
                 image_tag,
-                ports={'8000/tcp': 8080},  # Map to host port 8080
-                environment={
-                    "DEBUG": "false",
-                    "PORT": "8000",
-                    "HOST": "0.0.0.0"
-                },
+                ports={"8000/tcp": 8080},  # Map to host port 8080
+                environment={"DEBUG": "false", "PORT": "8000", "HOST": "0.0.0.0"},
                 detach=True,
-                remove=True
+                remove=True,
             )
 
             time.sleep(5)  # Wait for startup
@@ -633,8 +634,8 @@ class DockerDeploymentValidator:
                 results["errors"].append(f"Health check failed: {e}")
 
             # Step 4: Get logs
-            logs = container.logs().decode('utf-8')
-            results["logs"] = logs.split('\n')
+            logs = container.logs().decode("utf-8")
+            results["logs"] = logs.split("\n")
 
         except Exception as e:
             results["errors"].append(str(e))
@@ -662,7 +663,7 @@ class DockerDeploymentValidator:
             ("Image Build", results["build"]),
             ("Container Start", results["start"]),
             ("Health Check", results["health"]),
-            ("API Access", results["api"])
+            ("API Access", results["api"]),
         ]
 
         for check_name, passed in checks:

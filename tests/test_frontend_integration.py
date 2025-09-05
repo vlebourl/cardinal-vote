@@ -36,7 +36,9 @@ class TestFrontendWorkflow:
 
         @contextmanager
         def run_test_server():
-            config = uvicorn.Config(app, host="127.0.0.1", port=8001, log_level="warning")
+            config = uvicorn.Config(
+                app, host="127.0.0.1", port=8001, log_level="warning"
+            )
             server = uvicorn.Server(config)
 
             def run_server():
@@ -175,11 +177,15 @@ class TestFrontendWorkflow:
             self._proceed_to_voting_screen(driver, base_url, "Test User")
 
             # Find rating inputs
-            rating_inputs = driver.find_elements(By.CSS_SELECTOR, "input[name='rating']")
+            rating_inputs = driver.find_elements(
+                By.CSS_SELECTOR, "input[name='rating']"
+            )
             assert len(rating_inputs) == 5  # -2, -1, 0, 1, 2
 
             # Test selecting a rating
-            rating_2 = driver.find_element(By.CSS_SELECTOR, "input[name='rating'][value='2']")
+            rating_2 = driver.find_element(
+                By.CSS_SELECTOR, "input[name='rating'][value='2']"
+            )
             rating_2.click()
 
             assert rating_2.is_selected()
@@ -202,7 +208,9 @@ class TestFrontendWorkflow:
             assert not next_btn.is_enabled()
 
             # Select a rating
-            rating_1 = driver.find_element(By.CSS_SELECTOR, "input[name='rating'][value='1']")
+            rating_1 = driver.find_element(
+                By.CSS_SELECTOR, "input[name='rating'][value='1']"
+            )
             rating_1.click()
 
             # Next button should be enabled
@@ -227,7 +235,9 @@ class TestFrontendWorkflow:
             body.send_keys("5")  # Should select rating 2 (5th option)
             time.sleep(0.5)
 
-            rating_2 = driver.find_element(By.CSS_SELECTOR, "input[name='rating'][value='2']")
+            rating_2 = driver.find_element(
+                By.CSS_SELECTOR, "input[name='rating'][value='2']"
+            )
             assert rating_2.is_selected()
 
             # Test navigation with arrow keys
@@ -249,7 +259,9 @@ class TestFrontendWorkflow:
             assert "1" in initial_text and "11" in initial_text
 
             # Rate current logo and go to next
-            rating_1 = driver.find_element(By.CSS_SELECTOR, "input[name='rating'][value='1']")
+            rating_1 = driver.find_element(
+                By.CSS_SELECTOR, "input[name='rating'][value='1']"
+            )
             rating_1.click()
 
             next_btn = driver.find_element(By.ID, "next-btn")
@@ -292,8 +304,7 @@ class TestFrontendWorkflow:
             # Change logo src to invalid URL to trigger error
             logo_img = driver.find_element(By.ID, "current-logo")
             driver.execute_script(
-                "arguments[0].src = '/logos/nonexistent.png';",
-                logo_img
+                "arguments[0].src = '/logos/nonexistent.png';", logo_img
             )
 
             time.sleep(1)
@@ -321,7 +332,9 @@ class TestFrontendWorkflow:
             # Rate all logos (simplified - rate first few and skip to review)
             for i in range(3):  # Rate first 3 logos
                 # Select a rating
-                rating = driver.find_element(By.CSS_SELECTOR, f"input[name='rating'][value='{i-1}']")
+                rating = driver.find_element(
+                    By.CSS_SELECTOR, f"input[name='rating'][value='{i - 1}']"
+                )
                 rating.click()
 
                 # Go to next
@@ -423,7 +436,7 @@ class TestJavaScriptFunctionality:
                 "toveco9.png": -1,
                 "toveco10.png": 2,
                 "toveco11.png": 0,
-            }
+            },
         }
 
         response = client.post("/api/vote", json=vote_data)
@@ -464,7 +477,7 @@ class TestJavaScriptFunctionality:
         # Submit invalid vote to trigger error
         invalid_vote = {
             "voter_name": "",  # Invalid empty name
-            "ratings": {}
+            "ratings": {},
         }
 
         response = client.post("/api/vote", json=invalid_vote)
@@ -493,7 +506,9 @@ class TestResultsPageFunctionality:
 
         @contextmanager
         def run_test_server():
-            config = uvicorn.Config(app, host="127.0.0.1", port=8002, log_level="warning")
+            config = uvicorn.Config(
+                app, host="127.0.0.1", port=8002, log_level="warning"
+            )
             server = uvicorn.Server(config)
 
             def run_server():
@@ -559,7 +574,7 @@ class TestResultsPageFunctionality:
             "results-content",
             "results-grid",
             "total-voters",
-            "total-logos"
+            "total-logos",
         ]
 
         for element_id in expected_elements:

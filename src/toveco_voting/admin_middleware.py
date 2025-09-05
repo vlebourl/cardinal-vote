@@ -41,7 +41,9 @@ class AdminSecurityMiddleware(BaseHTTPMiddleware):
             response.headers["X-Frame-Options"] = "DENY"
             response.headers["X-Content-Type-Options"] = "nosniff"
             response.headers["X-XSS-Protection"] = "1; mode=block"
-            response.headers["Cache-Control"] = "no-store, no-cache, must-revalidate, proxy-revalidate"
+            response.headers[
+                "Cache-Control"
+            ] = "no-store, no-cache, must-revalidate, proxy-revalidate"
             response.headers["Pragma"] = "no-cache"
             response.headers["Expires"] = "0"
 
@@ -81,7 +83,7 @@ class AdminAuthDependency:
     def __call__(
         self,
         request: Request,
-        session_token: str | None = Cookie(None, alias="admin_session")
+        session_token: str | None = Cookie(None, alias="admin_session"),
     ) -> dict:
         """
         Dependency that validates admin session.
@@ -91,7 +93,7 @@ class AdminAuthDependency:
             logger.debug("No admin session token found")
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Authentication required"
+                detail="Authentication required",
             )
 
         ip_address = get_client_ip(request)
@@ -103,7 +105,7 @@ class AdminAuthDependency:
             # by the admin routes to redirect to login
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Invalid or expired session"
+                detail="Invalid or expired session",
             )
 
         logger.debug(f"Authenticated admin user: {user_info['username']}")
@@ -119,7 +121,7 @@ class AdminAuthOptionalDependency:
     def __call__(
         self,
         request: Request,
-        session_token: str | None = Cookie(None, alias="admin_session")
+        session_token: str | None = Cookie(None, alias="admin_session"),
     ) -> dict | None:
         """
         Optional dependency that validates admin session.
@@ -132,12 +134,16 @@ class AdminAuthOptionalDependency:
         user_info = self.auth_manager.validate_session(session_token, ip_address)
 
         if user_info:
-            logger.debug(f"Optionally authenticated admin user: {user_info['username']}")
+            logger.debug(
+                f"Optionally authenticated admin user: {user_info['username']}"
+            )
 
         return user_info
 
 
-def create_admin_dependencies(auth_manager: AdminAuthManager) -> tuple[AdminAuthDependency, AdminAuthOptionalDependency]:
+def create_admin_dependencies(
+    auth_manager: AdminAuthManager,
+) -> tuple[AdminAuthDependency, AdminAuthOptionalDependency]:
     """
     Factory function to create admin authentication dependencies.
     Returns tuple of (required_auth, optional_auth).
@@ -161,9 +167,7 @@ def generate_csrf_token(session_data: dict) -> str:
     # Create HMAC with session secret
     message = f"{session_id}:{random_part}".encode()
     csrf_token = hmac.new(
-        key=session_id.encode(),
-        msg=message,
-        digestmod=hashlib.sha256
+        key=session_id.encode(), msg=message, digestmod=hashlib.sha256
     ).hexdigest()
 
     return f"{random_part}:{csrf_token}"
@@ -184,9 +188,7 @@ def validate_csrf_token(token: str, session_data: dict) -> bool:
 
         message = f"{session_id}:{random_part}".encode()
         expected_token = hmac.new(
-            key=session_id.encode(),
-            msg=message,
-            digestmod=hashlib.sha256
+            key=session_id.encode(), msg=message, digestmod=hashlib.sha256
         ).hexdigest()
 
         # Compare tokens (constant time comparison)
@@ -203,8 +205,10 @@ class CSRFProtectionDependency:
     def __call__(
         self,
         request: Request,
-        admin_user: dict = Depends(lambda: None),  # Will be replaced with actual auth dependency
-        csrf_token: str = None
+        admin_user: dict = Depends(
+            lambda: None
+        ),  # Will be replaced with actual auth dependency
+        csrf_token: str = None,
     ) -> bool:
         """
         Validate CSRF token for POST/PUT/DELETE requests.
@@ -221,7 +225,9 @@ class CSRFProtectionDependency:
         # Get CSRF token from form data or headers
         if not csrf_token:
             # Try to get from form data
-            if request.headers.get("content-type", "").startswith("application/x-www-form-urlencoded"):
+            if request.headers.get("content-type", "").startswith(
+                "application/x-www-form-urlencoded"
+            ):
                 # This would need to be handled in the route itself
                 pass
             # Try to get from headers
@@ -230,8 +236,7 @@ class CSRFProtectionDependency:
         if not csrf_token or not validate_csrf_token(csrf_token, admin_user):
             logger.warning(f"CSRF validation failed for {request.url}")
             raise HTTPException(
-                status_code=status.HTTP_403_FORBIDDEN,
-                detail="CSRF validation failed"
+                status_code=status.HTTP_403_FORBIDDEN, detail="CSRF validation failed"
             )
 
         return True
@@ -256,8 +261,7 @@ class RateLimiter:
 
         # Remove old attempts
         self._attempts[key] = [
-            attempt for attempt in self._attempts[key]
-            if attempt > window_start
+            attempt for attempt in self._attempts[key] if attempt > window_start
         ]
 
         # Check if within limit

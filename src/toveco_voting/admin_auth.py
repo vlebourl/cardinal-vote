@@ -32,9 +32,11 @@ class AdminAuthManager:
         try:
             with self.db_manager.get_session() as session:
                 # Check if admin user exists
-                admin_user = session.query(AdminUser).filter_by(
-                    username=settings.ADMIN_USERNAME
-                ).first()
+                admin_user = (
+                    session.query(AdminUser)
+                    .filter_by(username=settings.ADMIN_USERNAME)
+                    .first()
+                )
 
                 if not admin_user:
                     # Create default admin user
@@ -42,11 +44,13 @@ class AdminAuthManager:
                     admin_user = AdminUser(
                         username=settings.ADMIN_USERNAME,
                         password_hash=hashed_password,
-                        is_active=True
+                        is_active=True,
                     )
                     session.add(admin_user)
                     session.commit()
-                    logger.info(f"Created default admin user: {settings.ADMIN_USERNAME}")
+                    logger.info(
+                        f"Created default admin user: {settings.ADMIN_USERNAME}"
+                    )
                 else:
                     logger.info(f"Admin user exists: {settings.ADMIN_USERNAME}")
 
@@ -57,12 +61,12 @@ class AdminAuthManager:
     def hash_password(self, password: str) -> str:
         """Hash a password using bcrypt."""
         salt = bcrypt.gensalt()
-        return bcrypt.hashpw(password.encode('utf-8'), salt).decode('utf-8')
+        return bcrypt.hashpw(password.encode("utf-8"), salt).decode("utf-8")
 
     def verify_password(self, password: str, hashed: str) -> bool:
         """Verify a password against its hash."""
         try:
-            return bcrypt.checkpw(password.encode('utf-8'), hashed.encode('utf-8'))
+            return bcrypt.checkpw(password.encode("utf-8"), hashed.encode("utf-8"))
         except Exception as e:
             logger.error(f"Password verification error: {e}")
             return False
@@ -77,8 +81,7 @@ class AdminAuthManager:
 
         # Remove old attempts
         self._login_attempts[ip_address] = [
-            attempt for attempt in self._login_attempts[ip_address]
-            if attempt > cutoff
+            attempt for attempt in self._login_attempts[ip_address] if attempt > cutoff
         ]
 
         # Check if under limit
@@ -91,8 +94,9 @@ class AdminAuthManager:
 
         self._login_attempts[ip_address].append(datetime.utcnow())
 
-    def authenticate_user(self, username: str, password: str, ip_address: str,
-                         user_agent: str) -> str | None:
+    def authenticate_user(
+        self, username: str, password: str, ip_address: str, user_agent: str
+    ) -> str | None:
         """
         Authenticate a user and create a session.
         Returns session token if successful, None otherwise.
@@ -105,19 +109,24 @@ class AdminAuthManager:
 
             with self.db_manager.get_session() as session:
                 # Find user
-                user = session.query(AdminUser).filter_by(
-                    username=username.lower().strip(),
-                    is_active=True
-                ).first()
+                user = (
+                    session.query(AdminUser)
+                    .filter_by(username=username.lower().strip(), is_active=True)
+                    .first()
+                )
 
                 if not user or not self.verify_password(password, user.password_hash):
                     self._record_login_attempt(ip_address)
-                    logger.warning(f"Failed login attempt for {username} from {ip_address}")
+                    logger.warning(
+                        f"Failed login attempt for {username} from {ip_address}"
+                    )
                     return None
 
                 # Generate session token
                 session_token = secrets.token_urlsafe(32)
-                expires_at = datetime.utcnow() + timedelta(hours=settings.SESSION_LIFETIME_HOURS)
+                expires_at = datetime.utcnow() + timedelta(
+                    hours=settings.SESSION_LIFETIME_HOURS
+                )
 
                 # Create session record
                 admin_session = AdminSession(
@@ -126,7 +135,7 @@ class AdminAuthManager:
                     expires_at=expires_at,
                     ip_address=ip_address,
                     user_agent=user_agent,
-                    is_active=True
+                    is_active=True,
                 )
                 session.add(admin_session)
 
@@ -152,10 +161,11 @@ class AdminAuthManager:
         try:
             with self.db_manager.get_session() as session:
                 # Find active session
-                admin_session = session.query(AdminSession).filter_by(
-                    id=session_token,
-                    is_active=True
-                ).first()
+                admin_session = (
+                    session.query(AdminSession)
+                    .filter_by(id=session_token, is_active=True)
+                    .first()
+                )
 
                 if not admin_session:
                     return None
@@ -168,10 +178,11 @@ class AdminAuthManager:
                     return None
 
                 # Get user data
-                user = session.query(AdminUser).filter_by(
-                    id=admin_session.user_id,
-                    is_active=True
-                ).first()
+                user = (
+                    session.query(AdminUser)
+                    .filter_by(id=admin_session.user_id, is_active=True)
+                    .first()
+                )
 
                 if not user:
                     admin_session.is_active = False
@@ -188,7 +199,7 @@ class AdminAuthManager:
                     "username": user.username,
                     "session_id": admin_session.id,
                     "created_at": admin_session.created_at,
-                    "expires_at": admin_session.expires_at
+                    "expires_at": admin_session.expires_at,
                 }
 
         except SQLAlchemyError as e:
@@ -205,9 +216,9 @@ class AdminAuthManager:
 
         try:
             with self.db_manager.get_session() as session:
-                admin_session = session.query(AdminSession).filter_by(
-                    id=session_token
-                ).first()
+                admin_session = (
+                    session.query(AdminSession).filter_by(id=session_token).first()
+                )
 
                 if admin_session:
                     admin_session.is_active = False
@@ -228,9 +239,11 @@ class AdminAuthManager:
         """
         try:
             with self.db_manager.get_session() as session:
-                expired_sessions = session.query(AdminSession).filter(
-                    AdminSession.expires_at < datetime.utcnow()
-                ).all()
+                expired_sessions = (
+                    session.query(AdminSession)
+                    .filter(AdminSession.expires_at < datetime.utcnow())
+                    .all()
+                )
 
                 count = len(expired_sessions)
 
@@ -252,9 +265,12 @@ class AdminAuthManager:
         """Get the count of currently active sessions."""
         try:
             with self.db_manager.get_session() as session:
-                count = session.query(AdminSession).filter_by(is_active=True).filter(
-                    AdminSession.expires_at > datetime.utcnow()
-                ).count()
+                count = (
+                    session.query(AdminSession)
+                    .filter_by(is_active=True)
+                    .filter(AdminSession.expires_at > datetime.utcnow())
+                    .count()
+                )
                 return count
 
         except SQLAlchemyError as e:
@@ -268,9 +284,9 @@ class AdminAuthManager:
         """
         try:
             with self.db_manager.get_session() as session:
-                active_sessions = session.query(AdminSession).filter_by(
-                    is_active=True
-                ).all()
+                active_sessions = (
+                    session.query(AdminSession).filter_by(is_active=True).all()
+                )
 
                 count = len(active_sessions)
 

@@ -42,10 +42,10 @@ class TestRunner:
 
     def run_command(self, command: list[str], description: str) -> dict[str, Any]:
         """Run a command and capture results."""
-        print(f"\n{'='*60}")
+        print(f"\n{'=' * 60}")
         print(f"Running: {description}")
         print(f"Command: {' '.join(command)}")
-        print(f"{'='*60}")
+        print(f"{'=' * 60}")
 
         start_time = time.time()
 
@@ -55,7 +55,7 @@ class TestRunner:
                 cwd=self.project_root,
                 capture_output=True,
                 text=True,
-                timeout=300  # 5 minute timeout
+                timeout=300,  # 5 minute timeout
             )
 
             end_time = time.time()
@@ -74,7 +74,7 @@ class TestRunner:
                 "duration": duration,
                 "return_code": result.returncode,
                 "stdout": result.stdout,
-                "stderr": result.stderr
+                "stderr": result.stderr,
             }
 
         except subprocess.TimeoutExpired:
@@ -84,7 +84,7 @@ class TestRunner:
                 "duration": 300,
                 "return_code": -1,
                 "stdout": "",
-                "stderr": "Test timed out"
+                "stderr": "Test timed out",
             }
         except Exception as e:
             print(f"❌ ERROR: {e}")
@@ -93,16 +93,18 @@ class TestRunner:
                 "duration": 0,
                 "return_code": -1,
                 "stdout": "",
-                "stderr": str(e)
+                "stderr": str(e),
             }
 
     def run_unit_tests(self, fast: bool = False) -> dict[str, Any]:
         """Run unit tests."""
         command = [
-            "python", "-m", "pytest",
+            "python",
+            "-m",
+            "pytest",
             "tests/test_comprehensive_api.py",
             "tests/test_database_integrity.py",
-            "-v"
+            "-v",
         ]
 
         if fast:
@@ -112,11 +114,7 @@ class TestRunner:
 
     def run_integration_tests(self, fast: bool = False) -> dict[str, Any]:
         """Run integration tests."""
-        command = [
-            "python", "-m", "pytest",
-            "tests/test_frontend_integration.py",
-            "-v"
-        ]
+        command = ["python", "-m", "pytest", "tests/test_frontend_integration.py", "-v"]
 
         if fast:
             command.extend(["-m", "not slow"])
@@ -125,11 +123,7 @@ class TestRunner:
 
     def run_performance_tests(self, fast: bool = False) -> dict[str, Any]:
         """Run performance tests."""
-        command = [
-            "python", "-m", "pytest",
-            "tests/test_performance_load.py",
-            "-v"
-        ]
+        command = ["python", "-m", "pytest", "tests/test_performance_load.py", "-v"]
 
         if fast:
             command.extend(["-m", "not slow"])
@@ -140,11 +134,7 @@ class TestRunner:
 
     def run_e2e_tests(self, fast: bool = False) -> dict[str, Any]:
         """Run end-to-end tests."""
-        command = [
-            "python", "-m", "pytest",
-            "tests/test_end_to_end_workflow.py",
-            "-v"
-        ]
+        command = ["python", "-m", "pytest", "tests/test_end_to_end_workflow.py", "-v"]
 
         if fast:
             command.extend(["-m", "not slow"])
@@ -153,11 +143,7 @@ class TestRunner:
 
     def run_docker_tests(self, fast: bool = False) -> dict[str, Any]:
         """Run Docker deployment tests."""
-        command = [
-            "python", "-m", "pytest",
-            "tests/test_docker_deployment.py",
-            "-v"
-        ]
+        command = ["python", "-m", "pytest", "tests/test_docker_deployment.py", "-v"]
 
         if fast:
             command.extend(["-m", "not slow"])
@@ -167,13 +153,15 @@ class TestRunner:
     def run_coverage_tests(self) -> dict[str, Any]:
         """Run tests with coverage reporting."""
         command = [
-            "python", "-m", "pytest",
+            "python",
+            "-m",
+            "pytest",
             "--cov=src/toveco_voting",
             "--cov-report=html:htmlcov",
             "--cov-report=term-missing",
             "--cov-report=xml",
             "tests/",
-            "-v"
+            "-v",
         ]
 
         return self.run_command(command, "Coverage Tests")
@@ -183,7 +171,7 @@ class TestRunner:
         manual_scripts = [
             "tests/manual_frontend_tests.py",
             "tests/test_docker_deployment.py",
-            "tests/test_performance_load.py"
+            "tests/test_performance_load.py",
         ]
 
         results = {}
@@ -193,7 +181,9 @@ class TestRunner:
             if script_path.exists():
                 command = ["python", str(script_path)]
                 script_name = script_path.stem
-                results[script_name] = self.run_command(command, f"Manual: {script_name}")
+                results[script_name] = self.run_command(
+                    command, f"Manual: {script_name}"
+                )
 
         return results
 
@@ -205,9 +195,7 @@ class TestRunner:
         print("✅ Python version OK")
 
         # Check required packages
-        required_packages = [
-            "pytest", "fastapi", "sqlalchemy", "pydantic"
-        ]
+        required_packages = ["pytest", "fastapi", "sqlalchemy", "pydantic"]
 
         for package in required_packages:
             try:
@@ -225,7 +213,7 @@ class TestRunner:
             "test_docker_deployment.py",
             "test_performance_load.py",
             "test_end_to_end_workflow.py",
-            "fixtures.py"
+            "fixtures.py",
         ]
 
         for test_file in required_test_files:
@@ -237,12 +225,7 @@ class TestRunner:
                 return False
 
         # Check project structure
-        required_dirs = [
-            "src/toveco_voting",
-            "logos",
-            "templates",
-            "static"
-        ]
+        required_dirs = ["src/toveco_voting", "logos", "templates", "static"]
 
         for dir_name in required_dirs:
             dir_path = self.project_root / dir_name
@@ -259,7 +242,7 @@ class TestRunner:
             "ToVéCo Voting Platform - Test Report",
             "=" * 50,
             f"Generated: {time.strftime('%Y-%m-%d %H:%M:%S')}",
-            ""
+            "",
         ]
 
         total_duration = 0
@@ -275,37 +258,41 @@ class TestRunner:
                 if result.get("success"):
                     passed_tests += 1
 
-                report_lines.extend([
-                    f"{test_name}:",
-                    f"  Status: {status}",
-                    f"  Duration: {duration:.1f}s",
-                    f"  Return Code: {result.get('return_code', 'N/A')}",
-                    ""
-                ])
+                report_lines.extend(
+                    [
+                        f"{test_name}:",
+                        f"  Status: {status}",
+                        f"  Duration: {duration:.1f}s",
+                        f"  Return Code: {result.get('return_code', 'N/A')}",
+                        "",
+                    ]
+                )
             else:
                 # Handle nested results (like manual tests)
-                report_lines.extend([
-                    f"{test_name}:",
-                    "  Multiple sub-tests - see detailed output",
-                    ""
-                ])
+                report_lines.extend(
+                    [f"{test_name}:", "  Multiple sub-tests - see detailed output", ""]
+                )
 
         # Summary
         success_rate = (passed_tests / total_tests * 100) if total_tests > 0 else 0
 
-        report_lines.extend([
-            "SUMMARY",
-            "-" * 30,
-            f"Total Test Suites: {total_tests}",
-            f"Passed: {passed_tests}",
-            f"Failed: {total_tests - passed_tests}",
-            f"Success Rate: {success_rate:.1f}%",
-            f"Total Duration: {total_duration:.1f}s",
-            ""
-        ])
+        report_lines.extend(
+            [
+                "SUMMARY",
+                "-" * 30,
+                f"Total Test Suites: {total_tests}",
+                f"Passed: {passed_tests}",
+                f"Failed: {total_tests - passed_tests}",
+                f"Success Rate: {success_rate:.1f}%",
+                f"Total Duration: {total_duration:.1f}s",
+                "",
+            ]
+        )
 
         if success_rate == 100:
-            report_lines.append("🎉 All tests passed! Platform is ready for production.")
+            report_lines.append(
+                "🎉 All tests passed! Platform is ready for production."
+            )
         elif success_rate >= 80:
             report_lines.append("⚠️  Most tests passed, but some issues need attention.")
         else:
@@ -330,10 +317,12 @@ class TestRunner:
         ]
 
         if not fast:
-            test_suites.extend([
-                ("performance_tests", self.run_performance_tests),
-                ("docker_tests", self.run_docker_tests),
-            ])
+            test_suites.extend(
+                [
+                    ("performance_tests", self.run_performance_tests),
+                    ("docker_tests", self.run_docker_tests),
+                ]
+            )
 
         for suite_name, suite_func in test_suites:
             self.results[suite_name] = suite_func(fast)
@@ -353,8 +342,11 @@ class TestRunner:
         print(f"\nDetailed report saved to: {report_file}")
 
         # Exit with error code if tests failed
-        failed_tests = sum(1 for result in self.results.values()
-                          if isinstance(result, dict) and not result.get("success"))
+        failed_tests = sum(
+            1
+            for result in self.results.values()
+            if isinstance(result, dict) and not result.get("success")
+        )
 
         if failed_tests > 0:
             sys.exit(1)
@@ -372,20 +364,26 @@ Examples:
     python tests/test_runner.py --unit             # Run unit tests only
     python tests/test_runner.py --coverage         # Include coverage report
     python tests/test_runner.py --performance      # Run performance tests only
-        """
+        """,
     )
 
     # Test suite selection
     parser.add_argument("--unit", action="store_true", help="Run unit tests only")
-    parser.add_argument("--integration", action="store_true", help="Run integration tests only")
-    parser.add_argument("--performance", action="store_true", help="Run performance tests only")
+    parser.add_argument(
+        "--integration", action="store_true", help="Run integration tests only"
+    )
+    parser.add_argument(
+        "--performance", action="store_true", help="Run performance tests only"
+    )
     parser.add_argument("--e2e", action="store_true", help="Run end-to-end tests only")
     parser.add_argument("--docker", action="store_true", help="Run Docker tests only")
     parser.add_argument("--all", action="store_true", help="Run all tests (default)")
 
     # Test options
     parser.add_argument("--fast", action="store_true", help="Skip slow tests")
-    parser.add_argument("--coverage", action="store_true", help="Include coverage report")
+    parser.add_argument(
+        "--coverage", action="store_true", help="Include coverage report"
+    )
     parser.add_argument("--manual", action="store_true", help="Run manual test scripts")
 
     args = parser.parse_args()
@@ -398,7 +396,9 @@ Examples:
         sys.exit(1)
 
     # Determine which tests to run
-    run_specific = any([args.unit, args.integration, args.performance, args.e2e, args.docker])
+    run_specific = any(
+        [args.unit, args.integration, args.performance, args.e2e, args.docker]
+    )
 
     if args.unit or (not run_specific and args.all):
         runner.results["unit_tests"] = runner.run_unit_tests(args.fast)
@@ -437,8 +437,11 @@ Examples:
     print(f"\nReport saved to: {report_file}")
 
     # Exit with appropriate code
-    failed_tests = sum(1 for result in runner.results.values()
-                      if isinstance(result, dict) and not result.get("success"))
+    failed_tests = sum(
+        1
+        for result in runner.results.values()
+        if isinstance(result, dict) and not result.get("success")
+    )
 
     if failed_tests > 0:
         sys.exit(1)

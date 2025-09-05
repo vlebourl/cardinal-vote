@@ -16,11 +16,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     curl \
     && rm -rf /var/lib/apt/lists/*
 
-# Install uv for fast dependency management
-RUN pip install uv
-
-# Create build user
-RUN useradd --create-home --shell /bin/bash app
+# Install uv for fast dependency management and create build user
+RUN pip install --no-cache-dir uv==0.1.44 && \
+    useradd --create-home --shell /bin/bash app
 
 # Set up build directory
 WORKDIR /build

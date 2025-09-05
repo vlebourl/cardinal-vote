@@ -2,7 +2,7 @@ name: Release Pipeline
 
 on:
   push:
-    tags: ['v*.*.*']
+    tags: ["v*.*.*"]
   release:
     types: [published]
 
@@ -17,53 +17,53 @@ jobs:
     permissions:
       contents: read
       packages: write
-      
+
     outputs:
       image: ${{ steps.image.outputs.image }}
       digest: ${{ steps.build.outputs.digest }}
-      
+
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-    - name: Set up Docker Buildx
-      uses: docker/setup-buildx-action@v3
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
 
-    - name: Log in to Container Registry
-      uses: docker/login-action@v3
-      with:
-        registry: ${{ env.REGISTRY }}
-        username: ${{ github.actor }}
-        password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Log in to Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
-    - name: Extract metadata
-      id: meta
-      uses: docker/metadata-action@v5
-      with:
-        images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
-        tags: |
-          type=ref,event=tag
-          type=semver,pattern={{version}}
-          type=semver,pattern={{major}}.{{minor}}
-          type=semver,pattern={{major}}
-          type=raw,value=latest,enable={{is_default_branch}}
+      - name: Extract metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=ref,event=tag
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=semver,pattern={{major}}
+            type=raw,value=latest,enable={{is_default_branch}}
 
-    - name: Build and push Docker image
-      id: build
-      uses: docker/build-push-action@v5
-      with:
-        context: .
-        platforms: linux/amd64,linux/arm64
-        push: true
-        tags: ${{ steps.meta.outputs.tags }}
-        labels: ${{ steps.meta.outputs.labels }}
-        cache-from: type=gha
-        cache-to: type=gha,mode=max
+      - name: Build and push Docker image
+        id: build
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
 
-    - name: Output image
-      id: image
-      run: |
-        echo "image=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}@${{ steps.build.outputs.digest }}" >> $GITHUB_OUTPUT
+      - name: Output image
+        id: image
+        run: |
+          echo "image=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}@${{ steps.build.outputs.digest }}" >> $GITHUB_OUTPUT
 
   security-scan:
     name: Security Scan Release Image
@@ -71,143 +71,143 @@ jobs:
     needs: build-and-push
     permissions:
       security-events: write
-      
-    steps:
-    - name: Run Trivy vulnerability scanner
-      uses: aquasecurity/trivy-action@master
-      with:
-        image-ref: ${{ needs.build-and-push.outputs.image }}
-        format: 'sarif'
-        output: 'trivy-results.sarif'
 
-    - name: Upload Trivy scan results to GitHub Security tab
-      uses: github/codeql-action/upload-sarif@v2
-      with:
-        sarif_file: 'trivy-results.sarif'
+    steps:
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: ${{ needs.build-and-push.outputs.image }}
+          format: "sarif"
+          output: "trivy-results.sarif"
+
+      - name: Upload Trivy scan results to GitHub Security tab
+        uses: github/codeql-action/upload-sarif@v2
+        with:
+          sarif_file: "trivy-results.sarif"
 
   create-deployment-package:
     name: Create Deployment Package
     runs-on: ubuntu-latest
     needs: build-and-push
-    
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
 
-    - name: Create deployment package
-      run: |
-        mkdir -p deployment-package
-        
-        # Copy deployment files
-        cp docker-compose.production.yml deployment-package/docker-compose.yml
-        cp .env.example deployment-package/
-        cp deploy-from-tar.sh deployment-package/
-        cp -r scripts deployment-package/
-        
-        # Create deployment README
-        cat > deployment-package/README.md << 'EOF'
-        # ToVéCo Voting Platform - Deployment Package
-        
-        This package contains everything needed to deploy the ToVéCo voting platform.
-        
-        ## Quick Start
-        
-        1. Copy `.env.example` to `.env` and configure your settings
-        2. Set required environment variables:
-           - `ADMIN_USERNAME`: Admin username  
-           - `ADMIN_PASSWORD`: Secure admin password
-           - `SESSION_SECRET_KEY`: Random session secret
-        3. Run: `docker-compose up -d`
-        
-        ## Files Included
-        
-        - `docker-compose.yml`: Production Docker Compose configuration
-        - `.env.example`: Environment variables template
-        - `deploy-from-tar.sh`: Deployment script
-        - `scripts/`: Utility scripts
-        
-        ## Image Information
-        
-        - **Image**: ${{ needs.build-and-push.outputs.image }}
-        - **Version**: ${{ github.ref_name }}
-        - **Built**: $(date -u +"%Y-%m-%dT%H:%M:%SZ")
-        
-        For full documentation, visit: https://github.com/${{ github.repository }}
-        EOF
-        
-        # Create deployment info file
-        cat > deployment-package/deployment-info.json << EOF
-        {
-          "version": "${{ github.ref_name }}",
-          "image": "${{ needs.build-and-push.outputs.image }}",
-          "built_at": "$(date -u +"%Y-%m-%dT%H:%M:%SZ")",
-          "git_sha": "${{ github.sha }}",
-          "repository": "${{ github.repository }}"
-        }
-        EOF
-        
-    - name: Archive deployment package
-      run: |
-        tar -czf toveco-voting-${{ github.ref_name }}-deployment.tar.gz deployment-package/
-        
-    - name: Upload deployment package to release
-      uses: actions/upload-release-asset@v1
-      if: github.event_name == 'release'
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        upload_url: ${{ github.event.release.upload_url }}
-        asset_path: ./toveco-voting-${{ github.ref_name }}-deployment.tar.gz
-        asset_name: toveco-voting-${{ github.ref_name }}-deployment.tar.gz
-        asset_content_type: application/gzip
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Create deployment package
+        run: |
+          mkdir -p deployment-package
+
+          # Copy deployment files
+          cp docker-compose.production.yml deployment-package/docker-compose.yml
+          cp .env.example deployment-package/
+          cp deploy-from-tar.sh deployment-package/
+          cp -r scripts deployment-package/
+
+          # Create deployment README
+          cat > deployment-package/README.md << 'EOF'
+          # ToVéCo Voting Platform - Deployment Package
+
+          This package contains everything needed to deploy the ToVéCo voting platform.
+
+          ## Quick Start
+
+          1. Copy `.env.example` to `.env` and configure your settings
+          2. Set required environment variables:
+             - `ADMIN_USERNAME`: Admin username
+             - `ADMIN_PASSWORD`: Secure admin password
+             - `SESSION_SECRET_KEY`: Random session secret
+          3. Run: `docker-compose up -d`
+
+          ## Files Included
+
+          - `docker-compose.yml`: Production Docker Compose configuration
+          - `.env.example`: Environment variables template
+          - `deploy-from-tar.sh`: Deployment script
+          - `scripts/`: Utility scripts
+
+          ## Image Information
+
+          - **Image**: ${{ needs.build-and-push.outputs.image }}
+          - **Version**: ${{ github.ref_name }}
+          - **Built**: $(date -u +"%Y-%m-%dT%H:%M:%SZ")
+
+          For full documentation, visit: https://github.com/${{ github.repository }}
+          EOF
+
+          # Create deployment info file
+          cat > deployment-package/deployment-info.json << EOF
+          {
+            "version": "${{ github.ref_name }}",
+            "image": "${{ needs.build-and-push.outputs.image }}",
+            "built_at": "$(date -u +"%Y-%m-%dT%H:%M:%SZ")",
+            "git_sha": "${{ github.sha }}",
+            "repository": "${{ github.repository }}"
+          }
+          EOF
+
+      - name: Archive deployment package
+        run: |
+          tar -czf toveco-voting-${{ github.ref_name }}-deployment.tar.gz deployment-package/
+
+      - name: Upload deployment package to release
+        uses: actions/upload-release-asset@v1
+        if: github.event_name == 'release'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ github.event.release.upload_url }}
+          asset_path: ./toveco-voting-${{ github.ref_name }}-deployment.tar.gz
+          asset_name: toveco-voting-${{ github.ref_name }}-deployment.tar.gz
+          asset_content_type: application/gzip
 
   release-notification:
     name: Release Notification
     runs-on: ubuntu-latest
     needs: [build-and-push, security-scan, create-deployment-package]
     if: github.event_name == 'release'
-    
+
     steps:
-    - name: Create release comment
-      uses: actions/github-script@v6
-      with:
-        script: |
-          const { data: release } = await github.rest.repos.getRelease({
-            owner: context.repo.owner,
-            repo: context.repo.repo,
-            release_id: context.payload.release.id
-          });
-          
-          const comment = `🎉 **Release ${{ github.ref_name }} is now available!**
-          
-          **Docker Image**: \`${{ needs.build-and-push.outputs.image }}\`
-          
-          **What's included:**
-          - ✅ Multi-architecture Docker image (amd64, arm64)
-          - ✅ Security scanned with Trivy
-          - ✅ Complete deployment package
-          - ✅ Production-ready configuration
-          
-          **Quick deployment:**
-          \`\`\`bash
-          # Download and extract deployment package
-          wget ${release.assets.find(a => a.name.includes('deployment')).browser_download_url}
-          tar -xzf toveco-voting-${{ github.ref_name }}-deployment.tar.gz
-          cd deployment-package
-          
-          # Configure environment
-          cp .env.example .env
-          # Edit .env with your settings
-          
-          # Deploy
-          docker-compose up -d
-          \`\`\`
-          
-          See the [deployment documentation](https://github.com/${{ github.repository }}/blob/main/DEPLOYMENT.md) for more details.`;
-          
-          await github.rest.issues.createComment({
-            owner: context.repo.owner,
-            repo: context.repo.repo,
-            issue_number: release.number,
-            body: comment
-          });
+      - name: Create release comment
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const { data: release } = await github.rest.repos.getRelease({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              release_id: context.payload.release.id
+            });
+
+            const comment = `🎉 **Release ${{ github.ref_name }} is now available!**
+
+            **Docker Image**: \`${{ needs.build-and-push.outputs.image }}\`
+
+            **What's included:**
+            - ✅ Multi-architecture Docker image (amd64, arm64)
+            - ✅ Security scanned with Trivy
+            - ✅ Complete deployment package
+            - ✅ Production-ready configuration
+
+            **Quick deployment:**
+            \`\`\`bash
+            # Download and extract deployment package
+            wget ${release.assets.find(a => a.name.includes('deployment')).browser_download_url}
+            tar -xzf toveco-voting-${{ github.ref_name }}-deployment.tar.gz
+            cd deployment-package
+
+            # Configure environment
+            cp .env.example .env
+            # Edit .env with your settings
+
+            # Deploy
+            docker-compose up -d
+            \`\`\`
+
+            See the [deployment documentation](https://github.com/${{ github.repository }}/blob/main/DEPLOYMENT.md) for more details.`;
+
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: release.number,
+              body: comment
+            });

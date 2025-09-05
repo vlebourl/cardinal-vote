@@ -4,18 +4,18 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}Administration{% endblock %} - {{ app_name }}</title>
-    
+
     <!-- Security Headers -->
     <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline';">
     <meta http-equiv="X-Frame-Options" content="DENY">
     <meta http-equiv="X-Content-Type-Options" content="nosniff">
-    
+
     <!-- Admin CSS -->
     <link href="{{ url_for('static', path='/css/admin.css') }}" rel="stylesheet">
-    
+
     <!-- Font Awesome for icons (local) -->
     <link href="{{ url_for('static', path='/css/fontawesome.css') }}" rel="stylesheet">
-    
+
     {% block extra_css %}{% endblock %}
 </head>
 <body class="admin-body">
@@ -27,7 +27,7 @@
                     <i class="fas fa-cog"></i>
                     <span>Administration</span>
                 </div>
-                
+
                 {% if admin_user %}
                 <div class="admin-user-info">
                     <span class="admin-username">
@@ -51,24 +51,24 @@
                         <i class="fas fa-tachometer-alt"></i>
                         <span>Tableau de bord</span>
                     </a>
-                    
+
                     <a href="/admin/logos" class="admin-nav-item {% if request.url.path == '/admin/logos' %}active{% endif %}">
                         <i class="fas fa-images"></i>
                         <span>Gestion des logos</span>
                     </a>
-                    
+
                     <a href="/admin/votes" class="admin-nav-item {% if request.url.path == '/admin/votes' %}active{% endif %}">
                         <i class="fas fa-vote-yea"></i>
                         <span>Gestion des votes</span>
                     </a>
-                    
+
                     <div class="admin-nav-divider"></div>
-                    
+
                     <a href="/" class="admin-nav-item" target="_blank">
                         <i class="fas fa-external-link-alt"></i>
                         <span>Voir le site</span>
                     </a>
-                    
+
                     <a href="/results" class="admin-nav-item" target="_blank">
                         <i class="fas fa-chart-bar"></i>
                         <span>Voir les résultats</span>
@@ -114,14 +114,14 @@
 
     <!-- Base JavaScript -->
     <script src="{{ url_for('static', path='/js/admin.js') }}"></script>
-    
+
     <!-- CSRF Token for AJAX requests -->
     {% if csrf_token %}
     <script>
         window.csrfToken = "{{ csrf_token }}";
     </script>
     {% endif %}
-    
+
     {% block extra_js %}{% endblock %}
 
     <!-- Logout functionality -->
@@ -136,7 +136,7 @@
                         'Content-Type': 'application/json',
                     }
                 });
-                
+
                 if (response.ok) {
                     window.location.href = '/admin/login';
                 } else {

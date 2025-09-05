@@ -35,7 +35,7 @@ class TestVotingAPI:
                 "toveco9.png": -1,
                 "toveco10.png": 1,
                 "toveco11.png": 0,
-            }
+            },
         }
 
     def test_health_check(self, client):
@@ -150,11 +150,12 @@ class TestDatabaseOperations:
     @pytest.fixture
     def temp_db(self):
         """Create a temporary database for testing."""
-        with tempfile.NamedTemporaryFile(suffix='.db', delete=False) as f:
+        with tempfile.NamedTemporaryFile(suffix=".db", delete=False) as f:
             temp_db_path = f.name
 
         # Set up test database
         from src.toveco_voting.database import DatabaseManager
+
         db_manager = DatabaseManager(temp_db_path)
 
         yield db_manager
