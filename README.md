@@ -9,10 +9,10 @@
 
 ## Code Quality & Security
 
-[![CodeQL](https://github.com/vlebourl/cardinal-vote/actions/workflows/github-code-scanning/codeql/badge.svg)](https://github.com/vlebourl/cardinal-vote/actions/workflows/github-code-scanning/codeql)
-[![Security Scan](https://img.shields.io/badge/security-scanned-green.svg)](https://github.com/vlebourl/cardinal-vote/actions/workflows/ci.yml)
+[![Security Scan](https://img.shields.io/badge/security-scanned-brightgreen.svg?logo=github)](https://github.com/vlebourl/cardinal-vote/actions/workflows/ci.yml)
 [![codecov](https://codecov.io/gh/vlebourl/cardinal-vote/branch/main/graph/badge.svg)](https://codecov.io/gh/vlebourl/cardinal-vote)
 [![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
+[![Dependabot](https://img.shields.io/badge/dependabot-enabled-blue.svg?logo=dependabot)](https://github.com/vlebourl/cardinal-vote/pulls?q=is%3Apr+author%3Aapp%2Fdependabot)
 
 ## Technology Stack
 
@@ -23,9 +23,9 @@
 
 ## Container & Deployment
 
-[![Docker Image Size](https://img.shields.io/docker/image-size/ghcr.io/vlebourl/cardinal-vote/latest?label=docker%20image)](https://github.com/vlebourl/cardinal-vote/pkgs/container/cardinal-vote)
-[![Docker Pulls](https://img.shields.io/docker/pulls/ghcr.io/vlebourl/cardinal-vote)](https://github.com/vlebourl/cardinal-vote/pkgs/container/cardinal-vote)
 [![GitHub Container Registry](https://img.shields.io/badge/ghcr.io-container-blue.svg?logo=docker)](https://github.com/vlebourl/cardinal-vote/pkgs/container/cardinal-vote)
+[![Multi-Arch](https://img.shields.io/badge/arch-amd64%20|%20arm64-blue.svg?logo=docker)](https://github.com/vlebourl/cardinal-vote/pkgs/container/cardinal-vote)
+[![Container Ready](https://img.shields.io/badge/container-ready-success.svg?logo=docker)](https://github.com/vlebourl/cardinal-vote/pkgs/container/cardinal-vote)
 
 ## Project Health
 
@@ -45,7 +45,7 @@
 | **Security** | [Security Dashboard](https://github.com/vlebourl/cardinal-vote/security) | ![Security](https://img.shields.io/badge/security-scanned-brightgreen?style=flat-square) |
 | **Docker Image** | [Container Registry](https://github.com/vlebourl/cardinal-vote/pkgs/container/cardinal-vote) | ![Docker](https://img.shields.io/badge/docker-ready-blue?style=flat-square) |
 
-**🚀 Ready for Production** • **🔒 Security Hardened** • **📱 Mobile Optimized** • **🐳 Container Native**
+**🚀 Ready for Production** • **🔒 Security Hardened** • **📱 Mobile Optimized** • **🐳 GitHub Container Registry**
 
 ---
 
@@ -75,12 +75,39 @@ A modern, mobile-first logo voting platform built with FastAPI that implements *
 
 ## 🚀 Quick Start
 
-### Option 1: Docker (Recommended)
+### Option 1: GitHub Container Registry (Recommended)
+
+```bash
+# Create a docker-compose.yml file
+cat > docker-compose.yml << 'EOF'
+version: '3.8'
+services:
+  toveco-voting:
+    image: ghcr.io/vlebourl/cardinal-vote:latest
+    ports:
+      - "8000:8000"
+    environment:
+      - ADMIN_USERNAME=admin
+      - ADMIN_PASSWORD=your-secure-password-here
+      - SESSION_SECRET_KEY=your-session-secret-key-here
+    volumes:
+      - ./logos:/app/logos:ro
+      - ./data:/app/data
+    restart: unless-stopped
+EOF
+
+# Start the application
+docker compose up -d
+
+# Visit http://localhost:8000 to start voting!
+```
+
+### Option 2: From Source
 
 ```bash
 # Clone the repository
-git clone https://github.com/toveco/voting
-cd toveco
+git clone https://github.com/vlebourl/cardinal-vote
+cd cardinal-vote
 
 # Start with Docker Compose
 docker compose up -d
@@ -88,16 +115,21 @@ docker compose up -d
 # Visit http://localhost:8000 to start voting!
 ```
 
-### Option 2: Local Development
+### Option 3: Local Development
 
 ```bash
 # Install uv (fast Python package manager)
 curl -LsSf https://astral.sh/uv/install.sh | sh
 
 # Clone and setup
-git clone https://github.com/toveco/voting
-cd toveco
+git clone https://github.com/vlebourl/cardinal-vote
+cd cardinal-vote
 uv sync
+
+# Set required environment variables
+export ADMIN_USERNAME=admin
+export ADMIN_PASSWORD=secure-password-123
+export SESSION_SECRET_KEY=$(python -c "import secrets; print(secrets.token_urlsafe(32))")
 
 # Run the application
 ./scripts/run.sh
@@ -222,6 +254,68 @@ Aggregated results show:
 - ✨ **GitHub Flow Enforcement**: Branch protection rules, PR templates, code review
 - ✨ **Automated Releases**: Tag-based releases with deployment packages
 - ✨ **Code Quality Gates**: Ruff linting, mypy type checking, pytest coverage
+
+## 🐳 Container Distribution Strategy
+
+This project uses **GitHub Container Registry** (ghcr.io) instead of Docker Hub:
+
+### ✅ Why GitHub Container Registry?
+- **🔗 Source Integration**: Images directly linked to repository and releases  
+- **🚀 No Rate Limits**: Free public access without Docker Hub restrictions
+- **🛡️ Enhanced Security**: Integrated vulnerability scanning and Dependabot
+- **🏗️ Multi-Architecture**: Automatic ARM64 + AMD64 builds
+- **🔒 Privacy Ready**: Can be made private for enterprise use
+
+### 📦 Available Container Images
+```bash
+# Latest stable release (production recommended)
+ghcr.io/vlebourl/cardinal-vote:latest
+
+# Specific version pinning (reproducible deployments)  
+ghcr.io/vlebourl/cardinal-vote:v1.1.1
+
+# Architecture-specific (auto-selected by Docker)
+ghcr.io/vlebourl/cardinal-vote:latest-amd64
+ghcr.io/vlebourl/cardinal-vote:latest-arm64
+```
+
+### 🚀 Production Deployment
+```yaml
+# docker-compose.production.yml
+version: '3.8'
+services:
+  toveco-voting:
+    image: ghcr.io/vlebourl/cardinal-vote:latest
+    ports:
+      - "8000:8000"  
+    environment:
+      # Security: Set these via .env file or secrets
+      - ADMIN_USERNAME=${ADMIN_USERNAME}
+      - ADMIN_PASSWORD=${ADMIN_PASSWORD}
+      - SESSION_SECRET_KEY=${SESSION_SECRET_KEY}
+      - DATABASE_PATH=/app/data/votes.db
+    volumes:
+      - ./logos:/app/logos:ro    # Your logo files
+      - ./data:/app/data         # Persistent database  
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+```
+
+**🔧 Deploy Command:**
+```bash
+# Download compose file from releases or create your own
+curl -O https://github.com/vlebourl/cardinal-vote/releases/latest/download/docker-compose.production.yml
+
+# Configure environment (never use defaults!)
+cp .env.example .env && nano .env
+
+# Deploy  
+docker compose -f docker-compose.production.yml up -d
+```
 
 ## 🤝 Contributing
 
