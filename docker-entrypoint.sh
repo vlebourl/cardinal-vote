@@ -183,7 +183,7 @@ start_application() {
 
     # Build uvicorn command
     local uvicorn_args=(
-        "src.toveco_voting.main:app"
+        "toveco_voting.main:app"
         "--host" "$HOST"
         "--port" "$PORT"
         "--access-log"
