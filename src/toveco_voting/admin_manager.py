@@ -147,9 +147,9 @@ class AdminManager:
         # Update overall success status
         if results["failed"]:
             results["success"] = len(results["deleted"]) > 0
-            results[
-                "message"
-            ] = f"Deleted {len(results['deleted'])}, failed {len(results['failed'])}"
+            results["message"] = (
+                f"Deleted {len(results['deleted'])}, failed {len(results['failed'])}"
+            )
         else:
             results["message"] = f"Successfully deleted {len(results['deleted'])} logos"
 

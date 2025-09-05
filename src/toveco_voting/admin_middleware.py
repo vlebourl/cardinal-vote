@@ -41,9 +41,9 @@ class AdminSecurityMiddleware(BaseHTTPMiddleware):
             response.headers["X-Frame-Options"] = "DENY"
             response.headers["X-Content-Type-Options"] = "nosniff"
             response.headers["X-XSS-Protection"] = "1; mode=block"
-            response.headers[
-                "Cache-Control"
-            ] = "no-store, no-cache, must-revalidate, proxy-revalidate"
+            response.headers["Cache-Control"] = (
+                "no-store, no-cache, must-revalidate, proxy-revalidate"
+            )
             response.headers["Pragma"] = "no-cache"
             response.headers["Expires"] = "0"
 

@@ -3,6 +3,7 @@
 Test script to verify the vote details fix in the admin panel.
 This simulates the JavaScript fetch request that was failing.
 """
+
 import sys
 
 from toveco_voting.admin_manager import AdminManager

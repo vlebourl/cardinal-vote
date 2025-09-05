@@ -171,9 +171,9 @@ class TestCompleteVotingWorkflow:
         print(f"  Steps passed: {summary['passed_steps']}/{summary['total_steps']}")
         print(f"  Success rate: {summary['success_rate']:.1f}%")
 
-        assert (
-            summary["success_rate"] >= 80
-        ), f"Workflow success rate too low: {summary['success_rate']:.1f}%"
+        assert summary["success_rate"] >= 80, (
+            f"Workflow success rate too low: {summary['success_rate']:.1f}%"
+        )
 
     def test_multiple_users_workflow(self, workflow_validator):
         """Test workflow with multiple users voting."""
@@ -267,9 +267,9 @@ class TestCompleteVotingWorkflow:
         print(f"  Success rate: {summary['success_rate']:.1f}%")
         print(f"  Successful votes: {successful_votes}/{len(voting_session)}")
 
-        assert (
-            summary["success_rate"] >= 70
-        ), f"Multi-user workflow success rate too low: {summary['success_rate']:.1f}%"
+        assert summary["success_rate"] >= 70, (
+            f"Multi-user workflow success rate too low: {summary['success_rate']:.1f}%"
+        )
 
     def test_edge_case_workflow(self, workflow_validator):
         """Test workflow with edge cases and error conditions."""
@@ -353,9 +353,9 @@ class TestCompleteVotingWorkflow:
         print(f"  Steps passed: {summary['passed_steps']}/{summary['total_steps']}")
         print(f"  Success rate: {summary['success_rate']:.1f}%")
 
-        assert (
-            summary["success_rate"] >= 90
-        ), f"Edge case handling success rate too low: {summary['success_rate']:.1f}%"
+        assert summary["success_rate"] >= 90, (
+            f"Edge case handling success rate too low: {summary['success_rate']:.1f}%"
+        )
 
 
 class TestDataConsistency:
@@ -411,9 +411,9 @@ class TestDataConsistency:
         result_logos = set(results_data["summary"].keys())
 
         # Our logos should be a subset of result logos
-        assert our_logos.issubset(
-            result_logos
-        ), f"Missing logos in results: {our_logos - result_logos}"
+        assert our_logos.issubset(result_logos), (
+            f"Missing logos in results: {our_logos - result_logos}"
+        )
 
         # Verify statistics make sense
         for logo, _rating in test_vote["ratings"].items():
@@ -469,9 +469,9 @@ class TestDataConsistency:
                 expected_avg = 2 / 3
                 actual_avg = logo1_stats["average"]
 
-                assert (
-                    abs(actual_avg - expected_avg) < 0.01
-                ), f"toveco1 average wrong: expected {expected_avg:.2f}, got {actual_avg}"
+                assert abs(actual_avg - expected_avg) < 0.01, (
+                    f"toveco1 average wrong: expected {expected_avg:.2f}, got {actual_avg}"
+                )
 
             # toveco2: (-1 + 0 + 1) / 3 = 0
             if "toveco2.png" in results_data["summary"]:
@@ -479,9 +479,9 @@ class TestDataConsistency:
                 expected_avg = 0.0
                 actual_avg = logo2_stats["average"]
 
-                assert (
-                    abs(actual_avg - expected_avg) < 0.01
-                ), f"toveco2 average wrong: expected {expected_avg:.2f}, got {actual_avg}"
+                assert abs(actual_avg - expected_avg) < 0.01, (
+                    f"toveco2 average wrong: expected {expected_avg:.2f}, got {actual_avg}"
+                )
 
 
 class TestSystemIntegration:
@@ -516,9 +516,9 @@ class TestSystemIntegration:
                 response = client.post(endpoint, json=test_data)
 
             # API should respond (may not be 200 in all test environments)
-            assert (
-                response.status_code < 500
-            ), f"Server error on {method} {endpoint}: {response.status_code}"
+            assert response.status_code < 500, (
+                f"Server error on {method} {endpoint}: {response.status_code}"
+            )
 
             # Content type should be JSON for API endpoints
             if response.status_code == 200:
@@ -578,9 +578,9 @@ class TestBusinessLogicValidation:
                 # If it fails validation, check it's not due to rating values
                 error_data = response.json()
                 error_message = str(error_data).lower()
-                assert (
-                    "rating" not in error_message or "range" not in error_message
-                ), f"Valid rating {rating} was rejected"
+                assert "rating" not in error_message or "range" not in error_message, (
+                    f"Valid rating {rating} was rejected"
+                )
 
         # Test invalid ratings
         invalid_ratings = [-3, 3, 5, -10]
@@ -678,9 +678,9 @@ class TestBusinessLogicValidation:
                 sorted_by_rank = sorted(rankings.keys(), key=lambda x: rankings[x])
 
                 # The order should match (higher average = better ranking = lower ranking number)
-                assert (
-                    sorted_by_avg == sorted_by_rank
-                ), f"Ranking order doesn't match average order: {sorted_by_avg} vs {sorted_by_rank}"
+                assert sorted_by_avg == sorted_by_rank, (
+                    f"Ranking order doesn't match average order: {sorted_by_avg} vs {sorted_by_rank}"
+                )
 
 
 # Integration test runner

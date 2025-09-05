@@ -144,12 +144,12 @@ class TestBasicPerformance:
         print(f"  P95: {p95_response_time * 1000:.1f}ms")
 
         # Performance assertions
-        assert (
-            avg_response_time < 0.1
-        ), f"Average response time too slow: {avg_response_time * 1000:.1f}ms"
-        assert (
-            p95_response_time < 0.2
-        ), f"P95 response time too slow: {p95_response_time * 1000:.1f}ms"
+        assert avg_response_time < 0.1, (
+            f"Average response time too slow: {avg_response_time * 1000:.1f}ms"
+        )
+        assert p95_response_time < 0.2, (
+            f"P95 response time too slow: {p95_response_time * 1000:.1f}ms"
+        )
 
     def test_logos_endpoint_response_time(self, client):
         """Test logos endpoint response time."""
@@ -174,9 +174,9 @@ class TestBasicPerformance:
         print(f"  Average: {avg_response_time * 1000:.1f}ms")
         print(f"  Max: {max_response_time * 1000:.1f}ms")
 
-        assert (
-            avg_response_time < 0.5
-        ), f"Logos endpoint too slow: {avg_response_time * 1000:.1f}ms"
+        assert avg_response_time < 0.5, (
+            f"Logos endpoint too slow: {avg_response_time * 1000:.1f}ms"
+        )
 
     def test_vote_submission_response_time(self, client, sample_vote_data):
         """Test vote submission response time."""
@@ -205,9 +205,9 @@ class TestBasicPerformance:
         print(f"  Average: {avg_response_time * 1000:.1f}ms")
         print(f"  Successful submissions: {successful_submissions}/10")
 
-        assert (
-            avg_response_time < 1.0
-        ), f"Vote submission too slow: {avg_response_time * 1000:.1f}ms"
+        assert avg_response_time < 1.0, (
+            f"Vote submission too slow: {avg_response_time * 1000:.1f}ms"
+        )
 
     def test_results_calculation_response_time(self, client):
         """Test results calculation response time."""
@@ -230,9 +230,9 @@ class TestBasicPerformance:
         print(f"  Average: {avg_response_time * 1000:.1f}ms")
         print(f"  Max: {max_response_time * 1000:.1f}ms")
 
-        assert (
-            avg_response_time < 0.5
-        ), f"Results calculation too slow: {avg_response_time * 1000:.1f}ms"
+        assert avg_response_time < 0.5, (
+            f"Results calculation too slow: {avg_response_time * 1000:.1f}ms"
+        )
 
 
 class TestConcurrentLoad:
@@ -335,15 +335,15 @@ class TestConcurrentLoad:
         print(f"  P95 response time: {stats['response_times']['p95'] * 1000:.1f}ms")
 
         # Performance assertions
-        assert (
-            stats["success_rate"] >= 95
-        ), f"Success rate too low: {stats['success_rate']:.1f}%"
-        assert (
-            stats["requests_per_second"] >= 50
-        ), f"Throughput too low: {stats['requests_per_second']:.1f} req/s"
-        assert (
-            stats["response_times"]["mean"] < 0.5
-        ), f"Average response time too slow: {stats['response_times']['mean'] * 1000:.1f}ms"
+        assert stats["success_rate"] >= 95, (
+            f"Success rate too low: {stats['success_rate']:.1f}%"
+        )
+        assert stats["requests_per_second"] >= 50, (
+            f"Throughput too low: {stats['requests_per_second']:.1f} req/s"
+        )
+        assert stats["response_times"]["mean"] < 0.5, (
+            f"Average response time too slow: {stats['response_times']['mean'] * 1000:.1f}ms"
+        )
 
     @pytest.mark.slow
     def test_concurrent_vote_submissions(self, sample_vote_data):
@@ -390,12 +390,12 @@ class TestConcurrentLoad:
         )
 
         # More lenient assertions for vote submissions
-        assert (
-            stats["success_rate"] >= 80
-        ), f"Vote success rate too low: {stats['success_rate']:.1f}%"
-        assert (
-            stats["response_times"]["mean"] < 2.0
-        ), f"Vote submission too slow: {stats['response_times']['mean'] * 1000:.1f}ms"
+        assert stats["success_rate"] >= 80, (
+            f"Vote success rate too low: {stats['success_rate']:.1f}%"
+        )
+        assert stats["response_times"]["mean"] < 2.0, (
+            f"Vote submission too slow: {stats['response_times']['mean'] * 1000:.1f}ms"
+        )
 
     @pytest.mark.slow
     def test_mixed_workload(self, sample_vote_data):
@@ -456,9 +456,9 @@ class TestConcurrentLoad:
         )
         print(f"  P95 response time: {stats['response_times']['p95'] * 1000:.1f}ms")
 
-        assert (
-            stats["success_rate"] >= 85
-        ), f"Mixed workload success rate too low: {stats['success_rate']:.1f}%"
+        assert stats["success_rate"] >= 85, (
+            f"Mixed workload success rate too low: {stats['success_rate']:.1f}%"
+        )
 
 
 class TestDatabasePerformance:
@@ -501,9 +501,9 @@ class TestDatabasePerformance:
         print(f"  {votes_per_second:.1f} votes/second")
 
         # Performance assertion
-        assert (
-            votes_per_second >= 100
-        ), f"Vote insertion too slow: {votes_per_second:.1f} votes/s"
+        assert votes_per_second >= 100, (
+            f"Vote insertion too slow: {votes_per_second:.1f} votes/s"
+        )
 
     def test_large_results_calculation_performance(self, temp_db):
         """Test results calculation with large dataset."""
@@ -532,9 +532,9 @@ class TestDatabasePerformance:
         assert len(results["summary"]) == 11
 
         # Performance assertion
-        assert (
-            calculation_time < 1.0
-        ), f"Results calculation too slow: {calculation_time:.3f}s"
+        assert calculation_time < 1.0, (
+            f"Results calculation too slow: {calculation_time:.3f}s"
+        )
 
     def test_concurrent_database_operations(self, temp_db):
         """Test concurrent database read/write operations."""
@@ -607,9 +607,9 @@ class TestMemoryAndResources:
                 memory_growth = current_memory - initial_memory
 
                 # Memory growth should be reasonable
-                assert (
-                    memory_growth < 50
-                ), f"Memory growth too high: {memory_growth:.1f}MB"
+                assert memory_growth < 50, (
+                    f"Memory growth too high: {memory_growth:.1f}MB"
+                )
 
         final_memory = process.memory_info().rss / 1024 / 1024
         total_growth = final_memory - initial_memory
@@ -652,9 +652,9 @@ class TestMemoryAndResources:
             print(f"  Bytes per vote: {bytes_per_vote:.1f}")
 
             # Size growth should be reasonable
-            assert (
-                bytes_per_vote < 1000
-            ), f"Database growth too high: {bytes_per_vote:.1f} bytes/vote"
+            assert bytes_per_vote < 1000, (
+                f"Database growth too high: {bytes_per_vote:.1f} bytes/vote"
+            )
 
         finally:
             if os.path.exists(temp_db_path):
@@ -712,9 +712,9 @@ class TestStressScenarios:
 
         # System should handle bursts gracefully
         assert success_rate >= 90, f"Burst success rate too low: {success_rate:.1f}%"
-        assert (
-            avg_response_time < 1.0
-        ), f"Burst response time too slow: {avg_response_time * 1000:.1f}ms"
+        assert avg_response_time < 1.0, (
+            f"Burst response time too slow: {avg_response_time * 1000:.1f}ms"
+        )
 
     @pytest.mark.slow
     def test_sustained_load(self):
@@ -761,12 +761,12 @@ class TestStressScenarios:
         )
 
         # System should maintain performance under sustained load
-        assert (
-            stats["success_rate"] >= 95
-        ), f"Sustained load success rate too low: {stats['success_rate']:.1f}%"
-        assert (
-            stats["requests_per_second"] >= 8
-        ), f"Sustained throughput too low: {stats['requests_per_second']:.1f} req/s"
+        assert stats["success_rate"] >= 95, (
+            f"Sustained load success rate too low: {stats['success_rate']:.1f}%"
+        )
+        assert stats["requests_per_second"] >= 8, (
+            f"Sustained throughput too low: {stats['requests_per_second']:.1f} req/s"
+        )
 
 
 # Performance test runner that can be used standalone

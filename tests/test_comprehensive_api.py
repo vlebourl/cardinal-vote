@@ -205,9 +205,9 @@ class TestComprehensiveAPI:
         for logo in data["logos"]:
             assert logo.startswith("toveco"), f"Logo {logo} doesn't start with 'toveco'"
             assert logo.endswith(".png"), f"Logo {logo} doesn't end with '.png'"
-            assert (
-                logo.replace("toveco", "").replace(".png", "").isdigit()
-            ), f"Logo {logo} doesn't have numeric identifier"
+            assert logo.replace("toveco", "").replace(".png", "").isdigit(), (
+                f"Logo {logo} doesn't have numeric identifier"
+            )
 
     def test_get_logos_randomization(self, client):
         """Test logos are returned in different orders (randomized)."""

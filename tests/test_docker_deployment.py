@@ -92,9 +92,9 @@ class TestDockerBuild:
         # Should ignore common development files
         expected_ignores = [".git", "__pycache__", "*.pyc", ".pytest_cache"]
         for ignore_pattern in expected_ignores:
-            assert (
-                ignore_pattern in content
-            ), f"Missing {ignore_pattern} in .dockerignore"
+            assert ignore_pattern in content, (
+                f"Missing {ignore_pattern} in .dockerignore"
+            )
 
     def test_image_builds_successfully(self, built_image):
         """Test that Docker image builds without errors."""
@@ -475,17 +475,17 @@ class TestProductionReadiness:
 
             # Should have HEALTHCHECK instruction
             if "HEALTHCHECK" in content:
-                assert (
-                    "/api/health" in content
-                ), "Health check should use health endpoint"
+                assert "/api/health" in content, (
+                    "Health check should use health endpoint"
+                )
             else:
                 # Health check might be in compose file instead
                 compose_file = project_root / "docker-compose.yml"
                 if compose_file.exists():
                     compose_content = compose_file.read_text()
-                    assert (
-                        "healthcheck" in compose_content
-                    ), "No health check configured"
+                    assert "healthcheck" in compose_content, (
+                        "No health check configured"
+                    )
 
     def test_logging_configuration(self, project_root):
         """Test that logging is properly configured."""
@@ -502,9 +502,9 @@ class TestProductionReadiness:
                 if "logging:" in content:
                     # Should not use default logging driver for production
                     if "prod" in compose_file.name:
-                        assert (
-                            "json-file" in content
-                        ), "Production should use json-file logging"
+                        assert "json-file" in content, (
+                            "Production should use json-file logging"
+                        )
 
     def test_secrets_management(self, project_root):
         """Test that secrets are not hardcoded."""
@@ -567,9 +567,9 @@ class TestNetworkConfiguration:
                 service_count = content.count("image:") + content.count("build:")
                 if service_count > 1:
                     # Should define custom networks for security
-                    assert (
-                        "networks:" in content
-                    ), "Multi-service setup should use custom networks"
+                    assert "networks:" in content, (
+                        "Multi-service setup should use custom networks"
+                    )
 
 
 # Integration test that can be run manually
