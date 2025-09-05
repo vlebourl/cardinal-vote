@@ -49,10 +49,23 @@ toveco-voting/
 ### Core Principles
 
 1. **Main branch is always deployable**
-2. **No direct pushes to main** - all changes via PRs
-3. **Feature branches for all work**
+2. **ZERO EXCEPTIONS: NO direct pushes to main** - ALL changes via PRs
+3. **Feature branches for EVERY change** - including documentation, README, typos
 4. **All CI checks must pass before merge**
 5. **Require code review before merge**
+
+### 🚨 ZERO EXCEPTION POLICY
+
+**EVERY SINGLE CHANGE** requires a feature branch and pull request:
+- ❌ **NO exceptions for documentation changes**
+- ❌ **NO exceptions for README updates** 
+- ❌ **NO exceptions for typo fixes**
+- ❌ **NO exceptions for badge updates**
+- ❌ **NO exceptions for configuration tweaks**
+- ❌ **NO exceptions for "quick fixes"**
+- ❌ **NO exceptions for emergency changes** (use hotfix branches)
+
+**If you can edit it, it needs a PR. Period.**
 
 ### Workflow Steps
 
@@ -278,21 +291,49 @@ Closes #123
 
 When working on this repository, Claude Code should:
 
-### Always Use Feature Branches
-```bash
-# ❌ NEVER do this
-git checkout main
-# make changes
-git commit -m "fix something"
-git push origin main
+### Always Use Feature Branches - NO EXCEPTIONS
 
-# ✅ ALWAYS do this  
-git checkout -b fix/specific-issue-description
-# make changes
-git commit -m "descriptive commit message"  
-git push -u origin fix/specific-issue-description
-# Then create PR through GitHub
+```bash
+# ❌ ABSOLUTELY NEVER do this - even for tiny changes
+git checkout main
+echo "fix typo" > README.md  # Even single character changes!
+git commit -m "fix typo"
+git push origin main        # THIS IS FORBIDDEN
+
+# ✅ ALWAYS do this - even for single character fixes
+git checkout main
+git pull origin main
+git checkout -b docs/fix-readme-typo
+echo "fixed typo" > README.md
+git commit -m "docs: fix typo in README installation section"
+git push -u origin docs/fix-readme-typo
+# Then create PR through GitHub and wait for approval
 ```
+
+### Examples of Changes That STILL Need PRs
+```bash
+# ✅ Single word typo fix
+git checkout -b docs/fix-typo-word
+# edit one word
+git commit -m "docs: fix 'installtion' typo in README"
+
+# ✅ Badge update  
+git checkout -b docs/update-build-badge
+# change one badge URL
+git commit -m "docs: update CI status badge URL"
+
+# ✅ Version bump
+git checkout -b release/bump-version
+# update version number
+git commit -m "chore: bump version to 1.2.0"
+
+# ✅ Configuration tweak
+git checkout -b config/update-timeout
+# change one config value
+git commit -m "config: increase request timeout to 60s"
+```
+
+**Remember: If you can type `git add`, you need a feature branch!**
 
 ### Follow PR Process
 1. **Create feature branch** from latest main
@@ -318,13 +359,32 @@ For critical security fixes only:
 3. Fast-track review process
 4. Deploy immediately after merge
 
-## Important Reminders
+## 🔒 ENFORCEMENT - Important Reminders
 
-- **NEVER commit secrets or credentials**
-- **ALWAYS test Docker builds before pushing**
-- **KEEP feature branches small and focused**
-- **UPDATE tests for any behavioral changes**  
-- **WRITE clear commit messages and PR descriptions**
-- **FOLLOW the security validation checklist**
+### Absolute Requirements (Zero Tolerance)
+- **NEVER EVER commit directly to main** - Use feature branches for EVERYTHING
+- **NEVER commit secrets or credentials** - Use environment variables only
+- **NEVER skip the PR process** - Even for "obvious" fixes
+- **NEVER merge without CI approval** - All checks must pass
+- **NEVER bypass code review** - Get approval first
+
+### Best Practices (Strongly Recommended)  
+- **ALWAYS test Docker builds before pushing** - Prevent broken containers
+- **KEEP feature branches small and focused** - One change per PR
+- **UPDATE tests for any behavioral changes** - Maintain test coverage  
+- **WRITE clear commit messages and PR descriptions** - Help reviewers
+- **FOLLOW the security validation checklist** - Prevent vulnerabilities
+
+### Violation Consequences
+**Direct pushes to main will be:**
+- ✅ **Reverted immediately** if discovered
+- ✅ **Flagged in review** for process improvement
+- ✅ **Used as learning opportunity** to reinforce discipline
+
+**This is not about control - it's about:**
+- 🛡️ **Code Quality**: Every change gets reviewed
+- 🔒 **Security**: All changes get scanned  
+- 📈 **Reliability**: Consistent testing and validation
+- 🤝 **Collaboration**: Transparent change process
 
 This workflow ensures code quality, security, and maintainability while enabling efficient collaboration.
