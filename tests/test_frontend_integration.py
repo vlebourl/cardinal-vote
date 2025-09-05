@@ -111,7 +111,7 @@ class TestFrontendWorkflow:
             # Wait for error message to appear using WebDriverWait
             wait = WebDriverWait(driver, 10)
             error_message = wait.until(
-                EC.presence_of_element_located((By.CLASS_NAME, "error-message"))
+                EC.visibility_of_element_located((By.CLASS_NAME, "error-message"))
             )
 
             # Should show error message
@@ -136,7 +136,7 @@ class TestFrontendWorkflow:
             wait = WebDriverWait(driver, 10)
             try:
                 error_message = wait.until(
-                    EC.presence_of_element_located((By.CLASS_NAME, "error-message"))
+                    EC.visibility_of_element_located((By.CLASS_NAME, "error-message"))
                 )
                 assert error_message.is_displayed()
                 assert "nom" in error_message.text.lower()
@@ -301,7 +301,7 @@ class TestFrontendWorkflow:
             wait = WebDriverWait(driver, 10)
             try:
                 error_message = wait.until(
-                    EC.presence_of_element_located((By.CLASS_NAME, "error-message"))
+                    EC.visibility_of_element_located((By.CLASS_NAME, "error-message"))
                 )
                 assert error_message.is_displayed()
 
