@@ -387,9 +387,9 @@ class TestFrontendWorkflow:
 
             driver.get(base_url)
 
-            # Check that elements are still visible and functional
-            welcome_screen = driver.find_element(By.ID, "welcome-screen")
-            assert welcome_screen.is_displayed()
+            # Wait for JavaScript to load and show welcome screen
+            wait = WebDriverWait(driver, 10)
+            wait.until(EC.visibility_of_element_located((By.ID, "welcome-screen")))
 
             first_name_input = driver.find_element(By.ID, "voter-first-name")
             last_name_input = driver.find_element(By.ID, "voter-last-name")
