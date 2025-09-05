@@ -17,7 +17,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 
 # Install uv for fast dependency management and create build user
-RUN pip install --no-cache-dir uv==0.1.44 && \
+RUN pip install --no-cache-dir uv==0.5.9 && \
     useradd --create-home --shell /bin/bash app
 
 # Set up build directory
@@ -28,12 +28,8 @@ COPY pyproject.toml uv.lock* ./
 COPY src/ ./src/
 COPY README.md ./
 
-# Create virtual environment and install dependencies
-RUN uv venv /opt/venv
-ENV PATH="/opt/venv/bin:$PATH"
-
-# Install the project and dependencies
-RUN uv pip install -e .
+# Install dependencies and project
+RUN uv sync --no-dev
 
 # Production stage
 FROM python:3.11-slim AS production
@@ -61,7 +57,7 @@ RUN mkdir -p /app/data /app/logs \
     && chown -R app:app /app
 
 # Copy virtual environment from builder
-COPY --from=builder /opt/venv /opt/venv
+COPY --from=builder /build/.venv /opt/venv
 
 # Copy source code from builder
 COPY --from=builder /build/src /app/src
