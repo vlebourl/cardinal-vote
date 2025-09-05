@@ -181,7 +181,7 @@ logs/
 
 # uv files
 .uv/
-uv.lock
+# uv.lock - committed for reproducible builds and CI caching
 
 # Build artifacts
 .tox/
