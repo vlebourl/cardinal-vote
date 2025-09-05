@@ -5,9 +5,9 @@ from typing import Any
 
 from pydantic import BaseModel, Field, validator
 from sqlalchemy import Boolean, Column, DateTime, Integer, String, Text
-from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.ext.declarative import DeclarativeMeta, declarative_base
 
-Base = declarative_base()
+Base: DeclarativeMeta = declarative_base()
 
 
 class VoteRecord(Base):
@@ -62,7 +62,8 @@ class AdminSession(Base):
     user_agent = Column(Text)
 
     def __repr__(self) -> str:
-        return f"<AdminSession(id='{self.id[:8]}...', user_id={self.user_id})>"
+        session_id = self.id[:8] if self.id else "unknown"
+        return f"<AdminSession(id='{session_id}...', user_id={self.user_id})>"
 
 
 class VoteSubmission(BaseModel):

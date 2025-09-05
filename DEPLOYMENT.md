@@ -783,7 +783,6 @@ nmap --script ssl-enum-ciphers -p 443 voting.yourdomain.com
 ### Content Delivery Network (CDN)
 
 1. **CloudFlare Setup**:
-
    - Add your domain to CloudFlare
    - Enable "Under Attack Mode" for DDoS protection
    - Configure cache rules for static assets

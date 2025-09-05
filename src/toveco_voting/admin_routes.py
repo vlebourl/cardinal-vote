@@ -1,6 +1,8 @@
 """Admin routes for the ToVéCo voting platform."""
 
 import logging
+from collections.abc import Callable
+from typing import Any
 
 from fastapi import (
     APIRouter,
@@ -35,20 +37,20 @@ logger = logging.getLogger(__name__)
 admin_router = APIRouter(prefix="/admin", tags=["Admin"])
 
 # Templates will be set up in main.py
-templates: Jinja2Templates = None
-auth_manager: AdminAuthManager = None
-admin_manager: AdminManager = None
-require_admin_auth = None
-optional_admin_auth = None
+templates: Jinja2Templates | None = None
+auth_manager: AdminAuthManager | None = None
+admin_manager: AdminManager | None = None
+require_admin_auth: Callable | None = None
+optional_admin_auth: Callable | None = None
 
 
 def setup_admin_router(
     template_engine: Jinja2Templates,
     auth_mgr: AdminAuthManager,
     admin_mgr: AdminManager,
-    required_auth_dep,
-    optional_auth_dep,
-):
+    required_auth_dep: Callable,
+    optional_auth_dep: Callable,
+) -> None:
     """Set up admin router dependencies."""
     global \
         templates, \
@@ -65,8 +67,10 @@ def setup_admin_router(
 
 # Authentication Routes
 @admin_router.get("/login", response_class=HTMLResponse)
-async def admin_login_page(request: Request):
+async def admin_login_page(request: Request) -> HTMLResponse:
     """Serve admin login page."""
+    assert templates is not None
+    assert auth_manager is not None
     # Check if already logged in
     session_token = request.cookies.get("admin_session")
     if session_token and auth_manager:
@@ -92,7 +96,7 @@ async def admin_login(
     response: Response,
     username: str = Form(...),
     password: str = Form(...),
-):
+) -> HTMLResponse:
     """Process admin login."""
     try:
         ip_address = get_client_ip(request)
@@ -104,6 +108,7 @@ async def admin_login(
             rate_key, limit=5, window_seconds=300
         ):  # 5 attempts per 5 minutes
             logger.warning(f"Login rate limit exceeded for IP: {ip_address}")
+            assert templates is not None
             return templates.TemplateResponse(
                 "admin/login.html",
                 {
@@ -117,12 +122,14 @@ async def admin_login(
         # Validate credentials
         login_data = AdminLogin(username=username, password=password)
 
+        assert auth_manager is not None
         session_token = auth_manager.authenticate_user(
             login_data.username, login_data.password, ip_address, user_agent
         )
 
         if not session_token:
             logger.warning(f"Failed login attempt: {username} from {ip_address}")
+            assert templates is not None
             return templates.TemplateResponse(
                 "admin/login.html",
                 {
@@ -154,6 +161,7 @@ async def admin_login(
 
     except Exception as e:
         logger.error(f"Login error: {e}")
+        assert templates is not None
         return templates.TemplateResponse(
             "admin/login.html",
             {
@@ -169,9 +177,10 @@ async def admin_login(
 async def admin_logout(
     response: Response,
     admin_session: str = Cookie(None),
-):
+) -> JSONResponse:
     """Process admin logout."""
     if admin_session:
+        assert auth_manager is not None
         auth_manager.logout_user(admin_session)
         logger.info(f"Admin logout: session {admin_session[:8]}...")
 
@@ -181,7 +190,7 @@ async def admin_logout(
 
 
 # Dashboard and Main Admin Pages
-def get_admin_user_or_error(request: Request):
+def get_admin_user_or_error(request: Request) -> dict:
     """Helper function to get admin user or raise 401."""
     session_token = request.cookies.get("admin_session")
     if not session_token or not auth_manager:
@@ -199,12 +208,13 @@ def get_admin_user_or_error(request: Request):
 
 
 @admin_router.get("/dashboard", response_class=HTMLResponse)
-async def admin_dashboard(request: Request):
+async def admin_dashboard(request: Request) -> HTMLResponse:
     """Serve admin dashboard."""
     try:
         admin_user = get_admin_user_or_error(request)
 
         # Get system statistics
+        assert admin_manager is not None
         stats = admin_manager.get_system_stats()
         recent_votes = admin_manager.get_recent_activity(limit=5)
         logo_details = admin_manager.get_logo_details()
@@ -212,6 +222,7 @@ async def admin_dashboard(request: Request):
         # Generate CSRF token
         csrf_token = generate_csrf_token(admin_user)
 
+        assert templates is not None
         return templates.TemplateResponse(
             "admin/dashboard.html",
             {
@@ -236,13 +247,15 @@ async def admin_dashboard(request: Request):
 @admin_router.get("/logos", response_class=HTMLResponse)
 async def admin_logos_page(
     request: Request,
-    admin_user: dict = Depends(lambda: require_admin_auth()),
-):
+    admin_user: dict = Depends(require_admin_auth),
+) -> HTMLResponse:
     """Serve logo management page."""
     try:
+        assert admin_manager is not None
         logo_details = admin_manager.get_logo_details()
         csrf_token = generate_csrf_token(admin_user)
 
+        assert templates is not None
         return templates.TemplateResponse(
             "admin/logos.html",
             {
@@ -268,8 +281,8 @@ async def upload_logo(
     file: UploadFile = File(...),
     new_name: str = Form(None),
     csrf_token: str = Form(...),
-    admin_user: dict = Depends(lambda: require_admin_auth()),
-):
+    admin_user: dict = Depends(require_admin_auth),
+) -> JSONResponse:
     """Upload a new logo file."""
     try:
         # CSRF validation
@@ -282,8 +295,10 @@ async def upload_logo(
         file_content = await file.read()
 
         # Process upload
+        filename = file.filename or "unknown.png"
+        assert admin_manager is not None
         result = await admin_manager.upload_logo(
-            file_content=file_content, filename=file.filename, new_name=new_name
+            file_content=file_content, filename=filename, new_name=new_name
         )
 
         if result["success"]:
@@ -310,8 +325,8 @@ async def manage_logos(
     request: Request,
     management: LogoManagement,
     csrf_token: str = Form(...),
-    admin_user: dict = Depends(lambda: require_admin_auth()),
-):
+    admin_user: dict = Depends(require_admin_auth),
+) -> JSONResponse:
     """Manage logos (delete, rename, bulk operations)."""
     try:
         # CSRF validation
@@ -320,6 +335,7 @@ async def manage_logos(
                 status_code=status.HTTP_403_FORBIDDEN, detail="CSRF validation failed"
             )
 
+        assert admin_manager is not None
         if management.operation == "delete" or management.operation == "bulk_delete":
             result = admin_manager.delete_logos(management.logos)
         elif management.operation == "rename":
@@ -362,14 +378,16 @@ async def manage_logos(
 @admin_router.get("/votes", response_class=HTMLResponse)
 async def admin_votes_page(
     request: Request,
-    admin_user: dict = Depends(lambda: require_admin_auth()),
-):
+    admin_user: dict = Depends(require_admin_auth),
+) -> HTMLResponse:
     """Serve vote management page."""
     try:
+        assert admin_manager is not None
         stats = admin_manager.get_system_stats()
         recent_votes = admin_manager.get_recent_activity(limit=10)
         csrf_token = generate_csrf_token(admin_user)
 
+        assert templates is not None
         return templates.TemplateResponse(
             "admin/votes.html",
             {
@@ -394,8 +412,8 @@ async def manage_votes(
     request: Request,
     management: VoteManagement,
     csrf_token: str = Form(...),
-    admin_user: dict = Depends(lambda: require_admin_auth()),
-):
+    admin_user: dict = Depends(require_admin_auth),
+) -> JSONResponse:
     """Manage votes (reset, export, delete specific votes)."""
     try:
         # CSRF validation
@@ -404,6 +422,7 @@ async def manage_votes(
                 status_code=status.HTTP_403_FORBIDDEN, detail="CSRF validation failed"
             )
 
+        assert admin_manager is not None
         if management.operation == "reset":
             result = admin_manager.reset_all_votes()
             if result["success"]:
@@ -452,10 +471,11 @@ async def manage_votes(
 @admin_router.get("/votes/export/{export_format}")
 async def export_votes_download(
     export_format: str,
-    admin_user: dict = Depends(lambda: require_admin_auth()),
-):
+    admin_user: dict = Depends(require_admin_auth),
+) -> PlainTextResponse | JSONResponse:
     """Download exported votes file."""
     try:
+        assert admin_manager is not None
         result = admin_manager.export_votes(export_format)
 
         if not result["success"]:
@@ -491,14 +511,17 @@ async def export_votes_download(
 @admin_router.get("/system", response_class=HTMLResponse)
 async def admin_system_page(
     request: Request,
-    admin_user: dict = Depends(lambda: require_admin_auth()),
-):
+    admin_user: dict = Depends(require_admin_auth),
+) -> HTMLResponse:
     """Serve system administration page."""
     try:
+        assert admin_manager is not None
+        assert auth_manager is not None
         stats = admin_manager.get_system_stats()
         csrf_token = generate_csrf_token(admin_user)
         active_sessions = auth_manager.get_active_sessions_count()
 
+        assert templates is not None
         return templates.TemplateResponse(
             "admin/system.html",
             {
@@ -521,8 +544,8 @@ async def admin_system_page(
 @admin_router.post("/system/backup")
 async def backup_database(
     csrf_token: str = Form(...),
-    admin_user: dict = Depends(lambda: require_admin_auth()),
-):
+    admin_user: dict = Depends(require_admin_auth),
+) -> JSONResponse:
     """Create database backup."""
     try:
         # CSRF validation
@@ -531,6 +554,7 @@ async def backup_database(
                 status_code=status.HTTP_403_FORBIDDEN, detail="CSRF validation failed"
             )
 
+        assert admin_manager is not None
         result = admin_manager.backup_database()
 
         if result["success"]:
@@ -549,8 +573,8 @@ async def backup_database(
 @admin_router.post("/system/cleanup-sessions")
 async def cleanup_sessions(
     csrf_token: str = Form(...),
-    admin_user: dict = Depends(lambda: require_admin_auth()),
-):
+    admin_user: dict = Depends(require_admin_auth),
+) -> JSONResponse:
     """Clean up expired sessions."""
     try:
         # CSRF validation
@@ -559,6 +583,7 @@ async def cleanup_sessions(
                 status_code=status.HTTP_403_FORBIDDEN, detail="CSRF validation failed"
             )
 
+        assert auth_manager is not None
         cleaned_count = auth_manager.cleanup_expired_sessions()
 
         logger.info(
@@ -584,10 +609,12 @@ async def cleanup_sessions(
 # API Routes for AJAX calls
 @admin_router.get("/api/stats")
 async def get_admin_stats(
-    admin_user: dict = Depends(lambda: require_admin_auth()),
-):
+    admin_user: dict = Depends(require_admin_auth),
+) -> dict[str, Any] | JSONResponse:
     """Get current system statistics (for dashboard updates)."""
     try:
+        assert admin_manager is not None
+        assert auth_manager is not None
         stats = admin_manager.get_system_stats()
         active_sessions = auth_manager.get_active_sessions_count()
 
@@ -607,8 +634,9 @@ async def get_admin_stats(
 
 
 # Error handler for admin routes
-@admin_router.exception_handler(HTTPException)
-async def admin_http_exception_handler(request: Request, exc: HTTPException):
+async def admin_http_exception_handler(
+    request: Request, exc: HTTPException
+) -> JSONResponse | PlainTextResponse | HTMLResponse:
     """Handle HTTP exceptions in admin routes."""
     if exc.status_code == 401:
         # Redirect to login for authentication errors
@@ -617,6 +645,7 @@ async def admin_http_exception_handler(request: Request, exc: HTTPException):
                 {"success": False, "message": "Authentication required"},
                 status_code=401,
             )
+        assert templates is not None
         return templates.TemplateResponse(
             "admin/login.html",
             {
@@ -633,6 +662,7 @@ async def admin_http_exception_handler(request: Request, exc: HTTPException):
             {"success": False, "message": exc.detail}, status_code=exc.status_code
         )
 
+    assert templates is not None
     return templates.TemplateResponse(
         "admin/error.html",
         {

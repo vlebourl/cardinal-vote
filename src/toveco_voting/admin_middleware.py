@@ -1,6 +1,8 @@
 """Admin middleware for authentication and security in the ToVéCo voting platform."""
 
 import logging
+from collections.abc import Callable
+from typing import Any
 
 from fastapi import Cookie, Depends, HTTPException, Request, status
 from fastapi.security import HTTPBearer
@@ -15,12 +17,12 @@ security = HTTPBearer(auto_error=False)
 class AdminSecurityMiddleware(BaseHTTPMiddleware):
     """Middleware for admin security features like CSRF protection and session cleanup."""
 
-    def __init__(self, app, auth_manager: AdminAuthManager):
+    def __init__(self, app: Any, auth_manager: AdminAuthManager) -> None:
         super().__init__(app)
         self.auth_manager = auth_manager
         self._cleanup_counter = 0
 
-    async def dispatch(self, request: Request, call_next):
+    async def dispatch(self, request: Request, call_next: Callable) -> Any:
         """Process request with security checks."""
         # Periodic session cleanup (every 100 requests)
         self._cleanup_counter += 1
@@ -208,7 +210,7 @@ class CSRFProtectionDependency:
         admin_user: dict = Depends(
             lambda: None
         ),  # Will be replaced with actual auth dependency
-        csrf_token: str = None,
+        csrf_token: str | None = None,
     ) -> bool:
         """
         Validate CSRF token for POST/PUT/DELETE requests.
@@ -246,8 +248,8 @@ class CSRFProtectionDependency:
 class RateLimiter:
     """Simple in-memory rate limiter."""
 
-    def __init__(self):
-        self._attempts = {}
+    def __init__(self) -> None:
+        self._attempts: dict[str, list[float]] = {}
 
     def is_allowed(self, key: str, limit: int, window_seconds: int) -> bool:
         """Check if the request is within rate limits."""

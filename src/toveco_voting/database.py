@@ -2,13 +2,14 @@
 
 import json
 import logging
+from collections.abc import Generator
 from contextlib import contextmanager
 from pathlib import Path
 from typing import Any
 
 from sqlalchemy import create_engine, desc, text
 from sqlalchemy.exc import SQLAlchemyError
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy.orm import Session, sessionmaker
 
 from .models import Base, DatabaseError, VoteRecord
 
@@ -47,7 +48,7 @@ class DatabaseManager:
             raise DatabaseError(f"Database initialization failed: {e}") from e
 
     @contextmanager
-    def get_session(self):
+    def get_session(self) -> Generator[Session, None, None]:
         """Get a database session with automatic cleanup."""
         session = self.SessionLocal()
         try:
@@ -76,6 +77,8 @@ class DatabaseManager:
                 session.add(vote_record)
                 session.flush()  # Get the ID before commit
                 vote_id = vote_record.id
+                if vote_id is None:
+                    raise DatabaseError("Failed to get vote ID after flush")
                 logger.info(f"Vote saved for {full_name} with ID {vote_id}")
                 return vote_id
         except SQLAlchemyError as e:
@@ -112,8 +115,10 @@ class DatabaseManager:
                             "voter_name": voter_name,
                             "voter_first_name": first_name,
                             "voter_last_name": last_name,
-                            "timestamp": vote.timestamp.isoformat(),
-                            "ratings": json.loads(vote.ratings),
+                            "timestamp": vote.timestamp.isoformat()
+                            if vote.timestamp
+                            else "",
+                            "ratings": json.loads(vote.ratings or "{}"),
                         }
                     )
 
@@ -127,7 +132,7 @@ class DatabaseManager:
         """Get the total number of votes."""
         try:
             with self.get_session() as session:
-                count = session.query(VoteRecord).count()
+                count: int = session.query(VoteRecord).count()
                 return count
         except SQLAlchemyError as e:
             logger.error(f"Failed to get vote count: {e}")

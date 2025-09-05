@@ -234,13 +234,33 @@ When tags are pushed (`v*.*.*`):
 - ✅ **Deployment package created**
 - ✅ **Published to GitHub Container Registry**
 
+## Code Quality Policy - STRICTLY ENFORCED
+
+### 🚫 **ZERO TOLERANCE POLICY**
+
+- **NO ignoring linting errors** - Every error must be fixed
+- **NO silencing warnings** - Every warning must be addressed
+- **NO `# type: ignore`** - All type errors must be properly fixed
+- **NO `# noqa`** - All code quality issues must be resolved
+- **NO `--ignore-missing-imports`** - All imports must be properly typed
+- **NO relaxed settings** - Use strict configuration for all tools
+
+### 🎯 **Pre-commit = CI Pipeline Consistency**
+
+- **Every tool in CI MUST be in pre-commit** with identical configuration
+- **Same versions** - Pre-commit and CI must use exact same tool versions
+- **Same arguments** - Command-line args must be identical
+- **Same file patterns** - Include/exclude patterns must match
+- **If CI rejects it, pre-commit must catch it first**
+
 ## Code Style and Standards
 
-### Python Code Style
+### Python Code Quality (Strict Mode)
 
-- **Formatter**: ruff format
-- **Linter**: ruff (replaces flake8, isort, etc.)
-- **Type Checker**: mypy
+- **Formatter**: ruff format (no ignores allowed)
+- **Linter**: ruff (replaces flake8, isort, etc.) - all errors must be fixed
+- **Type Checker**: mypy (strict mode, all type annotations required)
+- **Security**: bandit (all vulnerabilities must be addressed)
 - **Line Length**: 88 characters (Black standard)
 
 ### Commit Message Format

@@ -32,29 +32,30 @@ repos:
       - id: ruff-format
         types_or: [python, pyi, jupyter]
 
-  # MyPy for type checking (disabled for now due to extensive type annotation needs)
-  # - repo: https://github.com/pre-commit/mirrors-mypy
-  #   rev: v1.8.0
-  #   hooks:
-  #     - id: mypy
-  #       files: ^src/
-  #       additional_dependencies:
-  #         - types-requests
-  #         - types-Pillow
-  #         - types-aiofiles
-  #         - sqlalchemy[mypy]
-  #         - pydantic
-  #         - fastapi
-  #         - uvicorn
-  #       args: [--config-file=pyproject.toml, --ignore-missing-imports]
+  # MyPy for type checking (STRICT MODE - NO IGNORING ALLOWED)
+  - repo: https://github.com/pre-commit/mirrors-mypy
+    rev: v1.17.1
+    hooks:
+      - id: mypy
+        files: ^src/
+        additional_dependencies:
+          - types-requests
+          - types-Pillow
+          - types-aiofiles
+          - types-psutil
+          - sqlalchemy[mypy]
+          - pydantic
+          - fastapi
+          - uvicorn
+        args: [--config-file=mypy.ini]
 
-  # Security checks (disabled for now due to compatibility issues)
-  # - repo: https://github.com/PyCQA/bandit
-  #   rev: 1.7.5
-  #   hooks:
-  #     - id: bandit
-  #       args: [-c, pyproject.toml]
-  #       additional_dependencies: ["bandit[toml]"]
+  # Security checks (STRICT MODE - NO IGNORING ALLOWED)
+  - repo: https://github.com/PyCQA/bandit
+    rev: 1.7.8
+    hooks:
+      - id: bandit
+        args: [-c, pyproject.toml]
+        additional_dependencies: ["bandit[toml]"]
 
   # Safety check (disabled - only works with Poetry)
   # - repo: https://github.com/Lucas-C/pre-commit-hooks-safety

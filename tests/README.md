@@ -231,7 +231,6 @@ python tests/test_runner.py --docker
 ### User Workflows
 
 1. **Complete Voting Journey**
-
    - User enters name
    - Views and rates all 11 logos
    - Reviews selections
@@ -239,7 +238,6 @@ python tests/test_runner.py --docker
    - Views results
 
 2. **Multiple User Scenarios**
-
    - Concurrent voting by multiple users
    - Result aggregation and ranking
    - Tie-breaking scenarios
@@ -254,21 +252,18 @@ python tests/test_runner.py --docker
 ### Technical Scenarios
 
 1. **API Integration**
-
    - All REST endpoints functionality
    - Request/response validation
    - Error handling and status codes
    - Rate limiting and security
 
 2. **Database Operations**
-
    - CRUD operations validation
    - Concurrent access handling
    - Data integrity maintenance
    - Performance optimization
 
 3. **Frontend Functionality**
-
    - JavaScript execution
    - DOM manipulation
    - Event handling
@@ -418,22 +413,18 @@ jobs:
 ### Common Issues
 
 1. **Tests fail with "logos not available"**
-
    - Ensure `/logos/` directory contains all 11 logo files
    - Check file permissions and naming convention
 
 2. **Database tests fail**
-
    - Verify SQLite is available
    - Check write permissions for test database creation
 
 3. **Frontend tests fail**
-
    - Install ChromeDriver for Selenium tests
    - Ensure JavaScript files are accessible
 
 4. **Docker tests fail**
-
    - Verify Docker is running
    - Check Docker daemon accessibility
 

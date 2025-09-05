@@ -2,6 +2,7 @@
 
 import logging
 import random
+from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
 from typing import Any
 
@@ -38,7 +39,7 @@ admin_manager: AdminManager | None = None
 
 
 @asynccontextmanager
-async def lifespan(app: FastAPI):
+async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     """Application lifespan manager."""
     global db_manager, admin_auth_manager, admin_manager
 
@@ -110,10 +111,9 @@ app.add_middleware(
 
 
 # Add admin security middleware (will be initialized in lifespan)
-def get_admin_middleware():
+def get_admin_middleware() -> AdminSecurityMiddleware:
     """Get admin middleware after initialization."""
-    if admin_auth_manager is None:
-        return None
+    assert admin_auth_manager is not None
     return AdminSecurityMiddleware(app, admin_auth_manager)
 
 
@@ -131,7 +131,9 @@ app.include_router(admin_router)
 
 
 @app.exception_handler(RequestValidationError)
-async def validation_exception_handler(request: Request, exc: RequestValidationError):
+async def validation_exception_handler(
+    request: Request, exc: RequestValidationError
+) -> JSONResponse:
     """Handle validation errors with user-friendly messages."""
     logger.warning(f"Validation error for {request.url}: {exc}")
 
@@ -152,7 +154,9 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
 
 
 @app.exception_handler(DatabaseError)
-async def database_exception_handler(request: Request, exc: DatabaseError):
+async def database_exception_handler(
+    request: Request, exc: DatabaseError
+) -> JSONResponse:
     """Handle database errors."""
     logger.error(f"Database error for {request.url}: {exc}")
     return JSONResponse(
@@ -165,7 +169,9 @@ async def database_exception_handler(request: Request, exc: DatabaseError):
 
 
 @app.exception_handler(ValidationError)
-async def custom_validation_exception_handler(request: Request, exc: ValidationError):
+async def custom_validation_exception_handler(
+    request: Request, exc: ValidationError
+) -> JSONResponse:
     """Handle custom validation errors."""
     logger.warning(f"Custom validation error for {request.url}: {exc}")
     return JSONResponse(
@@ -175,7 +181,7 @@ async def custom_validation_exception_handler(request: Request, exc: ValidationE
 
 
 @app.get("/", response_class=HTMLResponse, tags=["Frontend"])
-async def home(request: Request):
+async def home(request: Request) -> HTMLResponse:
     """Serve the main voting page."""
     try:
         return templates.TemplateResponse(
@@ -195,7 +201,7 @@ async def home(request: Request):
 
 
 @app.get("/results", response_class=HTMLResponse, tags=["Frontend"])
-async def results_page(request: Request):
+async def results_page(request: Request) -> HTMLResponse:
     """Serve the results page."""
     try:
         return templates.TemplateResponse(
@@ -302,7 +308,9 @@ async def get_results(
 
         # Create response model
         response = VoteResults(
-            summary=results_data["summary"], total_voters=results_data["total_voters"]
+            summary=results_data["summary"],
+            total_voters=results_data["total_voters"],
+            votes=None,
         )
 
         # Include individual votes if requested (admin feature)

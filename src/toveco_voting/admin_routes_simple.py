@@ -4,6 +4,7 @@ import io
 import json
 import logging
 from datetime import datetime
+from typing import Any
 
 from fastapi import APIRouter, Form, HTTPException, Request, Response, status
 from fastapi.responses import (
@@ -25,12 +26,16 @@ logger = logging.getLogger(__name__)
 admin_router = APIRouter(prefix="/admin", tags=["Admin"])
 
 # Global variables (will be set by main.py)
-templates: Jinja2Templates = None
-auth_manager: AdminAuthManager = None
-admin_manager: AdminManager = None
+templates: Jinja2Templates | None = None
+auth_manager: AdminAuthManager | None = None
+admin_manager: AdminManager | None = None
 
 
-def setup_admin_router(template_engine, auth_mgr, admin_mgr):
+def setup_admin_router(
+    template_engine: Jinja2Templates,
+    auth_mgr: AdminAuthManager,
+    admin_mgr: AdminManager,
+) -> None:
     """Set up admin router dependencies."""
     global templates, auth_manager, admin_manager
     templates = template_engine
@@ -69,7 +74,7 @@ def get_admin_user_or_error(request: Request) -> dict:
 
 
 @admin_router.get("/login", response_class=HTMLResponse)
-async def admin_login_page(request: Request):
+async def admin_login_page(request: Request) -> HTMLResponse | RedirectResponse:
     """Serve admin login page."""
     # Check if already logged in
     session_token = request.cookies.get("admin_session")
@@ -79,6 +84,7 @@ async def admin_login_page(request: Request):
         if user_info:
             return RedirectResponse(url="/admin/dashboard", status_code=302)
 
+    assert templates is not None
     return templates.TemplateResponse(
         "admin/login.html",
         {"request": request, "app_name": settings.APP_NAME, "error": None},
@@ -91,7 +97,7 @@ async def admin_login(
     response: Response,
     username: str = Form(...),
     password: str = Form(...),
-):
+) -> HTMLResponse | RedirectResponse:
     """Process admin login."""
     try:
         ip_address = get_client_ip(request)
@@ -100,11 +106,13 @@ async def admin_login(
         # Validate credentials
         login_data = AdminLogin(username=username, password=password)
 
+        assert auth_manager is not None
         session_token = auth_manager.authenticate_user(
             login_data.username, login_data.password, ip_address, user_agent
         )
 
         if not session_token:
+            assert templates is not None
             return templates.TemplateResponse(
                 "admin/login.html",
                 {
@@ -131,6 +139,7 @@ async def admin_login(
 
     except Exception as e:
         logger.error(f"Login error: {e}")
+        assert templates is not None
         return templates.TemplateResponse(
             "admin/login.html",
             {
@@ -143,7 +152,7 @@ async def admin_login(
 
 
 @admin_router.post("/logout")
-async def admin_logout(request: Request):
+async def admin_logout(request: Request) -> RedirectResponse:
     """Process admin logout."""
     session_token = request.cookies.get("admin_session")
     if session_token and auth_manager:
@@ -156,7 +165,7 @@ async def admin_logout(request: Request):
 
 
 @admin_router.get("/dashboard", response_class=HTMLResponse)
-async def admin_dashboard(request: Request):
+async def admin_dashboard(request: Request) -> HTMLResponse | RedirectResponse:
     """Serve admin dashboard."""
     admin_user = get_admin_user_or_redirect(request)
     if isinstance(admin_user, RedirectResponse):
@@ -164,6 +173,7 @@ async def admin_dashboard(request: Request):
 
     try:
         # Get system statistics
+        assert admin_manager is not None
         stats = admin_manager.get_system_stats()
         recent_votes = admin_manager.get_recent_activity(limit=5)
         logo_details = admin_manager.get_logo_details()
@@ -171,6 +181,7 @@ async def admin_dashboard(request: Request):
         # Generate CSRF token
         csrf_token = generate_csrf_token(admin_user)
 
+        assert templates is not None
         return templates.TemplateResponse(
             "admin/dashboard.html",
             {
@@ -192,16 +203,18 @@ async def admin_dashboard(request: Request):
 
 
 @admin_router.get("/logos", response_class=HTMLResponse)
-async def admin_logos_page(request: Request):
+async def admin_logos_page(request: Request) -> HTMLResponse | RedirectResponse:
     """Serve logo management page."""
     admin_user = get_admin_user_or_redirect(request)
     if isinstance(admin_user, RedirectResponse):
         return admin_user
 
     try:
+        assert admin_manager is not None
         logo_details = admin_manager.get_logo_details()
         csrf_token = generate_csrf_token(admin_user)
 
+        assert templates is not None
         return templates.TemplateResponse(
             "admin/logos.html",
             {
@@ -222,11 +235,13 @@ async def admin_logos_page(request: Request):
 
 
 @admin_router.get("/api/stats")
-async def get_admin_stats(request: Request):
+async def get_admin_stats(request: Request) -> dict[str, Any] | JSONResponse:
     """Get current system statistics."""
     try:
         get_admin_user_or_error(request)
 
+        assert admin_manager is not None
+        assert auth_manager is not None
         stats = admin_manager.get_system_stats()
         active_sessions = auth_manager.get_active_sessions_count()
 
@@ -243,7 +258,7 @@ async def get_admin_stats(request: Request):
 
 
 @admin_router.get("/votes", response_class=HTMLResponse)
-async def admin_votes_page(request: Request):
+async def admin_votes_page(request: Request) -> HTMLResponse | RedirectResponse:
     """Serve admin votes management page."""
     admin_user = get_admin_user_or_redirect(request)
     if isinstance(admin_user, RedirectResponse):
@@ -251,6 +266,7 @@ async def admin_votes_page(request: Request):
 
     try:
         # Get all votes from database
+        assert admin_manager is not None
         votes = admin_manager.get_recent_activity(
             limit=1000
         )  # Get all votes, not just recent
@@ -302,6 +318,7 @@ async def admin_votes_page(request: Request):
         # Generate CSRF token
         csrf_token = generate_csrf_token(admin_user)
 
+        assert templates is not None
         return templates.TemplateResponse(
             "admin/votes.html",
             {
@@ -324,7 +341,7 @@ async def admin_votes_page(request: Request):
 
 
 @admin_router.get("/votes/export/{format}")
-async def export_votes_download(request: Request, format: str):
+async def export_votes_download(request: Request, format: str) -> Any:
     """Export votes in specified format."""
     try:
         get_admin_user_or_error(request)
@@ -332,6 +349,7 @@ async def export_votes_download(request: Request, format: str):
         if format not in ["csv", "json"]:
             raise HTTPException(status_code=400, detail="Unsupported format")
 
+        assert admin_manager is not None
         result = admin_manager.export_votes(format)
 
         if not result.get("success"):
@@ -364,11 +382,12 @@ async def export_votes_download(request: Request, format: str):
 
 
 @admin_router.post("/votes/clear")
-async def clear_all_votes(request: Request):
+async def clear_all_votes(request: Request) -> JSONResponse:
     """Clear all votes from the database."""
     try:
         admin_user = get_admin_user_or_error(request)
 
+        assert admin_manager is not None
         result = admin_manager.reset_all_votes()
 
         logger.info(
@@ -392,7 +411,7 @@ async def clear_all_votes(request: Request):
 
 
 @admin_router.get("/votes/{vote_id}")
-async def get_vote_details(request: Request, vote_id: str):
+async def get_vote_details(request: Request, vote_id: str) -> JSONResponse:
     """Get details for a specific vote."""
     try:
         # Check authentication
@@ -405,6 +424,7 @@ async def get_vote_details(request: Request, vote_id: str):
             )
 
         # Get all votes and find the specific one by ID
+        assert admin_manager is not None
         votes = admin_manager.get_recent_activity(limit=1000)
 
         # Find vote by ID
@@ -431,7 +451,7 @@ async def get_vote_details(request: Request, vote_id: str):
 
 
 @admin_router.delete("/votes/{vote_id}")
-async def delete_vote(request: Request, vote_id: str):
+async def delete_vote(request: Request, vote_id: str) -> JSONResponse:
     """Delete a specific vote."""
     try:
         admin_user = get_admin_user_or_error(request)
@@ -445,6 +465,7 @@ async def delete_vote(request: Request, vote_id: str):
             )
 
         # Delete the vote using AdminManager
+        assert admin_manager is not None
         result = admin_manager.delete_single_vote(vote_id_int)
 
         if result["success"]:

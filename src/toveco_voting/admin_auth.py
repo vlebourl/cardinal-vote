@@ -61,12 +61,16 @@ class AdminAuthManager:
     def hash_password(self, password: str) -> str:
         """Hash a password using bcrypt."""
         salt = bcrypt.gensalt()
-        return bcrypt.hashpw(password.encode("utf-8"), salt).decode("utf-8")
+        hashed_bytes: bytes = bcrypt.hashpw(password.encode("utf-8"), salt)
+        return hashed_bytes.decode("utf-8")
 
     def verify_password(self, password: str, hashed: str) -> bool:
         """Verify a password against its hash."""
         try:
-            return bcrypt.checkpw(password.encode("utf-8"), hashed.encode("utf-8"))
+            result: bool = bcrypt.checkpw(
+                password.encode("utf-8"), hashed.encode("utf-8")
+            )
+            return result
         except Exception as e:
             logger.error(f"Password verification error: {e}")
             return False
@@ -115,7 +119,9 @@ class AdminAuthManager:
                     .first()
                 )
 
-                if not user or not self.verify_password(password, user.password_hash):
+                if not user or not self.verify_password(
+                    password, user.password_hash or ""
+                ):
                     self._record_login_attempt(ip_address)
                     logger.warning(
                         f"Failed login attempt for {username} from {ip_address}"
@@ -171,7 +177,10 @@ class AdminAuthManager:
                     return None
 
                 # Check if session is expired
-                if admin_session.expires_at < datetime.utcnow():
+                if (
+                    admin_session.expires_at
+                    and admin_session.expires_at < datetime.utcnow()
+                ):
                     admin_session.is_active = False
                     session.commit()
                     logger.info(f"Session expired: {session_token[:8]}...")

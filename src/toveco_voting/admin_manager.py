@@ -29,7 +29,7 @@ class AdminManager:
 
     # Logo Management Methods
     async def upload_logo(
-        self, file_content: bytes, filename: str, new_name: str = None
+        self, file_content: bytes, filename: str, new_name: str | None = None
     ) -> dict[str, Any]:
         """
         Upload and validate a new logo file.
@@ -117,7 +117,12 @@ class AdminManager:
         Delete multiple logo files.
         Returns operation result with success/failure details.
         """
-        results = {"success": True, "deleted": [], "failed": [], "message": ""}
+        results: dict[str, Any] = {
+            "success": True,
+            "deleted": [],
+            "failed": [],
+            "message": "",
+        }
 
         for logo_name in logo_names:
             try:
@@ -440,7 +445,7 @@ class AdminManager:
                 uptime = "Requires psutil package"
 
             # Disk usage for logos directory
-            disk_usage = {}
+            disk_usage: dict[str, Any] = {}
             try:
                 logos_dir_size = sum(
                     f.stat().st_size
@@ -456,7 +461,7 @@ class AdminManager:
                 disk_usage = {"error": str(e)}
 
             # Memory usage (if psutil available)
-            memory_usage = {}
+            memory_usage: dict[str, Any] = {}
             try:
                 import psutil
 

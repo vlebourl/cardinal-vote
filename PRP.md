@@ -155,20 +155,17 @@ Development of a web-based voting application for selecting the ToVéCo brand lo
 ### User Journey
 
 1. **Landing Page**
-
    - Welcome message explaining the voting process
    - Name input field
    - "Commencer le vote" button
 
 2. **Voting Flow**
-
    - Logo displayed prominently (centered, large)
    - Rating scale below with clear labels
    - "Suivant" button (disabled until rating selected)
    - Progress bar at top
 
 3. **Review Page**
-
    - Grid view of all logos with ratings
    - Edit buttons on each card
    - "Confirmer mes votes" prominent CTA

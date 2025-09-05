@@ -375,22 +375,18 @@ python tests/test_runner.py --docker
 ### Common Issues and Solutions
 
 1. **"Logos not available" test failures**
-
    - Ensure `/logos/` directory contains all 11 logo files (toveco1.png - toveco11.png)
    - Verify file permissions and accessibility
 
 2. **Database test failures**
-
    - Check SQLite installation and availability
    - Verify write permissions for temporary file creation
 
 3. **Frontend test failures**
-
    - Install ChromeDriver for Selenium WebDriver
    - Ensure JavaScript and CSS files are accessible
 
 4. **Docker test failures**
-
    - Verify Docker daemon is running and accessible
    - Check Docker socket permissions
 
