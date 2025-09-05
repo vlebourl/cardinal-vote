@@ -28,9 +28,10 @@ COPY pyproject.toml uv.lock* ./
 COPY src/ ./src/
 COPY README.md ./
 
-# Create and install dependencies in virtual environment
-RUN uv venv /opt/venv && \
-    uv sync --no-dev
+# Create virtual environment and install project with dependencies
+RUN uv sync --no-dev
+ENV VIRTUAL_ENV=/build/.venv
+ENV PATH="/build/.venv/bin:$PATH"
 
 # Production stage
 FROM python:3.13-slim AS production
@@ -57,11 +58,15 @@ RUN useradd --create-home --shell /bin/bash --uid 1000 app
 RUN mkdir -p /app/data /app/logs \
     && chown -R app:app /app
 
-# Copy virtual environment from builder
-COPY --from=builder /opt/venv /opt/venv
+# Copy virtual environment from builder with proper ownership
+COPY --from=builder --chown=app:app /build/.venv /opt/venv
 
 # Copy source code from builder
 COPY --from=builder /build/src /app/src
+
+# Fix virtual environment paths and shebangs
+RUN sed -i 's|/build/src|/app/src|' /opt/venv/lib/python3.13/site-packages/_toveco_voting.pth && \
+    find /opt/venv/bin -type f -executable -exec sed -i '1s|#!/build/.venv/bin/python|#!/opt/venv/bin/python|' {} \;
 
 # Switch to app user
 USER app
