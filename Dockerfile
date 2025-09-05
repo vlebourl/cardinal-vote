@@ -2,7 +2,7 @@
 # Optimized for production with security best practices
 
 # Build stage
-FROM python:3.11-slim AS builder
+FROM python:3.13-slim AS builder
 
 # Set environment variables for build
 ENV PYTHONUNBUFFERED=1
@@ -32,7 +32,7 @@ COPY README.md ./
 RUN uv sync --no-dev
 
 # Production stage
-FROM python:3.11-slim AS production
+FROM python:3.13-slim AS production
 
 # Set environment variables
 ENV PYTHONUNBUFFERED=1
