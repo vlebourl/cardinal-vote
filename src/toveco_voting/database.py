@@ -126,6 +126,20 @@ class DatabaseManager:
         try:
             with self.get_session() as session:
                 full_name = f"{voter_first_name} {voter_last_name}"
+
+                # Check if voter already exists
+                existing_voter = (
+                    session.query(VoteRecord)
+                    .filter(
+                        VoteRecord.voter_first_name == voter_first_name,
+                        VoteRecord.voter_last_name == voter_last_name,
+                    )
+                    .first()
+                )
+
+                if existing_voter:
+                    raise DatabaseError(f"Voter '{full_name}' has already voted")
+
                 vote_record = VoteRecord(
                     voter_first_name=voter_first_name,
                     voter_last_name=voter_last_name,

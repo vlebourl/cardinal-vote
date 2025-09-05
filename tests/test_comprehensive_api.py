@@ -469,7 +469,8 @@ class TestComprehensiveAPI:
     def test_oversized_request(self, client):
         """Test handling of oversized requests."""
         huge_data = {
-            "voter_name": "Test",
+            "voter_first_name": "Test",
+            "voter_last_name": "User",
             "ratings": {
                 f"toveco{i}.png": 1 for i in range(1, 1000)
             },  # Way too many logos

@@ -26,10 +26,31 @@ class TestDataGenerator:
 
     @staticmethod
     def generate_voter_name(index: int = None, prefix: str = "TestUser") -> str:
-        """Generate a voter name."""
+        """Generate a voter name (deprecated - use generate_voter_names instead)."""
         if index is not None:
             return f"{prefix} {index}"
         return f"{prefix} {random.randint(1, 10000)}"
+
+    @staticmethod
+    def generate_voter_names(
+        index: int = None, prefix: str = "TestUser"
+    ) -> tuple[str, str]:
+        """Generate voter first and last names."""
+        if index is not None:
+            return (prefix, str(index))
+        return (prefix, str(random.randint(1, 10000)))
+
+    @staticmethod
+    def split_voter_name(full_name: str) -> tuple[str, str]:
+        """Split a full voter name into first and last names."""
+        parts = full_name.strip().split()
+        if len(parts) == 1:
+            return (parts[0], "")
+        elif len(parts) == 2:
+            return (parts[0], parts[1])
+        else:
+            # For names with more than 2 parts, first is first part, rest is last
+            return (parts[0], " ".join(parts[1:]))
 
     @staticmethod
     def generate_random_ratings(logos: list[str] = None) -> dict[str, int]:
@@ -101,11 +122,19 @@ class TestDataGenerator:
 
     @staticmethod
     def generate_vote_submission(
-        voter_name: str = None, ratings: dict[str, int] = None
+        voter_first_name: str = None,
+        voter_last_name: str = None,
+        ratings: dict[str, int] = None,
     ) -> dict[str, Any]:
         """Generate a complete vote submission."""
+        if voter_first_name is None or voter_last_name is None:
+            first, last = TestDataGenerator.generate_voter_names()
+            voter_first_name = voter_first_name or first
+            voter_last_name = voter_last_name or last
+
         return {
-            "voter_name": voter_name or TestDataGenerator.generate_voter_name(),
+            "voter_first_name": voter_first_name,
+            "voter_last_name": voter_last_name,
             "ratings": ratings or TestDataGenerator.generate_random_ratings(),
         }
 
@@ -122,8 +151,10 @@ class TestDataGenerator:
             else:
                 ratings = TestDataGenerator.generate_specific_ratings(pattern)
 
+            first, last = TestDataGenerator.generate_voter_names(i + 1, "BulkUser")
             vote = {
-                "voter_name": TestDataGenerator.generate_voter_name(i + 1, "BulkUser"),
+                "voter_first_name": first,
+                "voter_last_name": last,
                 "ratings": ratings,
             }
             votes.append(vote)
@@ -135,35 +166,45 @@ class TestDataGenerator:
         """Generate edge case test data."""
         return [
             # Empty voter name
-            {"voter_name": "", "ratings": TestDataGenerator.generate_random_ratings()},
+            {
+                "voter_first_name": "",
+                "voter_last_name": "",
+                "ratings": TestDataGenerator.generate_random_ratings(),
+            },
             # Very long voter name
             {
-                "voter_name": "x" * 150,
+                "voter_first_name": "x" * 75,
+                "voter_last_name": "x" * 75,
                 "ratings": TestDataGenerator.generate_random_ratings(),
             },
             # Special characters in name
             {
-                "voter_name": "Test User with émojis 🎉 and 'quotes'",
+                "voter_first_name": "Test User with émojis 🎉",
+                "voter_last_name": "and 'quotes'",
                 "ratings": TestDataGenerator.generate_random_ratings(),
             },
             # Non-Latin characters
             {
-                "voter_name": "Тест Пользователь",
+                "voter_first_name": "Тест",
+                "voter_last_name": "Пользователь",
                 "ratings": TestDataGenerator.generate_random_ratings(),
             },
             # Chinese characters
             {
-                "voter_name": "测试用户",
+                "voter_first_name": "测试",
+                "voter_last_name": "用户",
                 "ratings": TestDataGenerator.generate_random_ratings(),
             },
             # Missing logo ratings
             {
-                "voter_name": "Incomplete User",
+                "voter_first_name": "Incomplete",
+                "voter_last_name": "User",
                 "ratings": TestDataGenerator.generate_incomplete_ratings(3),
             },
             # Extra logo ratings
             {
-                "voter_name": "Extra Ratings User",
+                "voter_first_name": "Extra",
+                "voter_last_name": "Ratings User",
                 "ratings": {
                     **TestDataGenerator.generate_random_ratings(),
                     "invalid_logo.png": 1,
@@ -172,12 +213,14 @@ class TestDataGenerator:
             },
             # All neutral ratings
             {
-                "voter_name": "Neutral User",
+                "voter_first_name": "Neutral",
+                "voter_last_name": "User",
                 "ratings": TestDataGenerator.generate_specific_ratings("neutral"),
             },
             # All extreme ratings
             {
-                "voter_name": "Extreme User",
+                "voter_first_name": "Extreme",
+                "voter_last_name": "User",
                 "ratings": {
                     logo: random.choice([-2, 2])
                     for logo in TestDataGenerator.LOGO_FILES
@@ -191,29 +234,38 @@ class TestDataGenerator:
         return [
             # Invalid rating values
             {
-                "voter_name": "Invalid Ratings User",
+                "voter_first_name": "Invalid",
+                "voter_last_name": "Ratings User",
                 "ratings": {"toveco1.png": 5, "toveco2.png": -5},  # Out of range
             },
             # Non-integer ratings
             {
-                "voter_name": "Float Ratings User",
+                "voter_first_name": "Float",
+                "voter_last_name": "Ratings User",
                 "ratings": {"toveco1.png": 1.5, "toveco2.png": -1.7},
             },
             # String ratings
             {
-                "voter_name": "String Ratings User",
+                "voter_first_name": "String",
+                "voter_last_name": "Ratings User",
                 "ratings": {"toveco1.png": "good", "toveco2.png": "bad"},
             },
             # Invalid logo names
             {
-                "voter_name": "Invalid Logos User",
+                "voter_first_name": "Invalid",
+                "voter_last_name": "Logos User",
                 "ratings": {"not_a_logo.jpg": 1, "invalid.gif": -1},
             },
             # Empty ratings
-            {"voter_name": "Empty Ratings User", "ratings": {}},
+            {
+                "voter_first_name": "Empty",
+                "voter_last_name": "Ratings User",
+                "ratings": {},
+            },
             # None values
             {
-                "voter_name": "None Ratings User",
+                "voter_first_name": "None",
+                "voter_last_name": "Ratings User",
                 "ratings": {"toveco1.png": None, "toveco2.png": 1},
             },
         ]
@@ -244,10 +296,13 @@ class MockDatabaseHelper:
         vote_ids = []
         for vote in vote_data:
             try:
-                vote_id = db_manager.save_vote(vote["voter_name"], vote["ratings"])
+                vote_id = db_manager.save_vote(
+                    vote["voter_first_name"], vote["voter_last_name"], vote["ratings"]
+                )
                 vote_ids.append(vote_id)
             except Exception as e:
-                print(f"Failed to save vote for {vote['voter_name']}: {e}")
+                voter_name = f"{vote.get('voter_first_name', '')} {vote.get('voter_last_name', '')}"
+                print(f"Failed to save vote for {voter_name}: {e}")
         return vote_ids
 
     @staticmethod
@@ -272,7 +327,8 @@ class TestScenarios:
         """Simulate a small voting session (5 voters)."""
         return [
             {
-                "voter_name": "Alice",
+                "voter_first_name": f"Alice_{random.randint(1000, 9999)}",
+                "voter_last_name": "Smith",
                 "ratings": {
                     "toveco1.png": 2,
                     "toveco2.png": 1,
@@ -288,7 +344,8 @@ class TestScenarios:
                 },
             },
             {
-                "voter_name": "Bob",
+                "voter_first_name": f"Bob_{random.randint(1000, 9999)}",
+                "voter_last_name": "Johnson",
                 "ratings": {
                     "toveco1.png": 1,
                     "toveco2.png": 2,
@@ -304,7 +361,8 @@ class TestScenarios:
                 },
             },
             {
-                "voter_name": "Charlie",
+                "voter_first_name": f"Charlie_{random.randint(1000, 9999)}",
+                "voter_last_name": "Brown",
                 "ratings": {
                     "toveco1.png": 0,
                     "toveco2.png": -1,
@@ -320,7 +378,8 @@ class TestScenarios:
                 },
             },
             {
-                "voter_name": "Diana",
+                "voter_first_name": f"Diana_{random.randint(1000, 9999)}",
+                "voter_last_name": "Davis",
                 "ratings": {
                     "toveco1.png": -2,
                     "toveco2.png": 0,
@@ -336,7 +395,8 @@ class TestScenarios:
                 },
             },
             {
-                "voter_name": "Eve",
+                "voter_first_name": f"Eve_{random.randint(1000, 9999)}",
+                "voter_last_name": "Wilson",
                 "ratings": {
                     "toveco1.png": 1,
                     "toveco2.png": -2,
@@ -367,7 +427,13 @@ class TestScenarios:
                 else:  # Last 5 logos
                     ratings[logo] = random.choice([-2, -1])
 
-            votes.append({"voter_name": f"Group1_User_{i + 1}", "ratings": ratings})
+            votes.append(
+                {
+                    "voter_first_name": "Group1",
+                    "voter_last_name": f"User_{i + 1}",
+                    "ratings": ratings,
+                }
+            )
 
         # Group 2: Opposite preferences
         for i in range(5):
@@ -378,7 +444,13 @@ class TestScenarios:
                 else:  # Last 5 logos
                     ratings[logo] = random.choice([1, 2])
 
-            votes.append({"voter_name": f"Group2_User_{i + 1}", "ratings": ratings})
+            votes.append(
+                {
+                    "voter_first_name": "Group2",
+                    "voter_last_name": f"User_{i + 1}",
+                    "ratings": ratings,
+                }
+            )
 
         return votes
 
@@ -400,7 +472,13 @@ class TestScenarios:
                 if logo not in ratings:
                     ratings[logo] = random.choice([-1, 0, 1])
 
-            votes.append({"voter_name": f"Unanimous_User_{i + 1}", "ratings": ratings})
+            votes.append(
+                {
+                    "voter_first_name": "Unanimous",
+                    "voter_last_name": f"User_{i + 1}",
+                    "ratings": ratings,
+                }
+            )
 
         return votes
 
@@ -421,7 +499,13 @@ class TestScenarios:
             )  # Neutral for others
             ratings.update(pattern)
 
-            votes.append({"voter_name": f"Tie_User_{i + 1}", "ratings": ratings})
+            votes.append(
+                {
+                    "voter_first_name": "Tie",
+                    "voter_last_name": f"User_{i + 1}",
+                    "ratings": ratings,
+                }
+            )
 
         return votes
 
@@ -438,7 +522,11 @@ class TestScenarios:
             ratings = TestDataGenerator.generate_specific_ratings(pattern)
 
             votes.append(
-                {"voter_name": f"LargeScale_User_{i + 1:03d}", "ratings": ratings}
+                {
+                    "voter_first_name": "LargeScale",
+                    "voter_last_name": f"User_{i + 1:03d}",
+                    "ratings": ratings,
+                }
             )
 
         return votes
@@ -477,7 +565,8 @@ def sample_vote_data():
 def complete_vote_data():
     """Provide complete valid vote data with all logos."""
     return {
-        "voter_name": "Complete Test User",
+        "voter_first_name": "Complete",
+        "voter_last_name": "Test User",
         "ratings": {
             logo: random.randint(-2, 2) for logo in TestDataGenerator.LOGO_FILES
         },

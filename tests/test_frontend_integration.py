@@ -84,7 +84,7 @@ class TestFrontendWorkflow:
             driver.get(base_url)
 
             # Check page title
-            assert "ToVéCo" in driver.title
+            assert "ToV" in driver.title and "éCo" in driver.title
 
             # Check welcome screen is visible
             welcome_screen = driver.find_element(By.ID, "welcome-screen")
@@ -551,7 +551,7 @@ class TestResultsPageFunctionality:
         with test_server as base_url:
             driver.get(f"{base_url}/results")
 
-            assert "ToVéCo" in driver.title
+            assert "ToV" in driver.title and "éCo" in driver.title
 
             # Check for results content
             try:

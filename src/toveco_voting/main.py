@@ -159,6 +159,18 @@ async def database_exception_handler(
 ) -> JSONResponse:
     """Handle database errors."""
     logger.error(f"Database error for {request.url}: {exc}")
+
+    # Check if this is a duplicate voter error
+    error_msg = str(exc)
+    if "has already voted" in error_msg:
+        return JSONResponse(
+            status_code=status.HTTP_409_CONFLICT,
+            content={
+                "success": False,
+                "message": "Ce votant a déjà voté. Chaque personne ne peut voter qu'une seule fois.",
+            },
+        )
+
     return JSONResponse(
         status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
         content={

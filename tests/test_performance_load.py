@@ -103,7 +103,8 @@ class TestBasicPerformance:
     def sample_vote_data(self):
         """Sample vote data for performance testing."""
         return {
-            "voter_name": "Performance Test User",
+            "voter_first_name": "Performance",
+            "voter_last_name": "Test User",
             "ratings": {
                 "toveco1.png": 2,
                 "toveco2.png": -1,
@@ -185,7 +186,8 @@ class TestBasicPerformance:
 
         for i in range(10):  # Limited to avoid database growth
             vote_data = sample_vote_data.copy()
-            vote_data["voter_name"] = f"Perf User {i}"
+            vote_data["voter_first_name"] = "Perf"
+            vote_data["voter_last_name"] = f"User {i}"
 
             start_time = time.time()
             response = client.post("/api/vote", json=vote_data)
@@ -242,7 +244,8 @@ class TestConcurrentLoad:
     def sample_vote_data(self):
         """Sample vote data for load testing."""
         return {
-            "voter_name": "Load Test User",
+            "voter_first_name": "Load",
+            "voter_last_name": "Test User",
             "ratings": {
                 "toveco1.png": 1,
                 "toveco2.png": 0,
@@ -357,7 +360,8 @@ class TestConcurrentLoad:
         def user_vote_submission(user_id):
             """Simulate a user submitting a vote."""
             vote_data = sample_vote_data.copy()
-            vote_data["voter_name"] = f"Concurrent User {user_id}"
+            vote_data["voter_first_name"] = "Concurrent"
+            vote_data["voter_last_name"] = f"User {user_id}"
 
             response_time, success, error = self._make_request(
                 base_url, "/api/vote", "POST", vote_data, user_id
@@ -418,7 +422,8 @@ class TestConcurrentLoad:
             # Add vote submission for some users
             if user_id % 3 == 0:  # Every 3rd user submits a vote
                 vote_data = sample_vote_data.copy()
-                vote_data["voter_name"] = f"Mixed User {user_id}"
+                vote_data["voter_first_name"] = "Mixed"
+                vote_data["voter_last_name"] = f"User {user_id}"
                 operations.append(("POST", "/api/vote", vote_data))
 
             for method, endpoint, *data in operations:
@@ -487,9 +492,10 @@ class TestDatabasePerformance:
         start_time = time.time()
 
         for i in range(vote_count):
-            voter_name = f"Bulk User {i}"
+            voter_first_name = "Bulk"
+            voter_last_name = f"User {i}"
             ratings = {f"toveco{(i % 11) + 1}.png": (i % 5) - 2}
-            temp_db.save_vote(voter_name, ratings)
+            temp_db.save_vote(voter_first_name, voter_last_name, ratings)
 
         end_time = time.time()
         total_time = end_time - start_time
@@ -512,9 +518,10 @@ class TestDatabasePerformance:
         logos = [f"toveco{i}.png" for i in range(1, 12)]
 
         for i in range(vote_count):
-            voter_name = f"Large Dataset User {i}"
+            voter_first_name = "Large"
+            voter_last_name = f"Dataset User {i}"
             ratings = {logo: (i + len(logo)) % 5 - 2 for logo in logos}
-            temp_db.save_vote(voter_name, ratings)
+            temp_db.save_vote(voter_first_name, voter_last_name, ratings)
 
         # Time results calculation
         start_time = time.time()
@@ -542,9 +549,10 @@ class TestDatabasePerformance:
         def write_votes(start_id, count):
             """Write votes to database."""
             for i in range(count):
-                voter_name = f"Concurrent Writer {start_id}-{i}"
+                voter_first_name = "Concurrent"
+                voter_last_name = f"Writer {start_id}-{i}"
                 ratings = {"toveco1.png": 1, "toveco2.png": -1}
-                temp_db.save_vote(voter_name, ratings)
+                temp_db.save_vote(voter_first_name, voter_last_name, ratings)
 
         def read_operations():
             """Perform read operations."""
@@ -636,9 +644,10 @@ class TestMemoryAndResources:
             # Add many votes
             vote_count = 100
             for i in range(vote_count):
-                voter_name = f"Size Test User {i}"
+                voter_first_name = "Size"
+                voter_last_name = f"Test User {i}"
                 ratings = {f"toveco{j}.png": (i + j) % 5 - 2 for j in range(1, 12)}
-                db_manager.save_vote(voter_name, ratings)
+                db_manager.save_vote(voter_first_name, voter_last_name, ratings)
 
             final_size = os.path.getsize(temp_db_path)
             size_growth = final_size - initial_size

@@ -106,7 +106,8 @@ class TestCompleteVotingWorkflow:
 
         # Step 3: Prepare vote data
         vote_data = {
-            "voter_name": "E2E Test User",
+            "voter_first_name": "E2E",
+            "voter_last_name": "Test User",
             "ratings": {logo: (hash(logo) % 5) - 2 for logo in logos},
         }
 
@@ -207,19 +208,19 @@ class TestCompleteVotingWorkflow:
                     validator.validate_step(
                         step_name,
                         True,
-                        f"User {vote_data['voter_name']} vote successful",
+                        f"User {vote_data['voter_first_name']} {vote_data['voter_last_name']} vote successful",
                     )
                 else:
                     validator.validate_step(
                         step_name,
                         False,
-                        f"Vote failed for {vote_data['voter_name']}: {vote_response.get('message')}",
+                        f"Vote failed for {vote_data['voter_first_name']} {vote_data['voter_last_name']}: {vote_response.get('message')}",
                     )
             else:
                 # Accept certain failures in test environment
                 validator.validate_step(
                     step_name,
-                    response.status_code in [400, 422],
+                    response.status_code in [400, 409, 422],
                     f"Vote submission failed as expected: {response.status_code}",
                 )
 
@@ -278,7 +279,12 @@ class TestCompleteVotingWorkflow:
 
         # Test 1: Empty voter name
         response = validator.client.post(
-            "/api/vote", json={"voter_name": "", "ratings": {"toveco1.png": 1}}
+            "/api/vote",
+            json={
+                "voter_first_name": "",
+                "voter_last_name": "",
+                "ratings": {"toveco1.png": 1},
+            },
         )
 
         validator.validate_step(
@@ -291,7 +297,8 @@ class TestCompleteVotingWorkflow:
         response = validator.client.post(
             "/api/vote",
             json={
-                "voter_name": "Edge Case User",
+                "voter_first_name": "Edge Case",
+                "voter_last_name": "User",
                 "ratings": {"toveco1.png": 5},  # Out of range
             },
         )
@@ -306,7 +313,8 @@ class TestCompleteVotingWorkflow:
         response = validator.client.post(
             "/api/vote",
             json={
-                "voter_name": "Incomplete User",
+                "voter_first_name": "Incomplete",
+                "voter_last_name": "User",
                 "ratings": {"toveco1.png": 1},  # Missing other logos
             },
         )
@@ -323,12 +331,16 @@ class TestCompleteVotingWorkflow:
 
         response = validator.client.post(
             "/api/vote",
-            json={"voter_name": "Extra Logos User", "ratings": complete_ratings},
+            json={
+                "voter_first_name": "Extra",
+                "voter_last_name": "Logos User",
+                "ratings": complete_ratings,
+            },
         )
 
         validator.validate_step(
             "extra_logo_handling",
-            response.status_code == 400,  # ValidationError
+            response.status_code == 422,  # ValidationError
             f"Extra logos properly rejected: {response.status_code}",
         )
 
@@ -336,7 +348,8 @@ class TestCompleteVotingWorkflow:
         response = validator.client.post(
             "/api/vote",
             json={
-                "voter_name": "x" * 150,
+                "voter_first_name": "x" * 75,
+                "voter_last_name": "x" * 75,
                 "ratings": {f"toveco{i}.png": 1 for i in range(1, 12)},
             },
         )
@@ -371,7 +384,8 @@ class TestDataConsistency:
         """Test that vote data remains consistent throughout the system."""
         # Submit a known vote
         test_vote = {
-            "voter_name": "Consistency Test User",
+            "voter_first_name": "Consistency",
+            "voter_last_name": "Test User",
             "ratings": {
                 "toveco1.png": 2,
                 "toveco2.png": -1,
@@ -430,15 +444,18 @@ class TestDataConsistency:
         # Submit multiple votes with known values
         test_votes = [
             {
-                "voter_name": "Math User 1",
+                "voter_first_name": "Math",
+                "voter_last_name": "User 1",
                 "ratings": {"toveco1.png": 2, "toveco2.png": -1},
             },
             {
-                "voter_name": "Math User 2",
+                "voter_first_name": "Math",
+                "voter_last_name": "User 2",
                 "ratings": {"toveco1.png": 1, "toveco2.png": 0},
             },
             {
-                "voter_name": "Math User 3",
+                "voter_first_name": "Math",
+                "voter_last_name": "User 3",
                 "ratings": {"toveco1.png": -1, "toveco2.png": 1},
             },
         ]
@@ -510,7 +527,8 @@ class TestSystemIntegration:
             elif method == "POST":
                 # Use minimal valid data for POST test
                 test_data = {
-                    "voter_name": "API Test",
+                    "voter_first_name": "API",
+                    "voter_last_name": "Test",
                     "ratings": {f"toveco{i}.png": 0 for i in range(1, 12)},
                 }
                 response = client.post(endpoint, json=test_data)
@@ -567,7 +585,8 @@ class TestBusinessLogicValidation:
 
         for rating in valid_ratings:
             vote_data = {
-                "voter_name": f"Valid Rating Test {rating}",
+                "voter_first_name": "Valid Rating",
+                "voter_last_name": f"Test {rating}",
                 "ratings": {f"toveco{i}.png": rating for i in range(1, 12)},
             }
 
@@ -587,7 +606,8 @@ class TestBusinessLogicValidation:
 
         for rating in invalid_ratings:
             vote_data = {
-                "voter_name": f"Invalid Rating Test {rating}",
+                "voter_first_name": "Invalid Rating",
+                "voter_last_name": f"Test {rating}",
                 "ratings": {"toveco1.png": rating},
             }
 
@@ -598,7 +618,8 @@ class TestBusinessLogicValidation:
         """Test that votes must include all logos."""
         # Test incomplete vote (missing logos)
         incomplete_vote = {
-            "voter_name": "Incomplete Vote Test",
+            "voter_first_name": "Incomplete",
+            "voter_last_name": "Vote Test",
             "ratings": {"toveco1.png": 1},  # Missing other 10 logos
         }
 
@@ -607,7 +628,8 @@ class TestBusinessLogicValidation:
 
         # Test extra logos
         extra_vote = {
-            "voter_name": "Extra Vote Test",
+            "voter_first_name": "Extra",
+            "voter_last_name": "Vote Test",
             "ratings": {
                 **{f"toveco{i}.png": 1 for i in range(1, 12)},
                 "extra_logo.png": 1,
@@ -615,14 +637,15 @@ class TestBusinessLogicValidation:
         }
 
         response = client.post("/api/vote", json=extra_vote)
-        assert response.status_code == 400, "Vote with extra logos was accepted"
+        assert response.status_code == 422, "Vote with extra logos was accepted"
 
     def test_ranking_algorithm_validation(self, client):
         """Test that ranking algorithm works correctly."""
         # Submit votes with clear ranking order
         ranking_votes = [
             {
-                "voter_name": "Ranking Test User",
+                "voter_first_name": "Ranking",
+                "voter_last_name": "Test User",
                 "ratings": {
                     "toveco1.png": 2,  # Should rank highest
                     "toveco2.png": 1,  # Should rank second

@@ -17,7 +17,10 @@ class Settings:
     PORT: int = int(os.getenv("PORT", "8000"))
 
     # Database settings
-    DATABASE_PATH: str = os.getenv("DATABASE_PATH", "votes.db")
+    @property
+    def DATABASE_PATH(self) -> str:
+        """Get database path from environment or default."""
+        return os.getenv("DATABASE_PATH", "votes.db")
 
     # File paths
     BASE_DIR: Path = Path(__file__).resolve().parent.parent.parent
