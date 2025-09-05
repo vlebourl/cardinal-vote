@@ -29,8 +29,8 @@ COPY src/ ./src/
 COPY README.md ./
 
 # Create and install dependencies in virtual environment
-RUN uv venv /opt/venv && \
-    uv sync --no-dev
+RUN VIRTUAL_ENV=/opt/venv uv venv /opt/venv && \
+    VIRTUAL_ENV=/opt/venv uv sync --no-dev
 
 # Production stage
 FROM python:3.13-slim AS production
