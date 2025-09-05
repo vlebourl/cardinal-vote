@@ -7,35 +7,41 @@
 ## 🎯 API Overview
 
 The ToVéCo API provides RESTful endpoints for:
+
 - **Logo management**: Retrieve available logos
 - **Vote submission**: Submit value-based votes (-2 to +2 scale)
 - **Results aggregation**: Get voting statistics and rankings
 - **System monitoring**: Health checks and application status
 
 ### Base URL Structure
+
 ```
 https://voting.yourdomain.com/api/v1/
 ```
 
 ### Authentication
+
 - **Public endpoints**: No authentication required for voting functionality
 - **Admin endpoints**: Basic authentication for administrative features (future)
 
 ## 📋 Quick Start Integration
 
 ### 1. Check System Health
+
 ```bash
 curl -X GET "https://voting.yourdomain.com/api/health" \
   -H "Accept: application/json"
 ```
 
 ### 2. Get Available Logos
+
 ```bash
 curl -X GET "https://voting.yourdomain.com/api/logos" \
   -H "Accept: application/json"
 ```
 
 ### 3. Submit a Vote
+
 ```bash
 curl -X POST "https://voting.yourdomain.com/api/vote" \
   -H "Content-Type: application/json" \
@@ -59,6 +65,7 @@ curl -X POST "https://voting.yourdomain.com/api/vote" \
 ```
 
 ### 4. Get Results
+
 ```bash
 curl -X GET "https://voting.yourdomain.com/api/results" \
   -H "Accept: application/json"
@@ -69,22 +76,26 @@ curl -X GET "https://voting.yourdomain.com/api/results" \
 ### Frontend Endpoints
 
 #### `GET /`
+
 **Purpose**: Serve the main voting interface
 **Response**: HTML page with mobile-first voting UI
 **Content-Type**: `text/html`
 
 **Example**:
+
 ```bash
 curl -X GET "https://voting.yourdomain.com/" \
   -H "Accept: text/html"
 ```
 
 #### `GET /results`
+
 **Purpose**: Serve the results visualization page
 **Response**: HTML page with charts and statistics
 **Content-Type**: `text/html`
 
 **Example**:
+
 ```bash
 curl -X GET "https://voting.yourdomain.com/results" \
   -H "Accept: text/html"
@@ -93,12 +104,14 @@ curl -X GET "https://voting.yourdomain.com/results" \
 ### API Endpoints
 
 #### `GET /api/logos`
+
 **Purpose**: Get randomized list of available logo files
 **Method**: `GET`
 **Content-Type**: `application/json`
 **Rate Limit**: 100 requests/minute
 
 **Response Schema**:
+
 ```json
 {
   "logos": ["string"],
@@ -107,24 +120,40 @@ curl -X GET "https://voting.yourdomain.com/results" \
 ```
 
 **Success Response (200)**:
+
 ```json
 {
-  "logos": ["toveco3.png", "toveco1.png", "toveco7.png", "toveco11.png", "toveco2.png", "toveco9.png", "toveco5.png", "toveco8.png", "toveco10.png", "toveco4.png", "toveco6.png"],
+  "logos": [
+    "toveco3.png",
+    "toveco1.png",
+    "toveco7.png",
+    "toveco11.png",
+    "toveco2.png",
+    "toveco9.png",
+    "toveco5.png",
+    "toveco8.png",
+    "toveco10.png",
+    "toveco4.png",
+    "toveco6.png"
+  ],
   "total_count": 11
 }
 ```
 
 **Error Responses**:
+
 - `404`: No logo files found
 - `500`: Server error retrieving logos
 
 #### `POST /api/vote`
+
 **Purpose**: Submit a complete vote with ratings for all logos
 **Method**: `POST`
 **Content-Type**: `application/json`
 **Rate Limit**: 5 requests/hour per IP
 
 **Request Schema**:
+
 ```json
 {
   "voter_name": "string (1-100 characters, required)",
@@ -135,12 +164,14 @@ curl -X GET "https://voting.yourdomain.com/results" \
 ```
 
 **Request Validation Rules**:
+
 - `voter_name`: 1-100 characters, non-empty after trimming
 - `ratings`: Must include ALL available logos
 - Rating values: Must be integers between -2 and +2 inclusive
 - Logo names: Must match exactly the filenames from `/api/logos`
 
 **Example Request**:
+
 ```json
 {
   "voter_name": "Alice Johnson",
@@ -161,6 +192,7 @@ curl -X GET "https://voting.yourdomain.com/results" \
 ```
 
 **Success Response (200)**:
+
 ```json
 {
   "success": true,
@@ -170,12 +202,14 @@ curl -X GET "https://voting.yourdomain.com/results" \
 ```
 
 **Error Responses**:
+
 - `400`: Invalid request data (see details)
 - `422`: Validation errors (missing logos, invalid ratings)
 - `429`: Rate limit exceeded
 - `500`: Server error during vote processing
 
 **Detailed Error Response (422)**:
+
 ```json
 {
   "success": false,
@@ -188,24 +222,27 @@ curl -X GET "https://voting.yourdomain.com/results" \
 ```
 
 #### `GET /api/results`
+
 **Purpose**: Get aggregated voting results with rankings
 **Method**: `GET`
 **Content-Type**: `application/json`
 **Rate Limit**: 60 requests/minute
 
 **Query Parameters**:
+
 - `include_votes` (boolean, optional): Include individual vote records (admin feature)
   - Default: `false`
   - Example: `?include_votes=true`
 
 **Response Schema**:
+
 ```json
 {
   "summary": {
     "logo_filename.png": {
       "average": "number",
       "total_votes": "integer",
-      "total_score": "integer", 
+      "total_score": "integer",
       "ranking": "integer"
     }
   },
@@ -215,6 +252,7 @@ curl -X GET "https://voting.yourdomain.com/results" \
 ```
 
 **Success Response (200)**:
+
 ```json
 {
   "summary": {
@@ -242,14 +280,17 @@ curl -X GET "https://voting.yourdomain.com/results" \
 ```
 
 **With Individual Votes** (`?include_votes=true`):
+
 ```json
 {
-  "summary": { /* ... same as above ... */ },
+  "summary": {
+    /* ... same as above ... */
+  },
   "total_voters": 25,
   "votes": [
     {
       "id": 1,
-      "voter_name": "Alice Johnson", 
+      "voter_name": "Alice Johnson",
       "timestamp": "2025-09-04T12:00:00.000000",
       "ratings": {
         "toveco1.png": 2,
@@ -262,12 +303,14 @@ curl -X GET "https://voting.yourdomain.com/results" \
 ```
 
 #### `GET /api/stats`
+
 **Purpose**: Get basic voting statistics
 **Method**: `GET`
 **Content-Type**: `application/json`
 **Rate Limit**: 100 requests/minute
 
 **Success Response (200)**:
+
 ```json
 {
   "total_votes": 25,
@@ -280,22 +323,25 @@ curl -X GET "https://voting.yourdomain.com/results" \
 ```
 
 #### `GET /api/health`
+
 **Purpose**: Health check endpoint for monitoring and uptime checks
 **Method**: `GET`
 **Content-Type**: `application/json`
 **Rate Limit**: No limit
 
 **Success Response (200)**:
+
 ```json
 {
   "status": "healthy",
-  "database": "connected", 
+  "database": "connected",
   "logos_available": 11,
   "version": "0.1.0"
 }
 ```
 
 **Unhealthy Response (200)** - Still returns 200 but indicates issues:
+
 ```json
 {
   "status": "unhealthy",
@@ -310,17 +356,18 @@ curl -X GET "https://voting.yourdomain.com/results" \
 
 ### Rate Limiting Rules
 
-| Endpoint | Limit | Window | Scope |
-|----------|-------|--------|-------|
-| `POST /api/vote` | 5 requests | 1 hour | Per IP |
-| `GET /api/logos` | 100 requests | 1 minute | Per IP |
-| `GET /api/results` | 60 requests | 1 minute | Per IP |
-| `GET /api/stats` | 100 requests | 1 minute | Per IP |
-| `GET /api/health` | No limit | - | - |
+| Endpoint           | Limit        | Window   | Scope  |
+| ------------------ | ------------ | -------- | ------ |
+| `POST /api/vote`   | 5 requests   | 1 hour   | Per IP |
+| `GET /api/logos`   | 100 requests | 1 minute | Per IP |
+| `GET /api/results` | 60 requests  | 1 minute | Per IP |
+| `GET /api/stats`   | 100 requests | 1 minute | Per IP |
+| `GET /api/health`  | No limit     | -        | -      |
 
 ### Rate Limit Headers
 
 When rate limited, responses include:
+
 ```http
 HTTP/1.1 429 Too Many Requests
 X-RateLimit-Limit: 5
@@ -337,6 +384,7 @@ Retry-After: 3600
 ### CORS Configuration
 
 **Development Origins**:
+
 - `http://localhost:3000`
 - `http://localhost:8000`
 - `http://127.0.0.1:8000`
@@ -355,10 +403,10 @@ class ToVeCoVotingAPI {
   private baseUrl: string;
 
   constructor(baseUrl: string) {
-    this.baseUrl = baseUrl.replace(/\/$/, '');
+    this.baseUrl = baseUrl.replace(/\/$/, "");
   }
 
-  async getLogos(): Promise<{logos: string[], total_count: number}> {
+  async getLogos(): Promise<{ logos: string[]; total_count: number }> {
     const response = await fetch(`${this.baseUrl}/api/logos`);
     if (!response.ok) {
       throw new Error(`Failed to get logos: ${response.status}`);
@@ -366,17 +414,20 @@ class ToVeCoVotingAPI {
     return response.json();
   }
 
-  async submitVote(voterName: string, ratings: Record<string, number>): Promise<{success: boolean, message: string, vote_id: number}> {
+  async submitVote(
+    voterName: string,
+    ratings: Record<string, number>,
+  ): Promise<{ success: boolean; message: string; vote_id: number }> {
     const response = await fetch(`${this.baseUrl}/api/vote`, {
-      method: 'POST',
+      method: "POST",
       headers: {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json'
+        "Content-Type": "application/json",
+        Accept: "application/json",
       },
       body: JSON.stringify({
         voter_name: voterName,
-        ratings: ratings
-      })
+        ratings: ratings,
+      }),
     });
 
     if (!response.ok) {
@@ -390,7 +441,7 @@ class ToVeCoVotingAPI {
   async getResults(includeVotes: boolean = false): Promise<any> {
     const url = new URL(`${this.baseUrl}/api/results`);
     if (includeVotes) {
-      url.searchParams.set('include_votes', 'true');
+      url.searchParams.set("include_votes", "true");
     }
 
     const response = await fetch(url.toString());
@@ -400,7 +451,12 @@ class ToVeCoVotingAPI {
     return response.json();
   }
 
-  async checkHealth(): Promise<{status: string, database: string, logos_available: number, version: string}> {
+  async checkHealth(): Promise<{
+    status: string;
+    database: string;
+    logos_available: number;
+    version: string;
+  }> {
     const response = await fetch(`${this.baseUrl}/api/health`);
     if (!response.ok) {
       throw new Error(`Health check failed: ${response.status}`);
@@ -410,29 +466,28 @@ class ToVeCoVotingAPI {
 }
 
 // Usage example
-const api = new ToVeCoVotingAPI('https://voting.yourdomain.com');
+const api = new ToVeCoVotingAPI("https://voting.yourdomain.com");
 
 async function submitSampleVote() {
   try {
     // Get available logos
-    const {logos} = await api.getLogos();
-    
+    const { logos } = await api.getLogos();
+
     // Create ratings for all logos
     const ratings: Record<string, number> = {};
-    logos.forEach(logo => {
+    logos.forEach((logo) => {
       ratings[logo] = Math.floor(Math.random() * 5) - 2; // Random rating -2 to +2
     });
 
     // Submit vote
-    const result = await api.submitVote('Test User', ratings);
-    console.log('Vote submitted:', result);
+    const result = await api.submitVote("Test User", ratings);
+    console.log("Vote submitted:", result);
 
     // Get updated results
     const results = await api.getResults();
-    console.log('Current results:', results);
-
+    console.log("Current results:", results);
   } catch (error) {
-    console.error('Error:', error);
+    console.error("Error:", error);
   }
 }
 ```
@@ -466,11 +521,11 @@ class ToVeCoVotingAPI:
             'ratings': ratings
         }
         response = self.session.post(f"{self.base_url}/api/vote", json=data)
-        
+
         if not response.ok:
             error_data = response.json()
             raise requests.HTTPError(f"Vote submission failed: {error_data.get('message', 'Unknown error')}")
-        
+
         return response.json()
 
     def get_results(self, include_votes: bool = False) -> Dict:
@@ -495,35 +550,35 @@ class ToVeCoVotingAPI:
 # Usage example
 def main():
     api = ToVeCoVotingAPI('https://voting.yourdomain.com')
-    
+
     try:
         # Check system health
         health = api.check_health()
         print(f"System status: {health['status']}")
-        
+
         # Get available logos
         logos_data = api.get_logos()
         logos = logos_data['logos']
         print(f"Available logos: {len(logos)}")
-        
+
         # Create sample ratings
         ratings = {logo: 1 for logo in logos}  # Rate all logos as +1
         ratings[logos[0]] = 2  # Give first logo highest rating
-        
+
         # Submit vote
         result = api.submit_vote('Python Test User', ratings)
         print(f"Vote submitted with ID: {result['vote_id']}")
-        
+
         # Get results
         results = api.get_results()
         print(f"Total voters: {results['total_voters']}")
-        
+
         # Print rankings
         summary = results['summary']
         sorted_logos = sorted(summary.items(), key=lambda x: x[1]['ranking'])
         for logo, data in sorted_logos[:3]:  # Top 3
             print(f"#{data['ranking']}: {logo} (avg: {data['average']:.2f})")
-            
+
     except requests.RequestException as e:
         print(f"API Error: {e}")
 
@@ -534,6 +589,7 @@ if __name__ == "__main__":
 ### cURL Testing Scripts
 
 Create `test-api.sh`:
+
 ```bash
 #!/bin/bash
 # ToVéCo API Test Script
@@ -595,6 +651,7 @@ echo "✅ API test completed!"
 ```
 
 Make executable and run:
+
 ```bash
 chmod +x test-api.sh
 ./test-api.sh
@@ -605,14 +662,17 @@ chmod +x test-api.sh
 ### Common Integration Issues
 
 #### 1. CORS Errors
+
 **Problem**: Browser requests blocked by CORS policy
-**Symptoms**: 
+**Symptoms**:
+
 ```
-Access to fetch at 'https://voting.domain.com/api/logos' from origin 'http://localhost:3000' 
+Access to fetch at 'https://voting.domain.com/api/logos' from origin 'http://localhost:3000'
 has been blocked by CORS policy
 ```
 
 **Solutions**:
+
 ```bash
 # Add your domain to ALLOWED_ORIGINS in .env
 ALLOWED_ORIGINS=http://localhost:3000,https://yourdomain.com
@@ -622,10 +682,12 @@ docker compose down && docker compose up -d
 ```
 
 #### 2. Rate Limit Exceeded
+
 **Problem**: Too many requests from same IP
 **Symptoms**: `429 Too Many Requests` responses
 
 **Solutions**:
+
 ```bash
 # Check current rate limits
 curl -I https://voting.yourdomain.com/api/vote
@@ -638,16 +700,19 @@ ENABLE_RATE_LIMITING=false
 ```
 
 #### 3. Validation Errors
+
 **Problem**: Vote submission fails validation
 **Symptoms**: `422 Unprocessable Entity` responses
 
 **Common Issues**:
+
 - Missing ratings for some logos
 - Invalid rating values (not -2 to +2)
 - Empty or too long voter names
 - Logo filenames don't match exactly
 
 **Debug Steps**:
+
 ```bash
 # Get current logo list
 curl -s https://voting.yourdomain.com/api/logos | jq '.logos'
@@ -657,10 +722,12 @@ echo '{"voter_name": "Test", "ratings": {"toveco1.png": 2}}' | jq '.ratings | ke
 ```
 
 #### 4. Database Connection Issues
+
 **Problem**: Database unavailable or corrupted
 **Symptoms**: `500 Internal Server Error`, health check shows "disconnected"
 
 **Solutions**:
+
 ```bash
 # Check database file permissions
 docker compose exec toveco-voting ls -la /app/data/
@@ -677,6 +744,7 @@ docker compose logs toveco-voting
 ### Monitoring & Debugging
 
 #### API Response Time Monitoring
+
 ```bash
 # Monitor API response times
 while true; do
@@ -686,6 +754,7 @@ done
 ```
 
 #### Health Check Integration
+
 ```bash
 # Simple health check for monitoring systems
 #!/bin/bash
@@ -701,6 +770,7 @@ fi
 ```
 
 #### Log Analysis
+
 ```bash
 # Filter API logs for errors
 docker compose logs toveco-voting 2>&1 | grep -E "(ERROR|WARNING|CRITICAL)"
@@ -715,6 +785,7 @@ docker compose logs toveco-voting 2>&1 | grep -i database
 ### Performance Optimization
 
 #### Caching Strategies
+
 ```javascript
 // Client-side logo caching
 class CachedToVeCoAPI extends ToVeCoVotingAPI {
@@ -736,24 +807,25 @@ class CachedToVeCoAPI extends ToVeCoVotingAPI {
 ```
 
 #### Batch Operations
+
 ```python
 # Efficient batch vote processing
 def submit_multiple_votes(api: ToVeCoVotingAPI, votes: List[Dict]):
     """Submit multiple votes with proper error handling and rate limiting."""
     results = []
-    
+
     for i, vote in enumerate(votes):
         try:
             result = api.submit_vote(vote['voter_name'], vote['ratings'])
             results.append({'success': True, 'vote_id': result['vote_id']})
-            
+
             # Respect rate limits (5 votes per hour)
             if i < len(votes) - 1:  # Don't wait after last vote
                 time.sleep(720)  # 12 minutes between votes
-                
+
         except Exception as e:
             results.append({'success': False, 'error': str(e)})
-            
+
     return results
 ```
 
@@ -771,18 +843,18 @@ class APIMetrics:
         self.response_times = []
         self.endpoint_calls = defaultdict(int)
         self.error_counts = defaultdict(int)
-    
+
     def record_request(self, endpoint: str, response_time: float, status_code: int):
         self.response_times.append(response_time)
         self.endpoint_calls[endpoint] += 1
-        
+
         if status_code >= 400:
             self.error_counts[f"{endpoint}:{status_code}"] += 1
-    
+
     def get_summary(self) -> dict:
         if not self.response_times:
             return {"message": "No data collected"}
-            
+
         return {
             "total_requests": len(self.response_times),
             "avg_response_time": statistics.mean(self.response_times),
@@ -821,24 +893,28 @@ print(metrics.get_summary())
 ## 🎯 Integration Best Practices
 
 ### 1. **Error Handling**
+
 - Always check HTTP status codes
 - Parse error messages from response body
 - Implement exponential backoff for rate limits
 - Log failed requests for debugging
 
 ### 2. **Performance**
+
 - Cache logo lists (change infrequently)
 - Use appropriate timeouts (30s for votes, 5s for health checks)
 - Implement request queuing for batch operations
 - Monitor API response times
 
 ### 3. **Security**
+
 - Validate all user inputs before sending to API
 - Use HTTPS in production
 - Implement proper CORS configuration
 - Don't expose sensitive data in client-side code
 
 ### 4. **Reliability**
+
 - Implement health checks in your monitoring
 - Use circuit breakers for external dependencies
 - Graceful degradation when API is unavailable
@@ -846,4 +922,4 @@ print(metrics.get_summary())
 
 ---
 
-*🔧 **Need help integrating?** This API guide provides everything needed to successfully integrate with the ToVéCo voting platform, from basic usage to advanced troubleshooting.*
+_🔧 **Need help integrating?** This API guide provides everything needed to successfully integrate with the ToVéCo voting platform, from basic usage to advanced troubleshooting._

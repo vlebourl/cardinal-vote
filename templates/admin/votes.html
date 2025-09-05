@@ -69,12 +69,12 @@
                     <i class="fas fa-file-csv"></i>
                     <span>Exporter CSV</span>
                 </button>
-                
+
                 <button class="quick-action" onclick="exportVotes('json')" {% if not votes %}disabled{% endif %}>
                     <i class="fas fa-file-code"></i>
                     <span>Exporter JSON</span>
                 </button>
-                
+
                 <button class="quick-action" onclick="clearAllVotes()" {% if not votes %}disabled{% endif %}>
                     <i class="fas fa-trash"></i>
                     <span>Vider tous les votes</span>
@@ -197,13 +197,13 @@
 async function exportVotes(format) {
     try {
         showLoading();
-        
+
         const response = await fetch(`/admin/votes/export/${format}`, {
             headers: {
                 'X-CSRF-Token': window.csrfToken
             }
         });
-        
+
         if (response.ok) {
             // Trigger download
             const blob = await response.blob();
@@ -215,7 +215,7 @@ async function exportVotes(format) {
             a.click();
             window.URL.revokeObjectURL(url);
             document.body.removeChild(a);
-            
+
             showMessage('Export réussi', 'success');
         } else {
             showMessage('Erreur lors de l\'export', 'error');
@@ -233,20 +233,20 @@ async function clearAllVotes() {
     if (!confirm('Êtes-vous sûr de vouloir supprimer TOUS les votes ? Cette action est irréversible.')) {
         return;
     }
-    
+
     try {
         showLoading();
-        
+
         const formData = new FormData();
         formData.append('csrf_token', window.csrfToken);
-        
+
         const response = await fetch('/admin/votes/clear', {
             method: 'POST',
             body: formData
         });
-        
+
         const result = await response.json();
-        
+
         if (result.success) {
             showMessage('Tous les votes ont été supprimés', 'success');
             // Reload the page to reflect changes
@@ -266,7 +266,7 @@ async function clearAllVotes() {
 async function viewVoteDetails(voteId) {
     try {
         showLoading();
-        
+
         const response = await fetch(`/admin/votes/${voteId}`, {
             method: 'GET',
             credentials: 'same-origin',
@@ -275,7 +275,7 @@ async function viewVoteDetails(voteId) {
                 'Accept': 'application/json'
             }
         });
-        
+
         if (response.ok) {
             const data = await response.json();
             if (data.success) {
@@ -306,9 +306,9 @@ async function viewVoteDetails(voteId) {
 function displayVoteDetails(vote) {
     const title = document.getElementById('voteDetailsTitle');
     const body = document.getElementById('voteDetailsBody');
-    
+
     title.textContent = `Vote de ${vote.voter_name}`;
-    
+
     let ratingsHtml = '<div class="vote-details-ratings">';
     if (vote.ratings && Object.keys(vote.ratings).length > 0) {
         ratingsHtml += '<h4>Notes par logo:</h4><div class="ratings-grid">';
@@ -326,7 +326,7 @@ function displayVoteDetails(vote) {
         ratingsHtml += '<p>Aucune note enregistrée</p>';
     }
     ratingsHtml += '</div>';
-    
+
     body.innerHTML = `
         <div class="vote-details">
             <div class="vote-detail-row">
@@ -342,7 +342,7 @@ function displayVoteDetails(vote) {
             ${ratingsHtml}
         </div>
     `;
-    
+
     document.getElementById('voteDetailsModal').style.display = 'block';
 }
 
@@ -356,10 +356,10 @@ async function deleteVote(voteId) {
     if (!confirm('Êtes-vous sûr de vouloir supprimer ce vote ?')) {
         return;
     }
-    
+
     try {
         showLoading();
-        
+
         const response = await fetch(`/admin/votes/${voteId}`, {
             method: 'DELETE',
             credentials: 'same-origin',
@@ -368,9 +368,9 @@ async function deleteVote(voteId) {
                 'Accept': 'application/json'
             }
         });
-        
+
         const result = await response.json();
-        
+
         if (result.success) {
             showMessage('Vote supprimé avec succès', 'success');
             // Reload the page to reflect changes

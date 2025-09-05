@@ -1,10 +1,13 @@
 # Project Requirements & Planning (PRP)
+
 ## ToVéCo Logo Voting Platform
 
 ### Executive Summary
+
 Development of a web-based voting application for selecting the ToVéCo brand logo using the "vote de valeur" (value voting) methodology. The system will present 11 logo variants to voters who rate each on a scale from -2 to +2, with results aggregated across all participants.
 
 ### Project Objectives
+
 1. **Primary Goal**: Facilitate democratic logo selection through structured value voting
 2. **User Experience**: Create an intuitive, visually appealing voting interface
 3. **Data Integrity**: Ensure accurate vote collection and storage
@@ -13,12 +16,14 @@ Development of a web-based voting application for selecting the ToVéCo brand lo
 ### Functional Requirements
 
 #### 1. Voter Registration
+
 - **Name Input**: Mandatory field for voter identification
 - **Validation**: Prevent empty submissions
 - **Privacy**: No authentication required, name-based tracking only
 
 #### 2. Voting Interface
-- **Logo Presentation**: 
+
+- **Logo Presentation**:
   - Display logos one at a time in full resolution
   - Randomize presentation order per voter to eliminate position bias
   - Clear navigation between logos
@@ -29,12 +34,14 @@ Development of a web-based voting application for selecting the ToVéCo brand lo
 - **Progress Tracking**: Visual indicator showing completion status (e.g., "Logo 3 of 11")
 
 #### 3. Vote Review & Confirmation
+
 - **Summary Page**: Display all logos with assigned ratings
 - **Edit Capability**: Allow voters to modify ratings before final submission
 - **Confirmation Action**: Explicit submit button with confirmation dialog
 
 #### 4. Data Management
-- **Storage Solution**: 
+
+- **Storage Solution**:
   - JSON file-based storage for simplicity
   - Alternative: SQLite for more robust data handling
 - **Data Structure**:
@@ -56,6 +63,7 @@ Development of a web-based voting application for selecting the ToVéCo brand lo
 - **Persistence**: Votes accumulate across sessions
 
 #### 5. Results Dashboard (Admin View)
+
 - **Aggregate Statistics**:
   - Average rating per logo
   - Vote distribution visualization
@@ -66,19 +74,22 @@ Development of a web-based voting application for selecting the ToVéCo brand lo
 ### Non-Functional Requirements
 
 #### 1. User Interface
+
 - **Responsive Design**: Mobile-first approach, works on all devices
 - **Accessibility**: WCAG 2.1 AA compliance
-- **Visual Design**: 
+- **Visual Design**:
   - Clean, modern aesthetic aligned with ToVéCo eco-friendly brand
   - Green color palette with nature-inspired elements
   - Smooth transitions and micro-interactions
 
 #### 2. Performance
+
 - **Load Time**: < 3 seconds initial load
 - **Image Optimization**: Lazy loading, appropriate compression
 - **Client-Side Validation**: Instant feedback on user actions
 
 #### 3. Security & Privacy
+
 - **Input Sanitization**: Prevent XSS attacks
 - **Rate Limiting**: Prevent vote spamming
 - **Data Privacy**: No personal data beyond voter names
@@ -87,21 +98,25 @@ Development of a web-based voting application for selecting the ToVéCo brand lo
 ### Technical Architecture
 
 #### Selected Stack (Optimized for Ubuntu Deployment)
+
 **Backend: FastAPI + Uvicorn**
+
 - **Framework**: FastAPI (Python) - modern, fast, with automatic API documentation
 - **Server**: Uvicorn ASGI server for production deployment
 - **Storage**: SQLite for simplicity or PostgreSQL for scalability
 - **File Handling**: Static file serving for logo images
 
 **Frontend: Vanilla JavaScript + Modern CSS**
+
 - **Approach**: Single-page application without framework dependencies
 - **Styling**: Modern CSS with CSS Grid and Flexbox for mobile-first responsive design
 - **Optimization**: Minimal JavaScript, progressive enhancement
 - **Mobile Priority**: Touch-friendly interface, optimized for mobile screens
 
 **Deployment Architecture**
+
 ```
-[Internet] → [Nginx/Apache Reverse Proxy + SSL] 
+[Internet] → [Nginx/Apache Reverse Proxy + SSL]
             → [Uvicorn on localhost:8000]
             → [FastAPI Application]
             → [SQLite/PostgreSQL Database]
@@ -110,24 +125,28 @@ Development of a web-based voting application for selecting the ToVéCo brand lo
 #### Alternative Deployment Options
 
 **Option A: Docker Container**
+
 - Dockerfile with multi-stage build
 - Docker Compose for complete stack
 - Easy deployment with single command
 - Port mapping to local 8000
 
 **Option B: Direct Python Deployment**
+
 - Python virtual environment
 - Systemd service for auto-restart
 - Uvicorn running on localhost:8000
 - Simple update process via Git pull
 
 **Option C: Docker + Traefik**
+
 - Traefik as reverse proxy with automatic SSL
 - Docker Swarm or Docker Compose
 - Auto-discovery of services
 - Built-in load balancing
 
 #### Development Workflow
+
 1. **Version Control**: Git with feature branches
 2. **Code Quality**: Black/Ruff for Python, Prettier for frontend
 3. **Testing**: Pytest for backend, manual testing for frontend
@@ -159,6 +178,7 @@ Development of a web-based voting application for selecting the ToVéCo brand lo
 ### Implementation Phases
 
 #### Phase 1: MVP (2-3 days)
+
 - FastAPI backend with SQLite database
 - Mobile-first responsive interface
 - Core voting functionality
@@ -166,12 +186,14 @@ Development of a web-based voting application for selecting the ToVéCo brand lo
 - Docker containerization
 
 #### Phase 2: Enhancement (1-2 days)
+
 - Improved UI/UX with CSS animations
 - Results visualization with charts
 - Data export functionality (CSV)
 - Admin dashboard
 
 #### Phase 3: Deployment (1 day)
+
 - Ubuntu server setup
 - Systemd service configuration
 - Reverse proxy configuration guide
@@ -179,18 +201,21 @@ Development of a web-based voting application for selecting the ToVéCo brand lo
 - Performance testing
 
 ### Success Metrics
+
 - **Participation Rate**: Target 80%+ of invited voters
 - **Completion Rate**: 95%+ of started votes completed
 - **User Satisfaction**: Post-vote feedback score > 4.5/5
 - **Technical Performance**: 99.9% uptime, <3s load time
 
 ### Risk Mitigation
+
 - **Data Loss**: Regular backups, version control for vote data
 - **Duplicate Voting**: Name-based tracking with optional IP logging
 - **Browser Compatibility**: Progressive enhancement approach
 - **Scalability**: Prepared for 100-1000 concurrent voters
 
 ### Deliverables
+
 1. **Functional Voting Application** (FastAPI backend + frontend)
 2. **Admin Dashboard for Results** (integrated into main app)
 3. **Docker Compose Configuration** (for easy deployment)
@@ -198,6 +223,7 @@ Development of a web-based voting application for selecting the ToVéCo brand lo
 5. **Source Code with Documentation**
 
 ### Non-Deliverables (User Responsibility)
+
 - Ubuntu server setup and configuration
 - Reverse proxy (Nginx/Apache) configuration
 - SSL certificate management
@@ -205,6 +231,7 @@ Development of a web-based voting application for selecting the ToVéCo brand lo
 - Backup infrastructure
 
 ### Timeline
+
 - **Day 1-2**: Frontend development and UI implementation
 - **Day 3**: Backend integration and data persistence
 - **Day 4**: Testing, bug fixes, and deployment
@@ -213,12 +240,14 @@ Development of a web-based voting application for selecting the ToVéCo brand lo
 ### Deployment Requirements
 
 #### Server Prerequisites
+
 - **OS**: Ubuntu 20.04 LTS or newer
-- **Python**: 3.9+ 
+- **Python**: 3.9+
 - **Resources**: Minimum 1GB RAM, 10GB storage
 - **Network**: Open port for internal communication (8000)
 
 #### Deployment Commands
+
 ```bash
 # Option 1: Docker deployment
 docker-compose up -d
@@ -235,6 +264,7 @@ sudo systemctl enable toveco-voting
 ```
 
 #### Reverse Proxy Configuration (Nginx example)
+
 ```nginx
 location /voting/ {
     proxy_pass http://localhost:8000;
@@ -252,17 +282,20 @@ location /voting/ {
 ### Mobile-First Design Principles
 
 #### Responsive Breakpoints
+
 - **Mobile**: 320px - 768px (primary focus)
 - **Tablet**: 768px - 1024px
 - **Desktop**: 1024px+
 
 #### Touch Optimization
+
 - **Button Size**: Minimum 44x44px touch targets
 - **Spacing**: Adequate padding between interactive elements
 - **Gestures**: Swipe support for navigation between logos
 - **Viewport**: Proper meta tags for mobile rendering
 
 #### Performance for Mobile
+
 - **Image Optimization**: WebP format with fallbacks
 - **Lazy Loading**: Load images as needed
 - **CSS**: Minimal, inlined critical CSS
@@ -270,6 +303,7 @@ location /voting/ {
 - **Caching**: Aggressive caching headers for static assets
 
 ### Post-Launch Considerations
+
 - Monitor voting patterns for anomalies
 - Gather user feedback for future improvements
 - Archive final results with timestamps

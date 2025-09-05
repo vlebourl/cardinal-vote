@@ -109,12 +109,12 @@ cmd_logs() {
 # Health check
 cmd_health() {
     log_info "Checking application health..."
-    
+
     if ! docker compose $COMPOSE_FILES ps toveco-voting | grep -q "Up"; then
         log_error "Application is not running"
         return 1
     fi
-    
+
     if curl -f -s http://localhost:8000/api/health >/dev/null 2>&1; then
         local health_response
         health_response=$(curl -s http://localhost:8000/api/health | jq . 2>/dev/null || curl -s http://localhost:8000/api/health)
@@ -131,22 +131,22 @@ cmd_health() {
 # Backup database
 cmd_backup() {
     log_info "Creating database backup..."
-    
+
     if ! docker compose $COMPOSE_FILES ps toveco-voting | grep -q "Up"; then
         log_error "Application is not running"
         return 1
     fi
-    
+
     local backup_name="votes-backup-$(date +%Y%m%d-%H%M%S).db"
-    
+
     if docker compose $COMPOSE_FILES exec -T toveco-voting test -f /app/data/votes.db; then
         docker compose $COMPOSE_FILES exec -T toveco-voting \
             cp /app/data/votes.db "/app/data/$backup_name"
-        
+
         # Also copy to local backup directory
         mkdir -p "$PROJECT_DIR/backups"
         docker compose $COMPOSE_FILES cp "toveco-voting:/app/data/$backup_name" "$PROJECT_DIR/backups/"
-        
+
         log_success "Database backed up to:"
         log_info "  Container: /app/data/$backup_name"
         log_info "  Local: $PROJECT_DIR/backups/$backup_name"
@@ -159,61 +159,61 @@ cmd_backup() {
 # Restore database
 cmd_restore() {
     local backup_file="${1:-}"
-    
+
     if [[ -z "$backup_file" ]]; then
         log_error "Please specify backup file path"
         return 1
     fi
-    
+
     if [[ ! -f "$backup_file" ]]; then
         log_error "Backup file not found: $backup_file"
         return 1
     fi
-    
+
     log_warning "This will replace the current database!"
     read -p "Are you sure? (y/N): " -n 1 -r
     echo
-    
+
     if [[ ! $REPLY =~ ^[Yy]$ ]]; then
         log_info "Restore cancelled"
         return 0
     fi
-    
+
     log_info "Restoring database from $backup_file..."
-    
+
     # Stop application
     docker compose $COMPOSE_FILES stop toveco-voting
-    
+
     # Copy backup file to container
     docker compose $COMPOSE_FILES cp "$backup_file" toveco-voting:/app/data/votes.db
-    
+
     # Start application
     docker compose $COMPOSE_FILES start toveco-voting
-    
+
     log_success "Database restored successfully"
 }
 
 # Open shell
 cmd_shell() {
     log_info "Opening shell in application container..."
-    
+
     if ! docker compose $COMPOSE_FILES ps toveco-voting | grep -q "Up"; then
         log_error "Application is not running"
         return 1
     fi
-    
+
     docker compose $COMPOSE_FILES exec toveco-voting bash
 }
 
 # Open database shell
 cmd_db() {
     log_info "Opening database shell..."
-    
+
     if ! docker compose $COMPOSE_FILES ps toveco-voting | grep -q "Up"; then
         log_error "Application is not running"
         return 1
     fi
-    
+
     docker compose $COMPOSE_FILES exec toveco-voting sqlite3 /app/data/votes.db
 }
 
@@ -221,7 +221,7 @@ cmd_db() {
 cmd_stats() {
     log_info "Resource usage statistics:"
     echo
-    
+
     # Container stats
     if docker compose $COMPOSE_FILES ps toveco-voting | grep -q "Up"; then
         echo "Container Resource Usage:"
@@ -229,7 +229,7 @@ cmd_stats() {
             $(docker compose $COMPOSE_FILES ps -q)
         echo
     fi
-    
+
     # Volume usage
     echo "Volume Usage:"
     local volumes=($(docker compose $COMPOSE_FILES config --volumes 2>/dev/null || echo "toveco_data toveco_logs"))
@@ -241,7 +241,7 @@ cmd_stats() {
         fi
     done
     echo
-    
+
     # Application stats
     if curl -f -s http://localhost:8000/api/stats >/dev/null 2>&1; then
         echo "Application Statistics:"
@@ -254,40 +254,40 @@ cmd_clean() {
     log_warning "This will remove unused Docker resources"
     read -p "Continue? (y/N): " -n 1 -r
     echo
-    
+
     if [[ ! $REPLY =~ ^[Yy]$ ]]; then
         log_info "Clean cancelled"
         return 0
     fi
-    
+
     log_info "Cleaning unused Docker resources..."
-    
+
     docker system prune -f
     docker volume prune -f
     docker image prune -f
-    
+
     log_success "Docker resources cleaned"
 }
 
 # Update services
 cmd_update() {
     log_info "Updating services..."
-    
+
     # Pull latest images
     docker compose $COMPOSE_FILES pull
-    
+
     # Backup before update
     if docker compose $COMPOSE_FILES ps toveco-voting | grep -q "Up"; then
         cmd_backup
     fi
-    
+
     # Recreate containers with new images
     docker compose $COMPOSE_FILES up -d
-    
+
     # Health check
     sleep 10
     cmd_health
-    
+
     log_success "Services updated successfully"
 }
 
@@ -300,17 +300,17 @@ cmd_reset() {
     log_warning "  - Application logs"
     echo
     read -p "Type 'DELETE ALL DATA' to confirm: " confirmation
-    
+
     if [[ "$confirmation" != "DELETE ALL DATA" ]]; then
         log_info "Reset cancelled"
         return 0
     fi
-    
+
     log_info "Resetting application..."
-    
+
     # Stop services
     docker compose $COMPOSE_FILES down
-    
+
     # Remove volumes
     local volumes=($(docker compose $COMPOSE_FILES config --volumes 2>/dev/null || echo "toveco_data toveco_logs"))
     for volume in "${volumes[@]}"; do
@@ -319,10 +319,10 @@ cmd_reset() {
             log_info "Removed volume: $volume"
         fi
     done
-    
+
     # Start fresh
     docker compose $COMPOSE_FILES up -d
-    
+
     log_success "Application reset completed"
 }
 
@@ -330,14 +330,14 @@ cmd_reset() {
 main() {
     # Change to project directory
     cd "$PROJECT_DIR"
-    
+
     # Detect environment
     detect_environment
-    
+
     # Parse command
     local command="${1:-}"
     shift || true
-    
+
     case "$command" in
         start)
             cmd_start

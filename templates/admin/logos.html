@@ -23,32 +23,32 @@
         <div class="card-content">
             <form id="uploadForm" enctype="multipart/form-data">
                 <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
-                
+
                 <div class="form-row">
                     <div class="form-group">
                         <label for="logoFile" class="form-label">
                             <i class="fas fa-file-image"></i>
                             Fichier PNG (max {{ max_upload_size_mb }}MB)
                         </label>
-                        <input 
-                            type="file" 
-                            id="logoFile" 
-                            name="file" 
+                        <input
+                            type="file"
+                            id="logoFile"
+                            name="file"
                             class="form-input"
                             accept=".png"
                             required
                         >
                     </div>
-                    
+
                     <div class="form-group">
                         <label for="newName" class="form-label">
                             <i class="fas fa-tag"></i>
                             Nouveau nom (optionnel)
                         </label>
-                        <input 
-                            type="text" 
-                            id="newName" 
-                            name="new_name" 
+                        <input
+                            type="text"
+                            id="newName"
+                            name="new_name"
                             class="form-input"
                             placeholder="ex: toveco12.png"
                             pattern="^toveco.*\.png$"
@@ -56,7 +56,7 @@
                         <small class="form-help">Doit commencer par "toveco" et finir par ".png"</small>
                     </div>
                 </div>
-                
+
                 <button type="submit" class="btn btn-primary">
                     <i class="fas fa-upload"></i>
                     Uploader le logo
@@ -72,38 +72,38 @@
                 <i class="fas fa-list"></i>
                 Logos existants ({{ logos|length }})
             </h2>
-            
+
             <div class="card-actions">
                 <button id="selectAllBtn" class="btn btn-secondary" onclick="toggleSelectAll()">
                     <i class="fas fa-check-square"></i>
                     Tout sélectionner
                 </button>
-                
+
                 <button id="deleteSelectedBtn" class="btn btn-danger" onclick="deleteSelectedLogos()" disabled>
                     <i class="fas fa-trash"></i>
                     Supprimer sélectionnés
                 </button>
             </div>
         </div>
-        
+
         <div class="card-content">
             {% if logos %}
             <div class="logos-grid">
                 {% for logo in logos %}
                 <div class="logo-item" data-filename="{{ logo.filename }}">
                     <div class="logo-checkbox">
-                        <input 
-                            type="checkbox" 
-                            class="logo-select" 
+                        <input
+                            type="checkbox"
+                            class="logo-select"
                             value="{{ logo.filename }}"
                             onchange="updateSelectedCount()"
                         >
                     </div>
-                    
+
                     <div class="logo-preview">
                         <img src="{{ url_for('logos', path=logo.filename) }}" alt="{{ logo.filename }}">
                     </div>
-                    
+
                     <div class="logo-info">
                         <h3 class="logo-name">{{ logo.filename }}</h3>
                         <div class="logo-details">
@@ -112,19 +112,19 @@
                         </div>
                         <div class="logo-date">{{ logo.modified.strftime('%d/%m/%Y %H:%M') }}</div>
                     </div>
-                    
+
                     <div class="logo-actions">
-                        <button 
-                            class="btn-icon" 
-                            title="Renommer" 
+                        <button
+                            class="btn-icon"
+                            title="Renommer"
                             onclick="renameLogo('{{ logo.filename }}')"
                         >
                             <i class="fas fa-edit"></i>
                         </button>
-                        
-                        <button 
-                            class="btn-icon btn-danger" 
-                            title="Supprimer" 
+
+                        <button
+                            class="btn-icon btn-danger"
+                            title="Supprimer"
                             onclick="deleteSingleLogo('{{ logo.filename }}')"
                         >
                             <i class="fas fa-trash"></i>
@@ -153,12 +153,12 @@
         <div class="modal-body">
             <form id="renameForm">
                 <input type="hidden" id="renameOldName" value="">
-                
+
                 <div class="form-group">
                     <label for="renameNewName" class="form-label">Nouveau nom</label>
-                    <input 
-                        type="text" 
-                        id="renameNewName" 
+                    <input
+                        type="text"
+                        id="renameNewName"
                         class="form-input"
                         pattern="^toveco.*\.png$"
                         required
@@ -297,11 +297,11 @@
     .form-row {
         grid-template-columns: 1fr;
     }
-    
+
     .logos-grid {
         grid-template-columns: 1fr;
     }
-    
+
     .card-actions {
         flex-direction: column;
         align-items: stretch;
@@ -315,10 +315,10 @@
 // Upload form handling
 document.getElementById('uploadForm').addEventListener('submit', async function(e) {
     e.preventDefault();
-    
+
     const formData = new FormData(this);
     const result = await LogoManager.uploadLogo(formData);
-    
+
     if (result.success) {
         this.reset();
     }
@@ -333,7 +333,7 @@ document.getElementById('logoFile').addEventListener('change', function(e) {
             this.value = '';
             return;
         }
-        
+
         if (!file.type.startsWith('image/png')) {
             showMessage('Seuls les fichiers PNG sont autorisés', 'error');
             this.value = '';
@@ -347,9 +347,9 @@ function updateSelectedCount() {
     const checkboxes = document.querySelectorAll('.logo-select:checked');
     const deleteBtn = document.getElementById('deleteSelectedBtn');
     const selectAllBtn = document.getElementById('selectAllBtn');
-    
+
     deleteBtn.disabled = checkboxes.length === 0;
-    
+
     // Update select all button text
     const allCheckboxes = document.querySelectorAll('.logo-select');
     if (checkboxes.length === allCheckboxes.length && allCheckboxes.length > 0) {
@@ -357,7 +357,7 @@ function updateSelectedCount() {
     } else {
         selectAllBtn.innerHTML = '<i class="fas fa-check-square"></i> Tout sélectionner';
     }
-    
+
     // Update visual selection
     document.querySelectorAll('.logo-item').forEach(item => {
         const checkbox = item.querySelector('.logo-select');
@@ -372,20 +372,20 @@ function updateSelectedCount() {
 function toggleSelectAll() {
     const allCheckboxes = document.querySelectorAll('.logo-select');
     const checkedCheckboxes = document.querySelectorAll('.logo-select:checked');
-    
+
     const shouldSelect = checkedCheckboxes.length !== allCheckboxes.length;
-    
+
     allCheckboxes.forEach(checkbox => {
         checkbox.checked = shouldSelect;
     });
-    
+
     updateSelectedCount();
 }
 
 function deleteSelectedLogos() {
     const checkboxes = document.querySelectorAll('.logo-select:checked');
     const logoNames = Array.from(checkboxes).map(cb => cb.value);
-    
+
     LogoManager.deleteLogos(logoNames);
 }
 
@@ -409,17 +409,17 @@ function closeRenameModal() {
 function submitRename() {
     const oldName = document.getElementById('renameOldName').value;
     const newName = document.getElementById('renameNewName').value;
-    
+
     if (!newName || newName === oldName) {
         showMessage('Nouveau nom invalide', 'error');
         return;
     }
-    
+
     if (!newName.match(/^toveco.*\.png$/)) {
         showMessage('Le nom doit commencer par "toveco" et finir par ".png"', 'error');
         return;
     }
-    
+
     closeRenameModal();
     LogoManager.renameLogo(oldName, newName);
 }
@@ -431,7 +431,7 @@ document.addEventListener('keydown', function(e) {
         e.preventDefault();
         toggleSelectAll();
     }
-    
+
     // Delete key to delete selected
     if (e.key === 'Delete') {
         const checkboxes = document.querySelectorAll('.logo-select:checked');

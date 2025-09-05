@@ -12,11 +12,11 @@ window.AdminUtils = {
 
         const messageDiv = document.createElement('div');
         messageDiv.className = `message ${type}`;
-        
+
         let icon = 'fa-info-circle';
         if (type === 'success') icon = 'fa-check-circle';
         else if (type === 'error') icon = 'fa-exclamation-circle';
-        
+
         messageDiv.innerHTML = `
             <i class="fas ${icon}"></i>
             <span>${message}</span>
@@ -72,7 +72,7 @@ window.AdminUtils = {
 
         titleEl.textContent = title;
         messageEl.textContent = message;
-        
+
         modal.classList.add('show');
 
         // Event handlers
@@ -203,7 +203,7 @@ window.LogoManager = {
     uploadLogo: async function(formData) {
         try {
             showLoading();
-            
+
             const response = await fetch('/admin/logos/upload', {
                 method: 'POST',
                 body: formData,
@@ -213,7 +213,7 @@ window.LogoManager = {
             });
 
             const result = await response.json();
-            
+
             if (result.success) {
                 showMessage(result.message, 'success');
                 // Refresh the page or update the logos list
@@ -241,14 +241,14 @@ window.LogoManager = {
             return;
         }
 
-        const confirmMessage = logoNames.length === 1 
+        const confirmMessage = logoNames.length === 1
             ? `Êtes-vous sûr de vouloir supprimer le logo "${logoNames[0]}" ?`
             : `Êtes-vous sûr de vouloir supprimer ${logoNames.length} logos ?`;
 
         showConfirm('Confirmer la suppression', confirmMessage, async () => {
             try {
                 showLoading();
-                
+
                 const formData = new FormData();
                 formData.append('operation', 'bulk_delete');
                 formData.append('logos', JSON.stringify(logoNames));
@@ -260,7 +260,7 @@ window.LogoManager = {
                 });
 
                 const result = await response.json();
-                
+
                 if (result.success) {
                     showMessage(result.message, 'success');
                     setTimeout(() => {
@@ -288,7 +288,7 @@ window.LogoManager = {
 
         try {
             showLoading();
-            
+
             const formData = new FormData();
             formData.append('operation', 'rename');
             formData.append('logos', JSON.stringify([oldName]));
@@ -301,7 +301,7 @@ window.LogoManager = {
             });
 
             const result = await response.json();
-            
+
             if (result.success) {
                 showMessage(result.message, 'success');
                 setTimeout(() => {
@@ -326,13 +326,13 @@ window.VoteManager = {
     exportVotes: async function(format = 'csv') {
         try {
             showLoading();
-            
+
             const response = await fetch(`/admin/votes/export/${format}`, {
                 headers: {
                     'X-CSRF-Token': window.csrfToken
                 }
             });
-            
+
             if (response.ok) {
                 // Trigger download
                 const blob = await response.blob();
@@ -344,7 +344,7 @@ window.VoteManager = {
                 a.click();
                 window.URL.revokeObjectURL(url);
                 document.body.removeChild(a);
-                
+
                 showMessage('Export réussi', 'success');
             } else {
                 const result = await response.json();
@@ -366,7 +366,7 @@ window.VoteManager = {
             async () => {
                 try {
                     showLoading();
-                    
+
                     const formData = new FormData();
                     formData.append('operation', 'reset');
                     formData.append('csrf_token', window.csrfToken);
@@ -377,7 +377,7 @@ window.VoteManager = {
                     });
 
                     const result = await response.json();
-                    
+
                     if (result.success) {
                         showMessage(result.message, 'success');
                         setTimeout(() => {
@@ -410,7 +410,7 @@ window.VoteManager = {
             async () => {
                 try {
                     showLoading();
-                    
+
                     const formData = new FormData();
                     formData.append('operation', 'delete_voter');
                     formData.append('voter_name', voterName);
@@ -422,7 +422,7 @@ window.VoteManager = {
                     });
 
                     const result = await response.json();
-                    
+
                     if (result.success) {
                         showMessage(result.message, 'success');
                         setTimeout(() => {
@@ -453,7 +453,7 @@ window.SystemManager = {
             async () => {
                 try {
                     showLoading();
-                    
+
                     const formData = new FormData();
                     formData.append('csrf_token', window.csrfToken);
 
@@ -463,7 +463,7 @@ window.SystemManager = {
                     });
 
                     const result = await response.json();
-                    
+
                     if (result.success) {
                         showMessage(result.message, 'success');
                     } else {
@@ -484,7 +484,7 @@ window.SystemManager = {
     cleanupSessions: async function() {
         try {
             showLoading();
-            
+
             const formData = new FormData();
             formData.append('csrf_token', window.csrfToken);
 
@@ -494,7 +494,7 @@ window.SystemManager = {
             });
 
             const result = await response.json();
-            
+
             if (result.success) {
                 showMessage(result.message, 'success');
             } else {
@@ -564,7 +564,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     'X-CSRF-Token': window.csrfToken
                 }
             });
-            
+
             if (response.status === 401) {
                 if (!sessionWarningShown) {
                     sessionWarningShown = true;

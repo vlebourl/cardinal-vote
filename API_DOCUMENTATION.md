@@ -7,6 +7,7 @@ The ToVéCo Logo Voting Platform is a FastAPI-based web application that impleme
 ## Architecture
 
 ### Backend Stack
+
 - **FastAPI**: Modern, fast web framework for building APIs
 - **SQLAlchemy**: ORM for database operations
 - **SQLite**: Lightweight database for vote storage
@@ -14,6 +15,7 @@ The ToVéCo Logo Voting Platform is a FastAPI-based web application that impleme
 - **Uvicorn**: ASGI server for production deployment
 
 ### Frontend
+
 - **Vanilla JavaScript**: Mobile-first responsive voting interface
 - **CSS Grid/Flexbox**: Modern responsive design
 - **Progressive Enhancement**: Works without JavaScript for basic functionality
@@ -23,11 +25,13 @@ The ToVéCo Logo Voting Platform is a FastAPI-based web application that impleme
 ### Frontend Routes
 
 #### `GET /`
+
 Serves the main voting page.
 
 **Response**: HTML page with voting interface
 
 #### `GET /results`
+
 Serves the results visualization page.
 
 **Response**: HTML page with voting results
@@ -35,9 +39,11 @@ Serves the results visualization page.
 ### API Routes
 
 #### `GET /api/logos`
+
 Returns a randomized list of available logo files.
 
 **Response**:
+
 ```json
 {
   "logos": ["toveco3.png", "toveco1.png", "toveco7.png", ...],
@@ -46,9 +52,11 @@ Returns a randomized list of available logo files.
 ```
 
 #### `POST /api/vote`
+
 Submit a complete vote with ratings for all logos.
 
 **Request Body**:
+
 ```json
 {
   "voter_name": "John Doe",
@@ -62,6 +70,7 @@ Submit a complete vote with ratings for all logos.
 ```
 
 **Response**:
+
 ```json
 {
   "success": true,
@@ -71,18 +80,22 @@ Submit a complete vote with ratings for all logos.
 ```
 
 **Validation Rules**:
+
 - `voter_name`: 1-100 characters, non-empty after trimming
 - `ratings`: Must include all available logos
 - Rating values: Must be integers between -2 and +2
 - Logo names: Must match `toveco*.png` format
 
 #### `GET /api/results`
+
 Get aggregated voting results with rankings.
 
 **Query Parameters**:
+
 - `include_votes` (bool, optional): Include individual vote records (admin feature)
 
 **Response**:
+
 ```json
 {
   "summary": {
@@ -100,9 +113,11 @@ Get aggregated voting results with rankings.
 ```
 
 #### `GET /api/stats`
+
 Get basic voting statistics.
 
 **Response**:
+
 ```json
 {
   "total_votes": 25,
@@ -115,9 +130,11 @@ Get basic voting statistics.
 ```
 
 #### `GET /api/health`
+
 Health check endpoint for monitoring.
 
 **Response**:
+
 ```json
 {
   "status": "healthy",
@@ -130,6 +147,7 @@ Health check endpoint for monitoring.
 ## Database Schema
 
 ### Votes Table
+
 ```sql
 CREATE TABLE votes (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -140,6 +158,7 @@ CREATE TABLE votes (
 ```
 
 **Example Record**:
+
 ```json
 {
   "id": 1,
@@ -152,6 +171,7 @@ CREATE TABLE votes (
 ## Vote Data Structure
 
 ### Vote Submission Format
+
 ```json
 {
   "voter_name": "User Name",
@@ -167,6 +187,7 @@ CREATE TABLE votes (
 ```
 
 ### Voting Scale
+
 - **+2**: Strongly accepted
 - **+1**: Accepted
 - **0**: Neutral
@@ -176,6 +197,7 @@ CREATE TABLE votes (
 ## Error Handling
 
 ### HTTP Status Codes
+
 - `200`: Success
 - `400`: Client error (validation failed)
 - `404`: Resource not found
@@ -183,6 +205,7 @@ CREATE TABLE votes (
 - `500`: Server error
 
 ### Error Response Format
+
 ```json
 {
   "success": false,
@@ -194,28 +217,33 @@ CREATE TABLE votes (
 ## Security Features
 
 ### Input Validation
+
 - Voter names are sanitized and length-limited
 - Rating values are strictly validated (-2 to +2)
 - Logo filenames are validated against expected format
 - Complete vote validation (all logos must be rated)
 
 ### CORS Configuration
+
 - Configured for development (`localhost:3000`, `localhost:8000`)
 - Easily configurable for production domains
 
 ### Rate Limiting
+
 - Configurable via `MAX_VOTES_PER_IP_PER_HOUR` setting
 - Currently set to 5 votes per IP per hour
 
 ## Configuration
 
 ### Environment Variables
+
 - `DEBUG`: Enable debug mode (default: false)
 - `HOST`: Server host (default: 0.0.0.0)
 - `PORT`: Server port (default: 8000)
 - `DATABASE_PATH`: SQLite database file path (default: votes.db)
 
 ### Directory Structure
+
 ```
 toveco/
 ├── src/toveco_voting/          # Python package
@@ -239,21 +267,25 @@ toveco/
 ## Deployment
 
 ### Development
+
 ```bash
 ./scripts/run.sh
 ```
 
 ### Production with Uvicorn
+
 ```bash
 uvicorn src.toveco_voting.main:app --host 0.0.0.0 --port 8000
 ```
 
 ### Using uv (recommended)
+
 ```bash
 uv run uvicorn src.toveco_voting.main:app --host 0.0.0.0 --port 8000
 ```
 
 ### Docker Deployment
+
 ```dockerfile
 FROM python:3.11-slim
 
@@ -269,16 +301,19 @@ CMD ["uv", "run", "uvicorn", "src.toveco_voting.main:app", "--host", "0.0.0.0", 
 ## Performance Considerations
 
 ### Database
+
 - SQLite with WAL mode for better concurrency
 - Indexes on timestamp and voter_name for efficient queries
 - Connection pooling with `pool_pre_ping`
 
 ### Caching
+
 - Static file serving with appropriate cache headers
 - Logo randomization per request (no caching)
 - Database results can be cached at application level if needed
 
 ### Scaling
+
 - Horizontal scaling via reverse proxy (nginx)
 - Database can be migrated to PostgreSQL for high-load scenarios
 - Redis can be added for session management and caching
@@ -286,11 +321,13 @@ CMD ["uv", "run", "uvicorn", "src.toveco_voting.main:app", "--host", "0.0.0.0", 
 ## Testing
 
 ### Run Tests
+
 ```bash
 uv run pytest tests/ -v
 ```
 
 ### Test Coverage
+
 ```bash
 uv run pytest tests/ --cov=src/toveco_voting --cov-report=html
 ```
@@ -298,11 +335,13 @@ uv run pytest tests/ --cov=src/toveco_voting --cov-report=html
 ### API Testing with curl
 
 **Get logos**:
+
 ```bash
 curl -X GET http://localhost:8000/api/logos
 ```
 
 **Submit vote**:
+
 ```bash
 curl -X POST http://localhost:8000/api/vote \
   -H "Content-Type: application/json" \
@@ -318,6 +357,7 @@ curl -X POST http://localhost:8000/api/vote \
 ```
 
 **Get results**:
+
 ```bash
 curl -X GET http://localhost:8000/api/results
 ```
@@ -325,18 +365,22 @@ curl -X GET http://localhost:8000/api/results
 ## Monitoring
 
 ### Health Check
+
 The `/api/health` endpoint provides:
+
 - Application status
 - Database connectivity
 - Available logo count
 - Version information
 
 ### Logging
+
 - Structured logging with Python's logging module
 - Configurable log levels
 - Request/response logging for debugging
 
 ### Metrics
+
 - Vote submission counts
 - Response times
 - Error rates
@@ -345,17 +389,20 @@ The `/api/health` endpoint provides:
 ## Mobile-First Design
 
 ### Responsive Breakpoints
+
 - Mobile: < 640px
 - Tablet: 640px - 1024px
 - Desktop: > 1024px
 
 ### Touch-Friendly Interface
+
 - 44px minimum touch targets
 - Swipe gestures for navigation
 - Large, clear voting buttons
 - Optimized for one-handed use
 
 ### Performance
+
 - Minimal JavaScript dependencies
 - CSS Grid for efficient layouts
 - Optimized images and assets

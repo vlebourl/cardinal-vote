@@ -68,9 +68,9 @@ check_command() {
 wait_for_containers_stop() {
     local max_wait=30
     local wait_time=0
-    
+
     print_status "Waiting for containers to stop..."
-    
+
     while [[ $wait_time -lt $max_wait ]]; do
         if ! docker compose ps -q 2>/dev/null | grep -q .; then
             print_success "All containers stopped"
@@ -80,7 +80,7 @@ wait_for_containers_stop() {
         ((wait_time++))
         echo -n "."
     done
-    
+
     echo ""
     print_warning "Containers didn't stop gracefully, forcing stop..."
     docker compose kill 2>/dev/null || true
@@ -89,16 +89,16 @@ wait_for_containers_stop() {
 # Function to remove all toveco images
 cleanup_images() {
     print_status "Cleaning up old ToV'éCo images..."
-    
+
     # Get all toveco-voting images
     local images=$(docker images "${IMAGE_NAME}" --format "{{.Repository}}:{{.Tag}}" 2>/dev/null || true)
-    
+
     if [[ -n "$images" ]]; then
         print_status "Found existing images:"
         echo "$images" | while read -r image; do
             echo "  - $image"
         done
-        
+
         # Remove all toveco-voting images
         echo "$images" | while read -r image; do
             print_status "Removing image: $image"
@@ -107,7 +107,7 @@ cleanup_images() {
     else
         print_status "No existing ToV'éCo images found"
     fi
-    
+
     # Clean up dangling images
     print_status "Cleaning up dangling images..."
     docker image prune -f >/dev/null 2>&1 || true
@@ -116,20 +116,20 @@ cleanup_images() {
 # Function to load new image
 load_new_image() {
     print_status "Loading new image from $TAR_FILE..."
-    
+
     if docker load -i "$TAR_FILE"; then
         print_success "Image loaded successfully"
-        
+
         # Get the loaded image name and tag
         local loaded_image=$(docker load -i "$TAR_FILE" 2>&1 | grep "Loaded image:" | sed 's/Loaded image: //' || true)
         if [[ -z "$loaded_image" ]]; then
             # Try to find the loaded image by looking for recently loaded toveco images
             loaded_image=$(docker images "${IMAGE_NAME}" --format "{{.Repository}}:{{.Tag}}" | head -1)
         fi
-        
+
         if [[ -n "$loaded_image" ]]; then
             print_status "Loaded image: $loaded_image"
-            
+
             # Tag as latest if it's not already latest
             if [[ "$loaded_image" != "${IMAGE_NAME}:latest" ]]; then
                 print_status "Tagging $loaded_image as ${IMAGE_NAME}:latest"
@@ -146,7 +146,7 @@ load_new_image() {
             print_error "Could not determine loaded image name"
             exit 1
         fi
-        
+
         # Verify the latest image exists
         if docker images "${IMAGE_NAME}:latest" --format "{{.Repository}}:{{.Tag}}" | grep -q "${IMAGE_NAME}:latest"; then
             print_success "Verified: ${IMAGE_NAME}:latest is available"
@@ -163,17 +163,17 @@ load_new_image() {
 # Function to start containers
 start_containers() {
     print_status "Starting containers with docker compose..."
-    
+
     if docker compose up -d; then
         print_success "Containers started successfully"
-        
+
         # Wait a moment for containers to initialize
         sleep 3
-        
+
         # Show container status
         print_status "Container status:"
         docker compose ps
-        
+
         # Check health
         check_health
     else
@@ -185,30 +185,30 @@ start_containers() {
 # Function to check application health
 check_health() {
     print_status "Checking application health..."
-    
+
     local max_attempts=30
     local attempt=0
     local port=$(docker compose port ${SERVICE_NAME} 8000 2>/dev/null | cut -d: -f2 || echo "8000")
     local url="http://localhost:${port}/api/health"
-    
+
     while [[ $attempt -lt $max_attempts ]]; do
         if curl -sf "$url" >/dev/null 2>&1; then
             print_success "Application is healthy and responding"
-            
+
             # Get version info if available
             local version_info=$(curl -s "$url" | grep -o '"version":"[^"]*"' || echo "")
             if [[ -n "$version_info" ]]; then
                 print_success "Application $version_info"
             fi
-            
+
             return 0
         fi
-        
+
         ((attempt++))
         echo -n "."
         sleep 1
     done
-    
+
     echo ""
     print_warning "Health check timeout. Application might still be starting up."
     print_status "Check manually: $url"
@@ -226,21 +226,21 @@ main() {
     echo "  ToV'éCo Deployment Script v1.0  "
     echo "=================================="
     echo
-    
+
     # Check prerequisites
     print_status "Checking prerequisites..."
     check_command "docker"
     check_command "curl"
     check_file "$COMPOSE_FILE"
     check_file "$TAR_FILE"
-    
+
     # Get file info
     local tar_size=$(du -h "$TAR_FILE" | cut -f1)
     print_status "TAR file size: $tar_size"
-    
+
     print_success "Prerequisites check passed"
     echo
-    
+
     # Confirmation prompt
     if [[ "${2:-}" != "--yes" ]]; then
         echo -e "${YELLOW}This will:${NC}"
@@ -258,11 +258,11 @@ main() {
         fi
         echo
     fi
-    
+
     # Start deployment process
     print_status "Starting deployment process..."
     echo
-    
+
     # Step 1: Stop containers
     print_status "Step 1/6: Stopping containers..."
     if docker compose ps -q 2>/dev/null | grep -q .; then
@@ -273,44 +273,44 @@ main() {
     fi
     print_success "Step 1 completed"
     echo
-    
+
     # Step 2: Clean up images
     print_status "Step 2/6: Removing old images..."
     cleanup_images
     print_success "Step 2 completed"
     echo
-    
+
     # Step 3: Load and tag new image
     print_status "Step 3/6: Loading and tagging new image..."
     load_new_image
     print_success "Step 3 completed"
     echo
-    
+
     # Step 4: Start containers
     print_status "Step 4/6: Starting containers..."
     start_containers
     print_success "Step 4 completed"
     echo
-    
+
     # Step 5: Final verification
     print_status "Step 5/6: Final verification..."
     show_logs
     print_success "Step 5 completed"
     echo
-    
+
     # Step 6: Cleanup old tar (optional)
     print_status "Step 6/6: Cleanup..."
     print_status "Loaded image is now available as ${IMAGE_NAME}:latest"
     print_success "Step 6 completed"
     echo
-    
+
     # Success message
     echo "=================================="
     print_success "Deployment completed successfully!"
     echo "=================================="
     echo
     print_status "Your application should now be running with the new image."
-    
+
     # Show quick access info
     local port=$(docker compose port ${SERVICE_NAME} 8000 2>/dev/null | cut -d: -f2 || echo "8000")
     echo

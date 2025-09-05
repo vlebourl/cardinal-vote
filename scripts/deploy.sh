@@ -102,30 +102,30 @@ parse_args() {
 # Validate environment
 validate_environment() {
     log_info "Validating environment..."
-    
+
     # Check if running in project directory
     if [[ ! -f "$PROJECT_DIR/docker-compose.yml" ]]; then
         log_error "docker-compose.yml not found. Please run from project root."
         exit 1
     fi
-    
+
     # Check Docker installation
     if ! command -v docker &> /dev/null; then
         log_error "Docker is not installed or not in PATH"
         exit 1
     fi
-    
+
     if ! command -v docker compose &> /dev/null; then
         log_error "Docker Compose is not installed or not in PATH"
         exit 1
     fi
-    
+
     # Check Docker daemon
     if ! docker info &> /dev/null; then
         log_error "Docker daemon is not running"
         exit 1
     fi
-    
+
     # Set compose files based on environment
     case $ENVIRONMENT in
         development)
@@ -143,14 +143,14 @@ validate_environment() {
             exit 1
             ;;
     esac
-    
+
     log_success "Environment validation passed"
 }
 
 # Check prerequisites
 check_prerequisites() {
     log_info "Checking prerequisites..."
-    
+
     # Check environment file
     if [[ ! -f "$PROJECT_DIR/.env" ]]; then
         if [[ -f "$PROJECT_DIR/.env.example" ]]; then
@@ -163,7 +163,7 @@ check_prerequisites() {
             exit 1
         fi
     fi
-    
+
     # Check required directories
     local required_dirs=("logos" "templates" "static")
     for dir in "${required_dirs[@]}"; do
@@ -172,7 +172,7 @@ check_prerequisites() {
             exit 1
         fi
     done
-    
+
     # Check logo files
     local logo_count
     logo_count=$(find "$PROJECT_DIR/logos" -name "toveco*.png" 2>/dev/null | wc -l)
@@ -181,12 +181,12 @@ check_prerequisites() {
         exit 1
     fi
     log_info "Found $logo_count logo files"
-    
+
     # Make entrypoint executable
     if [[ -f "$PROJECT_DIR/docker-entrypoint.sh" ]]; then
         chmod +x "$PROJECT_DIR/docker-entrypoint.sh"
     fi
-    
+
     log_success "Prerequisites check passed"
 }
 
@@ -196,13 +196,13 @@ backup_database() {
         log_info "Skipping database backup"
         return 0
     fi
-    
+
     log_info "Creating database backup..."
-    
+
     # Check if container is running
     if docker compose $COMPOSE_FILES ps toveco-voting | grep -q "Up"; then
         local backup_name="votes-backup-$(date +%Y%m%d-%H%M%S).db"
-        
+
         if docker compose $COMPOSE_FILES exec -T toveco-voting test -f /app/data/votes.db; then
             docker compose $COMPOSE_FILES exec -T toveco-voting \
                 cp /app/data/votes.db "/app/data/$backup_name"
@@ -235,16 +235,16 @@ deploy_application() {
     log_info "Deploying ToVéCo Logo Voting Platform..."
     log_info "Environment: $ENVIRONMENT"
     log_info "Compose files: $COMPOSE_FILES"
-    
+
     # Start services
     docker compose $COMPOSE_FILES up -d
-    
+
     # Wait for services to start
     sleep 10
-    
+
     # Show status
     docker compose $COMPOSE_FILES ps
-    
+
     log_success "Application deployed successfully"
 }
 
@@ -254,34 +254,34 @@ run_health_check() {
         log_info "Skipping health check"
         return 0
     fi
-    
+
     log_info "Running health check..."
-    
+
     local max_attempts=30
     local attempt=0
-    
+
     while [[ $attempt -lt $max_attempts ]]; do
         if curl -f -s http://localhost:8000/api/health >/dev/null 2>&1; then
             log_success "Health check passed"
-            
+
             # Get health status
             local health_response
             health_response=$(curl -s http://localhost:8000/api/health)
             log_info "Health status: $health_response"
             return 0
         fi
-        
+
         ((attempt++))
         log_info "Health check attempt $attempt/$max_attempts failed, retrying in 5s..."
         sleep 5
     done
-    
+
     log_error "Health check failed after $(($max_attempts * 5)) seconds"
-    
+
     # Show logs for debugging
     log_error "Application logs:"
     docker compose $COMPOSE_FILES logs --tail=50 toveco-voting
-    
+
     return 1
 }
 
@@ -292,21 +292,21 @@ show_deployment_info() {
     log_info "Service Information:"
     docker compose $COMPOSE_FILES ps
     echo
-    
+
     log_info "Application URLs:"
     echo "  • Main Application: http://localhost:8000"
     echo "  • Results Page: http://localhost:8000/results"
     echo "  • Health Check: http://localhost:8000/api/health"
     echo "  • API Documentation: http://localhost:8000/docs"
     echo
-    
+
     log_info "Useful Commands:"
     echo "  • View logs: docker compose $COMPOSE_FILES logs -f toveco-voting"
     echo "  • Stop services: docker compose $COMPOSE_FILES down"
     echo "  • Restart services: docker compose $COMPOSE_FILES restart"
     echo "  • Update images: $0 --no-build"
     echo
-    
+
     if [[ "$ENVIRONMENT" == "production" ]]; then
         log_info "Production Notes:"
         echo "  • Monitor logs regularly"
@@ -322,20 +322,20 @@ main() {
     log_info "Starting ToVéCo Logo Voting Platform deployment"
     log_info "Script version: 1.0.0"
     echo
-    
+
     # Parse arguments
     parse_args "$@"
-    
+
     # Change to project directory
     cd "$PROJECT_DIR"
-    
+
     # Run deployment steps
     validate_environment
     check_prerequisites
     backup_database
     handle_images
     deploy_application
-    
+
     # Post-deployment checks
     if run_health_check; then
         show_deployment_info

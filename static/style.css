@@ -13,7 +13,7 @@
     --neutral-color: #6b7280;
     --focus-color: #2D5820;
     --focus-shadow: 0 0 0 3px rgba(45, 88, 32, 0.3);
-    
+
     /* Background colors */
     --bg-color: #ffffff;
     --bg-secondary: #f8fdf8;
@@ -23,17 +23,17 @@
     --text-light: #8FBC94;
     --border-color: #B8E994;
     --border-hover: #8FBC94;
-    
+
     /* Shadows with green tint */
     --shadow-sm: 0 1px 2px 0 rgba(45, 88, 32, 0.05);
     --shadow-md: 0 4px 6px -1px rgba(45, 88, 32, 0.1), 0 2px 4px -2px rgba(45, 88, 32, 0.05);
     --shadow-lg: 0 10px 15px -3px rgba(45, 88, 32, 0.1), 0 4px 6px -4px rgba(45, 88, 32, 0.05);
-    
+
     /* Border radius */
     --border-radius: 12px;
     --border-radius-lg: 16px;
     --border-radius-xl: 20px;
-    
+
     /* Spacing system */
     --spacing-xs: 0.25rem;
     --spacing-sm: 0.5rem;
@@ -41,11 +41,11 @@
     --spacing-lg: 1.5rem;
     --spacing-xl: 2rem;
     --spacing-xxl: 3rem;
-    
+
     /* Touch target sizes */
     --touch-target: 44px;
     --touch-target-lg: 56px;
-    
+
     /* Transitions */
     --transition-fast: 150ms ease-out;
     --transition-normal: 250ms ease-out;
@@ -1356,11 +1356,11 @@ input[type="text"]::placeholder {
         transform: none;
         box-shadow: none;
     }
-    
+
     .btn:hover:not(:disabled) {
         transform: none;
     }
-    
+
     .review-card:hover {
         transform: none;
     }
@@ -1371,12 +1371,12 @@ input[type="text"]::placeholder {
     .btn:hover:not(:disabled) {
         transform: none;
     }
-    
+
     .rating-option:hover .rating-button {
         transform: none;
         box-shadow: none;
     }
-    
+
     .review-card:hover {
         transform: none;
     }
@@ -1397,11 +1397,11 @@ input[type="text"]::placeholder {
         margin-top: auto;
         z-index: 10;
     }
-    
+
     .voting-content {
         padding-bottom: var(--spacing-md);
     }
-    
+
     /* Ensure sufficient space for fixed navigation */
     .screen {
         padding-bottom: calc(var(--touch-target-lg) + var(--spacing-xl));
@@ -1416,36 +1416,36 @@ input[type="text"]::placeholder {
         --spacing-xxl: 2rem;
         font-size: 16px; /* Slightly smaller on mobile but still accessible */
     }
-    
+
     .screen {
         padding: var(--spacing-md);
     }
-    
+
     /* Mobile navigation handled by 896px breakpoint above */
-    
+
     .modal {
         padding: var(--spacing-sm);
     }
-    
+
     .share-options {
         grid-template-columns: 1fr;
     }
-    
+
     .results-actions nav {
         flex-direction: column;
         align-items: center;
     }
-    
+
     .review-grid {
         grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
         gap: var(--spacing-sm);
     }
-    
+
     .review-card {
         min-height: 160px;
         padding: var(--spacing-sm);
     }
-    
+
     .results-grid {
         grid-template-columns: 1fr;
         gap: var(--spacing-md);
@@ -1456,36 +1456,36 @@ input[type="text"]::placeholder {
     :root {
         font-size: 16px;
     }
-    
+
     .rating-options {
         gap: var(--spacing-xs);
     }
-    
+
     .rating-button {
         padding: var(--spacing-sm);
         min-height: var(--touch-target);
     }
-    
+
     .success-actions {
         gap: var(--spacing-sm);
         flex-direction: column;
         align-items: stretch;
     }
-    
+
     .success-actions .btn {
         font-size: 0.875rem;
         padding: var(--spacing-sm) var(--spacing-md);
     }
-    
+
     /* Optimize small screen layout */
     .scale-explanation {
         padding: var(--spacing-sm);
     }
-    
+
     .logo-container {
         padding: var(--spacing-sm);
     }
-    
+
     .modal-content {
         margin: var(--spacing-sm);
         max-height: calc(100vh - 2 * var(--spacing-sm));
@@ -1499,21 +1499,21 @@ input[type="text"]::placeholder {
         --text-secondary: #2D5820;
         --focus-shadow: 0 0 0 4px rgba(45, 88, 32, 0.5);
     }
-    
+
     .btn-primary {
         border: 3px solid var(--primary-hover);
     }
-    
+
     .rating-button {
         border-width: 3px;
     }
-    
+
     .scale-explanation,
     .logo-container,
     .review-card {
         border-width: 3px;
     }
-    
+
     *:focus {
         outline-width: 4px;
     }
@@ -1529,12 +1529,12 @@ input[type="text"]::placeholder {
         transition-duration: 0.01ms !important;
         scroll-behavior: auto !important;
     }
-    
+
     .progress-fill::after,
     .rating-button::before {
         display: none;
     }
-    
+
     .success-icon {
         animation: none;
     }
@@ -1546,12 +1546,12 @@ input[type="text"]::placeholder {
     .btn {
         min-height: var(--touch-target-lg);
     }
-    
+
     .rating-button {
         min-height: var(--touch-target-lg);
         font-size: 1rem;
     }
-    
+
     input[type="text"] {
         min-height: var(--touch-target-lg);
         font-size: 16px; /* Prevent zoom on iOS */
@@ -1570,7 +1570,7 @@ input[type="text"]::placeholder {
         --border-color: #4b5563;
         --border-hover: #6b7280;
     }
-    
+
     .modal-content {
         background: var(--bg-accent);
         border: 1px solid var(--border-hover);
@@ -1585,33 +1585,33 @@ input[type="text"]::placeholder {
         font-size: 12pt;
         line-height: 1.4;
     }
-    
+
     .screen {
         display: block !important;
         padding: 0 !important;
         page-break-inside: avoid;
     }
-    
+
     .btn,
     .navigation,
     .modal,
     .skip-link {
         display: none !important;
     }
-    
+
     .results-grid {
         display: grid;
         grid-template-columns: repeat(2, 1fr);
         gap: 1rem;
     }
-    
+
     .result-card,
     .review-card {
         border: 2px solid #333;
         break-inside: avoid;
         margin-bottom: 1rem;
     }
-    
+
     .sr-only {
         position: static !important;
         width: auto !important;
@@ -1623,34 +1623,34 @@ input[type="text"]::placeholder {
         font-size: 10pt;
         color: #666;
     }
-    
+
     h1, h2, h3 {
         color: black !important;
         page-break-after: avoid;
     }
-    
+
     .results-header {
         text-align: center;
         margin-bottom: 2rem;
         border-bottom: 3px solid #333;
         padding-bottom: 1rem;
     }
-    
+
     .detailed-votes-table {
         font-size: 8pt !important;
     }
-    
+
     .detailed-votes-table th,
     .detailed-votes-table td {
         border: 1px solid #333 !important;
         padding: 2px !important;
     }
-    
+
     .logo-header-img {
         width: 20px !important;
         height: 20px !important;
     }
-    
+
     .score-value {
         font-weight: bold !important;
         padding: 1px 3px !important;
@@ -1897,39 +1897,39 @@ input[type="text"]::placeholder {
         margin: var(--spacing-xl) 0;
         padding: var(--spacing-md);
     }
-    
+
     .detailed-votes-header {
         flex-direction: column;
         align-items: stretch;
         text-align: center;
     }
-    
+
     .detailed-votes-header h2 {
         font-size: 1.25rem;
     }
-    
+
     .toggle-btn {
         justify-content: center;
     }
-    
+
     .detailed-votes-table {
         font-size: 0.8rem;
     }
-    
+
     .detailed-votes-table th,
     .detailed-votes-table td {
         padding: var(--spacing-xs) var(--spacing-sm);
     }
-    
+
     .logo-header-img {
         width: 24px;
         height: 24px;
     }
-    
+
     .voter-name-cell {
         max-width: 100px;
     }
-    
+
     .score-value {
         font-size: 0.8rem;
         padding: 2px var(--spacing-xs);
@@ -1942,26 +1942,26 @@ input[type="text"]::placeholder {
         font-size: 0.75rem;
         min-width: 500px; /* Still force horizontal scroll on very small screens */
     }
-    
+
     .detailed-votes-table th {
         min-width: 60px;
         padding: var(--spacing-xs);
     }
-    
+
     .voter-name-header {
         min-width: 80px;
         max-width: 100px;
     }
-    
+
     .logo-header-img {
         width: 20px;
         height: 20px;
     }
-    
+
     .logo-number {
         font-size: 0.7rem;
     }
-    
+
     .score-value {
         font-size: 0.75rem;
         padding: 1px 2px;
@@ -1984,21 +1984,21 @@ input[type="text"]::placeholder {
     .detailed-votes-table th {
         border: 2px solid;
     }
-    
+
     .detailed-votes-table td {
         border: 1px solid;
     }
-    
+
     .score-positive {
         background: #008000 !important;
         border: 2px solid #004000;
     }
-    
+
     .score-negative {
         background: #cc0000 !important;
         border: 2px solid #800000;
     }
-    
+
     .score-neutral {
         background: #ffffff !important;
         border: 2px solid #000000;
@@ -2043,7 +2043,7 @@ input[type="text"]::placeholder {
         flex-direction: column;
         gap: var(--spacing-xs);
     }
-    
+
     .footer-separator {
         display: none;
     }

@@ -8,14 +8,14 @@ This directory contains a comprehensive test suite for the ToVéCo logo voting p
 
 The test suite provides comprehensive coverage across multiple dimensions:
 
-| Test Category | Coverage | Files | Purpose |
-|--------------|----------|-------|---------|
-| **API Tests** | 95%+ | `test_comprehensive_api.py` | All FastAPI endpoints, validation, error handling |
-| **Frontend Tests** | 85%+ | `test_frontend_integration.py` | JavaScript functionality, user workflows |
-| **Database Tests** | 90%+ | `test_database_integrity.py` | Data integrity, concurrency, performance |
-| **Docker Tests** | 80%+ | `test_docker_deployment.py` | Container deployment, configuration |
-| **Performance Tests** | N/A | `test_performance_load.py` | Load testing, scalability, benchmarks |
-| **E2E Tests** | 85%+ | `test_end_to_end_workflow.py` | Complete user workflows, integration |
+| Test Category         | Coverage | Files                          | Purpose                                           |
+| --------------------- | -------- | ------------------------------ | ------------------------------------------------- |
+| **API Tests**         | 95%+     | `test_comprehensive_api.py`    | All FastAPI endpoints, validation, error handling |
+| **Frontend Tests**    | 85%+     | `test_frontend_integration.py` | JavaScript functionality, user workflows          |
+| **Database Tests**    | 90%+     | `test_database_integrity.py`   | Data integrity, concurrency, performance          |
+| **Docker Tests**      | 80%+     | `test_docker_deployment.py`    | Container deployment, configuration               |
+| **Performance Tests** | N/A      | `test_performance_load.py`     | Load testing, scalability, benchmarks             |
+| **E2E Tests**         | 85%+     | `test_end_to_end_workflow.py`  | Complete user workflows, integration              |
 
 ### 📊 Test Metrics
 
@@ -76,6 +76,7 @@ python tests/test_runner.py --docker
 ### Core Test Modules
 
 #### `test_comprehensive_api.py`
+
 **Comprehensive backend API testing**
 
 - ✅ All API endpoints (`/api/logos`, `/api/vote`, `/api/results`, `/api/health`, `/api/stats`)
@@ -87,12 +88,14 @@ python tests/test_runner.py --docker
 - ✅ Concurrent request handling
 
 **Key Test Classes:**
+
 - `TestVotingAPI` - Core API functionality
 - `TestDatabaseOperations` - Database operations
 - `TestErrorHandling` - Error scenarios
 - `TestPerformance` - Basic performance checks
 
 #### `test_frontend_integration.py`
+
 **Frontend and user interface testing**
 
 - ✅ Complete user workflow automation
@@ -104,11 +107,13 @@ python tests/test_runner.py --docker
 - ✅ Navigation and user experience
 
 **Key Test Classes:**
+
 - `TestFrontendWorkflow` - Automated browser testing
 - `TestJavaScriptFunctionality` - API integration
 - `TestResultsPageFunctionality` - Results page testing
 
 #### `test_database_integrity.py`
+
 **Database validation and integrity testing**
 
 - ✅ Schema validation and constraints
@@ -120,6 +125,7 @@ python tests/test_runner.py --docker
 - ✅ Data corruption prevention
 
 **Key Test Classes:**
+
 - `TestDatabaseSchema` - Schema validation
 - `TestDataValidation` - Input validation
 - `TestConcurrentAccess` - Thread safety
@@ -127,6 +133,7 @@ python tests/test_runner.py --docker
 - `TestResultsCalculation` - Mathematical accuracy
 
 #### `test_docker_deployment.py`
+
 **Docker deployment and containerization testing**
 
 - ✅ Docker image building
@@ -138,12 +145,14 @@ python tests/test_runner.py --docker
 - ✅ Production readiness validation
 
 **Key Test Classes:**
+
 - `TestDockerBuild` - Image building
 - `TestContainerOperations` - Container lifecycle
 - `TestDockerCompose` - Multi-container deployment
 - `TestProductionReadiness` - Security and best practices
 
 #### `test_performance_load.py`
+
 **Performance and load testing**
 
 - ✅ Response time benchmarks
@@ -154,6 +163,7 @@ python tests/test_runner.py --docker
 - ✅ Stress testing scenarios
 
 **Key Test Classes:**
+
 - `TestBasicPerformance` - Response time benchmarks
 - `TestConcurrentLoad` - Multi-user scenarios
 - `TestDatabasePerformance` - Database optimization
@@ -161,6 +171,7 @@ python tests/test_runner.py --docker
 - `TestStressScenarios` - Edge conditions
 
 #### `test_end_to_end_workflow.py`
+
 **Complete workflow validation**
 
 - ✅ Full user journey testing
@@ -171,6 +182,7 @@ python tests/test_runner.py --docker
 - ✅ Error recovery workflows
 
 **Key Test Classes:**
+
 - `TestCompleteVotingWorkflow` - Full user journeys
 - `TestDataConsistency` - Cross-system validation
 - `TestSystemIntegration` - Component integration
@@ -179,6 +191,7 @@ python tests/test_runner.py --docker
 ### Support and Utility Files
 
 #### `fixtures.py`
+
 **Test data generators and utilities**
 
 - 🛠️ Reusable test data fixtures
@@ -188,11 +201,13 @@ python tests/test_runner.py --docker
 - 🛠️ Performance test data
 
 **Key Classes:**
+
 - `TestDataGenerator` - Generate various test data
 - `MockDatabaseHelper` - Database testing utilities
 - `TestScenarios` - Pre-defined test scenarios
 
 #### `manual_frontend_tests.py`
+
 **Manual testing guide for frontend validation**
 
 - 📋 Step-by-step manual test procedures
@@ -202,6 +217,7 @@ python tests/test_runner.py --docker
 - 📋 User experience validation
 
 #### `test_runner.py`
+
 **Unified test execution interface**
 
 - 🚀 Run all tests with single command
@@ -263,23 +279,23 @@ python tests/test_runner.py --docker
 
 ### Response Time Targets
 
-| Endpoint | Target | P95 Target | Notes |
-|----------|--------|------------|-------|
-| `/api/health` | <100ms | <200ms | Health check |
-| `/api/logos` | <500ms | <1000ms | Logo list retrieval |
-| `/api/vote` | <1000ms | <2000ms | Vote submission |
-| `/api/results` | <500ms | <1000ms | Results calculation |
-| `/api/stats` | <200ms | <400ms | Statistics |
+| Endpoint       | Target  | P95 Target | Notes               |
+| -------------- | ------- | ---------- | ------------------- |
+| `/api/health`  | <100ms  | <200ms     | Health check        |
+| `/api/logos`   | <500ms  | <1000ms    | Logo list retrieval |
+| `/api/vote`    | <1000ms | <2000ms    | Vote submission     |
+| `/api/results` | <500ms  | <1000ms    | Results calculation |
+| `/api/stats`   | <200ms  | <400ms     | Statistics          |
 
 ### Load Testing Targets
 
-| Metric | Target | Notes |
-|--------|--------|-------|
-| Concurrent Users | 50+ | Simultaneous active users |
-| Requests/Second | 100+ | Peak throughput |
-| Database Performance | 100+ votes/sec | Vote insertion rate |
-| Memory Usage | <500MB | Application memory footprint |
-| CPU Usage | <80% | Under normal load |
+| Metric               | Target         | Notes                        |
+| -------------------- | -------------- | ---------------------------- |
+| Concurrent Users     | 50+            | Simultaneous active users    |
+| Requests/Second      | 100+           | Peak throughput              |
+| Database Performance | 100+ votes/sec | Vote insertion rate          |
+| Memory Usage         | <500MB         | Application memory footprint |
+| CPU Usage            | <80%           | Under normal load            |
 
 ## Running Tests in Different Environments
 
@@ -377,19 +393,19 @@ jobs:
   test:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v3
-    - name: Set up Python
-      uses: actions/setup-python@v3
-      with:
-        python-version: '3.11'
-    - name: Install dependencies
-      run: |
-        pip install -e .
-        pip install pytest pytest-cov
-    - name: Run tests
-      run: python tests/test_runner.py --fast --coverage
-    - name: Upload coverage
-      uses: codecov/codecov-action@v3
+      - uses: actions/checkout@v3
+      - name: Set up Python
+        uses: actions/setup-python@v3
+        with:
+          python-version: "3.11"
+      - name: Install dependencies
+        run: |
+          pip install -e .
+          pip install pytest pytest-cov
+      - name: Run tests
+        run: python tests/test_runner.py --fast --coverage
+      - name: Upload coverage
+        uses: codecov/codecov-action@v3
 ```
 
 ## Troubleshooting
@@ -454,32 +470,32 @@ open htmlcov/index.html
 ```python
 class TestNewFeature:
     """Test new feature functionality."""
-    
+
     @pytest.fixture
     def test_data(self):
         """Provide test data for this feature."""
         return TestDataGenerator.generate_feature_data()
-    
+
     def test_feature_happy_path(self, client, test_data):
         """Test feature works with valid input."""
         # Arrange
         request_data = test_data["valid_request"]
-        
+
         # Act
         response = client.post("/api/new-feature", json=request_data)
-        
+
         # Assert
         assert response.status_code == 200
         assert response.json()["success"] is True
-    
+
     def test_feature_validation_error(self, client):
         """Test feature handles invalid input properly."""
         # Arrange
         invalid_data = {"invalid": "data"}
-        
+
         # Act
         response = client.post("/api/new-feature", json=invalid_data)
-        
+
         # Assert
         assert response.status_code == 422
         assert "validation" in response.json()["message"].lower()
@@ -490,6 +506,7 @@ class TestNewFeature:
 ### Coverage Reports
 
 Coverage reports are generated in multiple formats:
+
 - **Terminal**: Summary displayed after test run
 - **HTML**: Detailed interactive report in `htmlcov/`
 - **XML**: Machine-readable report for CI integration
@@ -497,6 +514,7 @@ Coverage reports are generated in multiple formats:
 ### Performance Reports
 
 Performance tests generate:
+
 - **Response time statistics**: Min, max, average, percentiles
 - **Throughput metrics**: Requests per second
 - **Resource usage**: Memory and CPU consumption
@@ -505,6 +523,7 @@ Performance tests generate:
 ### Test Execution Reports
 
 The test runner generates:
+
 - **Summary report**: Pass/fail counts and success rates
 - **Detailed logs**: Full test output and error messages
 - **Timing information**: Individual test execution times

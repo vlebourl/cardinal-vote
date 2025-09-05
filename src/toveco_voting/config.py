@@ -17,7 +17,10 @@ class Settings:
     PORT: int = int(os.getenv("PORT", "8000"))
 
     # Database settings
-    DATABASE_PATH: str = os.getenv("DATABASE_PATH", "votes.db")
+    @property
+    def DATABASE_PATH(self) -> str:
+        """Get database path from environment or default."""
+        return os.getenv("DATABASE_PATH", "votes.db")
 
     # File paths
     BASE_DIR: Path = Path(__file__).resolve().parent.parent.parent
@@ -44,15 +47,17 @@ class Settings:
 
     # Security settings
     MAX_VOTES_PER_IP_PER_HOUR: int = 5  # Rate limiting
-    
+
     # Admin settings
     ADMIN_USERNAME: str = os.getenv("ADMIN_USERNAME", "")
     ADMIN_PASSWORD: str = os.getenv("ADMIN_PASSWORD", "")
     SESSION_SECRET_KEY: str = os.getenv("SESSION_SECRET_KEY", "")
     SESSION_LIFETIME_HOURS: int = int(os.getenv("SESSION_LIFETIME_HOURS", "8"))
     MAX_LOGIN_ATTEMPTS: int = int(os.getenv("MAX_LOGIN_ATTEMPTS", "5"))
-    LOGIN_ATTEMPT_WINDOW_MINUTES: int = int(os.getenv("LOGIN_ATTEMPT_WINDOW_MINUTES", "15"))
-    
+    LOGIN_ATTEMPT_WINDOW_MINUTES: int = int(
+        os.getenv("LOGIN_ATTEMPT_WINDOW_MINUTES", "15")
+    )
+
     # File upload settings
     MAX_UPLOAD_SIZE_MB: int = int(os.getenv("MAX_UPLOAD_SIZE_MB", "5"))
     ALLOWED_UPLOAD_EXTENSIONS: set[str] = {".png"}
@@ -64,7 +69,7 @@ class Settings:
         directories = [
             ("LOGOS_DIR", cls.LOGOS_DIR),
             ("TEMPLATES_DIR", cls.TEMPLATES_DIR),
-            ("STATIC_DIR", cls.STATIC_DIR)
+            ("STATIC_DIR", cls.STATIC_DIR),
         ]
 
         missing_dirs = []
@@ -74,7 +79,7 @@ class Settings:
 
         if missing_dirs:
             raise ValueError(f"Missing required directories: {', '.join(missing_dirs)}")
-        
+
         # Create upload temp directory if it doesn't exist
         if not cls.UPLOAD_TEMP_DIR.exists():
             cls.UPLOAD_TEMP_DIR.mkdir(parents=True, exist_ok=True)
@@ -83,14 +88,14 @@ class Settings:
     def validate_security(cls) -> None:
         """Validate that required security settings are properly configured."""
         missing_settings = []
-        
+
         if not cls.ADMIN_USERNAME:
             missing_settings.append("ADMIN_USERNAME")
         if not cls.ADMIN_PASSWORD:
             missing_settings.append("ADMIN_PASSWORD")
         if not cls.SESSION_SECRET_KEY:
             missing_settings.append("SESSION_SECRET_KEY")
-            
+
         if missing_settings:
             raise ValueError(
                 f"Missing required security settings: {', '.join(missing_settings)}. "
@@ -111,4 +116,3 @@ class Settings:
 
 
 settings = Settings()
-

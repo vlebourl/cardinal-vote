@@ -96,6 +96,14 @@ profile = "black"
 multi_line_output = 3
 line_length = 88
 
+[tool.bandit]
+exclude_dirs = ["tests"]
+skips = [
+    "B101",  # assert_used (common in tests and assertions)
+    "B104",  # hardcoded_bind_all_interfaces (0.0.0.0 binding for containers)
+    "B112"   # try_except_continue (acceptable for non-critical operations)
+]
+
 [tool.mypy]
 python_version = "3.11"
 warn_return_any = true
@@ -140,7 +148,20 @@ exclude_lines = [
 
 [dependency-groups]
 dev = [
-    "httpx>=0.28.1",
     "pytest>=8.4.1",
     "pytest-asyncio>=1.1.0",
+    "httpx>=0.28.1",
+    "ruff>=0.1.0",
+    "mypy>=1.6.0",
+    "black>=23.0.0",
+    "isort>=5.12.0",
+    "coverage>=7.3.0",
+    "pre-commit>=3.6.0",
+    "types-aiofiles>=24.1.0.20250822",
+    "types-psutil>=7.0.0.20250822",
+    "bandit[toml]>=1.8.6",
+    "pytest-cov>=6.2.1",
+    "docker>=7.1.0",
+    "requests>=2.32.5",
+    "selenium>=4.35.0",
 ]

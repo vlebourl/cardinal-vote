@@ -11,20 +11,20 @@ class VotingApp {
         this.votes = {};
         this.voterName = '';
         this.liveRegion = document.getElementById('live-region');
-        
+
         this.screens = {
             welcome: document.getElementById('welcome-screen'),
             voting: document.getElementById('voting-screen'),
             review: document.getElementById('review-screen'),
             success: document.getElementById('success-screen')
         };
-        
+
         this.initializeEventListeners();
         this.initializeKeyboardNavigation();
         this.initializeAccessibility();
         this.loadVoterCounter();
     }
-    
+
     /**
      * Announce to screen readers
      */
@@ -33,14 +33,14 @@ class VotingApp {
             this.liveRegion.textContent = message;
         }
     }
-    
+
     /**
      * Initialize accessibility features
      */
     initializeAccessibility() {
         // Set initial ARIA states
         this.updateProgressBarAria();
-        
+
         // Add keyboard hints
         document.addEventListener('keydown', (e) => {
             if (e.ctrlKey && e.key === '?') {
@@ -48,7 +48,7 @@ class VotingApp {
             }
         });
     }
-    
+
     /**
      * Initialize keyboard navigation
      */
@@ -97,7 +97,7 @@ class VotingApp {
             }
         });
     }
-    
+
     /**
      * Select a rating programmatically
      */
@@ -110,7 +110,7 @@ class VotingApp {
             this.announceToScreenReader(`Note sélectionnée : ${this.getRatingLabel(value)}`);
         }
     }
-    
+
     /**
      * Show keyboard help
      */
@@ -157,16 +157,16 @@ class VotingApp {
      */
     async handleNameSubmit(event) {
         event.preventDefault();
-        
+
         const firstNameInput = document.getElementById('voter-first-name');
         const lastNameInput = document.getElementById('voter-last-name');
         const firstName = firstNameInput.value.trim();
         const lastName = lastNameInput.value.trim();
-        
+
         // Clear previous validation
         firstNameInput.setAttribute('aria-invalid', 'false');
         lastNameInput.setAttribute('aria-invalid', 'false');
-        
+
         if (!firstName) {
             this.showError('Veuillez entrer votre prénom');
             firstNameInput.setAttribute('aria-invalid', 'true');
@@ -174,7 +174,7 @@ class VotingApp {
             this.announceToScreenReader('Erreur : le prénom est requis');
             return;
         }
-        
+
         if (!lastName) {
             this.showError('Veuillez entrer votre nom');
             lastNameInput.setAttribute('aria-invalid', 'true');
@@ -182,7 +182,7 @@ class VotingApp {
             this.announceToScreenReader('Erreur : le nom est requis');
             return;
         }
-        
+
         if (firstName.length > 50) {
             this.showError('Le prénom ne peut pas dépasser 50 caractères');
             firstNameInput.setAttribute('aria-invalid', 'true');
@@ -190,7 +190,7 @@ class VotingApp {
             this.announceToScreenReader('Erreur : prénom trop long');
             return;
         }
-        
+
         if (lastName.length > 50) {
             this.showError('Le nom ne peut pas dépasser 50 caractères');
             lastNameInput.setAttribute('aria-invalid', 'true');
@@ -198,7 +198,7 @@ class VotingApp {
             this.announceToScreenReader('Erreur : nom trop long');
             return;
         }
-        
+
         if (!/^[a-zA-ZÀ-ſ\s\-']{1,50}$/.test(firstName)) {
             this.showError('Le prénom ne peut contenir que des lettres, espaces, tirets et apostrophes');
             firstNameInput.setAttribute('aria-invalid', 'true');
@@ -206,7 +206,7 @@ class VotingApp {
             this.announceToScreenReader('Erreur : caractères invalides dans le prénom');
             return;
         }
-        
+
         if (!/^[a-zA-ZÀ-ſ\s\-']{1,50}$/.test(lastName)) {
             this.showError('Le nom ne peut contenir que des lettres, espaces, tirets et apostrophes');
             lastNameInput.setAttribute('aria-invalid', 'true');
@@ -214,12 +214,12 @@ class VotingApp {
             this.announceToScreenReader('Erreur : caractères invalides dans le nom');
             return;
         }
-        
+
         this.voterFirstName = firstName;
         this.voterLastName = lastName;
         this.voterName = `${firstName} ${lastName}`; // Keep for compatibility
         this.announceToScreenReader(`Bonjour ${firstName} ${lastName}, chargement des logos...`);
-        
+
         try {
             await this.loadLogos();
             this.showVotingScreen();
@@ -229,7 +229,7 @@ class VotingApp {
             console.error('Failed to load logos:', error);
         }
     }
-    
+
     /**
      * Show welcome screen
      */
@@ -251,16 +251,16 @@ class VotingApp {
             if (!response.ok) {
                 throw new Error(`HTTP ${response.status}: ${response.statusText}`);
             }
-            
+
             const data = await response.json();
             this.logos = data.logos;
-            
+
             if (!this.logos || this.logos.length === 0) {
                 throw new Error('No logos received from server');
             }
-            
+
             console.log(`Loaded ${this.logos.length} logos:`, this.logos);
-            
+
         } catch (error) {
             console.error('Error loading logos:', error);
             throw error;
@@ -276,13 +276,13 @@ class VotingApp {
         this.displayCurrentLogo();
         this.updateProgress();
         this.updateNavigation();
-        
+
         // Focus management for screen readers
         const votingTitle = document.getElementById('voting-title');
         if (votingTitle) {
             votingTitle.focus();
         }
-        
+
         this.announceToScreenReader(`Écran de vote. Logo ${this.currentLogoIndex + 1} sur ${this.logos.length}`);
     }
 
@@ -295,35 +295,35 @@ class VotingApp {
             this.announceToScreenReader('Erreur : aucun logo disponible');
             return;
         }
-        
+
         const logo = this.logos[this.currentLogoIndex];
         const logoImg = document.getElementById('current-logo');
         const logoDescription = document.getElementById('logo-description');
-        
+
         logoImg.src = `/logos/${logo}`;
         logoImg.alt = `Logo ToV'éCo numéro ${this.currentLogoIndex + 1}`;
-        
+
         if (logoDescription) {
             logoDescription.textContent = `Logo ToV'éCo numéro ${this.currentLogoIndex + 1} sur ${this.logos.length} en cours d'évaluation`;
         }
-        
+
         // Handle image load errors
         logoImg.onerror = () => {
             this.showError(`Impossible de charger le logo ${logo}`);
             this.announceToScreenReader(`Erreur de chargement du logo ${this.currentLogoIndex + 1}`);
         };
-        
+
         // Restore previous rating if exists
         const previousRating = this.votes[logo];
         const ratingInputs = document.querySelectorAll('input[name="rating"]');
-        
+
         ratingInputs.forEach(input => {
             input.checked = (parseInt(input.value) === previousRating);
         });
-        
+
         this.updateNavigation();
         this.updateProgressBarAria();
-        
+
         // Announce logo change to screen readers
         if (previousRating !== undefined) {
             this.announceToScreenReader(`Logo ${this.currentLogoIndex + 1} sur ${this.logos.length}. Note actuelle : ${this.getRatingLabel(previousRating)}`);
@@ -342,18 +342,18 @@ class VotingApp {
             const rating = parseInt(selectedRating.value);
             this.votes[logo] = rating;
             console.log(`Rated ${logo}: ${rating}`);
-            
+
             // Update ARIA attributes
             const ratingContainer = document.querySelector('.rating-container[role="radiogroup"]');
             if (ratingContainer) {
                 ratingContainer.setAttribute('aria-describedby', `rating-selected-${rating}`);
             }
-            
+
             this.updateNavigation();
             this.announceToScreenReader(`Note attribuée : ${this.getRatingLabel(rating)}`);
         }
     }
-    
+
     /**
      * Update progress bar ARIA attributes
      */
@@ -374,7 +374,7 @@ class VotingApp {
             this.currentLogoIndex--;
             this.displayCurrentLogo();
             this.updateProgress();
-            
+
             // Focus on the current rating if one is selected
             const currentRating = document.querySelector('input[name="rating"]:checked');
             if (currentRating) {
@@ -391,7 +391,7 @@ class VotingApp {
     nextLogo() {
         const currentLogo = this.logos[this.currentLogoIndex];
         const hasRating = this.votes.hasOwnProperty(currentLogo);
-        
+
         if (!hasRating) {
             this.showError('Veuillez attribuer une note avant de continuer');
             this.announceToScreenReader('Une note est requise pour ce logo');
@@ -402,7 +402,7 @@ class VotingApp {
             }
             return;
         }
-        
+
         if (this.currentLogoIndex < this.logos.length - 1) {
             this.currentLogoIndex++;
             this.displayCurrentLogo();
@@ -418,7 +418,7 @@ class VotingApp {
     updateProgress() {
         const progress = ((this.currentLogoIndex + 1) / this.logos.length) * 100;
         document.getElementById('progress-fill').style.width = `${progress}%`;
-        document.getElementById('progress-text').textContent = 
+        document.getElementById('progress-text').textContent =
             `Logo ${this.currentLogoIndex + 1} sur ${this.logos.length}`;
     }
 
@@ -428,13 +428,13 @@ class VotingApp {
     updateNavigation() {
         const prevBtn = document.getElementById('prev-btn');
         const nextBtn = document.getElementById('next-btn');
-        
+
         prevBtn.disabled = (this.currentLogoIndex === 0);
-        
+
         const currentLogo = this.logos[this.currentLogoIndex];
         const hasRating = this.votes.hasOwnProperty(currentLogo);
         nextBtn.disabled = !hasRating;
-        
+
         // Update button text for last logo
         if (this.currentLogoIndex === this.logos.length - 1) {
             nextBtn.textContent = 'Terminer';
@@ -454,17 +454,17 @@ class VotingApp {
             this.announceToScreenReader(`${unratedLogos.length} logo(s) sans note`);
             return;
         }
-        
+
         this.currentScreen = 'review';
         this.updateScreen();
         this.displayReview();
-        
+
         // Focus management
         const reviewTitle = document.getElementById('review-title');
         if (reviewTitle) {
             reviewTitle.focus();
         }
-        
+
         this.announceToScreenReader('Page de révision. Vérifiez vos notes avant envoi');
     }
 
@@ -474,7 +474,7 @@ class VotingApp {
     displayReview() {
         const reviewGrid = document.getElementById('review-grid');
         reviewGrid.innerHTML = '';
-        
+
         this.logos.forEach((logo, index) => {
             const rating = this.votes[logo];
             const card = document.createElement('div');
@@ -483,10 +483,10 @@ class VotingApp {
             card.setAttribute('role', 'gridcell');
             card.setAttribute('tabindex', '0');
             card.setAttribute('aria-label', `Logo ${index + 1}, note: ${this.getRatingLabel(rating)}`);
-            
+
             const ratingClass = rating > 0 ? 'positive' : rating < 0 ? 'negative' : 'neutral';
             const ratingText = rating > 0 ? `+${rating}` : rating.toString();
-            
+
             card.innerHTML = `
                 <img src="/logos/${logo}" alt="Logo ${index + 1}" class="review-logo">
                 <div class="review-rating">
@@ -494,7 +494,7 @@ class VotingApp {
                     <span class="review-rating-label">${this.getRatingLabel(rating)}</span>
                 </div>
             `;
-            
+
             // Add keyboard support
             card.addEventListener('keydown', (e) => {
                 if (e.key === 'Enter' || e.key === ' ') {
@@ -502,10 +502,10 @@ class VotingApp {
                     this.editVote(card);
                 }
             });
-            
+
             reviewGrid.appendChild(card);
         });
-        
+
         // Focus first card for keyboard navigation
         const firstCard = reviewGrid.querySelector('.review-card');
         if (firstCard) {
@@ -519,13 +519,13 @@ class VotingApp {
     editVote(card) {
         const logoIndex = parseInt(card.dataset.logoIndex);
         this.currentLogoIndex = logoIndex;
-        
+
         // Visual feedback
         card.classList.add('editing');
-        
+
         // Announce to screen reader
         this.announceToScreenReader(`Modification du logo ${logoIndex + 1}`);
-        
+
         setTimeout(() => {
             this.showVotingScreen();
         }, 200);
@@ -543,24 +543,24 @@ class VotingApp {
                 this.announceToScreenReader(`Erreur: ${missingVotes.length} évaluations manquantes`);
                 return;
             }
-            
+
             // Disable submit button to prevent double submission
             const submitBtn = document.getElementById('submit-votes');
             const originalText = submitBtn.textContent;
             submitBtn.disabled = true;
             submitBtn.setAttribute('aria-busy', 'true');
             submitBtn.innerHTML = '<span class="spinner" aria-hidden="true"></span> Envoi en cours...';
-            
+
             this.announceToScreenReader('Envoi de vos votes en cours...');
-            
+
             const voteData = {
                 voter_first_name: this.voterFirstName,
                 voter_last_name: this.voterLastName,
                 ratings: this.votes
             };
-            
+
             console.log('Submitting votes:', voteData);
-            
+
             const response = await fetch('/api/vote', {
                 method: 'POST',
                 headers: {
@@ -569,7 +569,7 @@ class VotingApp {
                 body: JSON.stringify(voteData),
                 signal: AbortSignal.timeout(10000) // 10 second timeout
             });
-            
+
             if (!response.ok) {
                 const errorText = await response.text();
                 let errorMessage;
@@ -581,18 +581,18 @@ class VotingApp {
                 }
                 throw new Error(errorMessage);
             }
-            
+
             const result = await response.json();
-            
+
             if (result.success) {
                 this.showSuccessScreen();
             } else {
                 throw new Error(result.message || 'Erreur lors de l\'envoi du vote');
             }
-            
+
         } catch (error) {
             console.error('Error submitting votes:', error);
-            
+
             let errorMessage;
             if (error.name === 'AbortError' || error.name === 'TimeoutError') {
                 errorMessage = 'Timeout: la requête a pris trop de temps. Veuillez réessayer.';
@@ -601,10 +601,10 @@ class VotingApp {
             } else {
                 errorMessage = error.message || 'Erreur lors de l\'envoi du vote';
             }
-            
+
             this.showError(errorMessage);
             this.announceToScreenReader(`Erreur: ${errorMessage}`);
-            
+
             // Re-enable submit button
             const submitBtn = document.getElementById('submit-votes');
             submitBtn.disabled = false;
@@ -621,13 +621,13 @@ class VotingApp {
         this.currentScreen = 'success';
         this.updateScreen();
         console.log('Votes submitted successfully');
-        
+
         // Focus management
         const successTitle = document.getElementById('success-title');
         if (successTitle) {
             successTitle.focus();
         }
-        
+
         this.announceToScreenReader('Votes envoyés avec succès! Merci pour votre participation.');
     }
 
@@ -638,7 +638,7 @@ class VotingApp {
         Object.values(this.screens).forEach(screen => {
             screen.classList.remove('active');
         });
-        
+
         this.screens[this.currentScreen].classList.add('active');
     }
 
@@ -649,29 +649,29 @@ class VotingApp {
         // Remove existing error messages
         const existingErrors = document.querySelectorAll('.error-message');
         existingErrors.forEach(error => error.remove());
-        
+
         // Create new error message
         const errorDiv = document.createElement('div');
         errorDiv.className = 'error-message show';
         errorDiv.setAttribute('role', 'alert');
         errorDiv.setAttribute('aria-live', 'assertive');
         errorDiv.textContent = message;
-        
+
         // Insert at the top of current screen
         const currentScreenEl = this.screens[this.currentScreen];
         currentScreenEl.insertBefore(errorDiv, currentScreenEl.firstChild);
-        
+
         // Focus the error for screen readers
         errorDiv.setAttribute('tabindex', '-1');
         errorDiv.focus();
-        
+
         // Auto-remove after 7 seconds
         setTimeout(() => {
             if (errorDiv.parentNode) {
                 errorDiv.remove();
             }
         }, 7000);
-        
+
         console.error('App Error:', message);
     }
 
@@ -688,7 +688,7 @@ class VotingApp {
         };
         return labels[rating.toString()] || 'Inconnu';
     }
-    
+
     /**
      * Save votes to localStorage as backup
      */
@@ -704,7 +704,7 @@ class VotingApp {
             console.warn('Could not save votes to localStorage:', error);
         }
     }
-    
+
     /**
      * Load votes from localStorage if available
      */
@@ -725,7 +725,7 @@ class VotingApp {
         }
         return false;
     }
-    
+
     /**
      * Clear votes from localStorage
      */
@@ -758,7 +758,7 @@ class VotingApp {
 
             // Update counter display
             voterCounter.classList.remove('loading', 'error');
-            
+
             if (voterCount === 0) {
                 voterCounter.innerHTML = '<span>Soyez le premier à voter !</span>';
             } else if (voterCount === 1) {
@@ -772,11 +772,11 @@ class VotingApp {
 
         } catch (error) {
             console.warn('Failed to load voter counter:', error);
-            
+
             voterCounter.classList.remove('loading');
             voterCounter.classList.add('error');
             voterCounter.innerHTML = '<span>Impossible de charger le compteur</span>';
-            
+
             // Don't announce errors to screen readers as it's not critical
         }
     }
@@ -793,7 +793,7 @@ class ResultsApp {
             this.loadResults();
         }
     }
-    
+
     /**
      * Announce to screen readers
      */
@@ -802,7 +802,7 @@ class ResultsApp {
             this.liveRegion.textContent = message;
         }
     }
-    
+
     /**
      * Initialize event listeners
      */
@@ -812,25 +812,25 @@ class ResultsApp {
         if (shareBtn) {
             shareBtn.addEventListener('click', () => this.showShareModal());
         }
-        
+
         // Export button
         const exportBtn = document.getElementById('export-results');
         if (exportBtn) {
             exportBtn.addEventListener('click', () => this.exportResults());
         }
-        
+
         // Toggle detailed votes
         const toggleBtn = document.getElementById('toggle-detailed-votes');
         if (toggleBtn) {
             toggleBtn.addEventListener('click', () => this.toggleDetailedVotes());
         }
-        
+
         // Modal close
         const closeModal = document.getElementById('close-share-modal');
         if (closeModal) {
             closeModal.addEventListener('click', () => this.hideShareModal());
         }
-        
+
         // Share options
         document.addEventListener('click', (e) => {
             const shareOption = e.target.closest('.share-option');
@@ -839,7 +839,7 @@ class ResultsApp {
                 this.shareOnPlatform(platform);
             }
         });
-        
+
         // Keyboard navigation for modal
         document.addEventListener('keydown', (e) => {
             const modal = document.getElementById('share-modal');
@@ -850,7 +850,7 @@ class ResultsApp {
             }
         });
     }
-    
+
     /**
      * Show share modal
      */
@@ -859,17 +859,17 @@ class ResultsApp {
         if (modal) {
             modal.style.display = 'flex';
             modal.setAttribute('aria-hidden', 'false');
-            
+
             // Focus first share option
             const firstOption = modal.querySelector('.share-option');
             if (firstOption) {
                 firstOption.focus();
             }
-            
+
             this.announceToScreenReader('Fenêtre de partage ouverte');
         }
     }
-    
+
     /**
      * Hide share modal
      */
@@ -878,7 +878,7 @@ class ResultsApp {
         if (modal) {
             modal.style.display = 'none';
             modal.setAttribute('aria-hidden', 'true');
-            
+
             // Return focus to share button
             const shareBtn = document.getElementById('share-results');
             if (shareBtn) {
@@ -886,14 +886,14 @@ class ResultsApp {
             }
         }
     }
-    
+
     /**
      * Share on social platform
      */
     shareOnPlatform(platform) {
         const url = window.location.href;
         const text = 'Découvrez les résultats du vote pour le logo ToV\'éCo!';
-        
+
         let shareUrl;
         switch (platform) {
             case 'twitter':
@@ -925,14 +925,14 @@ class ResultsApp {
                 this.hideShareModal();
                 return;
         }
-        
+
         if (shareUrl) {
             window.open(shareUrl, '_blank', 'width=600,height=400');
             this.hideShareModal();
             this.announceToScreenReader(`Partage sur ${platform} ouvert`);
         }
     }
-    
+
     /**
      * Export results as image or PDF
      */
@@ -941,7 +941,7 @@ class ResultsApp {
         this.announceToScreenReader('Ouverture de la boîte de dialogue d\'impression');
         window.print();
     }
-    
+
     /**
      * Show temporary success message
      */
@@ -961,9 +961,9 @@ class ResultsApp {
             z-index: 1001;
             animation: slideInRight 0.3s ease-out;
         `;
-        
+
         document.body.appendChild(messageDiv);
-        
+
         setTimeout(() => {
             messageDiv.style.animation = 'slideOutRight 0.3s ease-in';
             setTimeout(() => {
@@ -978,14 +978,14 @@ class ResultsApp {
         const loadingState = document.getElementById('loading-state');
         const errorState = document.getElementById('error-state');
         const resultsContent = document.getElementById('results-content');
-        
+
         try {
             this.announceToScreenReader('Chargement des résultats...');
-            
+
             const response = await fetch('/api/results?include_votes=true', {
                 signal: AbortSignal.timeout(10000)
             });
-            
+
             if (!response.ok) {
                 const errorText = await response.text();
                 let errorMessage;
@@ -997,31 +997,31 @@ class ResultsApp {
                 }
                 throw new Error(errorMessage);
             }
-            
+
             const data = await response.json();
-            
+
             // Hide loading state
             if (loadingState) {
                 loadingState.style.display = 'none';
             }
-            
+
             this.displayResults(data);
-            
+
             // Show results content
             if (resultsContent) {
                 resultsContent.style.display = 'block';
             }
-            
+
             this.announceToScreenReader('Résultats chargés avec succès');
-            
+
         } catch (error) {
             console.error('Error loading results:', error);
-            
+
             // Hide loading state
             if (loadingState) {
                 loadingState.style.display = 'none';
             }
-            
+
             let errorMessage;
             if (error.name === 'AbortError' || error.name === 'TimeoutError') {
                 errorMessage = 'Timeout: la requête a pris trop de temps. Veuillez réessayer.';
@@ -1030,7 +1030,7 @@ class ResultsApp {
             } else {
                 errorMessage = error.message || 'Impossible de charger les résultats';
             }
-            
+
             this.showError(errorMessage);
             this.announceToScreenReader(`Erreur: ${errorMessage}`);
         }
@@ -1041,7 +1041,7 @@ class ResultsApp {
         const totalVoters = document.getElementById('total-voters');
         const totalLogos = document.getElementById('total-logos');
         const totalVotes = document.getElementById('total-votes');
-        
+
         if (totalVoters) {
             totalVoters.textContent = data.total_voters || 0;
         }
@@ -1054,7 +1054,7 @@ class ResultsApp {
                 .reduce((sum, stats) => sum + (stats.total_votes || 0), 0);
             totalVotes.textContent = totalEvaluations;
         }
-        
+
         // Display results grid
         const resultsGrid = document.getElementById('results-grid');
         if (resultsGrid && data.summary) {
@@ -1064,17 +1064,17 @@ class ResultsApp {
             // Calculate score distribution for color coding
             const scores = sortedResults.map(([, stats]) => stats.total_score || 0);
             const colorClasses = this.calculateColorClasses(scores);
-                
+
             const resultsHTML = sortedResults
                 .map(([logo, stats], index) => {
                     const ranking = index + 1;
-                    const scoreClass = stats.total_score > 0 ? 'positive' : 
+                    const scoreClass = stats.total_score > 0 ? 'positive' :
                                      stats.total_score < 0 ? 'negative' : 'neutral';
-                    const scoreText = stats.total_score > 0 ? `+${stats.total_score}` : 
+                    const scoreText = stats.total_score > 0 ? `+${stats.total_score}` :
                                     `${stats.total_score}`;
                     const isWinner = ranking === 1;
                     const colorClass = colorClasses[index];
-                    
+
                     return `
                         <div class="result-card ${isWinner ? 'winner' : ''} ${colorClass}" role="listitem" aria-label="Rang ${ranking}: Logo avec score total ${scoreText}">
                             <div class="result-rank">${ranking}</div>
@@ -1087,15 +1087,15 @@ class ResultsApp {
                     `;
                 })
                 .join('');
-                
+
             resultsGrid.innerHTML = resultsHTML;
         }
-        
+
         // Build detailed voting table if individual votes are available
         if (data.votes && data.votes.length > 0) {
             this.buildDetailedVotingTable(data.votes, data.summary);
         }
-        
+
         // Focus on results title
         const resultsTitle = document.getElementById('results-title');
         if (resultsTitle) {
@@ -1122,7 +1122,7 @@ class ResultsApp {
         return scores.map((score) => {
             // Normalize score to 0-1 range
             const normalizedScore = (score - minScore) / scoreRange;
-            
+
             // Map to color classes (7 levels for smooth gradient)
             if (normalizedScore >= 0.95) return 'score-highest';
             if (normalizedScore >= 0.75) return 'score-high';
@@ -1137,11 +1137,11 @@ class ResultsApp {
     showError(message) {
         const errorState = document.getElementById('error-state');
         const errorMessage = document.getElementById('error-message');
-        
+
         if (errorState && errorMessage) {
             errorMessage.textContent = message;
             errorState.style.display = 'flex';
-            
+
             // Focus the retry button
             const retryBtn = document.getElementById('retry-btn');
             if (retryBtn) {
@@ -1158,9 +1158,9 @@ class ResultsApp {
         const content = document.getElementById('detailed-votes-content');
         const toggleText = toggleBtn.querySelector('.toggle-text');
         const toggleIcon = toggleBtn.querySelector('.toggle-icon');
-        
+
         const isExpanded = toggleBtn.getAttribute('aria-expanded') === 'true';
-        
+
         if (isExpanded) {
             // Hide table
             content.style.display = 'none';
@@ -1184,28 +1184,28 @@ class ResultsApp {
     buildDetailedVotingTable(votes, summary) {
         const table = document.getElementById('detailed-votes-table');
         if (!table || !votes || votes.length === 0) return;
-        
+
         // Get all logos sorted alphabetically
         const allLogos = Object.keys(summary).sort();
-        
+
         // Build table header
         const thead = document.createElement('thead');
         const headerRow = document.createElement('tr');
-        
+
         // First column: Voter name
         const voterHeader = document.createElement('th');
         voterHeader.className = 'voter-name-header';
         voterHeader.textContent = 'Votant';
         voterHeader.setAttribute('scope', 'col');
         headerRow.appendChild(voterHeader);
-        
+
         // Logo columns
         allLogos.forEach(logo => {
             const logoHeader = document.createElement('th');
             logoHeader.className = 'logo-header';
             logoHeader.setAttribute('scope', 'col');
             logoHeader.setAttribute('aria-label', `Votes pour ${logo}`);
-            
+
             // Add logo number (e.g., "1" for "toveco1.png")
             const logoNumber = logo.match(/\d+/)?.[0] || logo;
             logoHeader.innerHTML = `
@@ -1216,51 +1216,51 @@ class ResultsApp {
             `;
             headerRow.appendChild(logoHeader);
         });
-        
+
         thead.appendChild(headerRow);
-        
+
         // Build table body
         const tbody = document.createElement('tbody');
-        
+
         votes.forEach((vote, index) => {
             const row = document.createElement('tr');
             row.className = index % 2 === 0 ? 'row-even' : 'row-odd';
-            
+
             // Voter name cell
             const voterCell = document.createElement('td');
             voterCell.className = 'voter-name-cell';
             voterCell.textContent = vote.voter_name;
             voterCell.setAttribute('scope', 'row');
             row.appendChild(voterCell);
-            
+
             // Score cells for each logo
             allLogos.forEach(logo => {
                 const scoreCell = document.createElement('td');
                 scoreCell.className = 'score-cell';
-                
+
                 const rating = vote.ratings[logo];
                 if (rating !== undefined) {
                     const scoreClass = this.getScoreClass(rating);
                     const scoreText = rating > 0 ? `+${rating}` : rating.toString();
-                    
+
                     scoreCell.innerHTML = `<span class="score-value ${scoreClass}">${scoreText}</span>`;
                     scoreCell.setAttribute('aria-label', `${vote.voter_name}: ${this.getRatingLabel(rating)} pour logo ${logo}`);
                 } else {
                     scoreCell.innerHTML = '<span class="score-missing">-</span>';
                     scoreCell.setAttribute('aria-label', `${vote.voter_name}: pas de vote pour logo ${logo}`);
                 }
-                
+
                 row.appendChild(scoreCell);
             });
-            
+
             tbody.appendChild(row);
         });
-        
+
         // Clear table and add new content
         table.innerHTML = '';
         table.appendChild(thead);
         table.appendChild(tbody);
-        
+
         // Announce table creation
         this.announceToScreenReader(`Tableau détaillé créé avec ${votes.length} votants et ${allLogos.length} logos`);
     }
@@ -1280,7 +1280,7 @@ class ResultsApp {
     getRatingLabel(rating) {
         const labels = {
             '-2': 'Fortement rejeté',
-            '-1': 'Rejeté', 
+            '-1': 'Rejeté',
             '0': 'Neutre',
             '1': 'Accepté',
             '2': 'Fortement accepté'
@@ -1299,7 +1299,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     } catch (error) {
         console.error('Failed to initialize app:', error);
-        
+
         // Show fallback error message
         const fallbackError = document.createElement('div');
         fallbackError.innerHTML = `

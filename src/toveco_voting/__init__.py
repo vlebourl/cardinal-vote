@@ -3,4 +3,3 @@
 __version__ = "1.1.1"
 __author__ = "ToVéCo Team"
 __description__ = "Logo voting platform using value voting methodology"
-

@@ -7,6 +7,7 @@
 ## 🎯 Development Overview
 
 This guide covers:
+
 - **Environment Setup** (local development with uv)
 - **Code Quality Standards** (linting, formatting, testing)
 - **Development Workflow** (Git flow, testing, reviews)
@@ -44,6 +45,7 @@ uv run pytest -v
 ```
 
 **Verification:**
+
 - 🌐 App running at: http://localhost:8000
 - ✅ Tests passing
 - 📝 API docs at: http://localhost:8000/docs
@@ -90,7 +92,7 @@ toveco/
 ```python
 # Key patterns used:
 - Dependency injection for database access
-- Async/await for all endpoints  
+- Async/await for all endpoints
 - Comprehensive error handling with custom exceptions
 - Request validation with Pydantic models
 - CORS middleware for frontend integration
@@ -98,6 +100,7 @@ toveco/
 ```
 
 **Key Functions:**
+
 - `lifespan()`: Application startup/shutdown lifecycle
 - `get_db_manager()`: Database dependency injection
 - Exception handlers for user-friendly error responses
@@ -117,6 +120,7 @@ class VoteResults(BaseModel):
 ```
 
 **Validation Features:**
+
 - Automatic request validation
 - Type coercion and error messages
 - Custom validators for business logic
@@ -133,6 +137,7 @@ class VoteResults(BaseModel):
 ```
 
 **Key Operations:**
+
 - `save_vote()`: Store vote with validation
 - `calculate_results()`: Aggregate voting statistics
 - `get_vote_count()`: Basic metrics
@@ -152,12 +157,14 @@ class Settings:
 ### Frontend Architecture
 
 #### Mobile-First Design
+
 - **CSS Grid/Flexbox**: Modern responsive layouts
 - **Touch-friendly**: 44px minimum touch targets
 - **Progressive Enhancement**: Works without JavaScript
 - **Accessible**: WCAG 2.1 AA compliant
 
 #### Key Frontend Files
+
 - `templates/index.html`: Main voting interface
 - `static/style.css`: Mobile-first responsive styles
 - `static/app.js`: Vote submission and interaction logic
@@ -169,32 +176,34 @@ class Settings:
 #### VS Code Setup
 
 Create `.vscode/settings.json`:
+
 ```json
 {
-    "python.defaultInterpreterPath": ".venv/bin/python",
-    "python.linting.enabled": true,
-    "python.linting.ruffEnabled": true,
-    "python.formatting.provider": "black",
-    "python.testing.pytestEnabled": true,
-    "python.testing.pytestArgs": ["tests"],
-    "editor.formatOnSave": true,
-    "editor.codeActionsOnSave": {
-        "source.organizeImports": true
-    }
+  "python.defaultInterpreterPath": ".venv/bin/python",
+  "python.linting.enabled": true,
+  "python.linting.ruffEnabled": true,
+  "python.formatting.provider": "black",
+  "python.testing.pytestEnabled": true,
+  "python.testing.pytestArgs": ["tests"],
+  "editor.formatOnSave": true,
+  "editor.codeActionsOnSave": {
+    "source.organizeImports": true
+  }
 }
 ```
 
 Create `.vscode/extensions.json`:
+
 ```json
 {
-    "recommendations": [
-        "ms-python.python",
-        "charliermarsh.ruff",
-        "ms-python.black-formatter",
-        "ms-python.mypy-type-checker",
-        "bradlc.vscode-tailwindcss",
-        "esbenp.prettier-vscode"
-    ]
+  "recommendations": [
+    "ms-python.python",
+    "charliermarsh.ruff",
+    "ms-python.black-formatter",
+    "ms-python.mypy-type-checker",
+    "bradlc.vscode-tailwindcss",
+    "esbenp.prettier-vscode"
+  ]
 }
 ```
 
@@ -208,6 +217,7 @@ Create `.vscode/extensions.json`:
 ### Environment Variables
 
 Copy and customize the development environment:
+
 ```bash
 cp .env.example .env.dev
 
@@ -216,6 +226,7 @@ nano .env.dev
 ```
 
 **Key Development Settings:**
+
 ```env
 # Development configuration
 DEBUG=true
@@ -282,33 +293,36 @@ uv run pytest -s --log-cli-level=DEBUG
 ### Test Structure
 
 #### Unit Tests (`tests/test_main.py`)
+
 ```python
 # Tests individual functions and methods
 def test_vote_validation():
     """Test vote data validation logic."""
-    
+
 def test_results_calculation():
     """Test voting results aggregation."""
 ```
 
 #### Integration Tests (`tests/test_api.py`)
+
 ```python
 # Tests complete API workflows
 def test_vote_submission_workflow():
     """Test complete vote submission process."""
-    
+
 def test_results_api_response():
     """Test results API with real data."""
 ```
 
 #### Fixtures (`tests/conftest.py`)
+
 ```python
 # Shared test setup and teardown
 @pytest.fixture
 def test_client():
     """FastAPI test client with test database."""
-    
-@pytest.fixture  
+
+@pytest.fixture
 def sample_vote_data():
     """Sample vote data for testing."""
 ```
@@ -316,6 +330,7 @@ def sample_vote_data():
 ### Code Quality Tools
 
 #### Linting with Ruff
+
 ```bash
 # Check for issues
 uv run ruff check src/ tests/
@@ -328,6 +343,7 @@ uv run ruff check --select=E,W,F src/
 ```
 
 #### Type Checking with mypy
+
 ```bash
 # Check type annotations
 uv run mypy src/toveco_voting/
@@ -340,6 +356,7 @@ uv run mypy --html-report mypy-report src/toveco_voting/
 ```
 
 #### Formatting with Black
+
 ```bash
 # Format all Python files
 uv run black src/ tests/
@@ -356,6 +373,7 @@ uv run black src/toveco_voting/main.py
 Install pre-commit hooks for automatic quality checks:
 
 Create `.pre-commit-config.yaml`:
+
 ```yaml
 repos:
   - repo: https://github.com/charliermarsh/ruff-pre-commit
@@ -374,6 +392,7 @@ repos:
 ```
 
 Install and activate:
+
 ```bash
 uv add --dev pre-commit
 uv run pre-commit install
@@ -384,8 +403,9 @@ uv run pre-commit install
 ### Git Workflow
 
 #### Branch Naming Convention
+
 - `feature/description` - New features
-- `fix/description` - Bug fixes  
+- `fix/description` - Bug fixes
 - `improvement/description` - Enhancements
 - `docs/description` - Documentation updates
 
@@ -420,6 +440,7 @@ git push origin feature/new-voting-algorithm
 #### Commit Message Format
 
 Follow conventional commits:
+
 ```
 type: brief description
 
@@ -432,6 +453,7 @@ Changelog: added|changed|fixed|removed|security|performance|deprecated
 ```
 
 **Types:**
+
 - `feat`: New features
 - `fix`: Bug fixes
 - `docs`: Documentation changes
@@ -458,11 +480,13 @@ uv run python -m cProfile -o profile.stats src/toveco_voting/main.py
 ### Hot Reloading Setup
 
 The development server automatically reloads on:
+
 - Python file changes in `src/`
 - Template changes in `templates/`
 - Static file changes in `static/`
 
 For frontend development:
+
 ```bash
 # Watch CSS/JS files (if using build tools)
 npm install -g browser-sync
@@ -474,6 +498,7 @@ browser-sync start --proxy "localhost:8000" --files "static/**/*"
 ### Debug Mode Setup
 
 Enable detailed debugging:
+
 ```python
 # In .env.dev
 DEBUG=true
@@ -486,6 +511,7 @@ DEBUG=true uv run uvicorn src.toveco_voting.main:app --reload
 ### Common Development Issues
 
 #### 1. **Database Lock Errors**
+
 ```bash
 # Symptoms: "Database is locked" during tests
 # Solution: Ensure proper transaction handling
@@ -496,8 +522,9 @@ rm votes_dev.db
 ```
 
 #### 2. **Import Errors**
+
 ```bash
-# Symptoms: "ModuleNotFoundError" 
+# Symptoms: "ModuleNotFoundError"
 # Solution: Check Python path
 export PYTHONPATH="${PYTHONPATH}:$(pwd)/src"
 
@@ -506,6 +533,7 @@ uv run python -m toveco_voting.main
 ```
 
 #### 3. **Port Already in Use**
+
 ```bash
 # Find what's using the port
 lsof -i :8000
@@ -518,6 +546,7 @@ PORT=8001 ./scripts/run.sh
 ```
 
 #### 4. **Template/Static File Changes Not Reflected**
+
 ```bash
 # Clear browser cache (Cmd+Shift+R / Ctrl+Shift+F5)
 # Or disable caching in dev tools
@@ -532,6 +561,7 @@ docker compose exec toveco-voting ls -la /app/templates/
 ### Logging and Debugging
 
 #### Application Logging
+
 ```python
 import logging
 
@@ -546,6 +576,7 @@ logger.error("Error occurred")
 ```
 
 #### Database Debugging
+
 ```python
 # Enable SQL logging (in development)
 import logging
@@ -558,25 +589,27 @@ db.debug = True  # If implemented
 ```
 
 #### Frontend Debugging
+
 ```javascript
 // Enable verbose console logging
-console.log('Vote data:', voteData);
+console.log("Vote data:", voteData);
 
 // Use browser dev tools
 // - Network tab for API calls
-// - Console for JavaScript errors  
+// - Console for JavaScript errors
 // - Application tab for local storage
 
 // Debug mode in JavaScript
-const DEBUG = window.location.hostname === 'localhost';
+const DEBUG = window.location.hostname === "localhost";
 if (DEBUG) {
-    console.log('Debug mode enabled');
+  console.log("Debug mode enabled");
 }
 ```
 
 ### Performance Profiling
 
 #### Python Performance
+
 ```bash
 # Profile application startup
 uv run python -m cProfile -o startup_profile.stats -c "import src.toveco_voting.main"
@@ -590,7 +623,7 @@ from fastapi.testclient import TestClient
 def profile_vote():
     client = TestClient(app)
     response = client.post('/api/vote', json={...})
-    
+
 cProfile.run('profile_vote()', 'vote_profile.stats')
 "
 
@@ -603,6 +636,7 @@ stats.sort_stats('cumulative').print_stats(20)
 ```
 
 #### Database Performance
+
 ```bash
 # Analyze slow queries
 sqlite3 votes_dev.db
@@ -617,6 +651,7 @@ sqlite3 votes_dev.db "VACUUM;"
 ## 📦 Building & Packaging
 
 ### Local Build
+
 ```bash
 # Build Python wheel
 uv build
@@ -631,6 +666,7 @@ docker run -p 8000:8000 -e DEBUG=true toveco-voting:dev
 ### Release Process
 
 #### Version Management
+
 ```bash
 # Update version in pyproject.toml
 # Follow semantic versioning: MAJOR.MINOR.PATCH
@@ -641,11 +677,14 @@ git push origin v1.2.0
 ```
 
 #### Automated Builds
+
 The project includes CI/CD configuration for:
+
 - **GitHub Actions** (`.github/workflows/`)
 - **GitLab CI** (`.gitlab-ci.yml`)
 
 Build pipeline includes:
+
 1. Dependency installation
 2. Code quality checks (ruff, mypy)
 3. Test execution
@@ -665,6 +704,7 @@ Build pipeline includes:
 ### Making Contributions
 
 #### 1. Fork and Clone
+
 ```bash
 # Fork on GitHub/GitLab first, then:
 git clone https://github.com/YOURNAME/toveco-voting
@@ -673,17 +713,20 @@ git remote add upstream https://github.com/toveco/voting
 ```
 
 #### 2. Create Feature Branch
+
 ```bash
 git checkout -b feature/your-feature-name
 ```
 
 #### 3. Implement Changes
+
 - Follow existing code style
 - Add tests for new functionality
 - Update documentation if needed
 - Ensure all quality checks pass
 
 #### 4. Commit and Push
+
 ```bash
 git add .
 git commit -m "feat: implement your feature
@@ -696,7 +739,9 @@ git push origin feature/your-feature-name
 ```
 
 #### 5. Create Pull Request
+
 Include in your PR description:
+
 - **What** this PR does
 - **Why** the change is needed
 - **How** to test the changes
@@ -707,6 +752,7 @@ Include in your PR description:
 All contributions go through code review:
 
 #### What Reviewers Check
+
 - ✅ Code quality and style
 - ✅ Test coverage
 - ✅ Documentation updates
@@ -715,6 +761,7 @@ All contributions go through code review:
 - ✅ Backward compatibility
 
 #### Getting Your PR Approved
+
 - Respond to feedback promptly
 - Make requested changes
 - Keep PRs focused and small
@@ -723,29 +770,34 @@ All contributions go through code review:
 ### Types of Contributions Welcome
 
 #### 🐛 **Bug Fixes**
+
 - Fix crashes or errors
 - Improve error handling
 - Performance improvements
 
-#### ✨ **New Features**  
+#### ✨ **New Features**
+
 - Additional voting algorithms
 - New API endpoints
 - UI/UX improvements
 - Accessibility enhancements
 
 #### 📚 **Documentation**
+
 - Code documentation
 - User guides
 - API documentation
 - Tutorial content
 
 #### 🧪 **Testing**
+
 - Unit tests
 - Integration tests
 - End-to-end tests
 - Performance tests
 
 #### 🔧 **Infrastructure**
+
 - CI/CD improvements
 - Docker optimizations
 - Deployment scripts
@@ -764,6 +816,7 @@ All contributions go through code review:
 ### Database Migrations
 
 For schema changes:
+
 ```python
 # Create migration script
 # scripts/migrate_v1_to_v2.py
@@ -781,6 +834,7 @@ def migrate_database(db_path: str):
 ### Performance Optimization
 
 #### Database Optimization
+
 ```python
 # Add indexes for common queries
 CREATE INDEX idx_votes_timestamp ON votes(timestamp);
@@ -793,6 +847,7 @@ PRAGMA cache_size=1000000;
 ```
 
 #### Application Optimization
+
 ```python
 # Use async/await for I/O operations
 async def get_results_cached():
@@ -801,7 +856,7 @@ async def get_results_cached():
     cached = await redis_client.get(cache_key)
     if cached:
         return json.loads(cached)
-    
+
     results = await calculate_results()
     await redis_client.setex(cache_key, 300, json.dumps(results))
     return results
@@ -810,13 +865,14 @@ async def get_results_cached():
 ### Security Considerations
 
 #### Input Validation
+
 ```python
 # Always validate user input
 from pydantic import validator
 
 class VoteSubmission(BaseModel):
     voter_name: str
-    
+
     @validator('voter_name')
     def validate_voter_name(cls, v):
         # Sanitize input
@@ -830,6 +886,7 @@ class VoteSubmission(BaseModel):
 ```
 
 #### Rate Limiting Implementation
+
 ```python
 from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.util import get_remote_address
@@ -846,6 +903,7 @@ async def submit_vote(request: Request, vote: VoteSubmission):
 ### Monitoring and Observability
 
 #### Custom Metrics
+
 ```python
 from prometheus_client import Counter, Histogram, generate_latest
 
@@ -867,14 +925,15 @@ async def metrics():
 ```
 
 #### Structured Logging
+
 ```python
 import structlog
 
 logger = structlog.get_logger()
 
 async def submit_vote(vote: VoteSubmission):
-    logger.info("vote_submitted", 
-                voter=vote.voter_name, 
+    logger.info("vote_submitted",
+                voter=vote.voter_name,
                 logo_count=len(vote.ratings),
                 request_id=request.headers.get('x-request-id'))
 ```
@@ -894,7 +953,7 @@ async def submit_vote(vote: VoteSubmission):
 ### Getting Help
 
 - 📚 **Documentation**: Check existing docs first
-- 🐛 **Issues**: Search/create GitHub issues  
+- 🐛 **Issues**: Search/create GitHub issues
 - 💬 **Discussions**: Join community discussions
 - 📧 **Contact**: Reach out to maintainers
 
@@ -909,4 +968,4 @@ async def submit_vote(vote: VoteSubmission):
 
 ---
 
-*👨‍💻 **Happy coding!** This development guide provides everything needed to contribute effectively to the ToVéCo voting platform. Welcome to the community!*
+_👨‍💻 **Happy coding!** This development guide provides everything needed to contribute effectively to the ToVéCo voting platform. Welcome to the community!_
