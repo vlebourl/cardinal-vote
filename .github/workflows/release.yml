@@ -169,7 +169,7 @@ jobs:
 
     steps:
       - name: Create release comment
-        uses: actions/github-script@v6
+        uses: actions/github-script@v8
         with:
           script: |
             const { data: release } = await github.rest.repos.getRelease({
