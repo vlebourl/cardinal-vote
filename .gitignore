@@ -99,3 +99,16 @@ uv.lock
 .coverage
 htmlcov/
 .pytest_cache/
+
+# Deployment files
+deployement/
+deployment/
+*.tar
+*.tar.gz
+*.zip
+*.deb
+*.rpm
+
+# Docker images and containers
+*.tar.xz
+docker-compose.override.yml
