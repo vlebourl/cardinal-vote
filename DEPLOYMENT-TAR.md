@@ -3,6 +3,7 @@
 ## 📦 Package Contents
 
 This deployment package contains:
+
 - `toveco-voting-v1.0.5.tar` - Docker image (220MB)
 - `docker-compose.production.yml` - Production Docker Compose configuration
 - `deploy-from-tar.sh` - Automated deployment script
@@ -13,6 +14,7 @@ This deployment package contains:
 ### 1. Transfer Files to Target Server
 
 Copy the following files to your deployment server:
+
 ```bash
 scp toveco-voting-v1.0.5.tar user@server:/path/to/deployment/
 scp docker-compose.production.yml user@server:/path/to/deployment/
@@ -23,12 +25,14 @@ scp .env.example user@server:/path/to/deployment/  # Optional
 ### 2. Run Deployment Script
 
 On the deployment server:
+
 ```bash
 cd /path/to/deployment/
 ./deploy-from-tar.sh
 ```
 
 The script will:
+
 1. Load the Docker image from the tar file
 2. Set up environment configuration
 3. Start the application using Docker Compose
@@ -39,11 +43,13 @@ The script will:
 If you prefer manual deployment:
 
 ### Load Docker Image
+
 ```bash
 docker load -i toveco-voting-v1.0.5.tar
 ```
 
 ### Verify Image
+
 ```bash
 docker images | grep toveco-voting
 # Should show:
@@ -52,6 +58,7 @@ docker images | grep toveco-voting
 ```
 
 ### Configure Environment
+
 ```bash
 # Copy and edit environment file
 cp .env.example .env
@@ -64,11 +71,13 @@ nano .env
 ```
 
 ### Start Application
+
 ```bash
 docker compose -f docker-compose.production.yml up -d
 ```
 
 ### Verify Deployment
+
 ```bash
 # Check container status
 docker compose -f docker-compose.production.yml ps
@@ -103,6 +112,7 @@ ENABLE_RATE_LIMITING=true
 ```
 
 ### Generate Secure Keys
+
 ```bash
 # Generate session secret key
 openssl rand -hex 32
@@ -114,11 +124,12 @@ openssl rand -base64 32
 ## 🌐 Reverse Proxy Setup (Optional)
 
 ### Nginx Configuration
+
 ```nginx
 server {
     listen 80;
     server_name voting.yourdomain.com;
-    
+
     location / {
         proxy_pass http://127.0.0.1:8000;
         proxy_set_header Host $host;
@@ -130,6 +141,7 @@ server {
 ```
 
 ### SSL with Certbot
+
 ```bash
 sudo certbot --nginx -d voting.yourdomain.com
 ```
@@ -137,21 +149,25 @@ sudo certbot --nginx -d voting.yourdomain.com
 ## 📊 Container Management
 
 ### View Status
+
 ```bash
 docker compose -f docker-compose.production.yml ps
 ```
 
 ### Stop Application
+
 ```bash
 docker compose -f docker-compose.production.yml down
 ```
 
 ### Restart Application
+
 ```bash
 docker compose -f docker-compose.production.yml restart
 ```
 
 ### View Logs
+
 ```bash
 # All logs
 docker compose -f docker-compose.production.yml logs
@@ -164,6 +180,7 @@ docker compose -f docker-compose.production.yml logs --tail=100
 ```
 
 ### Backup Database
+
 ```bash
 # Create backup
 docker compose -f docker-compose.production.yml exec toveco-voting \
@@ -179,6 +196,7 @@ docker compose -f docker-compose.production.yml cp \
 To deploy a new version:
 
 1. Load new image:
+
 ```bash
 docker load -i toveco-voting-v1.0.6.tar  # New version
 ```
@@ -186,6 +204,7 @@ docker load -i toveco-voting-v1.0.6.tar  # New version
 2. Update docker-compose.production.yml if needed
 
 3. Restart containers:
+
 ```bash
 docker compose -f docker-compose.production.yml down
 docker compose -f docker-compose.production.yml up -d
@@ -194,6 +213,7 @@ docker compose -f docker-compose.production.yml up -d
 ## 🆘 Troubleshooting
 
 ### Container Won't Start
+
 ```bash
 # Check logs
 docker compose -f docker-compose.production.yml logs --tail=50
@@ -203,6 +223,7 @@ sudo netstat -tulpn | grep 8000
 ```
 
 ### Database Issues
+
 ```bash
 # Check database file permissions
 docker compose -f docker-compose.production.yml exec toveco-voting \
@@ -214,6 +235,7 @@ docker compose -f docker-compose.production.yml up -d
 ```
 
 ### Health Check Failing
+
 ```bash
 # Manual health check
 docker compose -f docker-compose.production.yml exec toveco-voting \
@@ -241,6 +263,7 @@ docker compose -f docker-compose.production.yml logs --tail=100 toveco-voting
 ## 📞 Support
 
 For issues or questions:
+
 1. Check application logs
 2. Verify environment configuration
 3. Ensure Docker and ports are properly configured

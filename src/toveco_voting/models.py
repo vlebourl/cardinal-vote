@@ -5,9 +5,9 @@ from typing import Any
 
 from pydantic import BaseModel, Field, validator
 from sqlalchemy import Boolean, Column, DateTime, Integer, String, Text
-from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.ext.declarative import DeclarativeMeta, declarative_base
 
-Base = declarative_base()
+Base: DeclarativeMeta = declarative_base()
 
 
 class VoteRecord(Base):
@@ -62,17 +62,22 @@ class AdminSession(Base):
     user_agent = Column(Text)
 
     def __repr__(self) -> str:
-        return f"<AdminSession(id='{self.id[:8]}...', user_id={self.user_id})>"
+        session_id = self.id[:8] if self.id else "unknown"
+        return f"<AdminSession(id='{session_id}...', user_id={self.user_id})>"
 
 
 class VoteSubmission(BaseModel):
     """Pydantic model for vote submission validation."""
 
-    voter_first_name: str = Field(..., min_length=1, max_length=50, description="First name of the voter")
-    voter_last_name: str = Field(..., min_length=1, max_length=50, description="Last name of the voter")
+    voter_first_name: str = Field(
+        ..., min_length=1, max_length=50, description="First name of the voter"
+    )
+    voter_last_name: str = Field(
+        ..., min_length=1, max_length=50, description="Last name of the voter"
+    )
     ratings: dict[str, int] = Field(..., description="Logo ratings dictionary")
 
-    @validator('voter_first_name')
+    @validator("voter_first_name")
     def validate_voter_first_name(cls, v: str) -> str:
         """Validate and sanitize voter first name."""
         v = v.strip()
@@ -80,7 +85,7 @@ class VoteSubmission(BaseModel):
             raise ValueError("First name cannot be empty")
         return v
 
-    @validator('voter_last_name')
+    @validator("voter_last_name")
     def validate_voter_last_name(cls, v: str) -> str:
         """Validate and sanitize voter last name."""
         v = v.strip()
@@ -88,7 +93,7 @@ class VoteSubmission(BaseModel):
             raise ValueError("Last name cannot be empty")
         return v
 
-    @validator('ratings')
+    @validator("ratings")
     def validate_ratings(cls, v: dict[str, int]) -> dict[str, int]:
         """Validate ratings dictionary."""
         if not v:
@@ -97,10 +102,12 @@ class VoteSubmission(BaseModel):
         # Validate rating values are in allowed range
         for logo, rating in v.items():
             if not isinstance(rating, int) or rating < -2 or rating > 2:
-                raise ValueError(f"Invalid rating {rating} for {logo}. Must be integer between -2 and 2")
+                raise ValueError(
+                    f"Invalid rating {rating} for {logo}. Must be integer between -2 and 2"
+                )
 
             # Validate logo filename format
-            if not logo.startswith('toveco') or not logo.endswith('.png'):
+            if not logo.startswith("toveco") or not logo.endswith(".png"):
                 raise ValueError(f"Invalid logo filename: {logo}")
 
         return v
@@ -133,18 +140,24 @@ class VoteResultSummary(BaseModel):
 class VoteResults(BaseModel):
     """Pydantic model for complete voting results."""
 
-    summary: dict[str, VoteResultSummary] = Field(..., description="Per-logo voting summary")
+    summary: dict[str, VoteResultSummary] = Field(
+        ..., description="Per-logo voting summary"
+    )
     total_voters: int = Field(..., description="Total number of voters")
-    votes: list[dict[str, Any]] | None = Field(None, description="Individual vote records (admin only)")
+    votes: list[dict[str, Any]] | None = Field(
+        None, description="Individual vote records (admin only)"
+    )
 
 
 class DatabaseError(Exception):
     """Custom exception for database operations."""
+
     pass
 
 
 class ValidationError(Exception):
     """Custom exception for validation errors."""
+
     pass
 
 
@@ -152,15 +165,19 @@ class ValidationError(Exception):
 class AdminLogin(BaseModel):
     """Pydantic model for admin login validation."""
 
-    username: str = Field(..., min_length=3, max_length=50, description="Admin username")
+    username: str = Field(
+        ..., min_length=3, max_length=50, description="Admin username"
+    )
     password: str = Field(..., min_length=6, description="Admin password")
 
-    @validator('username')
+    @validator("username")
     def validate_username(cls, v: str) -> str:
         """Validate and sanitize username."""
         v = v.strip().lower()
-        if not v.replace('_', '').replace('-', '').isalnum():
-            raise ValueError("Username can only contain letters, numbers, hyphens, and underscores")
+        if not v.replace("_", "").replace("-", "").isalnum():
+            raise ValueError(
+                "Username can only contain letters, numbers, hyphens, and underscores"
+            )
         return v
 
 
@@ -183,10 +200,10 @@ class LogoUpload(BaseModel):
     filename: str = Field(..., description="Original filename")
     new_name: str | None = Field(None, description="New filename (optional)")
 
-    @validator('filename')
+    @validator("filename")
     def validate_filename(cls, v: str) -> str:
         """Validate filename format."""
-        if not v.lower().endswith('.png'):
+        if not v.lower().endswith(".png"):
             raise ValueError("Logo must be a PNG file")
         return v
 
@@ -194,14 +211,16 @@ class LogoUpload(BaseModel):
 class LogoManagement(BaseModel):
     """Pydantic model for logo management operations."""
 
-    operation: str = Field(..., description="Operation type: delete, rename, bulk_delete")
+    operation: str = Field(
+        ..., description="Operation type: delete, rename, bulk_delete"
+    )
     logos: list[str] = Field(..., description="List of logo filenames")
     new_name: str | None = Field(None, description="New name for rename operation")
 
-    @validator('operation')
+    @validator("operation")
     def validate_operation(cls, v: str) -> str:
         """Validate operation type."""
-        allowed_ops = ['delete', 'rename', 'bulk_delete']
+        allowed_ops = ["delete", "rename", "bulk_delete"]
         if v not in allowed_ops:
             raise ValueError(f"Operation must be one of: {', '.join(allowed_ops)}")
         return v
@@ -210,14 +229,16 @@ class LogoManagement(BaseModel):
 class VoteManagement(BaseModel):
     """Pydantic model for vote management operations."""
 
-    operation: str = Field(..., description="Operation type: reset, export, delete_voter")
+    operation: str = Field(
+        ..., description="Operation type: reset, export, delete_voter"
+    )
     format: str | None = Field(None, description="Export format: csv, json")
     voter_name: str | None = Field(None, description="Voter name for delete operation")
 
-    @validator('operation')
+    @validator("operation")
     def validate_operation(cls, v: str) -> str:
         """Validate operation type."""
-        allowed_ops = ['reset', 'export', 'delete_voter']
+        allowed_ops = ["reset", "export", "delete_voter"]
         if v not in allowed_ops:
             raise ValueError(f"Operation must be one of: {', '.join(allowed_ops)}")
         return v
@@ -243,4 +264,3 @@ class AdminDashboardData(BaseModel):
     recent_votes: list[dict[str, Any]]
     logo_count: int
     session_info: dict[str, Any]
-

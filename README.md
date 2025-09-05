@@ -38,12 +38,12 @@
 
 ## 🔄 Quick Status Dashboard
 
-| Metric | Value | Status |
-|---------|--------|---------|
-| **Latest Release** | [View Releases](https://github.com/vlebourl/cardinal-vote/releases) | ![Release](https://img.shields.io/github/v/release/vlebourl/cardinal-vote?style=flat-square) |
-| **Build Status** | [CI Pipeline](https://github.com/vlebourl/cardinal-vote/actions/workflows/ci.yml) | ![CI](https://github.com/vlebourl/cardinal-vote/actions/workflows/ci.yml/badge.svg?style=flat-square) |
-| **Security** | [Security Dashboard](https://github.com/vlebourl/cardinal-vote/security) | ![Security](https://img.shields.io/badge/security-scanned-brightgreen?style=flat-square) |
-| **Docker Image** | [Container Registry](https://github.com/vlebourl/cardinal-vote/pkgs/container/cardinal-vote) | ![Docker](https://img.shields.io/badge/docker-ready-blue?style=flat-square) |
+| Metric             | Value                                                                                        | Status                                                                                                |
+| ------------------ | -------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
+| **Latest Release** | [View Releases](https://github.com/vlebourl/cardinal-vote/releases)                          | ![Release](https://img.shields.io/github/v/release/vlebourl/cardinal-vote?style=flat-square)          |
+| **Build Status**   | [CI Pipeline](https://github.com/vlebourl/cardinal-vote/actions/workflows/ci.yml)            | ![CI](https://github.com/vlebourl/cardinal-vote/actions/workflows/ci.yml/badge.svg?style=flat-square) |
+| **Security**       | [Security Dashboard](https://github.com/vlebourl/cardinal-vote/security)                     | ![Security](https://img.shields.io/badge/security-scanned-brightgreen?style=flat-square)              |
+| **Docker Image**   | [Container Registry](https://github.com/vlebourl/cardinal-vote/pkgs/container/cardinal-vote) | ![Docker](https://img.shields.io/badge/docker-ready-blue?style=flat-square)                           |
 
 **🚀 Ready for Production** • **🔒 Security Hardened** • **📱 Mobile Optimized** • **🐳 GitHub Container Registry**
 
@@ -56,18 +56,21 @@ A modern, mobile-first logo voting platform built with FastAPI that implements *
 ## ✨ Features
 
 ### 🎯 Core Functionality
+
 - **Value-based voting**: Rate logos from -2 (strongly rejected) to +2 (strongly accepted)
 - **Complete vote validation**: Ensures all logos are rated before submission
 - **Real-time results**: Aggregated statistics with ranking and averages
 - **Randomized presentation**: Logos shown in random order to avoid bias
 
 ### 📱 User Experience
+
 - **Mobile-first design**: Optimized for smartphones and tablets
 - **Touch-friendly interface**: Large buttons, swipe gestures, one-handed operation
 - **Progressive enhancement**: Works with and without JavaScript
 - **Accessible**: WCAG 2.1 compliant with proper ARIA labels
 
 ### 🔧 Technical Features
+
 - **Production-ready**: Docker deployment with security best practices
 - **Fast and reliable**: Built with FastAPI and SQLite/PostgreSQL support
 - **Monitoring**: Health checks, logging, and optional metrics
@@ -137,9 +140,36 @@ export SESSION_SECRET_KEY=$(python -c "import secrets; print(secrets.token_urlsa
 uv run toveco-voting
 ```
 
+### Development Setup with Pre-commit Hooks
+
+To ensure code quality and prevent CI pipeline failures, set up pre-commit hooks:
+
+```bash
+# Install pre-commit hooks (automatically runs linting, formatting, and checks)
+uv run pre-commit install
+
+# Optionally, run hooks on all files to fix existing issues
+uv run pre-commit run --all-files
+
+# Test specific hook
+uv run pre-commit run ruff --all-files
+```
+
+**Pre-commit hooks include:**
+
+- ✅ **Ruff** - Fast Python linting and auto-formatting
+- ✅ **Trailing whitespace** - Removes extra spaces
+- ✅ **End of file** - Ensures proper line endings
+- ✅ **YAML/TOML validation** - Checks config file syntax
+- ✅ **Docker linting** - Hadolint for Dockerfile best practices
+- ✅ **Security checks** - Prevents hardcoded secrets
+- ✅ **Test naming** - Enforces test file conventions
+- ✅ **Logo format** - Validates logo file naming
+
 **Access the application:**
+
 - 🗳️ **Voting Interface**: http://localhost:8000
-- 📊 **Results Page**: http://localhost:8000/results  
+- 📊 **Results Page**: http://localhost:8000/results
 - 🔍 **API Documentation**: http://localhost:8000/docs
 - ❤️ **Health Check**: http://localhost:8000/api/health
 
@@ -169,17 +199,19 @@ uv run toveco-voting
 
 ## 📖 Documentation
 
-| Document | Purpose |
-|----------|---------|
-| [DEPLOYMENT.md](DEPLOYMENT.md) | **Ubuntu server deployment guide** |
-| [API.md](API.md) | **Complete API reference and integration guide** |
-| [DEVELOPMENT.md](DEVELOPMENT.md) | **Local development and contribution guide** |
-| [API_DOCUMENTATION.md](API_DOCUMENTATION.md) | **Technical API documentation** |
+| Document                                     | Purpose                                          |
+| -------------------------------------------- | ------------------------------------------------ |
+| [DEPLOYMENT.md](DEPLOYMENT.md)               | **Ubuntu server deployment guide**               |
+| [API.md](API.md)                             | **Complete API reference and integration guide** |
+| [DEVELOPMENT.md](DEVELOPMENT.md)             | **Local development and contribution guide**     |
+| [API_DOCUMENTATION.md](API_DOCUMENTATION.md) | **Technical API documentation**                  |
 
 ## 🎮 How It Works
 
 ### 1. **Logo Evaluation**
+
 Users rate each logo on a scale:
+
 - **+2**: Strongly accepted ✅✅
 - **+1**: Accepted ✅
 - **0**: Neutral ➖
@@ -187,13 +219,17 @@ Users rate each logo on a scale:
 - **-2**: Strongly rejected ❌❌
 
 ### 2. **Vote Submission**
+
 The platform validates that:
+
 - All logos have been rated
 - Voter name is provided
 - Ratings are within valid range
 
 ### 3. **Results Calculation**
+
 Aggregated results show:
+
 - Average rating per logo
 - Total vote count
 - Ranking from highest to lowest rated
@@ -231,25 +267,25 @@ Aggregated results show:
 
 ## 🚦 Project Status
 
-| Component | Status | Notes |
-|-----------|--------|-------|
-| Core Voting | ✅ Production | Fully functional with validation |
-| Mobile UI | ✅ Production | Responsive design tested on devices |
-| API | ✅ Production | RESTful API with OpenAPI docs |
-| Docker Deployment | ✅ Production | Multi-architecture containers (amd64, arm64) |
-| Database | ✅ Production | SQLite with PostgreSQL support |
-| Testing | ✅ Production | 90%+ code coverage, automated CI |
-| Documentation | ✅ Production | Comprehensive guides and API docs |
-| Monitoring | ✅ Production | Health checks, logging, metrics |
-| **CI/CD Pipeline** | ✅ **Production** | **Automated testing, security scans, releases** |
-| **Security Scanning** | ✅ **Production** | **Trivy, Bandit, CodeQL integration** |
-| **GitHub Flow** | ✅ **Production** | **Branch protection, PR templates, automation** |
-| **Container Registry** | ✅ **Production** | **GitHub Container Registry with auto-builds** |
+| Component              | Status            | Notes                                           |
+| ---------------------- | ----------------- | ----------------------------------------------- |
+| Core Voting            | ✅ Production     | Fully functional with validation                |
+| Mobile UI              | ✅ Production     | Responsive design tested on devices             |
+| API                    | ✅ Production     | RESTful API with OpenAPI docs                   |
+| Docker Deployment      | ✅ Production     | Multi-architecture containers (amd64, arm64)    |
+| Database               | ✅ Production     | SQLite with PostgreSQL support                  |
+| Testing                | ✅ Production     | 90%+ code coverage, automated CI                |
+| Documentation          | ✅ Production     | Comprehensive guides and API docs               |
+| Monitoring             | ✅ Production     | Health checks, logging, metrics                 |
+| **CI/CD Pipeline**     | ✅ **Production** | **Automated testing, security scans, releases** |
+| **Security Scanning**  | ✅ **Production** | **Trivy, Bandit, CodeQL integration**           |
+| **GitHub Flow**        | ✅ **Production** | **Branch protection, PR templates, automation** |
+| **Container Registry** | ✅ **Production** | **GitHub Container Registry with auto-builds**  |
 
 ### Recent Enhancements 🆕
 
 - ✨ **GitHub Actions CI/CD**: Automated testing, linting, security scanning
-- ✨ **Multi-architecture Docker**: ARM64 + AMD64 support for all platforms  
+- ✨ **Multi-architecture Docker**: ARM64 + AMD64 support for all platforms
 - ✨ **Security First**: Comprehensive security scanning with Trivy, Bandit, CodeQL
 - ✨ **GitHub Flow Enforcement**: Branch protection rules, PR templates, code review
 - ✨ **Automated Releases**: Tag-based releases with deployment packages
@@ -260,18 +296,20 @@ Aggregated results show:
 This project uses **GitHub Container Registry** (ghcr.io) instead of Docker Hub:
 
 ### ✅ Why GitHub Container Registry?
-- **🔗 Source Integration**: Images directly linked to repository and releases  
+
+- **🔗 Source Integration**: Images directly linked to repository and releases
 - **🚀 No Rate Limits**: Free public access without Docker Hub restrictions
 - **🛡️ Enhanced Security**: Integrated vulnerability scanning and Dependabot
 - **🏗️ Multi-Architecture**: Automatic ARM64 + AMD64 builds
 - **🔒 Privacy Ready**: Can be made private for enterprise use
 
 ### 📦 Available Container Images
+
 ```bash
 # Latest stable release (production recommended)
 ghcr.io/vlebourl/cardinal-vote:latest
 
-# Specific version pinning (reproducible deployments)  
+# Specific version pinning (reproducible deployments)
 ghcr.io/vlebourl/cardinal-vote:v1.1.1
 
 # Architecture-specific (auto-selected by Docker)
@@ -280,14 +318,15 @@ ghcr.io/vlebourl/cardinal-vote:latest-arm64
 ```
 
 ### 🚀 Production Deployment
+
 ```yaml
 # docker-compose.production.yml
-version: '3.8'
+version: "3.8"
 services:
   toveco-voting:
     image: ghcr.io/vlebourl/cardinal-vote:latest
     ports:
-      - "8000:8000"  
+      - "8000:8000"
     environment:
       # Security: Set these via .env file or secrets
       - ADMIN_USERNAME=${ADMIN_USERNAME}
@@ -295,8 +334,8 @@ services:
       - SESSION_SECRET_KEY=${SESSION_SECRET_KEY}
       - DATABASE_PATH=/app/data/votes.db
     volumes:
-      - ./logos:/app/logos:ro    # Your logo files
-      - ./data:/app/data         # Persistent database  
+      - ./logos:/app/logos:ro # Your logo files
+      - ./data:/app/data # Persistent database
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/api/health"]
@@ -306,6 +345,7 @@ services:
 ```
 
 **🔧 Deploy Command:**
+
 ```bash
 # Download compose file from releases or create your own
 curl -O https://github.com/vlebourl/cardinal-vote/releases/latest/download/docker-compose.production.yml
@@ -313,15 +353,16 @@ curl -O https://github.com/vlebourl/cardinal-vote/releases/latest/download/docke
 # Configure environment (never use defaults!)
 cp .env.example .env && nano .env
 
-# Deploy  
+# Deploy
 docker compose -f docker-compose.production.yml up -d
 ```
 
 ## 🤝 Contributing
 
 We welcome contributions! Please see [DEVELOPMENT.md](DEVELOPMENT.md) for:
+
 - Local development setup
-- Code style guidelines  
+- Code style guidelines
 - Testing procedures
 - Contribution workflow
 
@@ -338,4 +379,4 @@ MIT License - see [LICENSE](LICENSE) file for details.
 
 ---
 
-*Built with ❤️ by the ToVéCo team using modern web technologies.*
+_Built with ❤️ by the ToVéCo team using modern web technologies._

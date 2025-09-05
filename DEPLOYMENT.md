@@ -7,6 +7,7 @@
 ## 🎯 Deployment Overview
 
 This guide covers:
+
 - **Quick Development Setup** (5 minutes)
 - **Production Deployment** (Ubuntu 20.04+ servers)
 - **SSL/TLS Configuration** (Let's Encrypt + reverse proxy)
@@ -61,6 +62,7 @@ docker compose logs toveco-voting
 ```
 
 The application will be available at:
+
 - **Main Application**: http://localhost:8000
 - **Results Page**: http://localhost:8000/results
 - **Health Check**: http://localhost:8000/api/health
@@ -78,8 +80,9 @@ nano .env
 ```
 
 **Critical settings to update:**
+
 - `TOVECO_ENV=production`
-- `DEBUG=false` 
+- `DEBUG=false`
 - `ALLOWED_ORIGINS=https://your-domain.com`
 - `DATABASE_PATH=/app/data/votes.db`
 
@@ -92,7 +95,7 @@ mkdir -p secrets
 # Generate database password
 openssl rand -base64 32 > secrets/db_password.txt
 
-# Generate Grafana admin password  
+# Generate Grafana admin password
 openssl rand -base64 32 > secrets/grafana_password.txt
 
 # Set proper permissions
@@ -139,28 +142,28 @@ docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d
 
 ### Core Configuration
 
-| Variable | Default | Description |
-|----------|---------|-------------|
-| `HOST` | `0.0.0.0` | Server bind address |
-| `PORT` | `8000` | Server port |
+| Variable        | Default              | Description              |
+| --------------- | -------------------- | ------------------------ |
+| `HOST`          | `0.0.0.0`            | Server bind address      |
+| `PORT`          | `8000`               | Server port              |
 | `DATABASE_PATH` | `/app/data/votes.db` | SQLite database location |
-| `DEBUG` | `false` | Enable debug mode |
+| `DEBUG`         | `false`              | Enable debug mode        |
 
 ### Security Settings
 
-| Variable | Default | Description |
-|----------|---------|-------------|
-| `ALLOWED_ORIGINS` | `http://localhost:8000` | CORS allowed origins |
-| `MAX_VOTES_PER_IP_PER_HOUR` | `5` | Rate limiting |
-| `ENABLE_RATE_LIMITING` | `true` | Enable rate limiting |
+| Variable                    | Default                 | Description          |
+| --------------------------- | ----------------------- | -------------------- |
+| `ALLOWED_ORIGINS`           | `http://localhost:8000` | CORS allowed origins |
+| `MAX_VOTES_PER_IP_PER_HOUR` | `5`                     | Rate limiting        |
+| `ENABLE_RATE_LIMITING`      | `true`                  | Enable rate limiting |
 
 ### Logo Configuration
 
-| Variable | Default | Description |
-|----------|---------|-------------|
-| `EXPECTED_LOGO_COUNT` | `11` | Expected number of logos |
-| `LOGO_PREFIX` | `toveco` | Logo filename prefix |
-| `LOGO_EXTENSION` | `.png` | Logo file extension |
+| Variable              | Default  | Description              |
+| --------------------- | -------- | ------------------------ |
+| `EXPECTED_LOGO_COUNT` | `11`     | Expected number of logos |
+| `LOGO_PREFIX`         | `toveco` | Logo filename prefix     |
+| `LOGO_EXTENSION`      | `.png`   | Logo file extension      |
 
 ## 🗂️ File Structure
 
@@ -304,10 +307,10 @@ Production deployment includes resource constraints:
 deploy:
   resources:
     limits:
-      cpus: '1.0'
+      cpus: "1.0"
       memory: 512M
     reservations:
-      cpus: '0.25'
+      cpus: "0.25"
       memory: 128M
 ```
 
@@ -334,6 +337,7 @@ docker compose -f docker-compose.yml -f docker-compose.prod.yml --profile redis 
 ### Common Issues
 
 **1. Permission Denied**
+
 ```bash
 # Fix file permissions
 chmod +x docker-entrypoint.sh
@@ -341,6 +345,7 @@ sudo chown -R 1000:1000 data/ logs/
 ```
 
 **2. Port Already in Use**
+
 ```bash
 # Check what's using the port
 sudo netstat -tulpn | grep :8000
@@ -349,6 +354,7 @@ sudo netstat -tulpn | grep :8000
 ```
 
 **3. Database Connection Issues**
+
 ```bash
 # Check database file permissions
 docker compose exec toveco-voting ls -la /app/data/
@@ -360,6 +366,7 @@ docker compose up -d
 ```
 
 **4. Logo Files Missing**
+
 ```bash
 # Verify logo files
 docker compose exec toveco-voting ls -la /app/logos/
@@ -402,7 +409,7 @@ docker compose run --rm toveco-voting bash
 server {
     listen 80;
     server_name voting.yourdomain.com;
-    
+
     location / {
         proxy_pass http://127.0.0.1:8000;
         proxy_set_header Host $host;
@@ -418,7 +425,7 @@ server {
 ```apache
 <VirtualHost *:80>
     ServerName voting.yourdomain.com
-    
+
     ProxyPreserveHost On
     ProxyPass / http://127.0.0.1:8000/
     ProxyPassReverse / http://127.0.0.1:8000/
@@ -471,12 +478,14 @@ docker volume ls
 ### Automatic SSL with Traefik (Recommended)
 
 1. **Update your domain configuration**:
+
 ```bash
 # Edit docker-compose.prod.yml
 nano docker-compose.prod.yml
 ```
 
 Update the Traefik labels:
+
 ```yaml
 labels:
   - "traefik.http.routers.toveco.rule=Host(`voting.yourdomain.com`)"
@@ -485,6 +494,7 @@ labels:
 ```
 
 2. **Configure Let's Encrypt**:
+
 ```yaml
 # Add to traefik service in docker-compose.prod.yml
 command:
@@ -494,6 +504,7 @@ command:
 ```
 
 3. **Deploy with SSL**:
+
 ```bash
 docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d
 ```
@@ -501,16 +512,19 @@ docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d
 ### Manual SSL with Nginx
 
 1. **Install Certbot**:
+
 ```bash
 sudo apt install certbot python3-certbot-nginx
 ```
 
 2. **Get SSL certificate**:
+
 ```bash
 sudo certbot --nginx -d voting.yourdomain.com
 ```
 
 3. **Nginx configuration** (`/etc/nginx/sites-available/toveco`):
+
 ```nginx
 server {
     listen 80;
@@ -521,17 +535,17 @@ server {
 server {
     listen 443 ssl http2;
     server_name voting.yourdomain.com;
-    
+
     ssl_certificate /etc/letsencrypt/live/voting.yourdomain.com/fullchain.pem;
     ssl_certificate_key /etc/letsencrypt/live/voting.yourdomain.com/privkey.pem;
-    
+
     # Security headers
     add_header X-Frame-Options "SAMEORIGIN" always;
     add_header X-XSS-Protection "1; mode=block" always;
     add_header X-Content-Type-Options "nosniff" always;
     add_header Referrer-Policy "no-referrer-when-downgrade" always;
     add_header Content-Security-Policy "default-src 'self' http: https: data: blob: 'unsafe-inline'" always;
-    
+
     location / {
         proxy_pass http://127.0.0.1:8000;
         proxy_http_version 1.1;
@@ -542,7 +556,7 @@ server {
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
         proxy_set_header X-Forwarded-Proto $scheme;
         proxy_cache_bypass $http_upgrade;
-        
+
         # Timeouts
         proxy_connect_timeout 60s;
         proxy_send_timeout 60s;
@@ -556,18 +570,21 @@ server {
 ### Prometheus + Grafana Stack
 
 1. **Deploy monitoring stack**:
+
 ```bash
 # Enable monitoring profile
 docker compose -f docker-compose.yml -f docker-compose.prod.yml --profile monitoring up -d
 ```
 
 2. **Access dashboards**:
+
 - **Grafana**: https://grafana.yourdomain.com (admin/check secrets/grafana_password.txt)
 - **Prometheus**: http://localhost:9090
 
 ### Custom Health Monitoring Script
 
 Create `/opt/toveco/health-monitor.sh`:
+
 ```bash
 #!/bin/bash
 # ToVéCo Health Monitor
@@ -618,6 +635,7 @@ main
 ```
 
 Set up cron job:
+
 ```bash
 # Add to crontab (crontab -e)
 */5 * * * * /opt/toveco/health-monitor.sh
@@ -626,6 +644,7 @@ Set up cron job:
 ### Log Aggregation
 
 1. **Configure log rotation** (`/etc/logrotate.d/toveco`):
+
 ```
 /var/lib/docker/containers/*/*.log {
     rotate 7
@@ -639,6 +658,7 @@ Set up cron job:
 ```
 
 2. **Centralized logging with rsyslog**:
+
 ```bash
 # Install rsyslog
 sudo apt install rsyslog
@@ -657,6 +677,7 @@ logging:
 ### Database Optimization
 
 1. **SQLite Performance Settings**:
+
 ```python
 # In production, these are automatically applied
 PRAGMA journal_mode=WAL;
@@ -669,6 +690,7 @@ PRAGMA temp_store=memory;
 2. **Migration to PostgreSQL** (for high-traffic deployments):
 
 Update `docker-compose.prod.yml`:
+
 ```yaml
 services:
   postgres:
@@ -692,6 +714,7 @@ services:
 ### Application Scaling
 
 1. **Multiple Workers** (for high traffic):
+
 ```yaml
 # In docker-compose.prod.yml
 environment:
@@ -700,6 +723,7 @@ environment:
 ```
 
 2. **Load Balancing with Nginx**:
+
 ```nginx
 upstream toveco_backend {
     server 127.0.0.1:8000;
@@ -764,6 +788,7 @@ nmap --script ssl-enum-ciphers -p 443 voting.yourdomain.com
    - Configure cache rules for static assets
 
 2. **Image Optimization**:
+
 ```bash
 # Optimize logo images
 docker run --rm -v $(pwd)/logos:/images imagemin/cli --out-dir=/images/optimized /images/*.png
@@ -772,6 +797,7 @@ docker run --rm -v $(pwd)/logos:/images imagemin/cli --out-dir=/images/optimized
 ### Progressive Web App (PWA) Features
 
 The application includes PWA capabilities:
+
 - Service worker for offline functionality
 - App manifest for "Add to Home Screen"
 - Push notifications (optional)
@@ -781,6 +807,7 @@ The application includes PWA capabilities:
 ### Automated Database Backups
 
 Create `/opt/toveco/backup.sh`:
+
 ```bash
 #!/bin/bash
 # Automated backup script
@@ -810,6 +837,7 @@ find "$BACKUP_DIR" -name "config_*.tar.gz" -mtime +$RETENTION_DAYS -delete
 ### Disaster Recovery Plan
 
 1. **Full System Backup**:
+
 ```bash
 # Backup entire deployment
 tar -czf toveco-full-backup-$(date +%Y%m%d).tar.gz \
@@ -818,6 +846,7 @@ tar -czf toveco-full-backup-$(date +%Y%m%d).tar.gz \
 ```
 
 2. **Recovery Procedure**:
+
 ```bash
 # Restore from backup
 tar -xzf toveco-full-backup-YYYYMMDD.tar.gz -C /opt/
@@ -847,6 +876,7 @@ curl -sf http://localhost:8000/api/health
 ### Migration to Kubernetes (Enterprise)
 
 Example Kubernetes deployment:
+
 ```yaml
 apiVersion: apps/v1
 kind: Deployment
@@ -863,16 +893,16 @@ spec:
         app: toveco-voting
     spec:
       containers:
-      - name: toveco-voting
-        image: toveco-voting:latest
-        ports:
-        - containerPort: 8000
-        env:
-        - name: DATABASE_URL
-          valueFrom:
-            secretKeyRef:
-              name: db-secret
-              key: url
+        - name: toveco-voting
+          image: toveco-voting:latest
+          ports:
+            - containerPort: 8000
+          env:
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: db-secret
+                  key: url
 ```
 
 ## ⚠️ Common Production Issues
@@ -881,6 +911,7 @@ spec:
 
 **Symptoms**: Container restarts, slow responses
 **Solution**:
+
 ```bash
 # Monitor memory usage
 docker stats toveco-voting
@@ -899,6 +930,7 @@ deploy:
 
 **Symptoms**: "Database is locked" errors
 **Solution**:
+
 ```bash
 # Check for long-running transactions
 docker compose exec toveco-voting sqlite3 /app/data/votes.db ".timeout 30000"
@@ -910,6 +942,7 @@ docker compose exec toveco-voting sqlite3 /app/data/votes.db "PRAGMA journal_mod
 ### Issue: SSL Certificate Renewal Failures
 
 **Solution**:
+
 ```bash
 # Test certificate renewal
 sudo certbot renew --dry-run
@@ -951,6 +984,7 @@ sudo certbot renew --force-renewal
 For high-traffic deployments, consider:
 
 ### Advanced Features
+
 - **Database clustering** (PostgreSQL with read replicas)
 - **Redis caching** for session management
 - **Message queues** (Celery + RabbitMQ) for async processing
@@ -958,6 +992,7 @@ For high-traffic deployments, consider:
 - **Advanced analytics** with data warehouse integration
 
 ### Professional Services
+
 - **24/7 monitoring** and alerting
 - **Dedicated support** and SLA agreements
 - **Security audits** and penetration testing
@@ -968,4 +1003,4 @@ For additional support or questions, please refer to the application logs and Do
 
 ---
 
-*🚀 **Ready for production?** This deployment guide provides enterprise-grade setup for the ToVéCo voting platform with security, monitoring, and scaling best practices.*
+_🚀 **Ready for production?** This deployment guide provides enterprise-grade setup for the ToVéCo voting platform with security, monitoring, and scaling best practices._

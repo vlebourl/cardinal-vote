@@ -1,0 +1,123 @@
+# Pre-commit configuration for ToVéCo voting platform
+# This ensures code quality and consistency before commits
+repos:
+  # Pre-commit hooks for basic file checks
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v6.0.0
+    hooks:
+      - id: trailing-whitespace
+        args: [--markdown-linebreak-ext=md]
+      - id: end-of-file-fixer
+      - id: check-yaml
+      - id: check-toml
+      - id: check-json
+      - id: check-merge-conflict
+      - id: check-case-conflict
+      - id: check-added-large-files
+        args: ["--maxkb=1000"] # 1MB limit
+      - id: mixed-line-ending
+        args: ["--fix=lf"]
+      - id: check-executables-have-shebangs
+      - id: check-shebang-scripts-are-executable
+
+  # Ruff for fast Python linting and formatting
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.12.12
+    hooks:
+      # Run the linter
+      - id: ruff
+        args: [--fix, --exit-non-zero-on-fix]
+        types_or: [python, pyi, jupyter]
+      # Run the formatter
+      - id: ruff-format
+        types_or: [python, pyi, jupyter]
+
+  # MyPy for type checking (STRICT MODE - NO IGNORING ALLOWED)
+  - repo: https://github.com/pre-commit/mirrors-mypy
+    rev: v1.17.1
+    hooks:
+      - id: mypy
+        files: ^src/
+        additional_dependencies:
+          - types-requests
+          - types-Pillow
+          - types-aiofiles
+          - types-psutil
+          - sqlalchemy[mypy]
+          - pydantic
+          - fastapi
+          - uvicorn
+        args: [--config-file=mypy.ini]
+
+  # Security checks (STRICT MODE - NO IGNORING ALLOWED)
+  - repo: https://github.com/PyCQA/bandit
+    rev: 1.7.8
+    hooks:
+      - id: bandit
+        args: [-c, pyproject.toml]
+        additional_dependencies: ["bandit[toml]"]
+
+  # Safety check (disabled - only works with Poetry)
+  # - repo: https://github.com/Lucas-C/pre-commit-hooks-safety
+  #   rev: v1.3.2
+  #   hooks:
+  #     - id: python-safety-dependencies-check
+  #       files: pyproject.toml
+
+  # Docker-related checks
+  - repo: https://github.com/hadolint/hadolint
+    rev: v2.13.1
+    hooks:
+      - id: hadolint-docker
+        args: [--ignore, DL3008, --ignore, DL3009] # Allow apt without version pins for base images
+
+  # YAML formatting
+  - repo: https://github.com/pre-commit/mirrors-prettier
+    rev: v4.0.0-alpha.8
+    hooks:
+      - id: prettier
+        files: \.(yaml|yml|json|md)$
+        args: [--tab-width=2, --print-width=100]
+
+  # Local hooks for custom checks
+  - repo: local
+    hooks:
+      # Check that test files are properly named
+      - id: test-naming
+        name: Check test file naming
+        entry: bash -c 'for file in tests/*.py; do [[ "$file" == "tests/__init__.py" ]] && continue; [[ "$file" == "tests/conftest.py" ]] && continue; [[ "$file" =~ ^tests/test_.*\.py$ ]] || { echo "Test file $file should start with test_"; exit 1; }; done'
+        language: system
+        files: ^tests/.*\.py$
+        exclude: ^tests/(conftest|__init__)\.py$
+
+      # Ensure no hardcoded secrets
+      - id: no-secrets
+        name: Check for potential secrets
+        entry: bash -c 'if grep -r -i -E "(password|secret|key|token)\s*=\s*[\"'\'''][^\"'\'''\$]+[\"'\'']" src/ tests/ --exclude-dir=.git; then echo "Potential hardcoded secrets found!"; exit 1; fi'
+        language: system
+        files: \.(py|yaml|yml|json|toml)$
+
+      # Check logo files are in correct format
+      - id: logo-format
+        name: Check logo file format
+        entry: bash -c 'shopt -s nullglob; for logo in logos/*.png; do [[ "$logo" =~ ^logos/toveco[0-9]+\.png$ ]] || { echo "Logo $logo should follow toveco{number}.png format"; exit 1; }; done'
+        language: system
+        files: ^logos/.*\.png$
+
+# Global configuration
+default_stages: [pre-commit, pre-push]
+fail_fast: false
+minimum_pre_commit_version: "3.6.0"
+
+# CI configuration
+ci:
+  autofix_commit_msg: |
+    [pre-commit.ci] auto fixes from pre-commit hooks
+
+    for more information, see https://pre-commit.ci
+  autofix_prs: true
+  autoupdate_branch: ""
+  autoupdate_commit_msg: "[pre-commit.ci] pre-commit autoupdate"
+  autoupdate_schedule: weekly
+  skip: [mypy, python-safety-dependencies-check] # Skip heavy checks in CI
+  submodules: false

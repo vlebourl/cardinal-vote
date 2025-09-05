@@ -7,6 +7,7 @@ This document describes the required branch protection rules for this repository
 Configure the following settings for the `main` branch:
 
 ### General Settings
+
 - ✅ **Restrict pushes that create files larger than 100MB**
 - ✅ **Require a pull request before merging**
 - ✅ **Require approvals**: 1 approval required
@@ -14,17 +15,20 @@ Configure the following settings for the `main` branch:
 - ✅ **Require review from code owners** (if CODEOWNERS file exists)
 
 ### Status Checks
+
 - ✅ **Require status checks to pass before merging**
 - ✅ **Require branches to be up to date before merging**
 
 **Required status checks:**
+
 - `test (Test Suite)`
-- `security (Security Scan)`  
+- `security (Security Scan)`
 - `docker-build (Docker Build Test)`
 - `integration (Integration Tests)`
 - `pr-quality-gate (PR Quality Gate)`
 
 ### Additional Restrictions
+
 - ✅ **Restrict pushes to matching branches**
 - ✅ **Allow force pushes**: ❌ Disabled
 - ✅ **Allow deletions**: ❌ Disabled
@@ -53,8 +57,9 @@ gh api repos/$GITHUB_REPOSITORY/branches/main/protection/required_signatures \
 Additional repository settings to configure:
 
 ### General
+
 - ✅ **Default branch**: `main`
-- ✅ **Allow merge commits**: ❌ Disabled  
+- ✅ **Allow merge commits**: ❌ Disabled
 - ✅ **Allow squash merging**: ✅ Enabled (default)
 - ✅ **Allow rebase merging**: ✅ Enabled
 - ✅ **Always suggest updating pull request branches**: ✅ Enabled
@@ -62,11 +67,13 @@ Additional repository settings to configure:
 - ✅ **Automatically delete head branches**: ✅ Enabled
 
 ### Pull Requests
+
 - ✅ **Allow merge commits**: ❌ Disabled
 - ✅ **Allow squash merging**: ✅ Enabled (default for PRs)
 - ✅ **Allow rebase merging**: ✅ Enabled
 
 ### Security
+
 - ✅ **Enable vulnerability alerts**: ✅ Enabled
 - ✅ **Enable Dependabot security updates**: ✅ Enabled
 - ✅ **Enable Dependabot version updates**: ✅ Enabled
@@ -80,8 +87,9 @@ Additional repository settings to configure:
 5. **Automatic cleanup**: Feature branches are automatically deleted after merge
 
 These settings ensure:
+
 - Code quality through automated testing
-- Security through vulnerability scanning  
+- Security through vulnerability scanning
 - Collaboration through required reviews
 - Clean git history through squash merges
 - Automated deployment through release workflows

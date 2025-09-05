@@ -592,7 +592,7 @@
     .admin-main {
         flex-direction: column;
     }
-    
+
     .admin-sidebar {
         width: 100%;
         height: auto;
@@ -600,19 +600,19 @@
         border-right: none;
         border-bottom: 1px solid #e1e8ed;
     }
-    
+
     .dashboard-grid {
         grid-template-columns: 1fr;
     }
-    
+
     .stats-grid {
         grid-template-columns: 1fr;
     }
-    
+
     .quick-actions {
         grid-template-columns: 1fr;
     }
-    
+
     .admin-content {
         padding: 20px;
     }
