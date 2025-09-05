@@ -69,7 +69,7 @@ class TestDockerBuild:
             # Cleanup image
             try:
                 docker_client.images.remove(image_tag, force=True)
-            except:
+            except docker.errors.APIError:
                 pass
 
     def test_dockerfile_exists(self, project_root):
@@ -176,16 +176,16 @@ class TestContainerOperations:
             if container:
                 try:
                     container.stop(timeout=5)
-                except:
+                except docker.errors.APIError:
                     pass
                 try:
                     container.remove(force=True)
-                except:
+                except docker.errors.APIError:
                     pass
             # Remove image
             try:
                 docker_client.images.remove(image_tag, force=True)
-            except:
+            except docker.errors.APIError:
                 pass
 
     def test_container_starts(self, test_container):
@@ -291,7 +291,7 @@ class TestContainerOperations:
         finally:
             try:
                 docker_client.images.remove(image_tag, force=True)
-            except:
+            except docker.errors.APIError:
                 pass
 
     def test_container_volume_mounting(self, docker_client, project_root):
@@ -339,7 +339,7 @@ class TestContainerOperations:
         finally:
             try:
                 docker_client.images.remove(image_tag, force=True)
-            except:
+            except docker.errors.APIError:
                 pass
 
 
@@ -576,7 +576,7 @@ class DockerDeploymentValidator:
             self.docker_client = docker.from_env()
             self.docker_client.ping()
         except DockerException:
-            raise RuntimeError("Docker not available")
+            raise RuntimeError("Docker not available") from None
 
     def validate_complete_deployment(self) -> dict[str, Any]:
         """Perform complete deployment validation."""
@@ -644,11 +644,11 @@ class DockerDeploymentValidator:
             if container:
                 try:
                     container.stop(timeout=5)
-                except:
+                except docker.errors.APIError:
                     pass
             try:
                 self.docker_client.images.remove(image_tag, force=True)
-            except:
+            except docker.errors.APIError:
                 pass
 
         return results

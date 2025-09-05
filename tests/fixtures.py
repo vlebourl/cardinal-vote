@@ -631,7 +631,7 @@ def calculate_expected_results(votes: list[dict[str, Any]]) -> dict[str, Any]:
 
     # Add rankings
     sorted_logos = sorted(summary.items(), key=lambda x: x[1]["average"], reverse=True)
-    for rank, (logo, stats) in enumerate(sorted_logos, 1):
+    for rank, (_logo, stats) in enumerate(sorted_logos, 1):
         stats["ranking"] = rank
 
     return {

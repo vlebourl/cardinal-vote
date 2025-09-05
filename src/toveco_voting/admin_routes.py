@@ -226,7 +226,7 @@ async def admin_dashboard(request: Request):
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to load dashboard"
-        )
+        ) from e
 
 
 # Logo Management Routes
@@ -256,7 +256,7 @@ async def admin_logos_page(
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to load logos page"
-        )
+        ) from e
 
 
 @admin_router.post("/logos/upload")
@@ -373,7 +373,7 @@ async def admin_votes_page(
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to load votes page"
-        )
+        ) from e
 
 
 @admin_router.post("/votes/manage")
@@ -495,7 +495,7 @@ async def admin_system_page(
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to load system page"
-        )
+        ) from e
 
 
 @admin_router.post("/system/backup")

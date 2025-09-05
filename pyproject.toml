@@ -82,10 +82,6 @@ select = [
 ignore = [
     "E501",  # line too long, handled by black
     "B008",  # do not perform function calls in argument defaults
-    "B904",  # Within an `except` clause, raise exceptions with `raise ... from err` - can be addressed later
-    "B007",  # Loop control variable not used within loop body
-    "B017",  # Do not assert blind exception
-    "E722",  # Do not use bare `except`
 ]
 
 [tool.ruff.lint.per-file-ignores]

@@ -6,6 +6,7 @@ import time
 
 import pytest
 from fastapi.testclient import TestClient
+from sqlalchemy.exc import SQLAlchemyError
 
 from src.toveco_voting.config import settings
 from src.toveco_voting.database import DatabaseManager
@@ -617,7 +618,7 @@ class TestDatabaseIntegrity:
 
     def test_database_error_handling(self):
         """Test database error handling with invalid database path."""
-        with pytest.raises(Exception):
+        with pytest.raises((OSError, ValueError, SQLAlchemyError)):
             # Try to create database in non-existent directory
             DatabaseManager("/nonexistent/directory/test.db")
 

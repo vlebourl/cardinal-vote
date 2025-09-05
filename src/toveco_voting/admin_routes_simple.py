@@ -195,7 +195,7 @@ async def admin_dashboard(request: Request):
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to load dashboard"
-        )
+        ) from e
 
 
 @admin_router.get("/logos", response_class=HTMLResponse)
@@ -225,7 +225,7 @@ async def admin_logos_page(request: Request):
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to load logos page"
-        )
+        ) from e
 
 
 @admin_router.get("/api/stats")
@@ -321,7 +321,7 @@ async def admin_votes_page(request: Request):
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to load votes page"
-        )
+        ) from e
 
 
 @admin_router.get("/votes/export/{format}")
@@ -358,7 +358,7 @@ async def export_votes_download(request: Request, format: str):
         raise
     except Exception as e:
         logger.error(f"Export votes error: {e}")
-        raise HTTPException(status_code=500, detail="Export failed")
+        raise HTTPException(status_code=500, detail="Export failed") from e
 
 
 @admin_router.post("/votes/clear")
