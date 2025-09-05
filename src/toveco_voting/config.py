@@ -46,8 +46,8 @@ class Settings:
     MAX_VOTES_PER_IP_PER_HOUR: int = 5  # Rate limiting
     
     # Admin settings
-    ADMIN_USERNAME: str = os.getenv("ADMIN_USERNAME", "admin")
-    ADMIN_PASSWORD: str = os.getenv("ADMIN_PASSWORD", "")  # Change in production!
+    ADMIN_USERNAME: str = os.getenv("ADMIN_USERNAME", "")
+    ADMIN_PASSWORD: str = os.getenv("ADMIN_PASSWORD", "")
     SESSION_SECRET_KEY: str = os.getenv("SESSION_SECRET_KEY", "")
     SESSION_LIFETIME_HOURS: int = int(os.getenv("SESSION_LIFETIME_HOURS", "8"))
     MAX_LOGIN_ATTEMPTS: int = int(os.getenv("MAX_LOGIN_ATTEMPTS", "5"))
@@ -78,6 +78,24 @@ class Settings:
         # Create upload temp directory if it doesn't exist
         if not cls.UPLOAD_TEMP_DIR.exists():
             cls.UPLOAD_TEMP_DIR.mkdir(parents=True, exist_ok=True)
+
+    @classmethod
+    def validate_security(cls) -> None:
+        """Validate that required security settings are properly configured."""
+        missing_settings = []
+        
+        if not cls.ADMIN_USERNAME:
+            missing_settings.append("ADMIN_USERNAME")
+        if not cls.ADMIN_PASSWORD:
+            missing_settings.append("ADMIN_PASSWORD")
+        if not cls.SESSION_SECRET_KEY:
+            missing_settings.append("SESSION_SECRET_KEY")
+            
+        if missing_settings:
+            raise ValueError(
+                f"Missing required security settings: {', '.join(missing_settings)}. "
+                "Please set these environment variables before running the application."
+            )
 
     @classmethod
     def get_logo_files(cls) -> list[str]:
