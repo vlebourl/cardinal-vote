@@ -1,0 +1,24 @@
+# Global code ownership
+* @vlebourl
+
+# Core application code
+/src/ @vlebourl
+
+# Configuration and infrastructure
+/pyproject.toml @vlebourl
+/Dockerfile @vlebourl
+/docker-compose*.yml @vlebourl
+/.github/ @vlebourl
+
+# Security-sensitive files
+/.env.example @vlebourl
+/src/toveco_voting/config.py @vlebourl
+/src/toveco_voting/admin_*.py @vlebourl
+
+# Documentation
+/README.md @vlebourl
+/CLAUDE.md @vlebourl
+/DEPLOYMENT*.md @vlebourl
+
+# Release and deployment
+/scripts/ @vlebourl
