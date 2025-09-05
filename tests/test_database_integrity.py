@@ -174,20 +174,18 @@ class TestDataValidation:
 
     def test_save_vote_complex_ratings(self, temp_db):
         """Test saving vote with complex ratings structure."""
-        voter_first_name = "Test"
-        voter_last_name = "User"
 
-        # Test various rating scenarios
+        # Test various rating scenarios with unique voters
         test_cases = [
             # All logos with different ratings
-            {f"toveco{i}.png": (i % 5) - 2 for i in range(1, 12)},
+            ("Test", "User1", {f"toveco{i}.png": (i % 5) - 2 for i in range(1, 12)}),
             # Single logo
-            {"toveco1.png": 2},
+            ("Test", "User2", {"toveco1.png": 2}),
             # Mixed ratings
-            {"toveco1.png": 2, "toveco5.png": -2, "toveco10.png": 0},
+            ("Test", "User3", {"toveco1.png": 2, "toveco5.png": -2, "toveco10.png": 0}),
         ]
 
-        for ratings in test_cases:
+        for voter_first_name, voter_last_name, ratings in test_cases:
             vote_id = temp_db.save_vote(voter_first_name, voter_last_name, ratings)
             assert vote_id > 0
 

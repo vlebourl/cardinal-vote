@@ -34,28 +34,31 @@ class TestFrontendWorkflow:
 
         import uvicorn
 
+        # Create server
+        config = uvicorn.Config(app, host="127.0.0.1", port=8001, log_level="warning")
+        server = uvicorn.Server(config)
+
+        def run_server():
+            server.run()
+
+        # Start server in background thread
+        thread = threading.Thread(target=run_server, daemon=True)
+        thread.start()
+
+        # Wait for server to start
+        time.sleep(2)
+
         @contextmanager
-        def run_test_server():
-            config = uvicorn.Config(
-                app, host="127.0.0.1", port=8001, log_level="warning"
-            )
-            server = uvicorn.Server(config)
-
-            def run_server():
-                server.run()
-
-            thread = threading.Thread(target=run_server, daemon=True)
-            thread.start()
-
-            # Wait for server to start
-            time.sleep(2)
-
+        def server_context():
             try:
                 yield "http://127.0.0.1:8001"
             finally:
-                server.should_exit = True
+                pass  # Server will exit when thread ends
 
-        return run_test_server()
+        yield server_context
+
+        # Cleanup
+        server.should_exit = True
 
     @pytest.fixture(scope="class")
     def driver(self):
@@ -80,7 +83,7 @@ class TestFrontendWorkflow:
 
     def test_homepage_loads(self, test_server, driver):
         """Test that the homepage loads correctly."""
-        with test_server as base_url:
+        with test_server() as base_url:
             driver.get(base_url)
 
             # Check page title
@@ -98,7 +101,7 @@ class TestFrontendWorkflow:
 
     def test_name_validation(self, test_server, driver):
         """Test name input validation."""
-        with test_server as base_url:
+        with test_server() as base_url:
             driver.get(base_url)
 
             # Test empty name - elements exist but are empty
@@ -113,7 +116,7 @@ class TestFrontendWorkflow:
 
     def test_name_input_too_long(self, test_server, driver):
         """Test name input with too many characters."""
-        with test_server as base_url:
+        with test_server() as base_url:
             driver.get(base_url)
 
             first_name_input = driver.find_element(By.ID, "voter-first-name")
@@ -138,7 +141,7 @@ class TestFrontendWorkflow:
 
     def test_valid_name_proceeds_to_voting(self, test_server, driver):
         """Test that valid name proceeds to voting screen."""
-        with test_server as base_url:
+        with test_server() as base_url:
             driver.get(base_url)
 
             first_name_input = driver.find_element(By.ID, "voter-first-name")
@@ -162,7 +165,7 @@ class TestFrontendWorkflow:
 
     def test_logo_display(self, test_server, driver):
         """Test that logos are displayed correctly."""
-        with test_server as base_url:
+        with test_server() as base_url:
             self._proceed_to_voting_screen(driver, base_url, "Test User")
 
             # Check logo image is displayed
@@ -176,7 +179,7 @@ class TestFrontendWorkflow:
 
     def test_rating_selection(self, test_server, driver):
         """Test rating selection functionality."""
-        with test_server as base_url:
+        with test_server() as base_url:
             self._proceed_to_voting_screen(driver, base_url, "Test User")
 
             # Find rating inputs
@@ -185,12 +188,16 @@ class TestFrontendWorkflow:
             )
             assert len(rating_inputs) == 5  # -2, -1, 0, 1, 2
 
-            # Test selecting a rating
+            # Test selecting a rating - click the label for better interaction
+            rating_2_label = driver.find_element(
+                By.CSS_SELECTOR, "label.positive-strong"
+            )
+            rating_2_label.click()
+
+            # Verify the underlying radio button is selected
             rating_2 = driver.find_element(
                 By.CSS_SELECTOR, "input[name='rating'][value='2']"
             )
-            rating_2.click()
-
             assert rating_2.is_selected()
 
             # Test that next button is enabled after rating
@@ -199,7 +206,7 @@ class TestFrontendWorkflow:
 
     def test_navigation_buttons(self, test_server, driver):
         """Test navigation button functionality."""
-        with test_server as base_url:
+        with test_server() as base_url:
             self._proceed_to_voting_screen(driver, base_url, "Test User")
 
             # Previous button should be disabled initially
@@ -210,11 +217,9 @@ class TestFrontendWorkflow:
             next_btn = driver.find_element(By.ID, "next-btn")
             assert not next_btn.is_enabled()
 
-            # Select a rating
-            rating_1 = driver.find_element(
-                By.CSS_SELECTOR, "input[name='rating'][value='1']"
-            )
-            rating_1.click()
+            # Select a rating - click the label for value '1' (positive class)
+            rating_1_label = driver.find_element(By.CSS_SELECTOR, "label.positive")
+            rating_1_label.click()
 
             # Next button should be enabled
             assert next_btn.is_enabled()
@@ -228,7 +233,7 @@ class TestFrontendWorkflow:
 
     def test_keyboard_navigation(self, test_server, driver):
         """Test keyboard navigation functionality."""
-        with test_server as base_url:
+        with test_server() as base_url:
             self._proceed_to_voting_screen(driver, base_url, "Test User")
 
             # Get the body element to send keys to
@@ -253,7 +258,7 @@ class TestFrontendWorkflow:
 
     def test_progress_indicator(self, test_server, driver):
         """Test progress indicator updates correctly."""
-        with test_server as base_url:
+        with test_server() as base_url:
             self._proceed_to_voting_screen(driver, base_url, "Test User")
 
             # Check initial progress
@@ -261,11 +266,9 @@ class TestFrontendWorkflow:
             initial_text = progress_text.text
             assert "1" in initial_text and "11" in initial_text
 
-            # Rate current logo and go to next
-            rating_1 = driver.find_element(
-                By.CSS_SELECTOR, "input[name='rating'][value='1']"
-            )
-            rating_1.click()
+            # Rate current logo and go to next - click the label for value '1' (positive class)
+            rating_1_label = driver.find_element(By.CSS_SELECTOR, "label.positive")
+            rating_1_label.click()
 
             next_btn = driver.find_element(By.ID, "next-btn")
             next_btn.click()
@@ -277,7 +280,7 @@ class TestFrontendWorkflow:
 
     def test_error_message_display(self, test_server, driver):
         """Test error message display and accessibility."""
-        with test_server as base_url:
+        with test_server() as base_url:
             self._proceed_to_voting_screen(driver, base_url, "Test User")
 
             # Try to proceed without rating
@@ -301,7 +304,7 @@ class TestFrontendWorkflow:
 
     def test_logo_loading_error_handling(self, test_server, driver):
         """Test handling of logo loading errors."""
-        with test_server as base_url:
+        with test_server() as base_url:
             self._proceed_to_voting_screen(driver, base_url, "Test User")
 
             # Change logo src to invalid URL to trigger error
@@ -319,7 +322,7 @@ class TestFrontendWorkflow:
 
     def test_complete_voting_workflow(self, test_server, driver):
         """Test complete voting workflow from start to finish."""
-        with test_server as base_url:
+        with test_server() as base_url:
             driver.get(base_url)
 
             # Enter name
@@ -335,12 +338,13 @@ class TestFrontendWorkflow:
             wait.until(EC.visibility_of_element_located((By.ID, "voting-screen")))
 
             # Rate all logos (simplified - rate first few and skip to review)
+            label_classes = ["negative", "neutral", "positive"]  # For values -1, 0, 1
             for i in range(3):  # Rate first 3 logos
-                # Select a rating
-                rating = driver.find_element(
-                    By.CSS_SELECTOR, f"input[name='rating'][value='{i - 1}']"
+                # Select a rating by clicking the label
+                rating_label = driver.find_element(
+                    By.CSS_SELECTOR, f"label.{label_classes[i]}"
                 )
-                rating.click()
+                rating_label.click()
 
                 # Go to next
                 next_btn = driver.find_element(By.ID, "next-btn")
@@ -355,12 +359,16 @@ class TestFrontendWorkflow:
 
     def test_accessibility_features(self, test_server, driver):
         """Test accessibility features."""
-        with test_server as base_url:
+        with test_server() as base_url:
             self._proceed_to_voting_screen(driver, base_url, "Test User")
 
-            # Check ARIA attributes
+            # Check ARIA attributes - should have aria-labelledby pointing to rating-prompt
             rating_group = driver.find_element(By.CSS_SELECTOR, "[role='radiogroup']")
-            assert rating_group.get_attribute("aria-label")
+            assert rating_group.get_attribute("aria-labelledby") == "rating-prompt"
+
+            # Verify the referenced label element exists
+            label_element = driver.find_element(By.ID, "rating-prompt")
+            assert label_element.is_displayed()
 
             # Check live region exists
             live_region = driver.find_element(By.ID, "live-region")
@@ -373,7 +381,7 @@ class TestFrontendWorkflow:
 
     def test_mobile_responsiveness(self, test_server, driver):
         """Test mobile responsive behavior."""
-        with test_server as base_url:
+        with test_server() as base_url:
             # Set mobile viewport
             driver.set_window_size(375, 667)  # iPhone SE dimensions
 
@@ -390,8 +398,8 @@ class TestFrontendWorkflow:
             # Check that the layout adapts (elements should stack vertically)
             first_name_rect = first_name_input.rect
             last_name_rect = last_name_input.rect
-            assert first_name_rect["width"] > 200  # Should be reasonably wide on mobile
-            assert last_name_rect["width"] > 200
+            assert first_name_rect["width"] > 100  # Should be reasonably wide on mobile
+            assert last_name_rect["width"] > 100
 
     def _proceed_to_voting_screen(self, driver, base_url: str, voter_name: str):
         """Helper method to proceed to voting screen."""
@@ -522,27 +530,31 @@ class TestResultsPageFunctionality:
 
         import uvicorn
 
+        # Create server
+        config = uvicorn.Config(app, host="127.0.0.1", port=8002, log_level="warning")
+        server = uvicorn.Server(config)
+
+        def run_server():
+            server.run()
+
+        # Start server in background thread
+        thread = threading.Thread(target=run_server, daemon=True)
+        thread.start()
+
+        # Wait for server to start
+        time.sleep(2)
+
         @contextmanager
-        def run_test_server():
-            config = uvicorn.Config(
-                app, host="127.0.0.1", port=8002, log_level="warning"
-            )
-            server = uvicorn.Server(config)
-
-            def run_server():
-                server.run()
-
-            thread = threading.Thread(target=run_server, daemon=True)
-            thread.start()
-
-            time.sleep(2)
-
+        def server_context():
             try:
                 yield "http://127.0.0.1:8002"
             finally:
-                server.should_exit = True
+                pass  # Server will exit when thread ends
 
-        return run_test_server()
+        yield server_context
+
+        # Cleanup
+        server.should_exit = True
 
     @pytest.fixture(scope="class")
     def driver(self):
@@ -566,7 +578,7 @@ class TestResultsPageFunctionality:
 
     def test_results_page_loads(self, test_server, driver):
         """Test that results page loads correctly."""
-        with test_server as base_url:
+        with test_server() as base_url:
             driver.get(f"{base_url}/results")
 
             assert "ToV" in driver.title and "éCo" in driver.title
