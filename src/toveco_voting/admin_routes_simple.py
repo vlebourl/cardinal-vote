@@ -4,10 +4,13 @@ import io
 import json
 import logging
 from datetime import datetime
-from typing import Any
 
 from fastapi import APIRouter, Form, HTTPException, Request, Response, status
-from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse, StreamingResponse
+from fastapi.responses import (
+    HTMLResponse,
+    JSONResponse,
+    RedirectResponse,
+)
 from fastapi.templating import Jinja2Templates
 
 from .admin_auth import AdminAuthManager
@@ -40,13 +43,13 @@ def get_admin_user_or_redirect(request: Request) -> dict | RedirectResponse:
     session_token = request.cookies.get("admin_session")
     if not session_token or not auth_manager:
         return RedirectResponse(url="/admin/login", status_code=302)
-    
+
     ip_address = get_client_ip(request)
     user_info = auth_manager.validate_session(session_token, ip_address)
-    
+
     if not user_info:
         return RedirectResponse(url="/admin/login", status_code=302)
-    
+
     return user_info
 
 
@@ -55,13 +58,13 @@ def get_admin_user_or_error(request: Request) -> dict:
     session_token = request.cookies.get("admin_session")
     if not session_token or not auth_manager:
         raise HTTPException(status_code=401, detail="Authentication required")
-    
+
     ip_address = get_client_ip(request)
     user_info = auth_manager.validate_session(session_token, ip_address)
-    
+
     if not user_info:
         raise HTTPException(status_code=401, detail="Invalid or expired session")
-    
+
     return user_info
 
 
@@ -97,10 +100,10 @@ async def admin_login(
     try:
         ip_address = get_client_ip(request)
         user_agent = get_user_agent(request)
-        
+
         # Validate credentials
         login_data = AdminLogin(username=username, password=password)
-        
+
         session_token = auth_manager.authenticate_user(
             login_data.username,
             login_data.password,
@@ -165,16 +168,16 @@ async def admin_dashboard(request: Request):
     admin_user = get_admin_user_or_redirect(request)
     if isinstance(admin_user, RedirectResponse):
         return admin_user
-    
+
     try:
         # Get system statistics
         stats = admin_manager.get_system_stats()
         recent_votes = admin_manager.get_recent_activity(limit=5)
         logo_details = admin_manager.get_logo_details()
-        
+
         # Generate CSRF token
         csrf_token = generate_csrf_token(admin_user)
-        
+
         return templates.TemplateResponse(
             "admin/dashboard.html",
             {
@@ -201,11 +204,11 @@ async def admin_logos_page(request: Request):
     admin_user = get_admin_user_or_redirect(request)
     if isinstance(admin_user, RedirectResponse):
         return admin_user
-    
+
     try:
         logo_details = admin_manager.get_logo_details()
         csrf_token = generate_csrf_token(admin_user)
-        
+
         return templates.TemplateResponse(
             "admin/logos.html",
             {
@@ -229,11 +232,11 @@ async def admin_logos_page(request: Request):
 async def get_admin_stats(request: Request):
     """Get current system statistics."""
     try:
-        admin_user = get_admin_user_or_error(request)
-        
+        get_admin_user_or_error(request)
+
         stats = admin_manager.get_system_stats()
         active_sessions = auth_manager.get_active_sessions_count()
-        
+
         return {
             "success": True,
             "stats": stats,
@@ -257,14 +260,14 @@ async def admin_votes_page(request: Request):
     admin_user = get_admin_user_or_redirect(request)
     if isinstance(admin_user, RedirectResponse):
         return admin_user
-    
+
     try:
         # Get all votes from database
         votes = admin_manager.get_recent_activity(limit=1000)  # Get all votes, not just recent
-        
+
         # Calculate statistics
-        unique_voters = len(set(vote.get("voter_name", "") for vote in votes)) if votes else 0
-        
+        unique_voters = len({vote.get("voter_name", "") for vote in votes}) if votes else 0
+
         # Calculate average rating
         avg_rating = 0.0
         if votes:
@@ -274,7 +277,7 @@ async def admin_votes_page(request: Request):
                     total_ratings.extend(vote["ratings"].values())
             if total_ratings:
                 avg_rating = sum(total_ratings) / len(total_ratings)
-        
+
         # Count recent votes (last 24 hours)
         recent_votes_count = 0
         if votes:
@@ -296,10 +299,10 @@ async def admin_votes_page(request: Request):
                                 continue
                 except Exception:
                     continue
-        
+
         # Generate CSRF token
         csrf_token = generate_csrf_token(admin_user)
-        
+
         return templates.TemplateResponse(
             "admin/votes.html",
             {
@@ -325,19 +328,19 @@ async def admin_votes_page(request: Request):
 async def export_votes_download(request: Request, format: str):
     """Export votes in specified format."""
     try:
-        admin_user = get_admin_user_or_error(request)
-        
+        get_admin_user_or_error(request)
+
         if format not in ["csv", "json"]:
             raise HTTPException(status_code=400, detail="Unsupported format")
-        
+
         result = admin_manager.export_votes(format)
-        
+
         if not result.get("success"):
             raise HTTPException(status_code=500, detail=result.get("message", "Export failed"))
-        
+
         content = result["content"]
         filename = f"votes_export_{datetime.now().strftime('%Y%m%d_%H%M%S')}.{format}"
-        
+
         if format == "csv":
             from fastapi.responses import StreamingResponse
             return StreamingResponse(
@@ -350,7 +353,7 @@ async def export_votes_download(request: Request, format: str):
                 content=json.loads(content),
                 headers={"Content-Disposition": f"attachment; filename={filename}"}
             )
-            
+
     except HTTPException:
         raise
     except Exception as e:
@@ -363,16 +366,16 @@ async def clear_all_votes(request: Request):
     """Clear all votes from the database."""
     try:
         admin_user = get_admin_user_or_error(request)
-        
+
         result = admin_manager.reset_all_votes()
-        
+
         logger.info(f"All votes cleared by admin: {admin_user.get('username', 'unknown')}")
-        
+
         return JSONResponse({
             "success": result.get("success", False),
             "message": result.get("message", "Operation completed")
         })
-        
+
     except HTTPException:
         raise
     except Exception as e:
@@ -395,28 +398,28 @@ async def get_vote_details(request: Request, vote_id: str):
                 "success": False,
                 "message": "Authentication required"
             }, status_code=401)
-        
+
         # Get all votes and find the specific one by ID
         votes = admin_manager.get_recent_activity(limit=1000)
-        
+
         # Find vote by ID
         vote = None
         for v in votes:
             if str(v.get("id")) == str(vote_id):
                 vote = v
                 break
-        
+
         if vote:
             return JSONResponse({
                 "success": True,
                 "vote": vote
             })
-        
+
         return JSONResponse({
             "success": False,
             "message": "Vote not found"
         }, status_code=404)
-        
+
     except HTTPException:
         raise
     except Exception as e:
@@ -432,7 +435,7 @@ async def delete_vote(request: Request, vote_id: str):
     """Delete a specific vote."""
     try:
         admin_user = get_admin_user_or_error(request)
-        
+
         # Convert vote_id to integer
         try:
             vote_id_int = int(vote_id)
@@ -441,16 +444,16 @@ async def delete_vote(request: Request, vote_id: str):
                 "success": False,
                 "message": "Invalid vote ID format"
             }, status_code=400)
-        
+
         # Delete the vote using AdminManager
         result = admin_manager.delete_single_vote(vote_id_int)
-        
+
         if result["success"]:
             logger.info(f"Vote {vote_id} deleted by admin user {admin_user['username']}")
             return JSONResponse(result)
         else:
             return JSONResponse(result, status_code=404 if "not found" in result["message"].lower() else 500)
-        
+
     except HTTPException:
         raise
     except Exception as e:

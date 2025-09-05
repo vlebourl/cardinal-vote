@@ -266,7 +266,7 @@ async def submit_vote(
 
         # Save vote to database
         vote_id = db.save_vote(vote.voter_first_name, vote.voter_last_name, vote.ratings)
-        
+
         full_name = f"{vote.voter_first_name} {vote.voter_last_name}"
         logger.info(
             f"Vote submitted successfully by '{full_name}' "

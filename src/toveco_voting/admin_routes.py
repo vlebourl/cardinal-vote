@@ -1,7 +1,6 @@
 """Admin routes for the ToVéCo voting platform."""
 
 import logging
-from typing import Any
 
 from fastapi import (
     APIRouter,
@@ -28,7 +27,6 @@ from .admin_middleware import (
     validate_csrf_token,
 )
 from .config import settings
-from .database import DatabaseManager
 from .models import AdminLogin, LogoManagement, VoteManagement
 
 logger = logging.getLogger(__name__)
@@ -97,7 +95,7 @@ async def admin_login(
     try:
         ip_address = get_client_ip(request)
         user_agent = get_user_agent(request)
-        
+
         # Rate limiting
         rate_key = f"admin_login:{ip_address}"
         if not rate_limiter.is_allowed(rate_key, limit=5, window_seconds=300):  # 5 attempts per 5 minutes
@@ -114,7 +112,7 @@ async def admin_login(
 
         # Validate credentials
         login_data = AdminLogin(username=username, password=password)
-        
+
         session_token = auth_manager.authenticate_user(
             login_data.username,
             login_data.password,
@@ -187,14 +185,14 @@ def get_admin_user_or_error(request: Request):
     session_token = request.cookies.get("admin_session")
     if not session_token or not auth_manager:
         raise HTTPException(status_code=401, detail="Authentication required")
-    
+
     from .admin_middleware import get_client_ip
     ip_address = get_client_ip(request)
     user_info = auth_manager.validate_session(session_token, ip_address)
-    
+
     if not user_info:
         raise HTTPException(status_code=401, detail="Invalid or expired session")
-    
+
     return user_info
 
 @admin_router.get("/dashboard", response_class=HTMLResponse)
@@ -202,15 +200,15 @@ async def admin_dashboard(request: Request):
     """Serve admin dashboard."""
     try:
         admin_user = get_admin_user_or_error(request)
-        
+
         # Get system statistics
         stats = admin_manager.get_system_stats()
         recent_votes = admin_manager.get_recent_activity(limit=5)
         logo_details = admin_manager.get_logo_details()
-        
+
         # Generate CSRF token
         csrf_token = generate_csrf_token(admin_user)
-        
+
         return templates.TemplateResponse(
             "admin/dashboard.html",
             {
@@ -241,7 +239,7 @@ async def admin_logos_page(
     try:
         logo_details = admin_manager.get_logo_details()
         csrf_token = generate_csrf_token(admin_user)
-        
+
         return templates.TemplateResponse(
             "admin/logos.html",
             {
@@ -280,7 +278,7 @@ async def upload_logo(
 
         # Read file content
         file_content = await file.read()
-        
+
         # Process upload
         result = await admin_manager.upload_logo(
             file_content=file_content,
@@ -358,7 +356,7 @@ async def admin_votes_page(
         stats = admin_manager.get_system_stats()
         recent_votes = admin_manager.get_recent_activity(limit=10)
         csrf_token = generate_csrf_token(admin_user)
-        
+
         return templates.TemplateResponse(
             "admin/votes.html",
             {
@@ -398,11 +396,11 @@ async def manage_votes(
             result = admin_manager.reset_all_votes()
             if result["success"]:
                 logger.warning(f"All votes reset by admin: {admin_user['username']}")
-                
+
         elif management.operation == "export":
             export_format = management.format or "csv"
             result = admin_manager.export_votes(export_format)
-            
+
         elif management.operation == "delete_voter":
             if not management.voter_name:
                 return JSONResponse({
@@ -412,7 +410,7 @@ async def manage_votes(
             result = admin_manager.delete_voter_votes(management.voter_name)
             if result["success"]:
                 logger.info(f"Votes deleted for voter '{management.voter_name}' by admin: {admin_user['username']}")
-                
+
         else:
             return JSONResponse({
                 "success": False,
@@ -438,7 +436,7 @@ async def export_votes_download(
     """Download exported votes file."""
     try:
         result = admin_manager.export_votes(export_format)
-        
+
         if not result["success"]:
             return JSONResponse(result, status_code=400)
 
@@ -480,7 +478,7 @@ async def admin_system_page(
         stats = admin_manager.get_system_stats()
         csrf_token = generate_csrf_token(admin_user)
         active_sessions = auth_manager.get_active_sessions_count()
-        
+
         return templates.TemplateResponse(
             "admin/system.html",
             {
@@ -515,7 +513,7 @@ async def backup_database(
             )
 
         result = admin_manager.backup_database()
-        
+
         if result["success"]:
             logger.info(f"Database backup created by admin: {admin_user['username']}")
 
@@ -545,9 +543,9 @@ async def cleanup_sessions(
             )
 
         cleaned_count = auth_manager.cleanup_expired_sessions()
-        
+
         logger.info(f"Session cleanup performed by admin: {admin_user['username']}, cleaned: {cleaned_count}")
-        
+
         return JSONResponse({
             "success": True,
             "message": f"Cleaned up {cleaned_count} expired sessions",
@@ -572,7 +570,7 @@ async def get_admin_stats(
     try:
         stats = admin_manager.get_system_stats()
         active_sessions = auth_manager.get_active_sessions_count()
-        
+
         return {
             "success": True,
             "stats": stats,
@@ -609,14 +607,14 @@ async def admin_http_exception_handler(request: Request, exc: HTTPException):
             },
             status_code=401
         )
-    
+
     # For other errors, return JSON for API calls, HTML for page requests
     if request.url.path.startswith("/admin/api/"):
         return JSONResponse(
             {"success": False, "message": exc.detail},
             status_code=exc.status_code
         )
-    
+
     return templates.TemplateResponse(
         "admin/error.html",
         {

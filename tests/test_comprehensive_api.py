@@ -1,22 +1,15 @@
 """Comprehensive test cases for the ToVéCo voting platform API."""
 
-import json
 import os
 import tempfile
 import time
-from pathlib import Path
-from typing import Any, Dict, List
-from unittest.mock import patch
 
 import pytest
 from fastapi.testclient import TestClient
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
 
-from src.toveco_voting.main import app, db_manager
-from src.toveco_voting.database import DatabaseManager
-from src.toveco_voting.models import Base, VoteRecord
 from src.toveco_voting.config import settings
+from src.toveco_voting.database import DatabaseManager
+from src.toveco_voting.main import app
 
 
 class TestComprehensiveAPI:
@@ -33,7 +26,7 @@ class TestComprehensiveAPI:
         """Create a temporary database for testing."""
         with tempfile.NamedTemporaryFile(suffix='.db', delete=False) as f:
             temp_db_path = f.name
-        
+
         try:
             # Create test database manager
             test_db_manager = DatabaseManager(temp_db_path)
@@ -102,7 +95,7 @@ class TestComprehensiveAPI:
         """Test health check endpoint returns healthy status."""
         response = client.get("/api/health")
         assert response.status_code == 200
-        
+
         data = response.json()
         assert "status" in data
         assert data["status"] in ["healthy", "unhealthy"]
@@ -121,7 +114,7 @@ class TestComprehensiveAPI:
         """Test health check returns expected response structure."""
         response = client.get("/api/health")
         data = response.json()
-        
+
         required_fields = ["status", "database", "logos_available", "version"]
         for field in required_fields:
             assert field in data, f"Missing required field: {field}"
@@ -132,7 +125,7 @@ class TestComprehensiveAPI:
         """Test statistics endpoint returns expected structure."""
         response = client.get("/api/stats")
         assert response.status_code == 200
-        
+
         data = response.json()
         required_fields = ["total_votes", "total_logos", "voting_scale"]
         for field in required_fields:
@@ -142,7 +135,7 @@ class TestComprehensiveAPI:
         """Test voting scale values in stats are correct."""
         response = client.get("/api/stats")
         data = response.json()
-        
+
         assert data["voting_scale"]["min"] == -2
         assert data["voting_scale"]["max"] == 2
 
@@ -150,14 +143,14 @@ class TestComprehensiveAPI:
         """Test logo count in stats matches expected count."""
         response = client.get("/api/stats")
         data = response.json()
-        
+
         assert data["total_logos"] == 11  # Expected number of logos
 
     def test_stats_initial_vote_count(self, client):
         """Test initial vote count is zero or positive."""
         response = client.get("/api/stats")
         data = response.json()
-        
+
         assert isinstance(data["total_votes"], int)
         assert data["total_votes"] >= 0
 
@@ -167,7 +160,7 @@ class TestComprehensiveAPI:
         """Test logos endpoint returns logo list."""
         response = client.get("/api/logos")
         assert response.status_code == 200
-        
+
         data = response.json()
         assert "logos" in data
         assert "total_count" in data
@@ -178,7 +171,7 @@ class TestComprehensiveAPI:
         """Test logos endpoint returns correct number of logos."""
         response = client.get("/api/logos")
         data = response.json()
-        
+
         assert data["total_count"] == 11
         assert len(data["logos"]) == 11
 
@@ -186,7 +179,7 @@ class TestComprehensiveAPI:
         """Test all logo filenames follow expected format."""
         response = client.get("/api/logos")
         data = response.json()
-        
+
         for logo in data["logos"]:
             assert logo.startswith("toveco"), f"Logo {logo} doesn't start with 'toveco'"
             assert logo.endswith(".png"), f"Logo {logo} doesn't end with '.png'"
@@ -201,19 +194,19 @@ class TestComprehensiveAPI:
             response = client.get("/api/logos")
             data = response.json()
             orders.append(data["logos"])
-        
+
         # Check that at least some orders are different
-        unique_orders = set(tuple(order) for order in orders)
+        unique_orders = {tuple(order) for order in orders}
         assert len(unique_orders) > 1, "Logo order should vary between requests"
 
     def test_get_logos_contains_all_expected(self, client):
         """Test logos endpoint contains all expected logo files."""
         response = client.get("/api/logos")
         data = response.json()
-        
+
         expected_logos = [f"toveco{i}.png" for i in range(1, 12)]
         actual_logos = sorted(data["logos"])
-        
+
         assert sorted(expected_logos) == actual_logos
 
     # ============ VOTE SUBMISSION TESTS ============
@@ -221,7 +214,7 @@ class TestComprehensiveAPI:
     def test_submit_valid_complete_vote(self, client, complete_vote_data):
         """Test submitting a complete valid vote."""
         response = client.post("/api/vote", json=complete_vote_data)
-        
+
         if response.status_code == 200:
             data = response.json()
             assert data["success"] is True
@@ -237,7 +230,7 @@ class TestComprehensiveAPI:
         """Test submitting vote with missing voter name."""
         invalid_data = complete_vote_data.copy()
         del invalid_data["voter_name"]
-        
+
         response = client.post("/api/vote", json=invalid_data)
         assert response.status_code == 422
         data = response.json()
@@ -248,7 +241,7 @@ class TestComprehensiveAPI:
         """Test submitting vote with empty voter name."""
         invalid_data = complete_vote_data.copy()
         invalid_data["voter_name"] = ""
-        
+
         response = client.post("/api/vote", json=invalid_data)
         assert response.status_code == 422
 
@@ -256,7 +249,7 @@ class TestComprehensiveAPI:
         """Test submitting vote with name exceeding max length."""
         invalid_data = complete_vote_data.copy()
         invalid_data["voter_name"] = "x" * 101  # Exceeds 100 char limit
-        
+
         response = client.post("/api/vote", json=invalid_data)
         assert response.status_code == 422
 
@@ -264,7 +257,7 @@ class TestComprehensiveAPI:
         """Test submitting vote with rating too high."""
         invalid_data = complete_vote_data.copy()
         invalid_data["ratings"]["toveco1.png"] = 3  # Above max rating of 2
-        
+
         response = client.post("/api/vote", json=invalid_data)
         assert response.status_code == 422
 
@@ -272,7 +265,7 @@ class TestComprehensiveAPI:
         """Test submitting vote with rating too low."""
         invalid_data = complete_vote_data.copy()
         invalid_data["ratings"]["toveco1.png"] = -3  # Below min rating of -2
-        
+
         response = client.post("/api/vote", json=invalid_data)
         assert response.status_code == 422
 
@@ -280,7 +273,7 @@ class TestComprehensiveAPI:
         """Test submitting vote with non-integer rating."""
         invalid_data = complete_vote_data.copy()
         invalid_data["ratings"]["toveco1.png"] = 1.5  # Float instead of int
-        
+
         response = client.post("/api/vote", json=invalid_data)
         assert response.status_code == 422
 
@@ -288,7 +281,7 @@ class TestComprehensiveAPI:
         """Test submitting vote with missing logo rating."""
         invalid_data = complete_vote_data.copy()
         del invalid_data["ratings"]["toveco1.png"]
-        
+
         response = client.post("/api/vote", json=invalid_data)
         assert response.status_code == 400  # ValidationError for missing logos
 
@@ -296,7 +289,7 @@ class TestComprehensiveAPI:
         """Test submitting vote with extra logo rating."""
         invalid_data = complete_vote_data.copy()
         invalid_data["ratings"]["toveco99.png"] = 1  # Non-existent logo
-        
+
         response = client.post("/api/vote", json=invalid_data)
         assert response.status_code == 400  # ValidationError for unexpected logos
 
@@ -306,7 +299,7 @@ class TestComprehensiveAPI:
         # Replace valid logo with invalid format
         del invalid_data["ratings"]["toveco1.png"]
         invalid_data["ratings"]["invalid_logo.jpg"] = 1
-        
+
         response = client.post("/api/vote", json=invalid_data)
         assert response.status_code == 422
 
@@ -314,7 +307,7 @@ class TestComprehensiveAPI:
         """Test submitting vote with missing ratings dictionary."""
         invalid_data = complete_vote_data.copy()
         del invalid_data["ratings"]
-        
+
         response = client.post("/api/vote", json=invalid_data)
         assert response.status_code == 422
 
@@ -322,7 +315,7 @@ class TestComprehensiveAPI:
         """Test submitting vote with empty ratings dictionary."""
         invalid_data = complete_vote_data.copy()
         invalid_data["ratings"] = {}
-        
+
         response = client.post("/api/vote", json=invalid_data)
         assert response.status_code == 422
 
@@ -332,7 +325,7 @@ class TestComprehensiveAPI:
         """Test getting results when no votes exist."""
         response = client.get("/api/results")
         assert response.status_code == 200
-        
+
         data = response.json()
         assert "summary" in data
         assert "total_voters" in data
@@ -347,15 +340,15 @@ class TestComprehensiveAPI:
             response = client.post("/api/vote", json=vote_data)
             if response.status_code == 200:
                 successful_submissions += 1
-        
+
         # Skip test if votes couldn't be submitted (e.g., missing files in test environment)
         if successful_submissions == 0:
             pytest.skip("Could not submit votes in test environment")
-        
+
         # Get results
         response = client.get("/api/results")
         assert response.status_code == 200
-        
+
         data = response.json()
         assert data["total_voters"] == successful_submissions
         assert len(data["summary"]) > 0
@@ -364,7 +357,7 @@ class TestComprehensiveAPI:
         """Test results endpoint with include_votes parameter."""
         response = client.get("/api/results?include_votes=true")
         assert response.status_code == 200
-        
+
         data = response.json()
         assert "votes" in data or data["total_voters"] == 0
 
@@ -372,16 +365,16 @@ class TestComprehensiveAPI:
         """Test results response has expected structure."""
         response = client.get("/api/results")
         data = response.json()
-        
+
         # Test main structure
         assert "summary" in data
         assert "total_voters" in data
         assert isinstance(data["summary"], dict)
         assert isinstance(data["total_voters"], int)
-        
+
         # Test summary structure if votes exist
         if data["total_voters"] > 0:
-            for logo, stats in data["summary"].items():
+            for _logo, stats in data["summary"].items():
                 assert "average" in stats
                 assert "total_votes" in stats
                 assert "total_score" in stats
@@ -456,7 +449,7 @@ class TestComprehensiveAPI:
         """Test protection against SQL injection in voter names."""
         malicious_data = complete_vote_data.copy()
         malicious_data["voter_name"] = "'; DROP TABLE votes; --"
-        
+
         response = client.post("/api/vote", json=malicious_data)
         # Should either succeed (sanitized) or fail validation, but not crash
         assert response.status_code in [200, 400, 422]
@@ -465,7 +458,7 @@ class TestComprehensiveAPI:
         """Test protection against XSS in voter names."""
         malicious_data = complete_vote_data.copy()
         malicious_data["voter_name"] = "<script>alert('xss')</script>"
-        
+
         response = client.post("/api/vote", json=malicious_data)
         # Should either succeed (sanitized) or fail validation
         assert response.status_code in [200, 400, 422]
@@ -475,16 +468,16 @@ class TestComprehensiveAPI:
     def test_concurrent_vote_submissions(self, client, multiple_votes_data):
         """Test handling of multiple concurrent vote submissions."""
         import concurrent.futures
-        
+
         def submit_vote(vote_data):
             return client.post("/api/vote", json=vote_data)
-        
+
         # Submit votes concurrently
         with concurrent.futures.ThreadPoolExecutor(max_workers=3) as executor:
-            futures = [executor.submit(submit_vote, vote_data) 
+            futures = [executor.submit(submit_vote, vote_data)
                       for vote_data in multiple_votes_data]
             responses = [future.result() for future in futures]
-        
+
         # Check that all requests were handled
         for response in responses:
             assert response.status_code in [200, 400, 422]
@@ -495,7 +488,7 @@ class TestComprehensiveAPI:
         for _ in range(10):
             response = client.get("/api/logos")
             responses.append(response)
-        
+
         # All should succeed
         for response in responses:
             assert response.status_code == 200
@@ -505,12 +498,12 @@ class TestComprehensiveAPI:
         # Submit votes first
         for vote_data in multiple_votes_data:
             client.post("/api/vote", json=vote_data)
-        
+
         # Time the results calculation
         start_time = time.time()
         response = client.get("/api/results")
         end_time = time.time()
-        
+
         assert response.status_code == 200
         # Results should be calculated within reasonable time (1 second)
         assert end_time - start_time < 1.0
@@ -524,7 +517,7 @@ class TestDatabaseIntegrity:
         """Create a temporary database for testing."""
         with tempfile.NamedTemporaryFile(suffix='.db', delete=False) as f:
             temp_db_path = f.name
-        
+
         try:
             db_manager = DatabaseManager(temp_db_path)
             yield db_manager
@@ -541,15 +534,15 @@ class TestDatabaseIntegrity:
         """Test that votes are properly persisted."""
         voter_name = "Test Voter"
         ratings = {"toveco1.png": 2, "toveco2.png": -1}
-        
+
         # Save vote
         vote_id = temp_db.save_vote(voter_name, ratings)
         assert vote_id > 0
-        
+
         # Retrieve and verify
         votes = temp_db.get_all_votes()
         assert len(votes) == 1
-        
+
         vote = votes[0]
         assert vote["voter_name"] == voter_name
         assert vote["ratings"] == ratings
@@ -562,20 +555,20 @@ class TestDatabaseIntegrity:
             ("Bob", {"toveco1.png": -1, "toveco2.png": 0}),
             ("Charlie", {"toveco1.png": 1, "toveco2.png": 2})
         ]
-        
+
         # Save all votes
         vote_ids = []
         for voter_name, ratings in votes_data:
             vote_id = temp_db.save_vote(voter_name, ratings)
             vote_ids.append(vote_id)
-        
+
         # Verify count
         assert temp_db.get_vote_count() == 3
-        
+
         # Verify all votes
         stored_votes = temp_db.get_all_votes()
         assert len(stored_votes) == 3
-        
+
         # Verify IDs are unique
         stored_ids = [vote["id"] for vote in stored_votes]
         assert len(set(stored_ids)) == 3
@@ -586,19 +579,19 @@ class TestDatabaseIntegrity:
         temp_db.save_vote("Voter 1", {"toveco1.png": 2, "toveco2.png": -1})
         temp_db.save_vote("Voter 2", {"toveco1.png": 1, "toveco2.png": 0})
         temp_db.save_vote("Voter 3", {"toveco1.png": -1, "toveco2.png": 1})
-        
+
         results = temp_db.calculate_results()
-        
+
         # Check overall structure
         assert results["total_voters"] == 3
         assert "summary" in results
-        
+
         # Check toveco1.png: (2 + 1 + (-1)) / 3 = 2/3 = 0.67
         toveco1_stats = results["summary"]["toveco1.png"]
         assert toveco1_stats["total_votes"] == 3
         assert toveco1_stats["total_score"] == 2
         assert abs(toveco1_stats["average"] - 0.67) < 0.01
-        
+
         # Check toveco2.png: (-1 + 0 + 1) / 3 = 0/3 = 0.0
         toveco2_stats = results["summary"]["toveco2.png"]
         assert toveco2_stats["total_votes"] == 3
@@ -613,10 +606,10 @@ class TestDatabaseIntegrity:
             "toveco2.png": 1,   # Should rank 2nd (average: 1.0)
             "toveco3.png": -1   # Should rank 3rd (average: -1.0)
         })
-        
+
         results = temp_db.calculate_results()
         summary = results["summary"]
-        
+
         # Check rankings
         assert summary["toveco1.png"]["ranking"] == 1
         assert summary["toveco2.png"]["ranking"] == 2
@@ -631,7 +624,7 @@ class TestDatabaseIntegrity:
     def test_empty_database_results(self, temp_db):
         """Test results calculation with empty database."""
         results = temp_db.calculate_results()
-        
+
         assert results["total_voters"] == 0
         assert results["summary"] == {}
 

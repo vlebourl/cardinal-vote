@@ -4,12 +4,10 @@ import csv
 import io
 import json
 import logging
-import os
 import shutil
-import time
 from datetime import datetime
 from pathlib import Path
-from typing import Any, BinaryIO
+from typing import Any
 
 import aiofiles
 from PIL import Image
@@ -17,7 +15,7 @@ from sqlalchemy.exc import SQLAlchemyError
 
 from .config import settings
 from .database import DatabaseManager
-from .models import DatabaseError, VoteRecord
+from .models import VoteRecord
 
 logger = logging.getLogger(__name__)
 
@@ -54,11 +52,11 @@ class AdminManager:
                         "message": "Only PNG files are allowed",
                         "detected_format": image.format
                     }
-                
+
                 # Get image dimensions
                 width, height = image.size
                 logger.info(f"Image dimensions: {width}x{height}")
-                
+
             except Exception as e:
                 return {
                     "success": False,
@@ -127,7 +125,7 @@ class AdminManager:
         for logo_name in logo_names:
             try:
                 logo_path = settings.LOGOS_DIR / logo_name
-                
+
                 if not logo_path.exists():
                     results["failed"].append({
                         "filename": logo_name,
@@ -212,11 +210,11 @@ class AdminManager:
     def get_logo_details(self) -> list[dict[str, Any]]:
         """Get detailed information about all logos."""
         logos = []
-        
+
         for logo_path in settings.LOGOS_DIR.glob("toveco*.png"):
             try:
                 stat = logo_path.stat()
-                
+
                 # Get image dimensions
                 try:
                     with Image.open(logo_path) as img:
@@ -232,7 +230,7 @@ class AdminManager:
                     "modified": datetime.fromtimestamp(stat.st_mtime),
                     "dimensions": dimensions
                 })
-                
+
             except Exception as e:
                 logger.error(f"Error getting logo details for {logo_path.name}: {e}")
 
@@ -246,7 +244,7 @@ class AdminManager:
         """
         try:
             success = self.db_manager.delete_vote_by_id(vote_id)
-            
+
             if success:
                 logger.info(f"Vote {vote_id} deleted by admin")
                 return {
@@ -258,7 +256,7 @@ class AdminManager:
                     "success": False,
                     "message": f"Vote {vote_id} not found"
                 }
-                
+
         except Exception as e:
             logger.error(f"Failed to delete vote {vote_id}: {e}")
             return {
@@ -299,23 +297,23 @@ class AdminManager:
         """
         try:
             votes = self.db_manager.get_all_votes()
-            
+
             if format.lower() == "csv":
                 # Create CSV content
                 output = io.StringIO()
-                
+
                 if votes:
                     # Get all unique logos for headers
                     all_logos = set()
                     for vote in votes:
                         all_logos.update(vote["ratings"].keys())
                     logo_columns = sorted(all_logos)
-                    
+
                     # Write CSV
                     fieldnames = ["id", "voter_name", "timestamp"] + logo_columns
                     writer = csv.DictWriter(output, fieldnames=fieldnames)
                     writer.writeheader()
-                    
+
                     for vote in votes:
                         row = {
                             "id": vote["id"],
@@ -325,9 +323,9 @@ class AdminManager:
                         # Add ratings for each logo
                         for logo in logo_columns:
                             row[logo] = vote["ratings"].get(logo, "")
-                        
+
                         writer.writerow(row)
-                
+
                 return {
                     "success": True,
                     "format": "csv",
@@ -343,7 +341,7 @@ class AdminManager:
                     "vote_count": len(votes),
                     "votes": votes
                 }
-                
+
                 return {
                     "success": True,
                     "format": "json",
@@ -375,13 +373,13 @@ class AdminManager:
             with self.db_manager.get_session() as session:
                 votes_to_delete = session.query(VoteRecord).filter_by(voter_name=voter_name).all()
                 vote_count = len(votes_to_delete)
-                
+
                 if vote_count == 0:
                     return {
                         "success": False,
                         "message": f"No votes found for voter '{voter_name}'"
                     }
-                
+
                 # Delete the votes
                 session.query(VoteRecord).filter_by(voter_name=voter_name).delete()
                 session.commit()
@@ -408,7 +406,7 @@ class AdminManager:
         try:
             # Database stats
             vote_count = self.db_manager.get_vote_count()
-            
+
             # Get unique voters count
             with self.db_manager.get_session() as session:
                 unique_voters = session.query(VoteRecord.voter_name).distinct().count()
@@ -504,21 +502,21 @@ class AdminManager:
             timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
             backup_filename = f"votes_backup_{timestamp}.db"
             backup_path = settings.BASE_DIR / "backups" / backup_filename
-            
+
             # Create backups directory if it doesn't exist
             backup_path.parent.mkdir(exist_ok=True)
-            
+
             # Copy database file
             db_path = Path(self.db_manager.database_path)
             if db_path.exists():
                 shutil.copy2(db_path, backup_path)
-                
+
                 backup_size = backup_path.stat().st_size
-                
+
                 logger.info(f"Database backed up to: {backup_path}")
                 return {
                     "success": True,
-                    "message": f"Database backed up successfully",
+                    "message": "Database backed up successfully",
                     "backup_filename": backup_filename,
                     "backup_size": backup_size,
                     "timestamp": timestamp
@@ -542,7 +540,7 @@ class AdminManager:
         try:
             votes = self.db_manager.get_all_votes()
             return votes[:limit]  # Already sorted by timestamp desc
-            
+
         except Exception as e:
             logger.error(f"Failed to get recent activity: {e}")
             return []

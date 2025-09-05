@@ -8,18 +8,17 @@ This module tests the complete user workflow including:
 - Error handling
 """
 
-import json
 import time
-from typing import Dict, List, Any
+
 import pytest
 from fastapi.testclient import TestClient
 from selenium import webdriver
+from selenium.common.exceptions import NoSuchElementException
+from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
-from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-from selenium.webdriver.chrome.options import Options
-from selenium.common.exceptions import TimeoutException, NoSuchElementException
+from selenium.webdriver.support.ui import WebDriverWait
 
 from src.toveco_voting.main import app
 
@@ -31,28 +30,29 @@ class TestFrontendWorkflow:
     def test_server(self):
         """Start test server for frontend tests."""
         import threading
-        import uvicorn
         from contextlib import contextmanager
-        
+
+        import uvicorn
+
         @contextmanager
         def run_test_server():
             config = uvicorn.Config(app, host="127.0.0.1", port=8001, log_level="warning")
             server = uvicorn.Server(config)
-            
+
             def run_server():
                 server.run()
-            
+
             thread = threading.Thread(target=run_server, daemon=True)
             thread.start()
-            
+
             # Wait for server to start
             time.sleep(2)
-            
+
             try:
                 yield "http://127.0.0.1:8001"
             finally:
                 server.should_exit = True
-        
+
         return run_test_server()
 
     @pytest.fixture(scope="class")
@@ -64,7 +64,7 @@ class TestFrontendWorkflow:
         chrome_options.add_argument("--disable-dev-shm-usage")
         chrome_options.add_argument("--disable-gpu")
         chrome_options.add_argument("--window-size=1920,1080")
-        
+
         driver = None
         try:
             driver = webdriver.Chrome(options=chrome_options)
@@ -80,14 +80,14 @@ class TestFrontendWorkflow:
         """Test that the homepage loads correctly."""
         with test_server as base_url:
             driver.get(base_url)
-            
+
             # Check page title
             assert "ToVéCo" in driver.title
-            
+
             # Check welcome screen is visible
             welcome_screen = driver.find_element(By.ID, "welcome-screen")
             assert welcome_screen.is_displayed()
-            
+
             # Check name input exists
             name_input = driver.find_element(By.ID, "voter-name")
             assert name_input.is_displayed()
@@ -96,14 +96,14 @@ class TestFrontendWorkflow:
         """Test name input validation."""
         with test_server as base_url:
             driver.get(base_url)
-            
-            name_input = driver.find_element(By.ID, "voter-name")
+
+            driver.find_element(By.ID, "voter-name")
             submit_btn = driver.find_element(By.CSS_SELECTOR, "button[type='submit']")
-            
+
             # Test empty name
             submit_btn.click()
             time.sleep(0.5)
-            
+
             # Should show error message
             error_message = driver.find_element(By.CLASS_NAME, "error-message")
             assert error_message.is_displayed()
@@ -113,18 +113,18 @@ class TestFrontendWorkflow:
         """Test name input with too many characters."""
         with test_server as base_url:
             driver.get(base_url)
-            
+
             name_input = driver.find_element(By.ID, "voter-name")
             submit_btn = driver.find_element(By.CSS_SELECTOR, "button[type='submit']")
-            
+
             # Enter name that's too long (>100 chars)
             long_name = "a" * 101
             name_input.clear()
             name_input.send_keys(long_name)
             submit_btn.click()
-            
+
             time.sleep(0.5)
-            
+
             # Should show error message
             try:
                 error_message = driver.find_element(By.CLASS_NAME, "error-message")
@@ -138,33 +138,33 @@ class TestFrontendWorkflow:
         """Test that valid name proceeds to voting screen."""
         with test_server as base_url:
             driver.get(base_url)
-            
+
             name_input = driver.find_element(By.ID, "voter-name")
             submit_btn = driver.find_element(By.CSS_SELECTOR, "button[type='submit']")
-            
+
             # Enter valid name
             name_input.clear()
             name_input.send_keys("Test User")
             submit_btn.click()
-            
+
             # Wait for voting screen to appear
             wait = WebDriverWait(driver, 10)
             voting_screen = wait.until(
                 EC.visibility_of_element_located((By.ID, "voting-screen"))
             )
-            
+
             assert voting_screen.is_displayed()
 
     def test_logo_display(self, test_server, driver):
         """Test that logos are displayed correctly."""
         with test_server as base_url:
             self._proceed_to_voting_screen(driver, base_url, "Test User")
-            
+
             # Check logo image is displayed
             logo_img = driver.find_element(By.ID, "current-logo")
             assert logo_img.is_displayed()
             assert logo_img.get_attribute("src").endswith(".png")
-            
+
             # Check alt text
             alt_text = logo_img.get_attribute("alt")
             assert "Logo" in alt_text
@@ -173,17 +173,17 @@ class TestFrontendWorkflow:
         """Test rating selection functionality."""
         with test_server as base_url:
             self._proceed_to_voting_screen(driver, base_url, "Test User")
-            
+
             # Find rating inputs
             rating_inputs = driver.find_elements(By.CSS_SELECTOR, "input[name='rating']")
             assert len(rating_inputs) == 5  # -2, -1, 0, 1, 2
-            
+
             # Test selecting a rating
             rating_2 = driver.find_element(By.CSS_SELECTOR, "input[name='rating'][value='2']")
             rating_2.click()
-            
+
             assert rating_2.is_selected()
-            
+
             # Test that next button is enabled after rating
             next_btn = driver.find_element(By.ID, "next-btn")
             assert next_btn.is_enabled()
@@ -192,26 +192,26 @@ class TestFrontendWorkflow:
         """Test navigation button functionality."""
         with test_server as base_url:
             self._proceed_to_voting_screen(driver, base_url, "Test User")
-            
+
             # Previous button should be disabled initially
             prev_btn = driver.find_element(By.ID, "prev-btn")
             assert not prev_btn.is_enabled()
-            
+
             # Next button should be disabled without rating
             next_btn = driver.find_element(By.ID, "next-btn")
             assert not next_btn.is_enabled()
-            
+
             # Select a rating
             rating_1 = driver.find_element(By.CSS_SELECTOR, "input[name='rating'][value='1']")
             rating_1.click()
-            
+
             # Next button should be enabled
             assert next_btn.is_enabled()
-            
+
             # Click next
             next_btn.click()
             time.sleep(0.5)
-            
+
             # Previous button should now be enabled
             assert prev_btn.is_enabled()
 
@@ -219,21 +219,21 @@ class TestFrontendWorkflow:
         """Test keyboard navigation functionality."""
         with test_server as base_url:
             self._proceed_to_voting_screen(driver, base_url, "Test User")
-            
+
             # Get the body element to send keys to
             body = driver.find_element(By.TAG_NAME, "body")
-            
+
             # Test rating selection with number keys
             body.send_keys("5")  # Should select rating 2 (5th option)
             time.sleep(0.5)
-            
+
             rating_2 = driver.find_element(By.CSS_SELECTOR, "input[name='rating'][value='2']")
             assert rating_2.is_selected()
-            
+
             # Test navigation with arrow keys
             body.send_keys(Keys.ARROW_RIGHT)  # Should go to next logo
             time.sleep(0.5)
-            
+
             # Check progress changed
             progress_text = driver.find_element(By.ID, "progress-text")
             assert "2" in progress_text.text
@@ -242,20 +242,20 @@ class TestFrontendWorkflow:
         """Test progress indicator updates correctly."""
         with test_server as base_url:
             self._proceed_to_voting_screen(driver, base_url, "Test User")
-            
+
             # Check initial progress
             progress_text = driver.find_element(By.ID, "progress-text")
             initial_text = progress_text.text
             assert "1" in initial_text and "11" in initial_text
-            
+
             # Rate current logo and go to next
             rating_1 = driver.find_element(By.CSS_SELECTOR, "input[name='rating'][value='1']")
             rating_1.click()
-            
+
             next_btn = driver.find_element(By.ID, "next-btn")
             next_btn.click()
             time.sleep(0.5)
-            
+
             # Check progress updated
             updated_text = progress_text.text
             assert "2" in updated_text and "11" in updated_text
@@ -264,19 +264,19 @@ class TestFrontendWorkflow:
         """Test error message display and accessibility."""
         with test_server as base_url:
             self._proceed_to_voting_screen(driver, base_url, "Test User")
-            
+
             # Try to proceed without rating
             next_btn = driver.find_element(By.ID, "next-btn")
             # Force click even if disabled (to test error handling)
             driver.execute_script("arguments[0].click();", next_btn)
-            
+
             time.sleep(0.5)
-            
+
             # Should show error message
             try:
                 error_message = driver.find_element(By.CLASS_NAME, "error-message")
                 assert error_message.is_displayed()
-                
+
                 # Check accessibility attributes
                 assert error_message.get_attribute("role") == "alert"
                 assert error_message.get_attribute("aria-live") == "assertive"
@@ -288,16 +288,16 @@ class TestFrontendWorkflow:
         """Test handling of logo loading errors."""
         with test_server as base_url:
             self._proceed_to_voting_screen(driver, base_url, "Test User")
-            
+
             # Change logo src to invalid URL to trigger error
             logo_img = driver.find_element(By.ID, "current-logo")
             driver.execute_script(
-                "arguments[0].src = '/logos/nonexistent.png';", 
+                "arguments[0].src = '/logos/nonexistent.png';",
                 logo_img
             )
-            
+
             time.sleep(1)
-            
+
             # Should handle error gracefully (might show error message)
             # At minimum, the application shouldn't crash
             voting_screen = driver.find_element(By.ID, "voting-screen")
@@ -307,23 +307,23 @@ class TestFrontendWorkflow:
         """Test complete voting workflow from start to finish."""
         with test_server as base_url:
             driver.get(base_url)
-            
+
             # Enter name
             name_input = driver.find_element(By.ID, "voter-name")
             name_input.send_keys("Complete Test User")
             submit_btn = driver.find_element(By.CSS_SELECTOR, "button[type='submit']")
             submit_btn.click()
-            
+
             # Wait for voting screen
             wait = WebDriverWait(driver, 10)
             wait.until(EC.visibility_of_element_located((By.ID, "voting-screen")))
-            
+
             # Rate all logos (simplified - rate first few and skip to review)
             for i in range(3):  # Rate first 3 logos
                 # Select a rating
                 rating = driver.find_element(By.CSS_SELECTOR, f"input[name='rating'][value='{i-1}']")
                 rating.click()
-                
+
                 # Go to next
                 next_btn = driver.find_element(By.ID, "next-btn")
                 if next_btn.text != "Terminer":
@@ -331,7 +331,7 @@ class TestFrontendWorkflow:
                     time.sleep(0.5)
                 else:
                     break
-            
+
             # This would normally proceed to review screen in a complete test
             # For this test, we verify the workflow is functional
 
@@ -339,15 +339,15 @@ class TestFrontendWorkflow:
         """Test accessibility features."""
         with test_server as base_url:
             self._proceed_to_voting_screen(driver, base_url, "Test User")
-            
+
             # Check ARIA attributes
             rating_group = driver.find_element(By.CSS_SELECTOR, "[role='radiogroup']")
             assert rating_group.get_attribute("aria-label")
-            
+
             # Check live region exists
             live_region = driver.find_element(By.ID, "live-region")
             assert live_region.get_attribute("aria-live") == "polite"
-            
+
             # Check progress bar accessibility
             progress_bar = driver.find_element(By.CSS_SELECTOR, "[role='progressbar']")
             assert progress_bar.get_attribute("aria-valuenow")
@@ -358,16 +358,16 @@ class TestFrontendWorkflow:
         with test_server as base_url:
             # Set mobile viewport
             driver.set_window_size(375, 667)  # iPhone SE dimensions
-            
+
             driver.get(base_url)
-            
+
             # Check that elements are still visible and functional
             welcome_screen = driver.find_element(By.ID, "welcome-screen")
             assert welcome_screen.is_displayed()
-            
+
             name_input = driver.find_element(By.ID, "voter-name")
             assert name_input.is_displayed()
-            
+
             # Check that the layout adapts (elements should stack vertically)
             name_input_rect = name_input.rect
             assert name_input_rect["width"] > 200  # Should be reasonably wide on mobile
@@ -375,13 +375,13 @@ class TestFrontendWorkflow:
     def _proceed_to_voting_screen(self, driver, base_url: str, voter_name: str):
         """Helper method to proceed to voting screen."""
         driver.get(base_url)
-        
+
         name_input = driver.find_element(By.ID, "voter-name")
         name_input.send_keys(voter_name)
-        
+
         submit_btn = driver.find_element(By.CSS_SELECTOR, "button[type='submit']")
         submit_btn.click()
-        
+
         # Wait for voting screen
         wait = WebDriverWait(driver, 10)
         wait.until(EC.visibility_of_element_located((By.ID, "voting-screen")))
@@ -402,7 +402,7 @@ class TestJavaScriptFunctionality:
         response = client.get("/api/logos")
         assert response.status_code == 200
         assert response.headers["content-type"] == "application/json"
-        
+
         data = response.json()
         assert "logos" in data
         assert "total_count" in data
@@ -425,12 +425,12 @@ class TestJavaScriptFunctionality:
                 "toveco11.png": 0,
             }
         }
-        
+
         response = client.post("/api/vote", json=vote_data)
-        
+
         # Should return JSON response regardless of success/failure
         assert "application/json" in response.headers["content-type"]
-        
+
         data = response.json()
         assert "success" in data
         assert "message" in data
@@ -440,7 +440,7 @@ class TestJavaScriptFunctionality:
         response = client.get("/api/results")
         assert response.status_code == 200
         assert response.headers["content-type"] == "application/json"
-        
+
         data = response.json()
         assert "summary" in data
         assert "total_voters" in data
@@ -450,17 +450,11 @@ class TestJavaScriptFunctionality:
     def test_cors_headers_for_javascript(self, client):
         """Test CORS headers are properly set for JavaScript requests."""
         response = client.get("/api/logos")
-        
+
         # Check CORS headers (if configured)
-        headers = response.headers
-        
+
         # These might be present depending on CORS configuration
-        cors_headers = [
-            "access-control-allow-origin",
-            "access-control-allow-methods",
-            "access-control-allow-headers"
-        ]
-        
+
         # At least one CORS header should be present or it should work without CORS
         # (same-origin requests)
         assert response.status_code == 200
@@ -472,10 +466,10 @@ class TestJavaScriptFunctionality:
             "voter_name": "",  # Invalid empty name
             "ratings": {}
         }
-        
+
         response = client.post("/api/vote", json=invalid_vote)
         assert response.status_code == 422
-        
+
         data = response.json()
         assert "success" in data or "message" in data or "detail" in data
 
@@ -493,30 +487,31 @@ class TestResultsPageFunctionality:
     def test_server(self):
         """Start test server for results page tests."""
         import threading
-        import uvicorn
         from contextlib import contextmanager
-        
+
+        import uvicorn
+
         @contextmanager
         def run_test_server():
             config = uvicorn.Config(app, host="127.0.0.1", port=8002, log_level="warning")
             server = uvicorn.Server(config)
-            
+
             def run_server():
                 server.run()
-            
+
             thread = threading.Thread(target=run_server, daemon=True)
             thread.start()
-            
+
             time.sleep(2)
-            
+
             try:
                 yield "http://127.0.0.1:8002"
             finally:
                 server.should_exit = True
-        
+
         return run_test_server()
 
-    @pytest.fixture(scope="class") 
+    @pytest.fixture(scope="class")
     def driver(self):
         """Create WebDriver instance for results testing."""
         chrome_options = Options()
@@ -524,7 +519,7 @@ class TestResultsPageFunctionality:
         chrome_options.add_argument("--no-sandbox")
         chrome_options.add_argument("--disable-dev-shm-usage")
         chrome_options.add_argument("--disable-gpu")
-        
+
         driver = None
         try:
             driver = webdriver.Chrome(options=chrome_options)
@@ -540,9 +535,9 @@ class TestResultsPageFunctionality:
         """Test that results page loads correctly."""
         with test_server as base_url:
             driver.get(f"{base_url}/results")
-            
+
             assert "ToVéCo" in driver.title
-            
+
             # Check for results content
             try:
                 results_content = driver.find_element(By.ID, "results-content")
@@ -557,16 +552,16 @@ class TestResultsPageFunctionality:
         response = client.get("/results")
         assert response.status_code == 200
         assert "text/html" in response.headers["content-type"]
-        
+
         # The HTML should contain expected elements
         html_content = response.text
         expected_elements = [
             "results-content",
-            "results-grid", 
+            "results-grid",
             "total-voters",
             "total-logos"
         ]
-        
+
         for element_id in expected_elements:
             assert element_id in html_content
 
@@ -575,7 +570,7 @@ class TestResultsPageFunctionality:
         # This tests the backend that the frontend JavaScript will call
         response = client.get("/api/results")
         assert response.status_code == 200
-        
+
         data = response.json()
         assert "summary" in data
         assert "total_voters" in data
@@ -599,19 +594,19 @@ import time
 
 class ManualTestGuide:
     '''Guide for manual testing of the frontend.'''
-    
+
     def __init__(self, base_url="http://localhost:8000"):
         self.base_url = base_url
         self.test_results = []
-    
+
     def print_test_header(self, test_name):
         print(f"\\n{'='*60}")
         print(f"TEST: {test_name}")
         print(f"{'='*60}")
-    
+
     def print_test_step(self, step_number, description):
         print(f"\\nStep {step_number}: {description}")
-    
+
     def record_result(self, test_name, passed, notes=""):
         self.test_results.append({
             "test": test_name,
@@ -622,24 +617,24 @@ class ManualTestGuide:
         print(f"Result: {status}")
         if notes:
             print(f"Notes: {notes}")
-    
+
     def test_homepage_accessibility(self):
         self.print_test_header("Homepage Accessibility")
-        
+
         print("Manual steps:")
         self.print_test_step(1, f"Open {self.base_url} in your browser")
         self.print_test_step(2, "Use Tab key to navigate through all interactive elements")
         self.print_test_step(3, "Verify focus indicators are visible")
         self.print_test_step(4, "Test with screen reader if available")
         self.print_test_step(5, "Verify all images have alt text")
-        
+
         result = input("Did all accessibility tests pass? (y/n): ").lower() == 'y'
         notes = input("Any notes: ")
         self.record_result("Homepage Accessibility", result, notes)
-    
+
     def test_voting_workflow(self):
         self.print_test_header("Complete Voting Workflow")
-        
+
         print("Manual steps:")
         self.print_test_step(1, "Enter your name and click 'Commencer le vote'")
         self.print_test_step(2, "Verify logos load correctly (11 total)")
@@ -650,14 +645,14 @@ class ManualTestGuide:
         self.print_test_step(7, "Complete voting for all logos")
         self.print_test_step(8, "Review your votes on the summary screen")
         self.print_test_step(9, "Submit votes and verify success message")
-        
+
         result = input("Did the complete workflow work correctly? (y/n): ").lower() == 'y'
         notes = input("Any issues encountered: ")
         self.record_result("Complete Voting Workflow", result, notes)
-    
+
     def test_mobile_responsiveness(self):
         self.print_test_header("Mobile Responsiveness")
-        
+
         print("Manual steps:")
         self.print_test_step(1, "Open browser developer tools (F12)")
         self.print_test_step(2, "Set viewport to mobile size (375x667 iPhone SE)")
@@ -665,14 +660,14 @@ class ManualTestGuide:
         self.print_test_step(4, "Test touch interactions work")
         self.print_test_step(5, "Verify all text is readable on small screen")
         self.print_test_step(6, "Test landscape orientation")
-        
+
         result = input("Did mobile responsiveness work correctly? (y/n): ").lower() == 'y'
         notes = input("Any layout issues: ")
         self.record_result("Mobile Responsiveness", result, notes)
-    
+
     def test_error_handling(self):
         self.print_test_header("Error Handling")
-        
+
         print("Manual steps:")
         self.print_test_step(1, "Try submitting empty name")
         self.print_test_step(2, "Try submitting name with >100 characters")
@@ -680,14 +675,14 @@ class ManualTestGuide:
         self.print_test_step(4, "Disconnect internet and try submitting vote")
         self.print_test_step(5, "Verify error messages are user-friendly")
         self.print_test_step(6, "Verify errors are announced to screen readers")
-        
+
         result = input("Did error handling work correctly? (y/n): ").lower() == 'y'
         notes = input("Any error handling issues: ")
         self.record_result("Error Handling", result, notes)
-    
+
     def test_results_page(self):
         self.print_test_header("Results Page")
-        
+
         print("Manual steps:")
         self.print_test_step(1, f"Navigate to {self.base_url}/results")
         self.print_test_step(2, "Verify results load correctly")
@@ -695,43 +690,43 @@ class ManualTestGuide:
         self.print_test_step(4, "Verify logos are ranked correctly")
         self.print_test_step(5, "Test share functionality if present")
         self.print_test_step(6, "Test print functionality")
-        
+
         result = input("Did results page work correctly? (y/n): ").lower() == 'y'
         notes = input("Any results page issues: ")
         self.record_result("Results Page", result, notes)
-    
+
     def run_all_tests(self):
         '''Run all manual tests.'''
         print("ToVéCo Frontend Manual Test Suite")
         print("=================================")
         print("This will guide you through manual testing of the frontend.")
         print("Please follow each step carefully and report results accurately.\\n")
-        
+
         self.test_homepage_accessibility()
         self.test_voting_workflow()
         self.test_mobile_responsiveness()
         self.test_error_handling()
         self.test_results_page()
-        
+
         # Summary
         print("\\n" + "="*60)
         print("TEST SUMMARY")
         print("="*60)
-        
+
         passed_tests = sum(1 for result in self.test_results if result["passed"])
         total_tests = len(self.test_results)
-        
+
         for result in self.test_results:
             status = "PASS" if result["passed"] else "FAIL"
             print(f"{result['test']:<30} {status}")
-        
+
         print(f"\\nTotal: {passed_tests}/{total_tests} tests passed")
-        
+
         if passed_tests == total_tests:
             print("🎉 All tests passed! Frontend is ready for production.")
         else:
             print("⚠️  Some tests failed. Please review and fix issues before deployment.")
-        
+
         return self.test_results
 
 
@@ -739,7 +734,7 @@ if __name__ == "__main__":
     tester = ManualTestGuide()
     tester.run_all_tests()
 """
-    
+
     return script_content
 
 
@@ -747,7 +742,7 @@ if __name__ == "__main__":
 def save_manual_test_script():
     """Save the manual test script to file."""
     script_content = create_manual_test_script()
-    
+
     with open("/Users/vlb/Downloads/toveco/tests/manual_frontend_tests.py", "w") as f:
         f.write(script_content)
 
@@ -755,6 +750,6 @@ def save_manual_test_script():
 if __name__ == "__main__":
     # Save manual test script
     save_manual_test_script()
-    
+
     # Run automated tests
     pytest.main([__file__, "-v"])

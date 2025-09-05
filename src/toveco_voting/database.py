@@ -10,7 +10,7 @@ from sqlalchemy import create_engine, desc, text
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import sessionmaker
 
-from .models import AdminSession, AdminUser, Base, DatabaseError, VoteRecord
+from .models import Base, DatabaseError, VoteRecord
 
 logger = logging.getLogger(__name__)
 
