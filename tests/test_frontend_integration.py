@@ -13,7 +13,7 @@ import time
 import pytest
 from fastapi.testclient import TestClient
 from selenium import webdriver
-from selenium.common.exceptions import NoSuchElementException
+from selenium.common.exceptions import NoSuchElementException, TimeoutException
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
@@ -107,10 +107,14 @@ class TestFrontendWorkflow:
             # Test empty name - elements exist but are empty
             submit_btn = driver.find_element(By.CSS_SELECTOR, "button[type='submit']")
             submit_btn.click()
-            time.sleep(0.5)
+
+            # Wait for error message to appear using WebDriverWait
+            wait = WebDriverWait(driver, 10)
+            error_message = wait.until(
+                EC.visibility_of_element_located((By.CLASS_NAME, "error-message"))
+            )
 
             # Should show error message
-            error_message = driver.find_element(By.CLASS_NAME, "error-message")
             assert error_message.is_displayed()
             assert "nom" in error_message.text.lower()
 
@@ -128,15 +132,20 @@ class TestFrontendWorkflow:
             first_name_input.send_keys(long_name)
             submit_btn.click()
 
-            time.sleep(0.5)
-
-            # Should show error message
+            # Wait for error message to appear or aria-invalid to be set
+            wait = WebDriverWait(driver, 10)
             try:
-                error_message = driver.find_element(By.CLASS_NAME, "error-message")
+                error_message = wait.until(
+                    EC.visibility_of_element_located((By.CLASS_NAME, "error-message"))
+                )
                 assert error_message.is_displayed()
                 assert "nom" in error_message.text.lower()
-            except NoSuchElementException:
+            except (TimeoutException, NoSuchElementException):
                 # Alternative: check if aria-invalid is set
+                wait.until(
+                    lambda driver: first_name_input.get_attribute("aria-invalid")
+                    == "true"
+                )
                 assert first_name_input.get_attribute("aria-invalid") == "true"
 
     def test_valid_name_proceeds_to_voting(self, test_server, driver):
@@ -288,17 +297,18 @@ class TestFrontendWorkflow:
             # Force click even if disabled (to test error handling)
             driver.execute_script("arguments[0].click();", next_btn)
 
-            time.sleep(0.5)
-
-            # Should show error message
+            # Wait for error message to appear or button to remain disabled
+            wait = WebDriverWait(driver, 10)
             try:
-                error_message = driver.find_element(By.CLASS_NAME, "error-message")
+                error_message = wait.until(
+                    EC.visibility_of_element_located((By.CLASS_NAME, "error-message"))
+                )
                 assert error_message.is_displayed()
 
                 # Check accessibility attributes
                 assert error_message.get_attribute("role") == "alert"
                 assert error_message.get_attribute("aria-live") == "assertive"
-            except NoSuchElementException:
+            except (TimeoutException, NoSuchElementException):
                 # Alternative: button might stay disabled
                 assert not next_btn.is_enabled()
 

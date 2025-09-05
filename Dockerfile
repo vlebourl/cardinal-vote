@@ -28,8 +28,9 @@ COPY pyproject.toml uv.lock* ./
 COPY src/ ./src/
 COPY README.md ./
 
-# Install dependencies and project
-RUN uv sync --no-dev
+# Create and install dependencies in virtual environment
+RUN uv venv /opt/venv && \
+    uv sync --no-dev
 
 # Production stage
 FROM python:3.13-slim AS production
@@ -57,7 +58,7 @@ RUN mkdir -p /app/data /app/logs \
     && chown -R app:app /app
 
 # Copy virtual environment from builder
-COPY --from=builder /build/.venv /opt/venv
+COPY --from=builder /opt/venv /opt/venv
 
 # Copy source code from builder
 COPY --from=builder /build/src /app/src
