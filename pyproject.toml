@@ -160,4 +160,5 @@ dev = [
     "types-aiofiles>=24.1.0.20250822",
     "types-psutil>=7.0.0.20250822",
     "bandit[toml]>=1.8.6",
+    "pytest-cov>=6.2.1",
 ]

@@ -43,7 +43,7 @@ def setup_admin_router(
     admin_manager = admin_mgr
 
 
-def get_admin_user_or_redirect(request: Request) -> dict | RedirectResponse:
+def get_admin_user_or_redirect(request: Request) -> dict[str, Any] | RedirectResponse:
     """Helper to get admin user or redirect to login."""
     session_token = request.cookies.get("admin_session")
     if not session_token or not auth_manager:
@@ -74,7 +74,7 @@ def get_admin_user_or_error(request: Request) -> dict:
 
 
 @admin_router.get("/login", response_class=HTMLResponse)
-async def admin_login_page(request: Request) -> HTMLResponse | RedirectResponse:
+async def admin_login_page(request: Request) -> Response:
     """Serve admin login page."""
     # Check if already logged in
     session_token = request.cookies.get("admin_session")
@@ -97,7 +97,7 @@ async def admin_login(
     response: Response,
     username: str = Form(...),
     password: str = Form(...),
-) -> HTMLResponse | RedirectResponse:
+) -> Response:
     """Process admin login."""
     try:
         ip_address = get_client_ip(request)
@@ -165,7 +165,7 @@ async def admin_logout(request: Request) -> RedirectResponse:
 
 
 @admin_router.get("/dashboard", response_class=HTMLResponse)
-async def admin_dashboard(request: Request) -> HTMLResponse | RedirectResponse:
+async def admin_dashboard(request: Request) -> Response:
     """Serve admin dashboard."""
     admin_user = get_admin_user_or_redirect(request)
     if isinstance(admin_user, RedirectResponse):
@@ -203,7 +203,7 @@ async def admin_dashboard(request: Request) -> HTMLResponse | RedirectResponse:
 
 
 @admin_router.get("/logos", response_class=HTMLResponse)
-async def admin_logos_page(request: Request) -> HTMLResponse | RedirectResponse:
+async def admin_logos_page(request: Request) -> Response:
     """Serve logo management page."""
     admin_user = get_admin_user_or_redirect(request)
     if isinstance(admin_user, RedirectResponse):
@@ -235,7 +235,7 @@ async def admin_logos_page(request: Request) -> HTMLResponse | RedirectResponse:
 
 
 @admin_router.get("/api/stats")
-async def get_admin_stats(request: Request) -> dict[str, Any] | JSONResponse:
+async def get_admin_stats(request: Request) -> Response:
     """Get current system statistics."""
     try:
         get_admin_user_or_error(request)
@@ -245,7 +245,13 @@ async def get_admin_stats(request: Request) -> dict[str, Any] | JSONResponse:
         stats = admin_manager.get_system_stats()
         active_sessions = auth_manager.get_active_sessions_count()
 
-        return {"success": True, "stats": stats, "active_sessions": active_sessions}
+        return JSONResponse(
+            content={
+                "success": True,
+                "stats": stats,
+                "active_sessions": active_sessions,
+            }
+        )
 
     except HTTPException:
         raise
@@ -258,7 +264,7 @@ async def get_admin_stats(request: Request) -> dict[str, Any] | JSONResponse:
 
 
 @admin_router.get("/votes", response_class=HTMLResponse)
-async def admin_votes_page(request: Request) -> HTMLResponse | RedirectResponse:
+async def admin_votes_page(request: Request) -> Response:
     """Serve admin votes management page."""
     admin_user = get_admin_user_or_redirect(request)
     if isinstance(admin_user, RedirectResponse):
