@@ -29,10 +29,9 @@ COPY src/ ./src/
 COPY README.md ./
 
 # Create virtual environment and install project with dependencies
-ENV VIRTUAL_ENV=/opt/venv
-ENV PATH="/opt/venv/bin:$PATH"
-RUN uv venv $VIRTUAL_ENV && \
-    uv sync --no-dev
+RUN uv sync --no-dev
+ENV VIRTUAL_ENV=/build/.venv
+ENV PATH="/build/.venv/bin:$PATH"
 
 # Production stage
 FROM python:3.13-slim AS production
@@ -60,10 +59,14 @@ RUN mkdir -p /app/data /app/logs \
     && chown -R app:app /app
 
 # Copy virtual environment from builder with proper ownership
-COPY --from=builder --chown=app:app /opt/venv /opt/venv
+COPY --from=builder --chown=app:app /build/.venv /opt/venv
 
 # Copy source code from builder
 COPY --from=builder /build/src /app/src
+
+# Fix virtual environment paths and shebangs
+RUN sed -i 's|/build/src|/app/src|' /opt/venv/lib/python3.13/site-packages/_toveco_voting.pth && \
+    find /opt/venv/bin -type f -executable -exec sed -i '1s|#!/build/.venv/bin/python|#!/opt/venv/bin/python|' {} \;
 
 # Switch to app user
 USER app
