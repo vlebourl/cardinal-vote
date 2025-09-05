@@ -90,19 +90,19 @@ class TestFrontendWorkflow:
             welcome_screen = driver.find_element(By.ID, "welcome-screen")
             assert welcome_screen.is_displayed()
 
-            # Check name input exists
-            name_input = driver.find_element(By.ID, "voter-name")
-            assert name_input.is_displayed()
+            # Check name inputs exist
+            first_name_input = driver.find_element(By.ID, "voter-first-name")
+            last_name_input = driver.find_element(By.ID, "voter-last-name")
+            assert first_name_input.is_displayed()
+            assert last_name_input.is_displayed()
 
     def test_name_validation(self, test_server, driver):
         """Test name input validation."""
         with test_server as base_url:
             driver.get(base_url)
 
-            driver.find_element(By.ID, "voter-name")
+            # Test empty name - elements exist but are empty
             submit_btn = driver.find_element(By.CSS_SELECTOR, "button[type='submit']")
-
-            # Test empty name
             submit_btn.click()
             time.sleep(0.5)
 
@@ -116,13 +116,13 @@ class TestFrontendWorkflow:
         with test_server as base_url:
             driver.get(base_url)
 
-            name_input = driver.find_element(By.ID, "voter-name")
+            first_name_input = driver.find_element(By.ID, "voter-first-name")
             submit_btn = driver.find_element(By.CSS_SELECTOR, "button[type='submit']")
 
-            # Enter name that's too long (>100 chars)
-            long_name = "a" * 101
-            name_input.clear()
-            name_input.send_keys(long_name)
+            # Enter name that's too long (>50 chars each field)
+            long_name = "a" * 51
+            first_name_input.clear()
+            first_name_input.send_keys(long_name)
             submit_btn.click()
 
             time.sleep(0.5)
@@ -131,22 +131,25 @@ class TestFrontendWorkflow:
             try:
                 error_message = driver.find_element(By.CLASS_NAME, "error-message")
                 assert error_message.is_displayed()
-                assert "100" in error_message.text
+                assert "nom" in error_message.text.lower()
             except NoSuchElementException:
                 # Alternative: check if aria-invalid is set
-                assert name_input.get_attribute("aria-invalid") == "true"
+                assert first_name_input.get_attribute("aria-invalid") == "true"
 
     def test_valid_name_proceeds_to_voting(self, test_server, driver):
         """Test that valid name proceeds to voting screen."""
         with test_server as base_url:
             driver.get(base_url)
 
-            name_input = driver.find_element(By.ID, "voter-name")
+            first_name_input = driver.find_element(By.ID, "voter-first-name")
+            last_name_input = driver.find_element(By.ID, "voter-last-name")
             submit_btn = driver.find_element(By.CSS_SELECTOR, "button[type='submit']")
 
             # Enter valid name
-            name_input.clear()
-            name_input.send_keys("Test User")
+            first_name_input.clear()
+            first_name_input.send_keys("Test")
+            last_name_input.clear()
+            last_name_input.send_keys("User")
             submit_btn.click()
 
             # Wait for voting screen to appear
@@ -320,8 +323,10 @@ class TestFrontendWorkflow:
             driver.get(base_url)
 
             # Enter name
-            name_input = driver.find_element(By.ID, "voter-name")
-            name_input.send_keys("Complete Test User")
+            first_name_input = driver.find_element(By.ID, "voter-first-name")
+            last_name_input = driver.find_element(By.ID, "voter-last-name")
+            first_name_input.send_keys("Complete")
+            last_name_input.send_keys("Test User")
             submit_btn = driver.find_element(By.CSS_SELECTOR, "button[type='submit']")
             submit_btn.click()
 
@@ -378,19 +383,30 @@ class TestFrontendWorkflow:
             welcome_screen = driver.find_element(By.ID, "welcome-screen")
             assert welcome_screen.is_displayed()
 
-            name_input = driver.find_element(By.ID, "voter-name")
-            assert name_input.is_displayed()
+            first_name_input = driver.find_element(By.ID, "voter-first-name")
+            last_name_input = driver.find_element(By.ID, "voter-last-name")
+            assert first_name_input.is_displayed()
 
             # Check that the layout adapts (elements should stack vertically)
-            name_input_rect = name_input.rect
-            assert name_input_rect["width"] > 200  # Should be reasonably wide on mobile
+            first_name_rect = first_name_input.rect
+            last_name_rect = last_name_input.rect
+            assert first_name_rect["width"] > 200  # Should be reasonably wide on mobile
+            assert last_name_rect["width"] > 200
 
     def _proceed_to_voting_screen(self, driver, base_url: str, voter_name: str):
         """Helper method to proceed to voting screen."""
         driver.get(base_url)
 
-        name_input = driver.find_element(By.ID, "voter-name")
-        name_input.send_keys(voter_name)
+        # Split the full name for separate inputs
+        parts = voter_name.split(" ", 1)
+        first_name = parts[0] if parts else voter_name
+        last_name = parts[1] if len(parts) > 1 else "Testeur"
+
+        first_name_input = driver.find_element(By.ID, "voter-first-name")
+        last_name_input = driver.find_element(By.ID, "voter-last-name")
+
+        first_name_input.send_keys(first_name)
+        last_name_input.send_keys(last_name)
 
         submit_btn = driver.find_element(By.CSS_SELECTOR, "button[type='submit']")
         submit_btn.click()
@@ -423,7 +439,8 @@ class TestJavaScriptFunctionality:
     def test_vote_submission_json_format(self, client):
         """Test vote submission accepts and returns proper JSON format."""
         vote_data = {
-            "voter_name": "JS Test User",
+            "voter_first_name": "JS Test",
+            "voter_last_name": "User",
             "ratings": {
                 "toveco1.png": 1,
                 "toveco2.png": -1,
@@ -476,7 +493,8 @@ class TestJavaScriptFunctionality:
         """Test error responses are in format expected by JavaScript."""
         # Submit invalid vote to trigger error
         invalid_vote = {
-            "voter_name": "",  # Invalid empty name
+            "voter_first_name": "",  # Invalid empty name
+            "voter_last_name": "",
             "ratings": {},
         }
 
