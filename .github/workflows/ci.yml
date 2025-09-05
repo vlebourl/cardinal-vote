@@ -118,14 +118,62 @@ jobs:
           ADMIN_PASSWORD=test-password-123
           SESSION_SECRET_KEY=test-session-key-for-testing-only
           DATABASE_PATH=/app/data/votes.db
+          HOST=0.0.0.0
+          PORT=8000
           EOF
 
-          # Run container health check
+          # Test 1: Configuration validation (updated for installed package)
+          echo "Testing configuration validation..."
           docker run --rm \
             --env-file test.env \
             -v $(pwd)/logos:/app/logos:ro \
             toveco-voting:test \
-            python -c "from src.toveco_voting.config import settings; settings.validate_security(); print('✓ Configuration validation passed')"
+            python -c "from toveco_voting.config import settings; settings.validate_security(); print('✓ Configuration validation passed')"
+
+          # Test 2: Dependency availability check
+          echo "Testing dependency availability..."
+          docker run --rm \
+            --env-file test.env \
+            toveco-voting:test \
+            python -c "import fastapi, uvicorn, sqlalchemy; print('✓ All dependencies available')"
+
+          # Test 3: Application import check
+          echo "Testing application import..."
+          docker run --rm \
+            --env-file test.env \
+            toveco-voting:test \
+            python -c "from toveco_voting.main import app; print('✓ Application imports successfully')"
+
+          # Test 4: Container startup test (30 second timeout)
+          echo "Testing container startup and health endpoint..."
+
+          # Start container in background
+          CONTAINER_ID=$(docker run -d \
+            --env-file test.env \
+            -v $(pwd)/logos:/app/logos:ro \
+            -p 8888:8000 \
+            toveco-voting:test)
+
+          echo "Container ID: $CONTAINER_ID"
+
+          # Wait for startup and test health endpoint
+          for i in {1..30}; do
+            echo "Attempt $i/30: Testing health endpoint..."
+            if curl -f http://localhost:8888/api/health > /dev/null 2>&1; then
+              echo "✓ Container started successfully and health endpoint is responsive"
+              docker stop $CONTAINER_ID
+              docker logs $CONTAINER_ID
+              exit 0
+            fi
+            sleep 1
+          done
+
+          # If we get here, the test failed
+          echo "✗ Container startup failed or health endpoint not responsive"
+          echo "Container logs:"
+          docker logs $CONTAINER_ID
+          docker stop $CONTAINER_ID
+          exit 1
 
   integration:
     name: Integration Tests
