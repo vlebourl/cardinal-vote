@@ -161,4 +161,7 @@ dev = [
     "types-psutil>=7.0.0.20250822",
     "bandit[toml]>=1.8.6",
     "pytest-cov>=6.2.1",
+    "docker>=7.1.0",
+    "requests>=2.32.5",
+    "selenium>=4.35.0",
 ]

@@ -32,7 +32,7 @@ from pathlib import Path
 from typing import Any
 
 
-class TestRunner:
+class VotingTestRunner:
     """Main test runner class."""
 
     def __init__(self):
@@ -388,7 +388,7 @@ Examples:
 
     args = parser.parse_args()
 
-    runner = TestRunner()
+    runner = VotingTestRunner()
 
     # Validate environment first
     if not runner.validate_test_environment():

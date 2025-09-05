@@ -15,7 +15,7 @@ import pytest
 from fastapi.testclient import TestClient
 
 from src.toveco_voting.main import app
-from tests.fixtures import (
+from tests.test_fixtures import (
     TestScenarios,
 )
 
@@ -690,23 +690,23 @@ def run_end_to_end_tests():
     print("=" * 50)
 
     try:
-        client = TestClient(app)
-        validator = WorkflowValidator(client)
+        with TestClient(app) as client:
+            validator = WorkflowValidator(client)
 
-        # Test 1: Single user workflow
-        print("\n1. Testing single user workflow...")
-        test = TestCompleteVotingWorkflow()
-        test.test_single_user_complete_workflow(validator)
+            # Test 1: Single user workflow
+            print("\n1. Testing single user workflow...")
+            test = TestCompleteVotingWorkflow()
+            test.test_single_user_complete_workflow(validator)
 
-        # Test 2: Multiple users workflow
-        print("\n2. Testing multiple users workflow...")
-        test.test_multiple_users_workflow(validator)
+            # Test 2: Multiple users workflow
+            print("\n2. Testing multiple users workflow...")
+            test.test_multiple_users_workflow(validator)
 
-        # Test 3: Edge cases
-        print("\n3. Testing edge case workflow...")
-        test.test_edge_case_workflow(validator)
+            # Test 3: Edge cases
+            print("\n3. Testing edge case workflow...")
+            test.test_edge_case_workflow(validator)
 
-        print("\n✅ All end-to-end tests completed successfully!")
+            print("\n✅ All end-to-end tests completed successfully!")
 
     except Exception as e:
         print(f"\n❌ End-to-end tests failed: {e}")

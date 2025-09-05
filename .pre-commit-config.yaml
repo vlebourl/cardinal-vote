@@ -85,10 +85,10 @@ repos:
       # Check that test files are properly named
       - id: test-naming
         name: Check test file naming
-        entry: bash -c 'for file in tests/*.py; do [[ "$file" == "tests/__init__.py" ]] && continue; [[ "$file" =~ ^tests/test_.*\.py$ ]] || { echo "Test file $file should start with test_"; exit 1; }; done'
+        entry: bash -c 'for file in tests/*.py; do [[ "$file" == "tests/__init__.py" ]] && continue; [[ "$file" == "tests/conftest.py" ]] && continue; [[ "$file" =~ ^tests/test_.*\.py$ ]] || { echo "Test file $file should start with test_"; exit 1; }; done'
         language: system
         files: ^tests/.*\.py$
-        exclude: ^tests/__init__\.py$
+        exclude: ^tests/(conftest|__init__)\.py$
 
       # Ensure no hardcoded secrets
       - id: no-secrets

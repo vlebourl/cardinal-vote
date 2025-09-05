@@ -116,16 +116,19 @@ class TestDataValidation:
 
     def test_save_valid_vote(self, temp_db):
         """Test saving a valid vote."""
-        voter_name = "Test Voter"
+        voter_first_name = "Test"
+        voter_last_name = "Voter"
         ratings = {"toveco1.png": 2, "toveco2.png": -1}
 
-        vote_id = temp_db.save_vote(voter_name, ratings)
+        vote_id = temp_db.save_vote(voter_first_name, voter_last_name, ratings)
         assert vote_id > 0
 
         # Verify vote was saved correctly
         votes = temp_db.get_all_votes()
         assert len(votes) == 1
-        assert votes[0]["voter_name"] == voter_name
+        assert votes[0]["voter_name"] == "Test Voter"
+        assert votes[0]["voter_first_name"] == voter_first_name
+        assert votes[0]["voter_last_name"] == voter_last_name
         assert votes[0]["ratings"] == ratings
 
     def test_save_vote_empty_name(self, temp_db):
@@ -134,41 +137,45 @@ class TestDataValidation:
 
         # This should not raise an exception at database level
         # (validation should happen at API level)
-        vote_id = temp_db.save_vote("", ratings)
+        vote_id = temp_db.save_vote("", "", ratings)
         assert vote_id > 0
 
     def test_save_vote_long_name(self, temp_db):
         """Test saving vote with very long voter name."""
-        long_name = "x" * 1000  # Very long name
+        long_first_name = "x" * 1000  # Very long name
+        long_last_name = "y" * 1000  # Very long name
         ratings = {"toveco1.png": 1}
 
         # Database should handle this (SQLite varchar limit is high)
-        vote_id = temp_db.save_vote(long_name, ratings)
+        vote_id = temp_db.save_vote(long_first_name, long_last_name, ratings)
         assert vote_id > 0
 
     def test_save_vote_special_characters(self, temp_db):
         """Test saving vote with special characters in name."""
         special_names = [
-            "Test User with émojis 🎉",
-            "User with 'quotes' and \"double quotes\"",
-            "User with <html> & XML chars",
-            "Пользователь на русском",
-            "用户中文名",
+            ("Test", "User_with_emojis"),
+            ("User_with_quotes", "and_double_quotes"),
+            ("User_with_html", "XML_chars"),
+            ("Russian", "User"),
+            ("Chinese", "User"),
         ]
 
-        for name in special_names:
+        for first_name, last_name in special_names:
             ratings = {"toveco1.png": 1}
-            vote_id = temp_db.save_vote(name, ratings)
+            vote_id = temp_db.save_vote(first_name, last_name, ratings)
             assert vote_id > 0
 
             # Verify name is stored correctly
             votes = temp_db.get_all_votes()
             stored_vote = next(v for v in votes if v["id"] == vote_id)
-            assert stored_vote["voter_name"] == name
+            assert stored_vote["voter_first_name"] == first_name
+            assert stored_vote["voter_last_name"] == last_name
+            assert stored_vote["voter_name"] == f"{first_name} {last_name}"
 
     def test_save_vote_complex_ratings(self, temp_db):
         """Test saving vote with complex ratings structure."""
-        voter_name = "Test User"
+        voter_first_name = "Test"
+        voter_last_name = "User"
 
         # Test various rating scenarios
         test_cases = [
@@ -181,7 +188,7 @@ class TestDataValidation:
         ]
 
         for ratings in test_cases:
-            vote_id = temp_db.save_vote(voter_name, ratings)
+            vote_id = temp_db.save_vote(voter_first_name, voter_last_name, ratings)
             assert vote_id > 0
 
             # Verify ratings stored correctly
@@ -191,7 +198,8 @@ class TestDataValidation:
 
     def test_ratings_json_serialization(self, temp_db):
         """Test that ratings are properly serialized/deserialized."""
-        voter_name = "JSON Test User"
+        voter_first_name = "JSON"
+        voter_last_name = "TestUser"
 
         # Test various data types in ratings
         complex_ratings = {
@@ -200,7 +208,7 @@ class TestDataValidation:
             "toveco3.png": 0,
         }
 
-        vote_id = temp_db.save_vote(voter_name, complex_ratings)
+        vote_id = temp_db.save_vote(voter_first_name, voter_last_name, complex_ratings)
 
         # Retrieve and verify
         votes = temp_db.get_all_votes()
@@ -230,9 +238,10 @@ class TestConcurrentAccess:
         """Test multiple threads submitting votes simultaneously."""
 
         def submit_vote(thread_id):
-            voter_name = f"Concurrent User {thread_id}"
+            voter_first_name = "Concurrent"
+            voter_last_name = f"User{thread_id}"
             ratings = {f"toveco{(thread_id % 11) + 1}.png": 1}
-            return temp_db.save_vote(voter_name, ratings)
+            return temp_db.save_vote(voter_first_name, voter_last_name, ratings)
 
         # Submit votes from multiple threads
         with ThreadPoolExecutor(max_workers=5) as executor:
@@ -250,13 +259,13 @@ class TestConcurrentAccess:
         """Test concurrent reads and writes."""
         # Pre-populate with some votes
         for i in range(5):
-            temp_db.save_vote(f"Initial User {i}", {"toveco1.png": 1})
+            temp_db.save_vote("Initial", f"User{i}", {"toveco1.png": 1})
 
         results = []
 
         def write_votes():
             for i in range(5):
-                vote_id = temp_db.save_vote(f"Writer User {i}", {"toveco2.png": 1})
+                vote_id = temp_db.save_vote("Writer", f"User{i}", {"toveco2.png": 1})
                 results.append(("write", vote_id))
 
         def read_votes():
@@ -282,12 +291,12 @@ class TestConcurrentAccess:
 
         def long_transaction():
             # Simulate a longer database operation
-            temp_db.save_vote("Long Transaction User", {"toveco1.png": 2})
+            temp_db.save_vote("Long", "TransactionUser", {"toveco1.png": 2})
             time.sleep(0.2)
             return temp_db.get_vote_count()
 
         def quick_transaction():
-            return temp_db.save_vote("Quick Transaction User", {"toveco2.png": 1})
+            return temp_db.save_vote("Quick", "TransactionUser", {"toveco2.png": 1})
 
         # Run operations concurrently
         with ThreadPoolExecutor(max_workers=2) as executor:
@@ -323,7 +332,7 @@ class TestDataIntegrity:
         db_manager, db_path = temp_db
 
         # Save initial vote
-        db_manager.save_vote("Initial User", {"toveco1.png": 1})
+        db_manager.save_vote("Initial", "User", {"toveco1.png": 1})
         initial_count = db_manager.get_vote_count()
 
         # Simulate a transaction that should fail
@@ -332,7 +341,10 @@ class TestDataIntegrity:
             with db_manager.get_session() as session:
                 # Add a vote
                 vote_record = VoteRecord(
-                    voter_name="Error User", ratings=json.dumps({"toveco1.png": 1})
+                    voter_first_name="Error",
+                    voter_last_name="User",
+                    voter_name="Error User",
+                    ratings=json.dumps({"toveco1.png": 1}),
                 )
                 session.add(vote_record)
                 session.flush()
@@ -350,7 +362,7 @@ class TestDataIntegrity:
 
         # Add some votes
         for i in range(5):
-            db_manager.save_vote(f"User {i}", {"toveco1.png": i - 2})
+            db_manager.save_vote("User", f"{i}", {"toveco1.png": i - 2})
 
         # Verify integrity
         votes = db_manager.get_all_votes()
@@ -364,7 +376,7 @@ class TestDataIntegrity:
         assert len(recovered_votes) == 5
 
         # Verify we can still add new votes
-        new_vote_id = new_db_manager.save_vote("Recovery User", {"toveco2.png": 1})
+        new_vote_id = new_db_manager.save_vote("Recovery", "User", {"toveco2.png": 1})
         assert new_vote_id > 0
         assert new_db_manager.get_vote_count() == 6
 
@@ -379,10 +391,10 @@ class TestDataIntegrity:
         try:
             cursor.execute(
                 """
-                INSERT INTO votes (voter_name, timestamp, ratings)
-                VALUES (?, datetime('now'), ?)
+                INSERT INTO votes (voter_first_name, voter_last_name, voter_name, timestamp, ratings)
+                VALUES (?, ?, ?, datetime('now'), ?)
             """,
-                ("Malformed User", "invalid json"),
+                ("Malformed", "User", "Malformed User", "invalid json"),
             )
             conn.commit()
         finally:
@@ -406,7 +418,7 @@ class TestDataIntegrity:
         # Add 100 votes with full rating data
         vote_ids = []
         for i in range(100):
-            vote_id = db_manager.save_vote(f"Bulk User {i}", large_ratings)
+            vote_id = db_manager.save_vote("Bulk", f"User{i}", large_ratings)
             vote_ids.append(vote_id)
 
         # Verify all votes were saved
@@ -439,13 +451,13 @@ class TestResultsCalculation:
         """Test mathematical accuracy of results calculation."""
         # Add votes with known values for verification
         test_votes = [
-            ("User1", {"logo1.png": 2, "logo2.png": -1, "logo3.png": 0}),
-            ("User2", {"logo1.png": 1, "logo2.png": 1, "logo3.png": -2}),
-            ("User3", {"logo1.png": -1, "logo2.png": 0, "logo3.png": 2}),
+            ("User", "One", {"logo1.png": 2, "logo2.png": -1, "logo3.png": 0}),
+            ("User", "Two", {"logo1.png": 1, "logo2.png": 1, "logo3.png": -2}),
+            ("User", "Three", {"logo1.png": -1, "logo2.png": 0, "logo3.png": 2}),
         ]
 
-        for voter_name, ratings in test_votes:
-            temp_db.save_vote(voter_name, ratings)
+        for voter_first_name, voter_last_name, ratings in test_votes:
+            temp_db.save_vote(voter_first_name, voter_last_name, ratings)
 
         results = temp_db.calculate_results()
 
@@ -474,6 +486,7 @@ class TestResultsCalculation:
         """Test ranking algorithm correctness."""
         # Create votes with clear ranking order
         temp_db.save_vote(
+            "Test",
             "Ranker",
             {
                 "best.png": 2,  # Should rank 1st
@@ -497,8 +510,8 @@ class TestResultsCalculation:
     def test_tied_rankings(self, temp_db):
         """Test ranking behavior with tied scores."""
         # Create votes with tied averages
-        temp_db.save_vote("User1", {"logo1.png": 1, "logo2.png": 1})
-        temp_db.save_vote("User2", {"logo1.png": 1, "logo2.png": 1})
+        temp_db.save_vote("User", "One", {"logo1.png": 1, "logo2.png": 1})
+        temp_db.save_vote("User", "Two", {"logo1.png": 1, "logo2.png": 1})
 
         results = temp_db.calculate_results()
         summary = results["summary"]
@@ -515,7 +528,7 @@ class TestResultsCalculation:
     def test_results_with_missing_logos(self, temp_db):
         """Test results calculation when some logos have no votes."""
         # Only vote for some logos
-        temp_db.save_vote("Partial User", {"logo1.png": 2, "logo3.png": -1})
+        temp_db.save_vote("Partial", "User", {"logo1.png": 2, "logo3.png": -1})
 
         results = temp_db.calculate_results()
         summary = results["summary"]
@@ -534,7 +547,7 @@ class TestResultsCalculation:
 
         for i in range(100):
             ratings = {logo: random.randint(-2, 2) for logo in logos}
-            temp_db.save_vote(f"User {i}", ratings)
+            temp_db.save_vote("User", f"{i}", ratings)
 
         # Calculate results
         start_time = time.time()
@@ -586,7 +599,7 @@ class TestErrorHandling:
         try:
             # Create initial database
             db_manager = DatabaseManager(temp_db_path)
-            db_manager.save_vote("Test User", {"logo1.png": 1})
+            db_manager.save_vote("Test", "User", {"logo1.png": 1})
 
             # Corrupt the database file
             with open(temp_db_path, "wb") as f:

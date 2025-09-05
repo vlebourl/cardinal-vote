@@ -595,21 +595,20 @@ class TestMemoryAndResources:
         initial_memory = process.memory_info().rss / 1024 / 1024  # MB
 
         # Simulate high load
-        client = TestClient(app)
+        with TestClient(app) as client:
+            # Make many requests
+            for i in range(100):
+                client.get("/api/health")
+                client.get("/api/stats")
 
-        # Make many requests
-        for i in range(100):
-            client.get("/api/health")
-            client.get("/api/stats")
+                if i % 20 == 0:
+                    current_memory = process.memory_info().rss / 1024 / 1024
+                    memory_growth = current_memory - initial_memory
 
-            if i % 20 == 0:
-                current_memory = process.memory_info().rss / 1024 / 1024
-                memory_growth = current_memory - initial_memory
-
-                # Memory growth should be reasonable
-                assert memory_growth < 50, (
-                    f"Memory growth too high: {memory_growth:.1f}MB"
-                )
+                    # Memory growth should be reasonable
+                    assert memory_growth < 50, (
+                        f"Memory growth too high: {memory_growth:.1f}MB"
+                    )
 
         final_memory = process.memory_info().rss / 1024 / 1024
         total_growth = final_memory - initial_memory

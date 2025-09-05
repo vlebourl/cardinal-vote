@@ -42,10 +42,68 @@ class DatabaseManager:
         """Initialize the database with required tables."""
         try:
             Base.metadata.create_all(bind=self.engine)
+            # Check if we need to migrate from old schema
+            self._migrate_schema_if_needed()
             logger.info(f"Database initialized at {self.database_path}")
         except SQLAlchemyError as e:
             logger.error(f"Failed to initialize database: {e}")
             raise DatabaseError(f"Database initialization failed: {e}") from e
+
+    def _migrate_schema_if_needed(self) -> None:
+        """Migrate database schema from old format to new format if needed."""
+        try:
+            with self.get_session() as session:
+                # Check if the new columns exist
+                result = session.execute(text("PRAGMA table_info(votes)"))
+                columns = [row[1] for row in result.fetchall()]
+
+                needs_migration = (
+                    "voter_first_name" not in columns
+                    or "voter_last_name" not in columns
+                )
+
+                if needs_migration:
+                    logger.info("Migrating database schema to new format")
+
+                    # Add new columns if they don't exist
+                    if "voter_first_name" not in columns:
+                        session.execute(
+                            text(
+                                "ALTER TABLE votes ADD COLUMN voter_first_name VARCHAR(50)"
+                            )
+                        )
+                    if "voter_last_name" not in columns:
+                        session.execute(
+                            text(
+                                "ALTER TABLE votes ADD COLUMN voter_last_name VARCHAR(50)"
+                            )
+                        )
+
+                    # Populate new columns from existing voter_name data
+                    session.execute(
+                        text("""
+                        UPDATE votes
+                        SET
+                            voter_first_name = CASE
+                                WHEN instr(voter_name, ' ') > 0
+                                THEN substr(voter_name, 1, instr(voter_name, ' ') - 1)
+                                ELSE voter_name
+                            END,
+                            voter_last_name = CASE
+                                WHEN instr(voter_name, ' ') > 0
+                                THEN substr(voter_name, instr(voter_name, ' ') + 1)
+                                ELSE ''
+                            END
+                        WHERE voter_first_name IS NULL OR voter_last_name IS NULL
+                    """)
+                    )
+
+                    logger.info("Database schema migration completed")
+
+        except SQLAlchemyError as e:
+            logger.error(f"Failed to migrate database schema: {e}")
+            # Don't raise - this is a migration, not a critical failure
+            pass
 
     @contextmanager
     def get_session(self) -> Generator[Session, None, None]:
