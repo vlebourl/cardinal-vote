@@ -46,6 +46,36 @@ toveco-voting/
 
 **MANDATORY**: This repository strictly follows GitHub Flow. All changes MUST go through pull requests.
 
+### ⚠️ CRITICAL: Generalized Platform Development Workflow
+
+**When working on the generalized platform transformation:**
+
+1. **ALWAYS follow WORKFLOW-GENERALIZED.md** - This is your primary guide
+2. **NEVER branch from main** for generalized platform features
+3. **ALWAYS use develop/generalized-platform** as the base branch
+4. **Branch naming**: `feature/gp-phase{N}-{feature-name}` format is MANDATORY
+5. **Check PRP-Generalized-Platform.md** for phase requirements
+
+**Workflow for Generalized Platform:**
+
+```bash
+# CORRECT approach for new features
+git checkout develop/generalized-platform
+git pull origin develop/generalized-platform
+git checkout -b feature/gp-phase1-database
+
+# WRONG - Never do this for generalized work
+git checkout main  # ❌ NEVER branch from main
+git checkout -b feature/database  # ❌ Wrong naming convention
+```
+
+**Before ANY generalized platform work:**
+
+- Read WORKFLOW-GENERALIZED.md completely
+- Identify which phase the work belongs to
+- Use correct branch naming convention
+- Create PR to develop/generalized-platform (NOT main)
+
 ### Core Principles
 
 1. **Main branch is always deployable**
@@ -57,8 +87,9 @@ toveco-voting/
 ### 🚨 ZERO EXCEPTION POLICY
 
 **EVERY SINGLE CHANGE** requires a feature branch and pull request:
+
 - ❌ **NO exceptions for documentation changes**
-- ❌ **NO exceptions for README updates** 
+- ❌ **NO exceptions for README updates**
 - ❌ **NO exceptions for typo fixes**
 - ❌ **NO exceptions for badge updates**
 - ❌ **NO exceptions for configuration tweaks**
@@ -338,7 +369,6 @@ When working on this repository, Claude Code should:
 
 ### Always Use Feature Branches - NO EXCEPTIONS
 
-
 ```bash
 # ❌ ABSOLUTELY NEVER do this - even for tiny changes
 git checkout main
@@ -357,13 +387,14 @@ git push -u origin docs/fix-readme-typo
 ```
 
 ### Examples of Changes That STILL Need PRs
+
 ```bash
 # ✅ Single word typo fix
 git checkout -b docs/fix-typo-word
 # edit one word
 git commit -m "docs: fix 'installtion' typo in README"
 
-# ✅ Badge update  
+# ✅ Badge update
 git checkout -b docs/update-build-badge
 # change one badge URL
 git commit -m "docs: update CI status badge URL"
@@ -412,28 +443,33 @@ For critical security fixes only:
 ## 🔒 ENFORCEMENT - Important Reminders
 
 ### Absolute Requirements (Zero Tolerance)
+
 - **NEVER EVER commit directly to main** - Use feature branches for EVERYTHING
 - **NEVER commit secrets or credentials** - Use environment variables only
 - **NEVER skip the PR process** - Even for "obvious" fixes
 - **NEVER merge without CI approval** - All checks must pass
 - **NEVER bypass code review** - Get approval first
 
-### Best Practices (Strongly Recommended)  
+### Best Practices (Strongly Recommended)
+
 - **ALWAYS test Docker builds before pushing** - Prevent broken containers
 - **KEEP feature branches small and focused** - One change per PR
-- **UPDATE tests for any behavioral changes** - Maintain test coverage  
+- **UPDATE tests for any behavioral changes** - Maintain test coverage
 - **WRITE clear commit messages and PR descriptions** - Help reviewers
 - **FOLLOW the security validation checklist** - Prevent vulnerabilities
 
 ### Violation Consequences
+
 **Direct pushes to main will be:**
+
 - ✅ **Reverted immediately** if discovered
 - ✅ **Flagged in review** for process improvement
 - ✅ **Used as learning opportunity** to reinforce discipline
 
 **This is not about control - it's about:**
+
 - 🛡️ **Code Quality**: Every change gets reviewed
-- 🔒 **Security**: All changes get scanned  
+- 🔒 **Security**: All changes get scanned
 - 📈 **Reliability**: Consistent testing and validation
 - 🤝 **Collaboration**: Transparent change process
 
