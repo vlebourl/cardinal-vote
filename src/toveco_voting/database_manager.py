@@ -4,6 +4,7 @@ import logging
 import os
 from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
+from typing import Any
 
 from sqlalchemy import text
 from sqlalchemy.exc import SQLAlchemyError
@@ -121,28 +122,62 @@ class GeneralizedDatabaseManager:
             logger.error(f"Failed to get connection info: {e}")
             return {"error": str(e)}
 
-    async def get_table_info(self) -> dict:
+    async def get_table_info(self) -> dict[str, Any]:
         """Get information about the tables in the database."""
         try:
             async with self.get_session() as session:
                 # Get all table names
-                result = await session.execute(text("""
+                result = await session.execute(
+                    text("""
                     SELECT table_name
                     FROM information_schema.tables
                     WHERE table_schema = 'public'
                     ORDER BY table_name
-                """))
+                """)
+                )
                 tables = [row[0] for row in result.fetchall()]
 
-                table_info = {}
+                # Get row counts using a more secure approach
+                table_info: dict[str, dict[str, Any]] = {}
                 for table in tables:
-                    # Get row count for each table
                     try:
-                        result = await session.execute(text(f"SELECT COUNT(*) FROM {table}"))
-                        count = result.scalar_one()
-                        table_info[table] = {"row_count": count}
+                        # Use PostgreSQL's pg_stat_user_tables for safer row count access
+                        result = await session.execute(
+                            text("""
+                            SELECT n_tup_ins + n_tup_upd - n_tup_del as estimate_count
+                            FROM pg_stat_user_tables
+                            WHERE relname = :table_name
+                            """),
+                            {"table_name": table},
+                        )
+                        row = result.fetchone()
+                        if row and row[0] is not None:
+                            table_info[table] = {"row_count": int(row[0])}
+                        else:
+                            # Fallback: use exact count only for smaller expected tables
+                            if table in [
+                                "users",
+                                "generalized_votes",
+                                "vote_options",
+                                "voter_responses",
+                            ]:
+                                result = await session.execute(
+                                    text(
+                                        "SELECT COUNT(*) FROM users WHERE 'users' = :tname UNION ALL "
+                                        "SELECT COUNT(*) FROM generalized_votes WHERE 'generalized_votes' = :tname UNION ALL "
+                                        "SELECT COUNT(*) FROM vote_options WHERE 'vote_options' = :tname UNION ALL "
+                                        "SELECT COUNT(*) FROM voter_responses WHERE 'voter_responses' = :tname"
+                                    ),
+                                    {"tname": table},
+                                )
+                                count = result.scalar_one()
+                                table_info[table] = {"row_count": count}
+                            else:
+                                table_info[table] = {
+                                    "row_count": -1
+                                }  # -1 indicates unknown
                     except Exception as e:
-                        table_info[table] = {"error": str(e)}
+                        table_info[table] = {"row_count": -1, "error": str(e)}
 
                 return {"total_tables": len(tables), "tables": table_info}
         except Exception as e:
