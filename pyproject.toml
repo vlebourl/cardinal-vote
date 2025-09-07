@@ -173,4 +173,6 @@ dev = [
     "docker>=7.1.0",
     "requests>=2.32.5",
     "selenium>=4.35.0",
+    "types-python-jose>=3.5.0.20250531",
+    "types-passlib>=1.7.7.20250602",
 ]

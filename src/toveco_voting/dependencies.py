@@ -1,7 +1,7 @@
 """FastAPI dependencies for the generalized voting platform."""
 
 import logging
-from typing import Optional, Annotated
+from typing import Annotated, AsyncGenerator
 from uuid import UUID
 
 from fastapi import Depends, HTTPException, status
@@ -10,20 +10,17 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from .auth_manager import GeneralizedAuthManager
 from .database_manager import GeneralizedDatabaseManager
+from .models import User
 from .session_manager import session_manager
-from .models import User, DatabaseError
 
 logger = logging.getLogger(__name__)
 
 # OAuth2 scheme for JWT tokens
-oauth2_scheme = OAuth2PasswordBearer(
-    tokenUrl="/api/auth/token",
-    scheme_name="JWT"
-)
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/auth/token", scheme_name="JWT")
 
 # Global manager instances (will be initialized in main.py)
-generalized_auth_manager: Optional[GeneralizedAuthManager] = None
-generalized_db_manager: Optional[GeneralizedDatabaseManager] = None
+generalized_auth_manager: GeneralizedAuthManager | None = None
+generalized_db_manager: GeneralizedDatabaseManager | None = None
 
 
 def get_auth_manager() -> GeneralizedAuthManager:
@@ -31,7 +28,7 @@ def get_auth_manager() -> GeneralizedAuthManager:
     if generalized_auth_manager is None:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Authentication manager not initialized"
+            detail="Authentication manager not initialized",
         )
     return generalized_auth_manager
 
@@ -41,12 +38,12 @@ def get_generalized_db_manager() -> GeneralizedDatabaseManager:
     if generalized_db_manager is None:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Generalized database manager not initialized"
+            detail="Generalized database manager not initialized",
         )
     return generalized_db_manager
 
 
-async def get_async_session() -> AsyncSession:
+async def get_async_session() -> AsyncGenerator[AsyncSession, None]:
     """Dependency to get an async database session."""
     db_manager = get_generalized_db_manager()
     async with db_manager.get_session() as session:
@@ -56,7 +53,7 @@ async def get_async_session() -> AsyncSession:
 async def get_current_user(
     token: Annotated[str, Depends(oauth2_scheme)],
     auth_manager: Annotated[GeneralizedAuthManager, Depends(get_auth_manager)],
-    session: Annotated[AsyncSession, Depends(get_async_session)]
+    session: Annotated[AsyncSession, Depends(get_async_session)],
 ) -> User:
     """
     Dependency to get the current authenticated user from JWT token.
@@ -75,14 +72,14 @@ async def get_current_user(
             raise credentials_exception
 
         # Extract user ID from token
-        user_id_str: str = payload.get("sub")
+        user_id_str = payload.get("sub")
         if user_id_str is None:
             raise credentials_exception
 
         try:
             user_id = UUID(user_id_str)
         except ValueError:
-            raise credentials_exception
+            raise credentials_exception from None
 
         # Get user from database
         user = await auth_manager.get_user_by_id(user_id, session)
@@ -96,11 +93,11 @@ async def get_current_user(
 
     except Exception as e:
         logger.error(f"Error in get_current_user dependency: {e}")
-        raise credentials_exception
+        raise credentials_exception from e
 
 
 async def get_current_active_user(
-    current_user: Annotated[User, Depends(get_current_user)]
+    current_user: Annotated[User, Depends(get_current_user)],
 ) -> User:
     """
     Dependency to get the current active user.
@@ -111,7 +108,7 @@ async def get_current_active_user(
 
 
 async def get_current_super_admin(
-    current_user: Annotated[User, Depends(get_current_active_user)]
+    current_user: Annotated[User, Depends(get_current_active_user)],
 ) -> User:
     """
     Dependency to get the current user and verify they are a super admin.
@@ -119,8 +116,7 @@ async def get_current_super_admin(
     """
     if not current_user.is_super_admin:
         raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Super admin access required"
+            status_code=status.HTTP_403_FORBIDDEN, detail="Super admin access required"
         )
     return current_user
 
@@ -128,8 +124,8 @@ async def get_current_super_admin(
 async def get_optional_current_user(
     auth_manager: Annotated[GeneralizedAuthManager, Depends(get_auth_manager)],
     session: Annotated[AsyncSession, Depends(get_async_session)],
-    token: Optional[str] = Depends(oauth2_scheme),
-) -> Optional[User]:
+    token: str | None = Depends(oauth2_scheme),
+) -> User | None:
     """
     Dependency to optionally get the current user.
     Returns None if no token or invalid token (does not raise exception).
@@ -145,7 +141,7 @@ async def get_optional_current_user(
             return None
 
         # Extract user ID from token
-        user_id_str: str = payload.get("sub")
+        user_id_str = payload.get("sub")
         if user_id_str is None:
             return None
 
@@ -171,5 +167,5 @@ async def get_optional_current_user(
 CurrentUser = Annotated[User, Depends(get_current_user)]
 CurrentActiveUser = Annotated[User, Depends(get_current_active_user)]
 CurrentSuperAdmin = Annotated[User, Depends(get_current_super_admin)]
-OptionalCurrentUser = Annotated[Optional[User], Depends(get_optional_current_user)]
+OptionalCurrentUser = Annotated[User | None, Depends(get_optional_current_user)]
 AsyncDatabaseSession = Annotated[AsyncSession, Depends(get_async_session)]

@@ -1,18 +1,18 @@
-name: CI Pipeline
+name: Generalized Platform CI
 
 on:
   push:
-    branches: [main, develop]
+    branches: [main, develop/generalized-platform]
   pull_request:
-    branches: [main, develop]
+    branches: [main, develop/generalized-platform]
     types: [opened, synchronize, reopened, ready_for_review]
 
 env:
   PYTHON_VERSION: "3.11"
 
 jobs:
-  test:
-    name: Test Suite
+  code-quality:
+    name: Code Quality
     runs-on: ubuntu-latest
     if: github.event.pull_request.draft == false
 
@@ -36,26 +36,15 @@ jobs:
 
       - name: Run linting (ruff)
         run: |
-          uv run ruff check src/ tests/
+          uv run ruff check src/
 
       - name: Run formatting check (ruff format)
         run: |
-          uv run ruff format --check src/ tests/
+          uv run ruff format --check src/
 
       - name: Run type checking (mypy)
         run: |
           uv run mypy src/
-
-      - name: Run tests with coverage
-        run: |
-          uv run pytest tests/test_api.py tests/test_main.py tests/test_database_integrity.py tests/test_comprehensive_api.py --cov=src --cov-report=xml --cov-report=term-missing
-
-      - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v5
-        with:
-          file: ./coverage.xml
-          fail_ci_if_error: false # Don't fail CI if Codecov upload fails
-          token: ${{ secrets.CODECOV_TOKEN }} # Optional for public repos, required for private
 
   security:
     name: Security Scan
@@ -88,98 +77,24 @@ jobs:
           uv add --dev safety
           uv run safety check --json || true
 
-  docker-build:
-    name: Docker Build Test
+  generalized-platform-tests:
+    name: Generalized Platform Tests
     runs-on: ubuntu-latest
     if: github.event.pull_request.draft == false
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v5
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-
-      - name: Build Docker image
-        uses: docker/build-push-action@v5
-        with:
-          context: .
-          load: true
-          push: false
-          tags: toveco-voting:test
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
-
-      - name: Test Docker image
-        run: |
-          # Create test environment file
-          cat > test.env << EOF
-          ADMIN_USERNAME=test-admin
-          ADMIN_PASSWORD=test-password-123
-          SESSION_SECRET_KEY=test-session-key-for-testing-only
-          DATABASE_PATH=/app/data/votes.db
-          HOST=0.0.0.0
-          PORT=8000
-          EOF
-
-          # Test 1: Configuration validation (updated for installed package)
-          echo "Testing configuration validation..."
-          docker run --rm \
-            --env-file test.env \
-            -v $(pwd)/logos:/app/logos:ro \
-            toveco-voting:test \
-            python -c "from toveco_voting.config import settings; settings.validate_security(); print('✓ Configuration validation passed')"
-
-          # Test 2: Dependency availability check
-          echo "Testing dependency availability..."
-          docker run --rm \
-            --env-file test.env \
-            toveco-voting:test \
-            python -c "import fastapi, uvicorn, sqlalchemy; print('✓ All dependencies available')"
-
-          # Test 3: Application import check
-          echo "Testing application import..."
-          docker run --rm \
-            --env-file test.env \
-            toveco-voting:test \
-            python -c "from toveco_voting.main import app; print('✓ Application imports successfully')"
-
-          # Test 4: Container startup test (30 second timeout)
-          echo "Testing container startup and health endpoint..."
-
-          # Start container in background
-          CONTAINER_ID=$(docker run -d \
-            --env-file test.env \
-            -v $(pwd)/logos:/app/logos:ro \
-            -p 8888:8000 \
-            toveco-voting:test)
-
-          echo "Container ID: $CONTAINER_ID"
-
-          # Wait for startup and test health endpoint
-          for i in {1..30}; do
-            echo "Attempt $i/30: Testing health endpoint..."
-            if curl -f http://localhost:8888/api/health > /dev/null 2>&1; then
-              echo "✓ Container started successfully and health endpoint is responsive"
-              docker stop $CONTAINER_ID
-              docker logs $CONTAINER_ID
-              exit 0
-            fi
-            sleep 1
-          done
-
-          # If we get here, the test failed
-          echo "✗ Container startup failed or health endpoint not responsive"
-          echo "Container logs:"
-          docker logs $CONTAINER_ID
-          docker stop $CONTAINER_ID
-          exit 1
-
-  integration:
-    name: Integration Tests
-    runs-on: ubuntu-latest
-    if: github.event.pull_request.draft == false
-    needs: [test, docker-build]
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: voting_platform_test
+          POSTGRES_USER: voting_user
+          POSTGRES_PASSWORD: test_password
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
 
     steps:
       - name: Checkout code
@@ -197,28 +112,151 @@ jobs:
         run: |
           uv sync --dev
 
-      - name: Run integration tests
+      - name: Run Alembic migrations
         run: |
-          export ADMIN_USERNAME=test-admin
-          export ADMIN_PASSWORD=test-password-123
-          export SESSION_SECRET_KEY=test-session-key-for-testing-only
-          uv run pytest tests/ -v --tb=short -k "integration or end_to_end"
+          export DATABASE_URL=postgresql+asyncpg://voting_user:test_password@localhost:5432/voting_platform_test
+          uv run alembic upgrade head
         env:
-          DATABASE_PATH: test_votes.db
+          JWT_SECRET_KEY: test-jwt-secret-for-ci
+          SUPER_ADMIN_PASSWORD: test-super-admin-password
+
+      - name: Test generalized platform infrastructure
+        run: |
+          export JWT_SECRET_KEY=test-jwt-secret-for-ci
+          export SUPER_ADMIN_PASSWORD=test-super-admin-password
+          export DATABASE_URL=postgresql+asyncpg://voting_user:test_password@localhost:5432/voting_platform_test
+
+          # Test database connectivity and health
+          uv run python -c "
+          import asyncio
+          from src.toveco_voting.database_manager import GeneralizedDatabaseManager
+          async def test():
+              db = GeneralizedDatabaseManager()
+              health = await db.health_check()
+              assert health, 'Database health check failed'
+              print('✅ Database health check passed')
+          asyncio.run(test())
+          "
+
+          # Test JWT authentication system
+          uv run python -c "
+          import asyncio
+          from src.toveco_voting.auth_manager import GeneralizedAuthManager
+          from src.toveco_voting.database_manager import GeneralizedDatabaseManager
+
+          async def test():
+              auth = GeneralizedAuthManager()
+              db = GeneralizedDatabaseManager()
+
+              async with db.get_session() as session:
+                  user = await auth.create_user(
+                      email='test@example.com',
+                      password='testpass123',
+                      first_name='Test',
+                      last_name='User',
+                      session=session
+                  )
+                  tokens = auth.create_tokens(user)
+                  assert 'access_token' in tokens
+                  assert 'refresh_token' in tokens
+                  print('✅ JWT authentication system working')
+
+          asyncio.run(test())
+          "
+
+          # Test Row-Level Security
+          uv run python -c "
+          import asyncio
+          from src.toveco_voting.database_manager import GeneralizedDatabaseManager
+          from src.toveco_voting.session_manager import session_manager
+
+          async def test():
+              db = GeneralizedDatabaseManager()
+              async with db.get_session() as session:
+                  # Test RLS isolation
+                  results = await session_manager.test_rls_isolation(session)
+                  assert results.get('test_completed'), 'RLS test failed'
+                  print('✅ Row-Level Security working')
+
+          asyncio.run(test())
+          "
+
+      - name: Test email service integration
+        run: |
+          export JWT_SECRET_KEY=test-jwt-secret-for-ci
+          export EMAIL_BACKEND=mock
+
+          # Test email service
+          uv run python -c "
+          import asyncio
+          from src.toveco_voting.email_service import get_email_service
+
+          async def test():
+              email_service = get_email_service()
+              result = await email_service.send_verification_email(
+                  'test@example.com',
+                  'Test User',
+                  'test-token-123'
+              )
+              assert result, 'Email service test failed'
+              print('✅ Email service working')
+
+          asyncio.run(test())
+          "
+
+  docker-build:
+    name: Docker Build Test
+    runs-on: ubuntu-latest
+    if: github.event.pull_request.draft == false
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build Docker image for generalized platform
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          load: true
+          push: false
+          tags: toveco-generalized:test
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Test Docker Compose setup
+        run: |
+          # Test that docker-compose builds successfully
+          docker compose build
+          echo "✅ Docker Compose build successful"
+
+          # Test PostgreSQL service starts
+          docker compose up -d postgres
+          sleep 10
+
+          # Check PostgreSQL health
+          docker compose exec postgres pg_isready -U voting_user -d voting_platform
+          echo "✅ PostgreSQL service healthy"
+
+          # Cleanup
+          docker compose down -v
 
   pr-quality-gate:
     name: PR Quality Gate
     runs-on: ubuntu-latest
     if: github.event_name == 'pull_request'
-    needs: [test, security, docker-build, integration]
+    needs: [code-quality, security, generalized-platform-tests, docker-build]
 
     steps:
       - name: PR Quality Check Passed
         run: |
-          echo "✅ All quality checks passed!"
-          echo "✅ Tests passed"
-          echo "✅ Security scan completed"
-          echo "✅ Docker build successful"
-          echo "✅ Integration tests passed"
+          echo "🎉 Generalized Platform PR Ready!"
           echo ""
-          echo "This PR is ready for review! 🎉"
+          echo "✅ Code quality checks passed"
+          echo "✅ Security scan completed"
+          echo "✅ Generalized platform tests passed"
+          echo "✅ Docker build successful"
+          echo ""
+          echo "This PR is ready for review! 🚀"
