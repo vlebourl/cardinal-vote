@@ -22,7 +22,7 @@ logger = logging.getLogger(__name__)
 class GeneralizedAuthManager:
     """Manages JWT authentication and user management for the generalized platform."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize the generalized authentication manager."""
         # Use the same bcrypt context as AdminAuthManager for consistency
         self.pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")

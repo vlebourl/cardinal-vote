@@ -5,6 +5,7 @@ import os
 from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
 
+from sqlalchemy import text
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 
@@ -16,7 +17,7 @@ logger = logging.getLogger(__name__)
 class GeneralizedDatabaseManager:
     """Manages async PostgreSQL database operations for the generalized platform."""
 
-    def __init__(self, database_url: str = None):
+    def __init__(self, database_url: str | None = None):
         """Initialize the generalized database manager with async PostgreSQL."""
         self.database_url = database_url or self._get_database_url()
 
@@ -96,15 +97,15 @@ class GeneralizedDatabaseManager:
         try:
             async with self.get_session() as session:
                 # Get PostgreSQL version
-                result = await session.execute("SELECT version()")
+                result = await session.execute(text("SELECT version()"))
                 version = result.scalar_one()
 
                 # Get database name
-                result = await session.execute("SELECT current_database()")
+                result = await session.execute(text("SELECT current_database()"))
                 database_name = result.scalar_one()
 
                 # Get current user
-                result = await session.execute("SELECT current_user")
+                result = await session.execute(text("SELECT current_user"))
                 current_user = result.scalar_one()
 
                 return {
@@ -125,19 +126,19 @@ class GeneralizedDatabaseManager:
         try:
             async with self.get_session() as session:
                 # Get all table names
-                result = await session.execute("""
+                result = await session.execute(text("""
                     SELECT table_name
                     FROM information_schema.tables
                     WHERE table_schema = 'public'
                     ORDER BY table_name
-                """)
+                """))
                 tables = [row[0] for row in result.fetchall()]
 
                 table_info = {}
                 for table in tables:
                     # Get row count for each table
                     try:
-                        result = await session.execute(f"SELECT COUNT(*) FROM {table}")
+                        result = await session.execute(text(f"SELECT COUNT(*) FROM {table}"))
                         count = result.scalar_one()
                         table_info[table] = {"row_count": count}
                     except Exception as e:

@@ -24,7 +24,7 @@ class MultiTenantSessionManager:
     - Providing multi-tenant isolation
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize the session manager."""
         self.session_contexts: dict[str, dict[str, Any]] = {}
         logger.info("Multi-tenant session manager initialized")
