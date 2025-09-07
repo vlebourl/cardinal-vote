@@ -38,7 +38,7 @@ class EmailServiceBase(ABC):
 class MockEmailService(EmailServiceBase):
     """Mock email service for development - logs emails to console."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize mock email service."""
         self.from_email = getattr(
             settings, "FROM_EMAIL", "noreply@voting-platform.local"
@@ -174,7 +174,7 @@ class MockEmailService(EmailServiceBase):
 class SMTPEmailService(EmailServiceBase):
     """SMTP email service for production use."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize SMTP email service."""
         self.smtp_host = getattr(settings, "SMTP_HOST", "localhost")
         self.smtp_port = getattr(settings, "SMTP_PORT", 587)
