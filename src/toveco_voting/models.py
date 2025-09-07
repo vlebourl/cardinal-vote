@@ -1,7 +1,7 @@
 """Database models for the ToVéCo voting platform."""
 
 from datetime import datetime
-from typing import TYPE_CHECKING, Any
+from typing import Any
 from uuid import UUID
 
 from pydantic import BaseModel, Field, validator
@@ -19,7 +19,7 @@ from sqlalchemy import (
 from sqlalchemy.dialects.postgresql import CITEXT, INET, JSONB
 from sqlalchemy.dialects.postgresql import UUID as PostgreSQL_UUID
 from sqlalchemy.ext.declarative import DeclarativeMeta, declarative_base
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import Mapped, relationship
 from sqlalchemy.sql import func
 
 Base: DeclarativeMeta = declarative_base()
@@ -109,7 +109,9 @@ class User(Base):
     last_login = Column(DateTime(timezone=True))
 
     # Relationships
-    votes: "list[Vote]" = relationship("Vote", back_populates="creator", cascade="all, delete-orphan")
+    votes: Mapped["list[Vote]"] = relationship(
+        "Vote", back_populates="creator", cascade="all, delete-orphan"
+    )
 
     # Indexes
     __table_args__ = (
@@ -155,11 +157,11 @@ class Vote(Base):
     ends_at = Column(DateTime(timezone=True))
 
     # Relationships
-    creator: "User" = relationship("User", back_populates="votes")
-    options: "list[VoteOption]" = relationship(
+    creator: Mapped["User"] = relationship("User", back_populates="votes")
+    options: Mapped["list[VoteOption]"] = relationship(
         "VoteOption", back_populates="vote", cascade="all, delete-orphan"
     )
-    responses: "list[VoterResponse]" = relationship(
+    responses: Mapped["list[VoterResponse]"] = relationship(
         "VoterResponse", back_populates="vote", cascade="all, delete-orphan"
     )
 
@@ -202,7 +204,7 @@ class VoteOption(Base):
     )
 
     # Relationships
-    vote: "Vote" = relationship("Vote", back_populates="options")
+    vote: Mapped["Vote"] = relationship("Vote", back_populates="options")
 
     # Constraints and Indexes
     __table_args__ = (
@@ -239,7 +241,7 @@ class VoterResponse(Base):
     )
 
     # Relationships
-    vote: "Vote" = relationship("Vote", back_populates="responses")
+    vote: Mapped["Vote"] = relationship("Vote", back_populates="responses")
 
     # Constraints and Indexes
     __table_args__ = (

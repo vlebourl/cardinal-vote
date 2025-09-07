@@ -241,7 +241,7 @@ class MultiTenantSessionManager:
             Test results dictionary
         """
         try:
-            results = {}
+            results: dict[str, Any] = {}
 
             # Test current session context
             session_info = await self.get_session_info(session)

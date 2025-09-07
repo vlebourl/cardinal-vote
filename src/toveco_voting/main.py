@@ -21,9 +21,9 @@ from .admin_routes_simple import admin_router, setup_admin_router
 from .config import settings
 from .database import DatabaseError, DatabaseManager
 from .models import (
+    LegacyVoteResponse,
     LogoListResponse,
     ValidationError,
-    VoteResponse,
     VoteResults,
     VoteSubmission,
 )
@@ -263,10 +263,10 @@ async def get_logos_api() -> LogoListResponse:
         ) from e
 
 
-@app.post("/api/vote", response_model=VoteResponse, tags=["API"])
+@app.post("/api/vote", response_model=LegacyVoteResponse, tags=["API"])
 async def submit_vote(
     vote: VoteSubmission, db: DatabaseManager = Depends(get_db_manager)
-) -> VoteResponse:
+) -> LegacyVoteResponse:
     """Submit a complete vote with voter name and ratings."""
     try:
         # Additional validation
@@ -294,7 +294,7 @@ async def submit_vote(
         full_name = f"{vote.voter_first_name} {vote.voter_last_name}"
         logger.info(f"Vote submitted successfully by '{full_name}' with ID {vote_id}")
 
-        return VoteResponse(
+        return LegacyVoteResponse(
             success=True, message="Vote enregistré avec succès!", vote_id=vote_id
         )
 

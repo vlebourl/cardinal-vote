@@ -96,7 +96,7 @@ class GeneralizedAuthManager:
         encoded_jwt = jwt.encode(
             to_encode, self.jwt_secret_key, algorithm=self.jwt_algorithm
         )
-        return encoded_jwt
+        return str(encoded_jwt)
 
     def create_refresh_token(self, data: dict[str, Any]) -> str:
         """Create JWT refresh token with longer expiration."""
@@ -106,7 +106,7 @@ class GeneralizedAuthManager:
         encoded_jwt = jwt.encode(
             to_encode, self.jwt_secret_key, algorithm=self.jwt_algorithm
         )
-        return encoded_jwt
+        return str(encoded_jwt)
 
     def verify_token(self, token: str) -> dict[str, Any] | None:
         """Verify and decode a JWT token."""
@@ -114,7 +114,7 @@ class GeneralizedAuthManager:
             payload = jwt.decode(
                 token, self.jwt_secret_key, algorithms=[self.jwt_algorithm]
             )
-            return payload
+            return dict(payload) if payload else None
         except JWTError as e:
             logger.warning(f"Token verification failed: {e}")
             return None
@@ -138,7 +138,11 @@ class GeneralizedAuthManager:
             )
             user = result.scalar_one_or_none()
 
-            if not user or not self.verify_password(password, user.hashed_password):
+            if (
+                not user
+                or not user.hashed_password
+                or not self.verify_password(password, user.hashed_password)
+            ):
                 self._record_login_attempt(ip_address)
                 logger.warning(f"Failed login attempt for {email} from {ip_address}")
                 return None
