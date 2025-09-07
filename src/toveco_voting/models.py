@@ -1,7 +1,7 @@
 """Database models for the ToVéCo voting platform."""
 
 from datetime import datetime
-from typing import Any
+from typing import TYPE_CHECKING, Any
 from uuid import UUID
 
 from pydantic import BaseModel, Field, validator
@@ -109,7 +109,7 @@ class User(Base):
     last_login = Column(DateTime(timezone=True))
 
     # Relationships
-    votes = relationship("Vote", back_populates="creator", cascade="all, delete-orphan")
+    votes: "list[Vote]" = relationship("Vote", back_populates="creator", cascade="all, delete-orphan")
 
     # Indexes
     __table_args__ = (
@@ -155,11 +155,11 @@ class Vote(Base):
     ends_at = Column(DateTime(timezone=True))
 
     # Relationships
-    creator = relationship("User", back_populates="votes")
-    options = relationship(
+    creator: "User" = relationship("User", back_populates="votes")
+    options: "list[VoteOption]" = relationship(
         "VoteOption", back_populates="vote", cascade="all, delete-orphan"
     )
-    responses = relationship(
+    responses: "list[VoterResponse]" = relationship(
         "VoterResponse", back_populates="vote", cascade="all, delete-orphan"
     )
 
@@ -202,7 +202,7 @@ class VoteOption(Base):
     )
 
     # Relationships
-    vote = relationship("Vote", back_populates="options")
+    vote: "Vote" = relationship("Vote", back_populates="options")
 
     # Constraints and Indexes
     __table_args__ = (
@@ -239,7 +239,7 @@ class VoterResponse(Base):
     )
 
     # Relationships
-    vote = relationship("Vote", back_populates="responses")
+    vote: "Vote" = relationship("Vote", back_populates="responses")
 
     # Constraints and Indexes
     __table_args__ = (
