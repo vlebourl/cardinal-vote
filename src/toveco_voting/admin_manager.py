@@ -38,10 +38,10 @@ class AdminManager:
         try:
             # Validate file size
             file_size_mb = len(file_content) / (1024 * 1024)
-            if file_size_mb > settings.MAX_UPLOAD_SIZE_MB:
+            if file_size_mb > settings.MAX_FILE_SIZE_MB:
                 return {
                     "success": False,
-                    "message": f"File too large. Maximum size is {settings.MAX_UPLOAD_SIZE_MB}MB",
+                    "message": f"File too large. Maximum size is {settings.MAX_FILE_SIZE_MB}MB",
                     "file_size": f"{file_size_mb:.2f}MB",
                 }
 
