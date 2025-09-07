@@ -57,19 +57,6 @@ class MockEmailService(EmailServiceBase):
 
             # Create email content
             subject = "Verify your Voting Platform account"
-            html_content = f"""
-            <html>
-                <body>
-                    <h2>Welcome to the Voting Platform, {user_name}!</h2>
-                    <p>Please click the link below to verify your email address:</p>
-                    <p><a href="{verification_url}">Verify Email Address</a></p>
-                    <p>Or copy and paste this URL in your browser:</p>
-                    <p>{verification_url}</p>
-                    <p>This verification link will expire in 24 hours.</p>
-                    <p>If you didn't create an account, you can safely ignore this email.</p>
-                </body>
-            </html>
-            """
 
             text_content = f"""
             Welcome to the Voting Platform, {user_name}!
@@ -110,21 +97,6 @@ class MockEmailService(EmailServiceBase):
 
             # Create email content
             subject = "Reset your Voting Platform password"
-            html_content = f"""
-            <html>
-                <body>
-                    <h2>Password Reset Request</h2>
-                    <p>Hello {user_name},</p>
-                    <p>You requested a password reset for your Voting Platform account.</p>
-                    <p>Click the link below to reset your password:</p>
-                    <p><a href="{reset_url}">Reset Password</a></p>
-                    <p>Or copy and paste this URL in your browser:</p>
-                    <p>{reset_url}</p>
-                    <p>This reset link will expire in 1 hour.</p>
-                    <p>If you didn't request a password reset, you can safely ignore this email.</p>
-                </body>
-            </html>
-            """
 
             text_content = f"""
             Password Reset Request
@@ -164,22 +136,6 @@ class MockEmailService(EmailServiceBase):
         try:
             # Create email content
             subject = "Welcome to the Voting Platform!"
-            html_content = f"""
-            <html>
-                <body>
-                    <h2>Welcome to the Voting Platform, {user_name}!</h2>
-                    <p>Your email has been successfully verified.</p>
-                    <p>You can now:</p>
-                    <ul>
-                        <li>Create voting campaigns</li>
-                        <li>Manage your votes</li>
-                        <li>View results and analytics</li>
-                    </ul>
-                    <p>Get started by logging in and creating your first vote!</p>
-                    <p><a href="http://localhost:8000">Login to Voting Platform</a></p>
-                </body>
-            </html>
-            """
 
             text_content = f"""
             Welcome to the Voting Platform, {user_name}!

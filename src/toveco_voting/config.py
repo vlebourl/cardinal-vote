@@ -241,7 +241,7 @@ class Settings:
             "jwt_algorithm": cls.JWT_ALGORITHM,
             "upload_path": cls.UPLOAD_PATH,
             "max_file_size_mb": cls.MAX_FILE_SIZE_MB,
-            "allowed_extensions": sorted(list(cls.ALLOWED_UPLOAD_EXTENSIONS)),
+            "allowed_extensions": sorted(cls.ALLOWED_UPLOAD_EXTENSIONS),
         }
 
 

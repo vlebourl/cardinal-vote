@@ -1,7 +1,8 @@
 """FastAPI dependencies for the generalized voting platform."""
 
 import logging
-from typing import Annotated, AsyncGenerator
+from collections.abc import AsyncGenerator
+from typing import Annotated
 from uuid import UUID
 
 from fastapi import Depends, HTTPException, status

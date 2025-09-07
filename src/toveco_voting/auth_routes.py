@@ -341,4 +341,4 @@ async def refresh_access_token(
         logger.error(f"Error refreshing token: {e}")
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED, detail="Token refresh failed"
-        )
+        ) from e
