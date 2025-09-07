@@ -1,34 +1,88 @@
 version: "3.8"
 
 services:
-  toveco-voting:
+  # PostgreSQL Database for Generalized Platform
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      - POSTGRES_DB=${POSTGRES_DB:-voting_platform}
+      - POSTGRES_USER=${POSTGRES_USER:-voting_user}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-voting_password_change_in_production}
+      - POSTGRES_INITDB_ARGS=--auth-host=scram-sha-256
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./scripts/init_db.sql:/docker-entrypoint-initdb.d/01_init.sql:ro
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "pg_isready -U ${POSTGRES_USER:-voting_user} -d ${POSTGRES_DB:-voting_platform}",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - voting-platform-network
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # Generalized Voting Platform Application
+  voting-platform:
     build:
       context: .
       dockerfile: Dockerfile
       target: production
     ports:
       - "8000:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
     environment:
-      # These will use values from .env file, with fallbacks if not set
+      # Database Configuration
+      - DATABASE_URL=postgresql+asyncpg://${POSTGRES_USER:-voting_user}:${POSTGRES_PASSWORD:-voting_password_change_in_production}@postgres:5432/${POSTGRES_DB:-voting_platform}
+      # Application Configuration
       - HOST=${HOST:-0.0.0.0}
       - PORT=${PORT:-8000}
       - DEBUG=${DEBUG:-false}
-      - DATABASE_PATH=${DATABASE_PATH:-/app/data/votes.db}
-      - TOVECO_ENV=${TOVECO_ENV:-docker}
-      # Admin credentials - MUST be set in .env file!
+      - ENVIRONMENT=${ENVIRONMENT:-development}
+      # Security Configuration
+      - JWT_SECRET_KEY=${JWT_SECRET_KEY:-jwt_secret_key_change_in_production_extremely_long_and_secure}
+      - JWT_ALGORITHM=${JWT_ALGORITHM:-HS256}
+      - JWT_ACCESS_TOKEN_EXPIRE_MINUTES=${JWT_ACCESS_TOKEN_EXPIRE_MINUTES:-30}
+      # Session Configuration (legacy compatibility)
+      - SESSION_SECRET_KEY=${SESSION_SECRET_KEY:-session_secret_key_change_in_production_123456789}
+      # Email Configuration (Mock for Development)
+      - EMAIL_BACKEND=${EMAIL_BACKEND:-mock}
+      - SMTP_HOST=${SMTP_HOST:-localhost}
+      - SMTP_PORT=${SMTP_PORT:-587}
+      - SMTP_USER=${SMTP_USER:-}
+      - SMTP_PASSWORD=${SMTP_PASSWORD:-}
+      - FROM_EMAIL=${FROM_EMAIL:-noreply@voting-platform.local}
+      # File Storage Configuration
+      - UPLOAD_PATH=${UPLOAD_PATH:-/app/uploads}
+      - MAX_FILE_SIZE_MB=${MAX_FILE_SIZE_MB:-10}
+      # Super Admin Configuration (for platform management)
+      - SUPER_ADMIN_EMAIL=${SUPER_ADMIN_EMAIL:-admin@voting-platform.local}
+      - SUPER_ADMIN_PASSWORD=${SUPER_ADMIN_PASSWORD:-super_admin_password_change_in_production}
+      # Legacy Admin Configuration (backwards compatibility)
       - ADMIN_USERNAME=${ADMIN_USERNAME:-admin}
       - ADMIN_PASSWORD=${ADMIN_PASSWORD:-toveco_admin_2025}
-      - SESSION_SECRET_KEY=${SESSION_SECRET_KEY:-toveco_secret_key_change_in_production_123456789}
     volumes:
-      # Persistent storage for database
-      - toveco_data:/app/data
+      # Persistent storage for uploaded files
+      - voting_uploads:/app/uploads
       # Persistent storage for logs
-      - toveco_logs:/app/logs
-      # Optional: mount custom logos (uncomment if needed)
-      # - ./logos:/app/logos:ro
-      # Optional: mount custom templates (uncomment if needed)
+      - voting_logs:/app/logs
+      # Legacy SQLite data (for migration)
+      - toveco_data:/app/data
+      # Development mounts (uncomment for development)
+      # - ./src:/app/src:ro
       # - ./templates:/app/templates:ro
-      # Optional: mount custom static files (uncomment if needed)
       # - ./static:/app/static:ro
     healthcheck:
       test:
@@ -41,14 +95,14 @@ services:
       interval: 30s
       timeout: 10s
       retries: 3
-      start_period: 60s
+      start_period: 90s
     restart: unless-stopped
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.toveco.rule=Host(`toveco.localhost`)"
-      - "traefik.http.services.toveco.loadbalancer.server.port=8000"
+      - "traefik.http.routers.voting-platform.rule=Host(`voting.localhost`)"
+      - "traefik.http.services.voting-platform.loadbalancer.server.port=8000"
     networks:
-      - toveco-network
+      - voting-platform-network
     logging:
       driver: "json-file"
       options:
@@ -69,17 +123,25 @@ services:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
     networks:
-      - toveco-network
+      - voting-platform-network
     restart: unless-stopped
     profiles:
       - traefik
 
 volumes:
-  toveco_data:
+  # PostgreSQL database persistent storage
+  postgres_data:
     driver: local
-  toveco_logs:
+  # Application uploads persistent storage
+  voting_uploads:
+    driver: local
+  # Application logs persistent storage
+  voting_logs:
+    driver: local
+  # Legacy SQLite data (for migration)
+  toveco_data:
     driver: local
 
 networks:
-  toveco-network:
+  voting-platform-network:
     driver: bridge

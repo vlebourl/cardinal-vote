@@ -264,7 +264,7 @@ async def admin_logos_page(
                 "logos": logo_details,
                 "csrf_token": csrf_token,
                 "app_name": settings.APP_NAME,
-                "max_upload_size_mb": settings.MAX_UPLOAD_SIZE_MB,
+                "max_upload_size_mb": settings.MAX_FILE_SIZE_MB,
             },
         )
     except Exception as e:
