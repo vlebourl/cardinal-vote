@@ -23,7 +23,7 @@ services:
       - "8001:8000"  # Alternative port mapping
 
     # Override command for development
-    command: ["uvicorn", "cardinal_vote.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
+    command: ["uvicorn", "toveco_voting.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
 
     # Development resource limits (more relaxed)
     deploy:
