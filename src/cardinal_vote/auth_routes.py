@@ -1,7 +1,8 @@
 """Authentication routes for the generalized voting platform."""
 
 import logging
-from typing import Any
+from typing import Annotated, Any
+from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Request, status
 from fastapi.security import OAuth2PasswordRequestForm
@@ -11,7 +12,6 @@ from .auth_manager import GeneralizedAuthManager
 from .dependencies import (
     AsyncDatabaseSession,
     CurrentUser,
-    get_async_session,
     get_auth_manager,
 )
 from .models import DatabaseError
@@ -104,8 +104,8 @@ class MessageResponse(BaseModel):
 async def register_user(
     user_data: UserRegistration,
     request: Request,
-    auth_manager: GeneralizedAuthManager = Depends(get_auth_manager),
-    session: AsyncDatabaseSession = Depends(get_async_session),
+    auth_manager: Annotated[GeneralizedAuthManager, Depends(get_auth_manager)],
+    session: AsyncDatabaseSession,
 ) -> TokenResponse:
     """Register a new user account."""
     try:
@@ -165,9 +165,9 @@ async def register_user(
 @auth_router.post("/token", response_model=TokenResponse)
 async def login_user(
     request: Request,
+    auth_manager: Annotated[GeneralizedAuthManager, Depends(get_auth_manager)],
+    session: AsyncDatabaseSession,
     form_data: OAuth2PasswordRequestForm = Depends(),
-    auth_manager: GeneralizedAuthManager = Depends(get_auth_manager),
-    session: AsyncDatabaseSession = Depends(get_async_session),
 ) -> TokenResponse:
     """Login user and return JWT tokens (OAuth2 compatible endpoint)."""
     try:
@@ -224,8 +224,8 @@ async def login_user(
 async def login_user_json(
     user_data: UserLogin,
     request: Request,
-    auth_manager: GeneralizedAuthManager = Depends(get_auth_manager),
-    session: AsyncDatabaseSession = Depends(get_async_session),
+    auth_manager: Annotated[GeneralizedAuthManager, Depends(get_auth_manager)],
+    session: AsyncDatabaseSession,
 ) -> TokenResponse:
     """Login user with JSON data (alternative to OAuth2 form)."""
     try:
@@ -296,8 +296,8 @@ async def get_current_user_info(current_user: CurrentUser) -> UserResponse:
 @auth_router.post("/refresh", response_model=dict[str, str])
 async def refresh_access_token(
     refresh_token: str,
-    auth_manager: GeneralizedAuthManager = Depends(get_auth_manager),
-    session: AsyncDatabaseSession = Depends(get_async_session),
+    auth_manager: Annotated[GeneralizedAuthManager, Depends(get_auth_manager)],
+    session: AsyncDatabaseSession,
 ) -> dict[str, str]:
     """Refresh access token using refresh token."""
     try:
@@ -341,4 +341,213 @@ async def refresh_access_token(
         logger.error(f"Error refreshing token: {e}")
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED, detail="Token refresh failed"
+        ) from e
+
+
+# Password reset and email verification endpoints
+class PasswordResetRequest(BaseModel):
+    """Model for password reset request."""
+
+    email: str = Field(..., description="User email address")
+
+
+class PasswordResetConfirm(BaseModel):
+    """Model for password reset confirmation."""
+
+    token: str = Field(..., description="Password reset token")
+    new_password: str = Field(..., min_length=8, description="New password")
+
+
+class EmailVerificationRequest(BaseModel):
+    """Model for email verification request."""
+
+    token: str = Field(..., description="Email verification token")
+
+
+@auth_router.post("/request-password-reset", response_model=MessageResponse)
+async def request_password_reset(
+    request_data: PasswordResetRequest,
+    auth_manager: Annotated[GeneralizedAuthManager, Depends(get_auth_manager)],
+    session: AsyncDatabaseSession,
+) -> MessageResponse:
+    """Request a password reset email."""
+    try:
+        # Check if user exists
+        user = await auth_manager.get_user_by_email(request_data.email, session)
+        if not user:
+            # Don't reveal if email exists or not for security
+            return MessageResponse(
+                success=True,
+                message="If the email exists, a password reset link has been sent.",
+            )
+
+        # Generate password reset token
+        reset_token = auth_manager.create_password_reset_token(user)
+
+        # Send password reset email
+        from .email_service import get_email_service
+
+        email_service = get_email_service()
+
+        await email_service.send_password_reset_email(
+            user.email or "",
+            f"{user.first_name or ''} {user.last_name or ''}",
+            reset_token,
+        )
+
+        return MessageResponse(
+            success=True,
+            message="If the email exists, a password reset link has been sent.",
+        )
+
+    except Exception as e:
+        logger.error(f"Error requesting password reset: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to process password reset request",
+        ) from e
+
+
+@auth_router.post("/reset-password", response_model=MessageResponse)
+async def reset_password(
+    reset_data: PasswordResetConfirm,
+    auth_manager: Annotated[GeneralizedAuthManager, Depends(get_auth_manager)],
+    session: AsyncDatabaseSession,
+) -> MessageResponse:
+    """Reset user password with valid token."""
+    try:
+        # Verify password reset token
+        payload = auth_manager.verify_password_reset_token(reset_data.token)
+        if payload is None or payload.get("type") != "password_reset":
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Invalid or expired password reset token",
+            )
+
+        user_id_str = payload.get("sub")
+        if not user_id_str:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid token format"
+            )
+
+        # Get user and update password
+        user_id = UUID(user_id_str)
+        user = await auth_manager.get_user_by_id(user_id, session)
+        if not user:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND, detail="User not found"
+            )
+
+        # Hash and update password
+        hashed_password = auth_manager.hash_password(reset_data.new_password)
+        await auth_manager.update_user_password(user_id, hashed_password, session)
+
+        return MessageResponse(
+            success=True, message="Password has been reset successfully."
+        )
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error resetting password: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to reset password",
+        ) from e
+
+
+@auth_router.post("/verify-email", response_model=MessageResponse)
+async def verify_email(
+    verification_data: EmailVerificationRequest,
+    auth_manager: Annotated[GeneralizedAuthManager, Depends(get_auth_manager)],
+    session: AsyncDatabaseSession,
+) -> MessageResponse:
+    """Verify user email address."""
+    try:
+        # Verify email verification token
+        payload = auth_manager.verify_email_verification_token(verification_data.token)
+        if payload is None or payload.get("type") != "email_verification":
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Invalid or expired verification token",
+            )
+
+        user_id_str = payload.get("sub")
+        if not user_id_str:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid token format"
+            )
+
+        # Get user and mark as verified
+        user_id = UUID(user_id_str)
+        user = await auth_manager.get_user_by_id(user_id, session)
+        if not user:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND, detail="User not found"
+            )
+
+        # Update user verification status
+        await auth_manager.verify_user_email(user_id, session)
+
+        return MessageResponse(
+            success=True, message="Email address has been verified successfully."
+        )
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error verifying email: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to verify email",
+        ) from e
+
+
+@auth_router.post("/resend-verification", response_model=MessageResponse)
+async def resend_verification_email(
+    request_data: PasswordResetRequest,  # Reuse same model (just needs email)
+    auth_manager: Annotated[GeneralizedAuthManager, Depends(get_auth_manager)],
+    session: AsyncDatabaseSession,
+) -> MessageResponse:
+    """Resend email verification."""
+    try:
+        # Check if user exists
+        user = await auth_manager.get_user_by_email(request_data.email, session)
+        if not user:
+            # Don't reveal if email exists or not for security
+            return MessageResponse(
+                success=True,
+                message="If the email exists and is unverified, a verification link has been sent.",
+            )
+
+        # Check if user is already verified
+        if user.is_verified:
+            return MessageResponse(
+                success=True, message="Email address is already verified."
+            )
+
+        # Generate verification token
+        verification_token = auth_manager.create_email_verification_token(user)
+
+        # Send verification email
+        from .email_service import get_email_service
+
+        email_service = get_email_service()
+
+        await email_service.send_verification_email(
+            user.email or "",
+            f"{user.first_name or ''} {user.last_name or ''}",
+            verification_token,
+        )
+
+        return MessageResponse(
+            success=True,
+            message="If the email exists and is unverified, a verification link has been sent.",
+        )
+
+    except Exception as e:
+        logger.error(f"Error resending verification email: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to resend verification email",
         ) from e

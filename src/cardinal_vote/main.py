@@ -28,7 +28,7 @@ from .auth_routes import auth_router
 from .config import settings
 from .database import DatabaseError, DatabaseManager
 from .database_manager import GeneralizedDatabaseManager
-from .dependencies import AsyncDatabaseSession, get_async_session
+from .dependencies import AsyncDatabaseSession
 from .models import (
     LegacyVoteResponse,
     LogoListResponse,
@@ -299,7 +299,7 @@ async def results_page(request: Request) -> HTMLResponse:
 async def public_vote_page(
     request: Request,
     slug: str,
-    session: AsyncDatabaseSession = Depends(get_async_session),
+    session: AsyncDatabaseSession,
 ) -> HTMLResponse:
     """Serve the generalized public voting page."""
     try:
@@ -372,6 +372,70 @@ async def public_vote_page(
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to load voting page",
+        ) from e
+
+
+@app.get("/auth/login", response_class=HTMLResponse, tags=["Frontend"])
+async def login_page(request: Request) -> HTMLResponse:
+    """Serve the login page."""
+    try:
+        return templates.TemplateResponse(
+            "auth_login.html",
+            {
+                "request": request,
+                "app_name": settings.APP_NAME,
+                "app_version": settings.APP_VERSION,
+            },
+        )
+    except Exception as e:
+        logger.error(f"Failed to serve login page: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to load login page",
+        ) from e
+
+
+@app.get("/auth/register", response_class=HTMLResponse, tags=["Frontend"])
+async def register_page(request: Request) -> HTMLResponse:
+    """Serve the registration page."""
+    try:
+        return templates.TemplateResponse(
+            "auth_register.html",
+            {
+                "request": request,
+                "app_name": settings.APP_NAME,
+                "app_version": settings.APP_VERSION,
+            },
+        )
+    except Exception as e:
+        logger.error(f"Failed to serve register page: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to load register page",
+        ) from e
+
+
+@app.get("/dashboard", response_class=HTMLResponse, tags=["Frontend"])
+async def dashboard_page(request: Request) -> HTMLResponse:
+    """Serve the user dashboard page."""
+    try:
+        # For now, we'll pass empty user data - the frontend will load it via API
+        user_data = {"user": {"first_name": "", "last_name": "", "email": ""}}
+
+        return templates.TemplateResponse(
+            "dashboard.html",
+            {
+                "request": request,
+                "app_name": settings.APP_NAME,
+                "app_version": settings.APP_VERSION,
+                "user_json": json.dumps(user_data),
+            },
+        )
+    except Exception as e:
+        logger.error(f"Failed to serve dashboard page: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to load dashboard page",
         ) from e
 
 
