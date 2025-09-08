@@ -175,4 +175,7 @@ dev = [
     "selenium>=4.35.0",
     "types-python-jose>=3.5.0.20250531",
     "types-passlib>=1.7.7.20250602",
+    "types-pyyaml>=6.0.12.20250822",
+    "types-defusedxml>=0.7.0.20250822",
+    "types-ujson>=5.10.0.20250822",
 ]

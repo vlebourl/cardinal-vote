@@ -375,7 +375,7 @@ python tests/test_runner.py --docker
 ### Common Issues and Solutions
 
 1. **"Logos not available" test failures**
-   - Ensure `/logos/` directory contains all 11 logo files (toveco1.png - toveco11.png)
+   - Ensure `/logos/` directory contains all 11 logo files (cardinal_vote1.png - cardinal_vote11.png)
    - Verify file permissions and accessibility
 
 2. **Database test failures**

@@ -12,8 +12,8 @@
 
 # Security-sensitive files
 /.env.example @vlebourl
-/src/toveco_voting/config.py @vlebourl
-/src/toveco_voting/admin_*.py @vlebourl
+/src/cardinal_vote/config.py @vlebourl
+/src/cardinal_vote/admin_*.py @vlebourl
 
 # Documentation
 /README.md @vlebourl

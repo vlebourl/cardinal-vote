@@ -140,8 +140,8 @@ services:
   postgres:
     image: postgres:15-alpine
     environment:
-      - POSTGRES_DB=toveco_voting
-      - POSTGRES_USER=toveco
+      - POSTGRES_DB=cardinal_vote
+      - POSTGRES_USER=cardinal_vote
       - POSTGRES_PASSWORD_FILE=/run/secrets/db_password
     secrets:
       - db_password

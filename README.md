@@ -85,7 +85,7 @@ A modern, mobile-first logo voting platform built with FastAPI that implements *
 cat > docker-compose.yml << 'EOF'
 version: '3.8'
 services:
-  toveco-voting:
+  cardinal-vote:
     image: ghcr.io/vlebourl/cardinal-vote:latest
     ports:
       - "8000:8000"
@@ -137,7 +137,7 @@ export SESSION_SECRET_KEY=$(python -c "import secrets; print(secrets.token_urlsa
 # Run the application
 ./scripts/run.sh
 # or
-uv run toveco-voting
+uv run cardinal-vote
 ```
 
 ### Development Setup with Pre-commit Hooks
@@ -248,13 +248,13 @@ Aggregated results show:
 ```json
 {
   "summary": {
-    "toveco3.png": {
+    "cardinal_vote3.png": {
       "average": 1.8,
       "total_votes": 25,
       "total_score": 45,
       "ranking": 1
     },
-    "toveco7.png": {
+    "cardinal_vote7.png": {
       "average": 1.2,
       "total_votes": 25,
       "total_score": 30,
@@ -323,7 +323,7 @@ ghcr.io/vlebourl/cardinal-vote:latest-arm64
 # docker-compose.production.yml
 version: "3.8"
 services:
-  toveco-voting:
+  cardinal-vote:
     image: ghcr.io/vlebourl/cardinal-vote:latest
     ports:
       - "8000:8000"

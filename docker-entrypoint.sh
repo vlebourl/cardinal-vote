@@ -56,7 +56,7 @@ validate_environment() {
 
     # Check logo files
     local logo_count
-    logo_count=$(find /app/logos -name "toveco*.png" 2>/dev/null | wc -l)
+    logo_count=$(find /app/logos -name "cardinal_vote*.png" 2>/dev/null | wc -l)
     if [[ $logo_count -eq 0 ]]; then
         error_exit "No logo files found in /app/logos"
     fi
@@ -136,8 +136,8 @@ preflight_checks() {
     log "✓ Python version: $python_version"
 
     # Check if the application package is available
-    if ! python -c "import sys; sys.path.insert(0, '/app/src'); import toveco_voting" >/dev/null 2>&1; then
-        error_exit "toveco_voting package not available"
+    if ! python -c "import sys; sys.path.insert(0, '/app/src'); import cardinal_vote" >/dev/null 2>&1; then
+        error_exit "cardinal_vote package not available"
     fi
     log "✓ Application package available"
 
@@ -183,7 +183,7 @@ start_application() {
 
     # Build uvicorn command
     local uvicorn_args=(
-        "toveco_voting.main:app"
+        "cardinal_vote.main:app"
         "--host" "$HOST"
         "--port" "$PORT"
         "--access-log"

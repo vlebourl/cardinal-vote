@@ -57,7 +57,7 @@ uv run pytest -v
 ```
 toveco/
 ├── src/                          # Source code
-│   └── toveco_voting/           # Main Python package
+│   └── cardinal_vote/           # Main Python package
 │       ├── __init__.py         # Package initialization
 │       ├── main.py             # FastAPI application & endpoints
 │       ├── models.py           # Pydantic data models
@@ -69,7 +69,7 @@ toveco/
 ├── static/                      # Static assets
 │   ├── style.css               # CSS styles (mobile-first)
 │   └── app.js                  # Client-side JavaScript
-├── logos/                       # Logo PNG files (toveco1.png - toveco11.png)
+├── logos/                       # Logo PNG files (cardinal_vote1.png - cardinal_vote11.png)
 ├── tests/                       # Test suite
 │   ├── __init__.py
 │   ├── test_main.py            # API endpoint tests
@@ -87,7 +87,7 @@ toveco/
 
 ### Core Components
 
-#### 1. **FastAPI Application** (`src/toveco_voting/main.py`)
+#### 1. **FastAPI Application** (`src/cardinal_vote/main.py`)
 
 ```python
 # Key patterns used:
@@ -105,7 +105,7 @@ toveco/
 - `get_db_manager()`: Database dependency injection
 - Exception handlers for user-friendly error responses
 
-#### 2. **Data Models** (`src/toveco_voting/models.py`)
+#### 2. **Data Models** (`src/cardinal_vote/models.py`)
 
 ```python
 # Pydantic models for request/response validation:
@@ -126,7 +126,7 @@ class VoteResults(BaseModel):
 - Custom validators for business logic
 - Response serialization
 
-#### 3. **Database Layer** (`src/toveco_voting/database.py`)
+#### 3. **Database Layer** (`src/cardinal_vote/database.py`)
 
 ```python
 # SQLAlchemy with SQLite:
@@ -143,7 +143,7 @@ class VoteResults(BaseModel):
 - `get_vote_count()`: Basic metrics
 - `health_check()`: Database connectivity
 
-#### 4. **Configuration** (`src/toveco_voting/config.py`)
+#### 4. **Configuration** (`src/cardinal_vote/config.py`)
 
 ```python
 # Environment-based configuration:
@@ -256,7 +256,7 @@ LOG_LEVEL=debug
 
 # 1. Reset database (delete and recreate)
 rm votes_dev.db
-uv run python -c "from src.toveco_voting.database import DatabaseManager; DatabaseManager('votes_dev.db')"
+uv run python -c "from src.cardinal_vote.database import DatabaseManager; DatabaseManager('votes_dev.db')"
 
 # 2. Inspect database contents
 sqlite3 votes_dev.db
@@ -278,7 +278,7 @@ uv run python scripts/add_sample_data.py
 uv run pytest -v
 
 # Run with coverage report
-uv run pytest --cov=src/toveco_voting --cov-report=html
+uv run pytest --cov=src/cardinal_vote --cov-report=html
 
 # Run specific test file
 uv run pytest tests/test_api.py -v
@@ -346,13 +346,13 @@ uv run ruff check --select=E,W,F src/
 
 ```bash
 # Check type annotations
-uv run mypy src/toveco_voting/
+uv run mypy src/cardinal_vote/
 
 # Check with strict mode
-uv run mypy --strict src/toveco_voting/
+uv run mypy --strict src/cardinal_vote/
 
 # Generate type coverage report
-uv run mypy --html-report mypy-report src/toveco_voting/
+uv run mypy --html-report mypy-report src/cardinal_vote/
 ```
 
 #### Formatting with Black
@@ -365,7 +365,7 @@ uv run black src/ tests/
 uv run black --check src/ tests/
 
 # Format specific file
-uv run black src/toveco_voting/main.py
+uv run black src/cardinal_vote/main.py
 ```
 
 ### Pre-commit Hooks
@@ -468,13 +468,13 @@ Changelog: added|changed|fixed|removed|security|performance|deprecated
 ./scripts/run.sh
 
 # With specific port
-uv run uvicorn src.toveco_voting.main:app --host 127.0.0.1 --port 8080 --reload
+uv run uvicorn src.cardinal_vote.main:app --host 127.0.0.1 --port 8080 --reload
 
 # With debug logging
-DEBUG=true uv run uvicorn src.toveco_voting.main:app --host 127.0.0.1 --port 8000 --reload --log-level debug
+DEBUG=true uv run uvicorn src.cardinal_vote.main:app --host 127.0.0.1 --port 8000 --reload --log-level debug
 
 # Profile performance
-uv run python -m cProfile -o profile.stats src/toveco_voting/main.py
+uv run python -m cProfile -o profile.stats src/cardinal_vote/main.py
 ```
 
 ### Hot Reloading Setup
@@ -505,7 +505,7 @@ DEBUG=true
 LOG_LEVEL=debug
 
 # Or set temporarily
-DEBUG=true uv run uvicorn src.toveco_voting.main:app --reload
+DEBUG=true uv run uvicorn src.cardinal_vote.main:app --reload
 ```
 
 ### Common Development Issues
@@ -529,7 +529,7 @@ rm votes_dev.db
 export PYTHONPATH="${PYTHONPATH}:$(pwd)/src"
 
 # Or use proper uv commands
-uv run python -m toveco_voting.main
+uv run python -m cardinal_vote.main
 ```
 
 #### 3. **Port Already in Use**
@@ -555,7 +555,7 @@ PORT=8001 ./scripts/run.sh
 ls -la templates/ static/
 
 # Verify mount paths in container
-docker compose exec toveco-voting ls -la /app/templates/
+docker compose exec cardinal-vote ls -la /app/templates/
 ```
 
 ### Logging and Debugging
@@ -583,7 +583,7 @@ import logging
 logging.getLogger('sqlalchemy.engine').setLevel(logging.INFO)
 
 # Or use database debugging
-from src.toveco_voting.database import DatabaseManager
+from src.cardinal_vote.database import DatabaseManager
 db = DatabaseManager('votes_dev.db')
 db.debug = True  # If implemented
 ```
@@ -612,12 +612,12 @@ if (DEBUG) {
 
 ```bash
 # Profile application startup
-uv run python -m cProfile -o startup_profile.stats -c "import src.toveco_voting.main"
+uv run python -m cProfile -o startup_profile.stats -c "import src.cardinal_vote.main"
 
 # Profile API endpoint
 uv run python -c "
 import cProfile
-from src.toveco_voting.main import app
+from src.cardinal_vote.main import app
 from fastapi.testclient import TestClient
 
 def profile_vote():
@@ -657,10 +657,10 @@ sqlite3 votes_dev.db "VACUUM;"
 uv build
 
 # Build Docker image
-docker build -t toveco-voting:dev .
+docker build -t cardinal-vote:dev .
 
 # Run built image
-docker run -p 8000:8000 -e DEBUG=true toveco-voting:dev
+docker run -p 8000:8000 -e DEBUG=true cardinal-vote:dev
 ```
 
 ### Release Process
@@ -821,7 +821,7 @@ For schema changes:
 # Create migration script
 # scripts/migrate_v1_to_v2.py
 
-from src.toveco_voting.database import DatabaseManager
+from src.cardinal_vote.database import DatabaseManager
 
 def migrate_database(db_path: str):
     db = DatabaseManager(db_path)

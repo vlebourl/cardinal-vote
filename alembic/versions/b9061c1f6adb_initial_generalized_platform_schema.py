@@ -24,7 +24,7 @@ def upgrade() -> None:
     """Upgrade schema."""
     # Create required PostgreSQL extensions
     op.execute("CREATE EXTENSION IF NOT EXISTS citext")
-    
+
     # Create Row-Level Security functions needed for the generalized platform
     op.execute("""
         CREATE OR REPLACE FUNCTION current_user_id() RETURNS UUID AS $$
@@ -36,7 +36,6 @@ def upgrade() -> None:
         END;
         $$ LANGUAGE plpgsql SECURITY DEFINER;
     """)
-    
     op.execute("""
         CREATE OR REPLACE FUNCTION is_super_admin() RETURNS BOOLEAN AS $$
         BEGIN
@@ -47,7 +46,6 @@ def upgrade() -> None:
         END;
         $$ LANGUAGE plpgsql SECURITY DEFINER;
     """)
-    
     op.execute("""
         CREATE OR REPLACE FUNCTION can_access_vote(vote_creator_id UUID) RETURNS BOOLEAN AS $$
         BEGIN
@@ -55,7 +53,6 @@ def upgrade() -> None:
         END;
         $$ LANGUAGE plpgsql SECURITY DEFINER;
     """)
-    
     op.execute("""
         CREATE OR REPLACE FUNCTION set_session_context(
             user_id_param UUID,

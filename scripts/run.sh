@@ -12,4 +12,4 @@ echo "Syncing dependencies..."
 uv sync
 
 echo "Running application on http://0.0.0.0:8000"
-uv run uvicorn src.toveco_voting.main:app --host 0.0.0.0 --port 8000 --reload
+uv run uvicorn src.cardinal_vote.main:app --host 0.0.0.0 --port 8000 --reload
