@@ -11,6 +11,7 @@ from .auth_manager import GeneralizedAuthManager
 from .dependencies import (
     AsyncDatabaseSession,
     CurrentUser,
+    get_async_session,
     get_auth_manager,
 )
 from .models import DatabaseError
@@ -103,8 +104,8 @@ class MessageResponse(BaseModel):
 async def register_user(
     user_data: UserRegistration,
     request: Request,
-    session: AsyncDatabaseSession,
     auth_manager: GeneralizedAuthManager = Depends(get_auth_manager),
+    session: AsyncDatabaseSession = Depends(get_async_session),
 ) -> TokenResponse:
     """Register a new user account."""
     try:
@@ -164,9 +165,9 @@ async def register_user(
 @auth_router.post("/token", response_model=TokenResponse)
 async def login_user(
     request: Request,
-    session: AsyncDatabaseSession,
     form_data: OAuth2PasswordRequestForm = Depends(),
     auth_manager: GeneralizedAuthManager = Depends(get_auth_manager),
+    session: AsyncDatabaseSession = Depends(get_async_session),
 ) -> TokenResponse:
     """Login user and return JWT tokens (OAuth2 compatible endpoint)."""
     try:
@@ -223,8 +224,8 @@ async def login_user(
 async def login_user_json(
     user_data: UserLogin,
     request: Request,
-    session: AsyncDatabaseSession,
     auth_manager: GeneralizedAuthManager = Depends(get_auth_manager),
+    session: AsyncDatabaseSession = Depends(get_async_session),
 ) -> TokenResponse:
     """Login user with JSON data (alternative to OAuth2 form)."""
     try:
@@ -295,8 +296,8 @@ async def get_current_user_info(current_user: CurrentUser) -> UserResponse:
 @auth_router.post("/refresh", response_model=dict[str, str])
 async def refresh_access_token(
     refresh_token: str,
-    session: AsyncDatabaseSession,
     auth_manager: GeneralizedAuthManager = Depends(get_auth_manager),
+    session: AsyncDatabaseSession = Depends(get_async_session),
 ) -> dict[str, str]:
     """Refresh access token using refresh token."""
     try:
