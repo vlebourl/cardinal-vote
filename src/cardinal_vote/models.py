@@ -234,6 +234,12 @@ class VoterResponse(Base):
         ForeignKey("generalized_votes.id", ondelete="CASCADE"),
         nullable=False,
     )
+    # Optional user_id for authenticated voting (for duplicate prevention)
+    user_id = Column(
+        PostgreSQL_UUID(as_uuid=True),
+        ForeignKey("users.id", ondelete="SET NULL"),
+        nullable=True,
+    )
     voter_first_name = Column(String(100), nullable=False)
     voter_last_name = Column(String(100), nullable=False)
     voter_ip = Column(INET)
@@ -245,12 +251,19 @@ class VoterResponse(Base):
     # Relationships
     vote: Mapped["Vote"] = relationship("Vote", back_populates="responses")
 
+    # Relationships
+    user: Mapped["User"] = relationship("User")
+
     # Constraints and Indexes
     __table_args__ = (
-        # IP-based duplicate prevention
-        Index("idx_voter_responses_unique", "vote_id", "voter_ip", unique=True),
+        # IP-based duplicate prevention for anonymous users
+        Index("idx_voter_responses_ip_unique", "vote_id", "voter_ip", unique=True),
+        # User-based duplicate prevention for authenticated users
+        Index("idx_voter_responses_user_unique", "vote_id", "user_id", unique=True),
+        # General indexes
         Index("idx_voter_responses_vote_id", "vote_id"),
         Index("idx_voter_responses_submitted_at", "submitted_at"),
+        Index("idx_voter_responses_user_id", "user_id"),
     )
 
     def __repr__(self) -> str:
@@ -673,7 +686,7 @@ class VoteOptionResponse(BaseModel):
         from_attributes = True
 
     @validator("id", pre=True)
-    def convert_uuid(cls, v):
+    def convert_uuid(cls, v: Any) -> str | None:
         """Convert UUID to string."""
         return str(v) if v else None
 
@@ -697,7 +710,7 @@ class VoteResponse(BaseModel):
         from_attributes = True
 
     @validator("id", pre=True)
-    def convert_uuid(cls, v):
+    def convert_uuid(cls, v: Any) -> str | None:
         """Convert UUID to string."""
         return str(v) if v else None
 
@@ -726,7 +739,7 @@ class VoterResponseData(BaseModel):
         from_attributes = True
 
     @validator("id", pre=True)
-    def convert_uuid(cls, v):
+    def convert_uuid(cls, v: Any) -> str | None:
         """Convert UUID to string."""
         return str(v) if v else None
 
@@ -747,7 +760,7 @@ class VoteResultsSummary(BaseModel):
     total_score: int
 
     @validator("option_id", pre=True)
-    def convert_uuid(cls, v):
+    def convert_uuid(cls, v: Any) -> str | None:
         """Convert UUID to string."""
         return str(v) if v else None
 
@@ -769,7 +782,7 @@ class VoteAnalytics(BaseModel):
         from_attributes = True
 
     @validator("vote_id", pre=True)
-    def convert_uuid(cls, v):
+    def convert_uuid(cls, v: Any) -> str | None:
         """Convert UUID to string."""
         return str(v) if v else None
 
@@ -783,7 +796,7 @@ class GeneralizedVoteSubmissionResponse(BaseModel):
     vote_id: str
 
     @validator("response_id", "vote_id", pre=True)
-    def convert_uuid(cls, v):
+    def convert_uuid(cls, v: Any) -> str | None:
         """Convert UUID to string."""
         return str(v) if v else None
 

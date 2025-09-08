@@ -1,7 +1,7 @@
 #!/bin/bash
 set -euo pipefail
 
-# ToVéCo Logo Voting Platform - Management Script
+# Cardinal Vote Logo Voting Platform - Management Script
 # Convenient management commands for the deployed application
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -24,7 +24,7 @@ log_error() { echo -e "${RED}[ERROR]${NC} $*"; }
 detect_environment() {
     if [[ -f "$PROJECT_DIR/docker-compose.prod.yml" ]] && [[ -f "$PROJECT_DIR/.env" ]]; then
         local env_setting
-        env_setting=$(grep "^TOVECO_ENV=" "$PROJECT_DIR/.env" | cut -d= -f2 | tr -d '"' || echo "")
+        env_setting=$(grep "^CARDINAL_ENV=" "$PROJECT_DIR/.env" | cut -d= -f2 | tr -d '"' || echo "")
         if [[ "$env_setting" == "production" ]]; then
             COMPOSE_FILES="-f docker-compose.yml -f docker-compose.prod.yml"
             log_info "Using production configuration"
@@ -37,7 +37,7 @@ usage() {
     cat << EOF
 Usage: $0 COMMAND [OPTIONS]
 
-Management commands for ToVéCo Logo Voting Platform
+Management commands for Cardinal Vote Logo Voting Platform
 
 COMMANDS:
     start               Start all services
@@ -57,7 +57,7 @@ COMMANDS:
 
 EXAMPLES:
     $0 start            # Start services
-    $0 logs toveco-voting  # Show application logs
+    $0 logs cardinal-voting  # Show application logs
     $0 backup           # Backup database
     $0 health           # Check health
     $0 stats            # Show resource usage
@@ -110,7 +110,7 @@ cmd_logs() {
 cmd_health() {
     log_info "Checking application health..."
 
-    if ! docker compose $COMPOSE_FILES ps toveco-voting | grep -q "Up"; then
+    if ! docker compose $COMPOSE_FILES ps cardinal-voting | grep -q "Up"; then
         log_error "Application is not running"
         return 1
     fi
@@ -123,7 +123,7 @@ cmd_health() {
     else
         log_error "Application health check failed"
         log_info "Recent logs:"
-        docker compose $COMPOSE_FILES logs --tail=20 toveco-voting
+        docker compose $COMPOSE_FILES logs --tail=20 cardinal-voting
         return 1
     fi
 }
@@ -132,20 +132,20 @@ cmd_health() {
 cmd_backup() {
     log_info "Creating database backup..."
 
-    if ! docker compose $COMPOSE_FILES ps toveco-voting | grep -q "Up"; then
+    if ! docker compose $COMPOSE_FILES ps cardinal-voting | grep -q "Up"; then
         log_error "Application is not running"
         return 1
     fi
 
     local backup_name="votes-backup-$(date +%Y%m%d-%H%M%S).db"
 
-    if docker compose $COMPOSE_FILES exec -T toveco-voting test -f /app/data/votes.db; then
-        docker compose $COMPOSE_FILES exec -T toveco-voting \
+    if docker compose $COMPOSE_FILES exec -T cardinal-voting test -f /app/data/votes.db; then
+        docker compose $COMPOSE_FILES exec -T cardinal-voting \
             cp /app/data/votes.db "/app/data/$backup_name"
 
         # Also copy to local backup directory
         mkdir -p "$PROJECT_DIR/backups"
-        docker compose $COMPOSE_FILES cp "toveco-voting:/app/data/$backup_name" "$PROJECT_DIR/backups/"
+        docker compose $COMPOSE_FILES cp "cardinal-voting:/app/data/$backup_name" "$PROJECT_DIR/backups/"
 
         log_success "Database backed up to:"
         log_info "  Container: /app/data/$backup_name"
@@ -182,13 +182,13 @@ cmd_restore() {
     log_info "Restoring database from $backup_file..."
 
     # Stop application
-    docker compose $COMPOSE_FILES stop toveco-voting
+    docker compose $COMPOSE_FILES stop cardinal-voting
 
     # Copy backup file to container
-    docker compose $COMPOSE_FILES cp "$backup_file" toveco-voting:/app/data/votes.db
+    docker compose $COMPOSE_FILES cp "$backup_file" cardinal-voting:/app/data/votes.db
 
     # Start application
-    docker compose $COMPOSE_FILES start toveco-voting
+    docker compose $COMPOSE_FILES start cardinal-voting
 
     log_success "Database restored successfully"
 }
@@ -197,24 +197,24 @@ cmd_restore() {
 cmd_shell() {
     log_info "Opening shell in application container..."
 
-    if ! docker compose $COMPOSE_FILES ps toveco-voting | grep -q "Up"; then
+    if ! docker compose $COMPOSE_FILES ps cardinal-voting | grep -q "Up"; then
         log_error "Application is not running"
         return 1
     fi
 
-    docker compose $COMPOSE_FILES exec toveco-voting bash
+    docker compose $COMPOSE_FILES exec cardinal-voting bash
 }
 
 # Open database shell
 cmd_db() {
     log_info "Opening database shell..."
 
-    if ! docker compose $COMPOSE_FILES ps toveco-voting | grep -q "Up"; then
+    if ! docker compose $COMPOSE_FILES ps cardinal-voting | grep -q "Up"; then
         log_error "Application is not running"
         return 1
     fi
 
-    docker compose $COMPOSE_FILES exec toveco-voting sqlite3 /app/data/votes.db
+    docker compose $COMPOSE_FILES exec cardinal-voting sqlite3 /app/data/votes.db
 }
 
 # Show statistics
@@ -223,7 +223,7 @@ cmd_stats() {
     echo
 
     # Container stats
-    if docker compose $COMPOSE_FILES ps toveco-voting | grep -q "Up"; then
+    if docker compose $COMPOSE_FILES ps cardinal-voting | grep -q "Up"; then
         echo "Container Resource Usage:"
         docker stats --no-stream --format "table {{.Container}}\t{{.CPUPerc}}\t{{.MemUsage}}\t{{.NetIO}}\t{{.BlockIO}}" \
             $(docker compose $COMPOSE_FILES ps -q)
@@ -232,7 +232,7 @@ cmd_stats() {
 
     # Volume usage
     echo "Volume Usage:"
-    local volumes=($(docker compose $COMPOSE_FILES config --volumes 2>/dev/null || echo "toveco_data toveco_logs"))
+    local volumes=($(docker compose $COMPOSE_FILES config --volumes 2>/dev/null || echo "cardinal_data cardinal_logs"))
     for volume in "${volumes[@]}"; do
         if docker volume inspect "$volume" >/dev/null 2>&1; then
             local size
@@ -277,7 +277,7 @@ cmd_update() {
     docker compose $COMPOSE_FILES pull
 
     # Backup before update
-    if docker compose $COMPOSE_FILES ps toveco-voting | grep -q "Up"; then
+    if docker compose $COMPOSE_FILES ps cardinal-voting | grep -q "Up"; then
         cmd_backup
     fi
 
@@ -312,7 +312,7 @@ cmd_reset() {
     docker compose $COMPOSE_FILES down
 
     # Remove volumes
-    local volumes=($(docker compose $COMPOSE_FILES config --volumes 2>/dev/null || echo "toveco_data toveco_logs"))
+    local volumes=($(docker compose $COMPOSE_FILES config --volumes 2>/dev/null || echo "cardinal_data cardinal_logs"))
     for volume in "${volumes[@]}"; do
         if docker volume inspect "$volume" >/dev/null 2>&1; then
             docker volume rm "$volume"

@@ -699,7 +699,7 @@ class VotingApp {
                 votes: this.votes,
                 timestamp: Date.now()
             };
-            localStorage.setItem('toveco-votes-backup', JSON.stringify(voteData));
+            localStorage.setItem('cardinal-votes-backup', JSON.stringify(voteData));
         } catch (error) {
             console.warn('Could not save votes to localStorage:', error);
         }
@@ -710,7 +710,7 @@ class VotingApp {
      */
     loadVotesFromStorage() {
         try {
-            const stored = localStorage.getItem('toveco-votes-backup');
+            const stored = localStorage.getItem('cardinal-votes-backup');
             if (stored) {
                 const voteData = JSON.parse(stored);
                 // Only restore if less than 1 hour old
@@ -731,7 +731,7 @@ class VotingApp {
      */
     clearVotesFromStorage() {
         try {
-            localStorage.removeItem('toveco-votes-backup');
+            localStorage.removeItem('cardinal-votes-backup');
         } catch (error) {
             console.warn('Could not clear votes from localStorage:', error);
         }
@@ -1206,7 +1206,7 @@ class ResultsApp {
             logoHeader.setAttribute('scope', 'col');
             logoHeader.setAttribute('aria-label', `Votes pour ${logo}`);
 
-            // Add logo number (e.g., "1" for "toveco1.png")
+            // Add logo number (e.g., "1" for "cardinal1.png")
             const logoNumber = logo.match(/\d+/)?.[0] || logo;
             logoHeader.innerHTML = `
                 <div class="logo-header-content">

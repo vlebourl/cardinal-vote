@@ -1,6 +1,6 @@
-# 👨‍💻 ToVéCo Logo Voting Platform - Development Guide
+# 👨‍💻 Cardinal Vote Logo Voting Platform - Development Guide
 
-**Complete development setup and contribution guide** for the ToVéCo logo voting platform. Whether you're fixing bugs, adding features, or contributing improvements, this guide has you covered.
+**Complete development setup and contribution guide** for the Cardinal Vote logo voting platform. Whether you're fixing bugs, adding features, or contributing improvements, this guide has you covered.
 
 ![Development Workflow](static/development-workflow.png)
 
@@ -31,8 +31,8 @@ This guide covers:
 curl -LsSf https://astral.sh/uv/install.sh | sh
 
 # Clone the repository
-git clone https://github.com/toveco/voting
-cd toveco
+git clone https://github.com/cardinal-vote/voting
+cd cardinal-vote
 
 # Install all dependencies (dev + prod)
 uv sync --extra dev
@@ -55,7 +55,7 @@ uv run pytest -v
 ### Directory Structure
 
 ```
-toveco/
+cardinal-vote/
 ├── src/                          # Source code
 │   └── cardinal_vote/           # Main Python package
 │       ├── __init__.py         # Package initialization
@@ -230,7 +230,7 @@ nano .env.dev
 ```env
 # Development configuration
 DEBUG=true
-TOVECO_ENV=development
+CARDINAL_VOTE_ENV=development
 HOST=127.0.0.1
 PORT=8000
 
@@ -707,9 +707,9 @@ Build pipeline includes:
 
 ```bash
 # Fork on GitHub/GitLab first, then:
-git clone https://github.com/YOURNAME/toveco-voting
-cd toveco-voting
-git remote add upstream https://github.com/toveco/voting
+git clone https://github.com/YOURNAME/cardinal-vote-voting
+cd cardinal-vote-voting
+git remote add upstream https://github.com/cardinal-vote/voting
 ```
 
 #### 2. Create Feature Branch
@@ -968,4 +968,4 @@ async def submit_vote(vote: VoteSubmission):
 
 ---
 
-_👨‍💻 **Happy coding!** This development guide provides everything needed to contribute effectively to the ToVéCo voting platform. Welcome to the community!_
+_👨‍💻 **Happy coding!** This development guide provides everything needed to contribute effectively to the Cardinal Vote voting platform. Welcome to the community!_

@@ -1,4 +1,4 @@
-# 🗳️ ToVéCo Logo Voting Platform
+# 🗳️ Cardinal Vote Logo Voting Platform
 
 ## Build Status & Quality
 
@@ -375,8 +375,8 @@ MIT License - see [LICENSE](LICENSE) file for details.
 - 📚 **Documentation**: Check our comprehensive guides above
 - 🐛 **Bug Reports**: Open an issue on GitHub
 - 💡 **Feature Requests**: Create an issue with enhancement label
-- 📧 **Questions**: Contact the ToVéCo team
+- 📧 **Questions**: Contact the Cardinal Vote team
 
 ---
 
-_Built with ❤️ by the ToVéCo team using modern web technologies._
+_Built with ❤️ by the Cardinal Vote team using modern web technologies._

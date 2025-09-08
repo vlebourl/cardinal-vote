@@ -1,4 +1,4 @@
-# Multi-stage Dockerfile for ToVéCo Logo Voting Platform
+# Multi-stage Dockerfile for Cardinal Vote Platform
 # Optimized for production with security best practices
 
 # Build stage
@@ -41,7 +41,7 @@ ENV PYTHONUNBUFFERED=1
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV PATH="/opt/venv/bin:$PATH"
 ENV PYTHONPATH="/app"
-ENV TOVECO_ENV=production
+ENV CARDINAL_ENV=production
 
 # Install runtime dependencies only
 RUN apt-get update && apt-get install -y --no-install-recommends \
@@ -65,7 +65,7 @@ COPY --from=builder --chown=app:app /build/.venv /opt/venv
 COPY --from=builder /build/src /app/src
 
 # Fix virtual environment paths and shebangs
-RUN sed -i 's|/build/src|/app/src|' /opt/venv/lib/python3.13/site-packages/_toveco_voting.pth && \
+RUN find /opt/venv/lib/python3.13/site-packages -name "*.pth" -exec sed -i 's|/build/src|/app/src|g' {} \; && \
     find /opt/venv/bin -type f -executable -exec sed -i '1s|#!/build/.venv/bin/python|#!/opt/venv/bin/python|' {} \;
 
 # Switch to app user

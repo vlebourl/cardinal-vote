@@ -1,7 +1,7 @@
 #!/bin/bash
 set -euo pipefail
 
-# ToVéCo Logo Voting Platform - Deployment Script
+# Cardinal Vote Logo Voting Platform - Deployment Script
 # Automated deployment script for production environments
 
 # Configuration
@@ -43,7 +43,7 @@ usage() {
     cat << EOF
 Usage: $0 [OPTIONS]
 
-Deploy ToVéCo Logo Voting Platform using Docker Compose
+Deploy Cardinal Vote Logo Voting Platform using Docker Compose
 
 OPTIONS:
     -e, --environment ENV    Environment: development, production (default: production)
@@ -175,7 +175,7 @@ check_prerequisites() {
 
     # Check logo files
     local logo_count
-    logo_count=$(find "$PROJECT_DIR/logos" -name "toveco*.png" 2>/dev/null | wc -l)
+    logo_count=$(find "$PROJECT_DIR/logos" -name "cardinal*.png" 2>/dev/null | wc -l)
     if [[ $logo_count -eq 0 ]]; then
         log_error "No logo files found in logos/ directory"
         exit 1
@@ -200,11 +200,11 @@ backup_database() {
     log_info "Creating database backup..."
 
     # Check if container is running
-    if docker compose $COMPOSE_FILES ps toveco-voting | grep -q "Up"; then
+    if docker compose $COMPOSE_FILES ps cardinal-voting | grep -q "Up"; then
         local backup_name="votes-backup-$(date +%Y%m%d-%H%M%S).db"
 
-        if docker compose $COMPOSE_FILES exec -T toveco-voting test -f /app/data/votes.db; then
-            docker compose $COMPOSE_FILES exec -T toveco-voting \
+        if docker compose $COMPOSE_FILES exec -T cardinal-voting test -f /app/data/votes.db; then
+            docker compose $COMPOSE_FILES exec -T cardinal-voting \
                 cp /app/data/votes.db "/app/data/$backup_name"
             log_success "Database backed up to $backup_name"
         else
@@ -219,7 +219,7 @@ backup_database() {
 handle_images() {
     if [[ "$BUILD_IMAGE" == "true" ]]; then
         log_info "Building Docker image..."
-        docker compose $COMPOSE_FILES build toveco-voting
+        docker compose $COMPOSE_FILES build cardinal-voting
         log_success "Image built successfully"
     elif [[ "$PULL_IMAGES" == "true" ]]; then
         log_info "Pulling latest images..."
@@ -232,7 +232,7 @@ handle_images() {
 
 # Deploy application
 deploy_application() {
-    log_info "Deploying ToVéCo Logo Voting Platform..."
+    log_info "Deploying Cardinal Vote Logo Voting Platform..."
     log_info "Environment: $ENVIRONMENT"
     log_info "Compose files: $COMPOSE_FILES"
 
@@ -280,7 +280,7 @@ run_health_check() {
 
     # Show logs for debugging
     log_error "Application logs:"
-    docker compose $COMPOSE_FILES logs --tail=50 toveco-voting
+    docker compose $COMPOSE_FILES logs --tail=50 cardinal-voting
 
     return 1
 }
@@ -301,7 +301,7 @@ show_deployment_info() {
     echo
 
     log_info "Useful Commands:"
-    echo "  • View logs: docker compose $COMPOSE_FILES logs -f toveco-voting"
+    echo "  • View logs: docker compose $COMPOSE_FILES logs -f cardinal-voting"
     echo "  • Stop services: docker compose $COMPOSE_FILES down"
     echo "  • Restart services: docker compose $COMPOSE_FILES restart"
     echo "  • Update images: $0 --no-build"
@@ -319,7 +319,7 @@ show_deployment_info() {
 
 # Main function
 main() {
-    log_info "Starting ToVéCo Logo Voting Platform deployment"
+    log_info "Starting Cardinal Vote Logo Voting Platform deployment"
     log_info "Script version: 1.0.0"
     echo
 

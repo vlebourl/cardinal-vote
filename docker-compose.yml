@@ -72,14 +72,14 @@ services:
       - SUPER_ADMIN_PASSWORD=${SUPER_ADMIN_PASSWORD:-super_admin_password_change_in_production}
       # Legacy Admin Configuration (backwards compatibility)
       - ADMIN_USERNAME=${ADMIN_USERNAME:-admin}
-      - ADMIN_PASSWORD=${ADMIN_PASSWORD:-toveco_admin_2025}
+      - ADMIN_PASSWORD=${ADMIN_PASSWORD:-cardinal_admin_2025}
     volumes:
       # Persistent storage for uploaded files
       - voting_uploads:/app/uploads
       # Persistent storage for logs
       - voting_logs:/app/logs
       # Legacy SQLite data (for migration)
-      - toveco_data:/app/data
+      - cardinal_data:/app/data
       # Development mounts (uncomment for development)
       # - ./src:/app/src:ro
       # - ./templates:/app/templates:ro
@@ -139,7 +139,7 @@ volumes:
   voting_logs:
     driver: local
   # Legacy SQLite data (for migration)
-  toveco_data:
+  cardinal_data:
     driver: local
 
 networks:
