@@ -130,7 +130,6 @@ jobs:
           uv run python -c "
           import asyncio
           from src.cardinal_vote.database_manager import GeneralizedDatabaseManager
-          from src.cardinal_vote.database_manager import GeneralizedDatabaseManager
           async def test():
               db = GeneralizedDatabaseManager()
               health = await db.health_check()
@@ -142,8 +141,6 @@ jobs:
           # Test JWT authentication system
           uv run python -c "
           import asyncio
-          from src.cardinal_vote.auth_manager import GeneralizedAuthManager
-          from src.toveco_voting.database_manager import GeneralizedDatabaseManager
           from src.cardinal_vote.auth_manager import GeneralizedAuthManager
           from src.cardinal_vote.database_manager import GeneralizedDatabaseManager
 
@@ -171,8 +168,6 @@ jobs:
           uv run python -c "
           import asyncio
           from src.cardinal_vote.database_manager import GeneralizedDatabaseManager
-          from src.toveco_voting.session_manager import session_manager
-          from src.cardinal_vote.database_manager import GeneralizedDatabaseManager
           from src.cardinal_vote.session_manager import session_manager
 
           async def test():
@@ -194,7 +189,6 @@ jobs:
           # Test email service
           uv run python -c "
           import asyncio
-          from src.cardinal_vote.email_service import get_email_service
           from src.cardinal_vote.email_service import get_email_service
 
           async def test():

@@ -9,6 +9,7 @@ from typing import Any
 from fastapi import APIRouter, HTTPException, Request, status
 from fastapi.responses import Response
 from sqlalchemy import func, select
+from sqlalchemy.engine import Result
 from sqlalchemy.exc import IntegrityError
 
 from .dependencies import (
@@ -71,8 +72,8 @@ def generate_slug(title: str, existing_slugs: set[str] | None = None) -> str:
 
 async def get_existing_slugs(session: AsyncDatabaseSession) -> set[str]:
     """Get all existing vote slugs to ensure uniqueness."""
-    result = await session.execute(select(Vote.slug))
-    return {row[0] for row in result.fetchall()}
+    result: Result[tuple[str | None]] = await session.execute(select(Vote.slug))
+    return {row[0] for row in result.fetchall() if row[0] is not None}
 
 
 # API Endpoints
@@ -121,7 +122,7 @@ async def create_vote(
 
         # Create default text options if none provided
         # For Phase 1 Week 2, we'll create basic text options
-        default_options: list[dict[str, str | int]] = [
+        default_options: list[dict[str, Any]] = [
             {"title": "Option A", "display_order": 0},
             {"title": "Option B", "display_order": 1},
         ]
@@ -209,7 +210,7 @@ async def list_votes(
 
         # Get total count
         count_query = select(func.count()).select_from(query.subquery())
-        total_result = await session.execute(count_query)
+        total_result: Result[tuple[int]] = await session.execute(count_query)
         total = total_result.scalar() or 0
 
         # Apply pagination
@@ -217,7 +218,7 @@ async def list_votes(
         query = query.order_by(Vote.created_at.desc()).offset(offset).limit(page_size)
 
         # Execute query
-        result = await session.execute(query)
+        result: Result[tuple[Vote]] = await session.execute(query)
         votes = result.scalars().all()
 
         # Convert to response format
@@ -276,7 +277,9 @@ async def get_vote(
             ) from None
 
         # Get vote - RLS will ensure only owner can access
-        result = await session.execute(select(Vote).where(Vote.id == vote_uuid))
+        result: Result[tuple[Vote]] = await session.execute(
+            select(Vote).where(Vote.id == vote_uuid)
+        )
         vote = result.scalar_one_or_none()
 
         if not vote:
@@ -330,7 +333,9 @@ async def update_vote(
             ) from None
 
         # Get vote - RLS will ensure only owner can access
-        result = await session.execute(select(Vote).where(Vote.id == vote_uuid))
+        result: Result[tuple[Vote]] = await session.execute(
+            select(Vote).where(Vote.id == vote_uuid)
+        )
         vote = result.scalar_one_or_none()
 
         if not vote:
@@ -399,7 +404,9 @@ async def update_vote_status(
             ) from None
 
         # Get vote
-        result = await session.execute(select(Vote).where(Vote.id == vote_uuid))
+        result: Result[tuple[Vote]] = await session.execute(
+            select(Vote).where(Vote.id == vote_uuid)
+        )
         vote = result.scalar_one_or_none()
 
         if not vote:
@@ -474,7 +481,9 @@ async def delete_vote(
             ) from None
 
         # Get vote
-        result = await session.execute(select(Vote).where(Vote.id == vote_uuid))
+        result: Result[tuple[Vote]] = await session.execute(
+            select(Vote).where(Vote.id == vote_uuid)
+        )
         vote = result.scalar_one_or_none()
 
         if not vote:
@@ -512,7 +521,7 @@ async def get_public_vote(
     """
     try:
         # Get vote by slug - must be active status
-        result = await session.execute(
+        result: Result[tuple[Vote]] = await session.execute(
             select(Vote).where(Vote.slug == slug, Vote.status == "active")
         )
         vote = result.scalar_one_or_none()
@@ -524,7 +533,7 @@ async def get_public_vote(
             )
 
         # Load options for this vote
-        options_result = await session.execute(
+        options_result: Result[tuple[VoteOption]] = await session.execute(
             select(VoteOption)
             .where(VoteOption.vote_id == vote.id)
             .order_by(VoteOption.display_order)
@@ -594,7 +603,7 @@ async def submit_authenticated_vote(
 
     try:
         # Get vote - must be active
-        result = await session.execute(
+        result: Result[tuple[Vote]] = await session.execute(
             select(Vote).where(Vote.id == vote_uuid, Vote.status == "active")
         )
         vote = result.scalar_one_or_none()
@@ -618,7 +627,7 @@ async def submit_authenticated_vote(
             )
 
         # Check for existing user response (user-based duplicate prevention)
-        existing_response = await session.execute(
+        existing_response: Result[tuple[VoterResponse]] = await session.execute(
             select(VoterResponse).where(
                 VoterResponse.vote_id == vote_uuid,
                 VoterResponse.user_id == current_user.id,
@@ -632,7 +641,7 @@ async def submit_authenticated_vote(
 
         # Validate that all option IDs exist for this vote
         option_ids = list(response_data.responses.keys())
-        options_result = await session.execute(
+        options_result: Result[tuple[uuid.UUID]] = await session.execute(
             select(VoteOption.id).where(
                 VoteOption.vote_id == vote_uuid,
                 VoteOption.id.in_([uuid.UUID(oid) for oid in option_ids]),
@@ -648,7 +657,7 @@ async def submit_authenticated_vote(
 
         # Create authenticated voter response
         voter_response = VoterResponse(
-            vote_id=vote_uuid,
+            vote_id=vote_uuid,  # type: ignore[arg-type]
             user_id=current_user.id,  # Link to authenticated user
             voter_first_name=response_data.voter_first_name,
             voter_last_name=response_data.voter_last_name,
@@ -694,7 +703,7 @@ async def submit_anonymous_vote(
     """
     try:
         # Get vote by slug - must be active
-        result = await session.execute(
+        result: Result[tuple[Vote]] = await session.execute(
             select(Vote).where(Vote.slug == slug, Vote.status == "active")
         )
         vote = result.scalar_one_or_none()
@@ -718,10 +727,10 @@ async def submit_anonymous_vote(
             )
 
         # Get client IP for duplicate prevention
-        client_ip = request.client.host
+        client_ip = request.client.host if request.client else "unknown"
 
         # Check for existing IP response (IP-based duplicate prevention)
-        existing_ip_response = await session.execute(
+        existing_ip_response: Result[tuple[VoterResponse]] = await session.execute(
             select(VoterResponse).where(
                 VoterResponse.vote_id == vote.id, VoterResponse.voter_ip == client_ip
             )
@@ -734,7 +743,7 @@ async def submit_anonymous_vote(
 
         # Validate that all option IDs exist for this vote
         option_ids = list(response_data.responses.keys())
-        options_result = await session.execute(
+        options_result: Result[tuple[uuid.UUID]] = await session.execute(
             select(VoteOption.id).where(
                 VoteOption.vote_id == vote.id,
                 VoteOption.id.in_([uuid.UUID(oid) for oid in option_ids]),
@@ -824,7 +833,7 @@ async def get_vote_results(
 
     try:
         # Get vote options
-        options_result = await session.execute(
+        options_result: Result[tuple[VoteOption]] = await session.execute(
             select(VoteOption)
             .where(VoteOption.vote_id == vote_uuid)
             .order_by(VoteOption.display_order)
@@ -832,7 +841,7 @@ async def get_vote_results(
         vote_options = options_result.scalars().all()
 
         # Get all responses
-        responses_result = await session.execute(
+        responses_result: Result[tuple[VoterResponse]] = await session.execute(
             select(VoterResponse).where(VoterResponse.vote_id == vote_uuid)
         )
         responses = responses_result.scalars().all()
@@ -847,7 +856,7 @@ async def get_vote_results(
 
             # Extract ratings for this option from all responses
             for response in responses:
-                if option_id_str in response.responses:
+                if response.responses and option_id_str in response.responses:
                     rating = response.responses[option_id_str]
                     if isinstance(rating, int | float) and -2 <= rating <= 2:
                         ratings.append(rating)
@@ -861,8 +870,9 @@ async def get_vote_results(
                 # Rating distribution
                 rating_distribution = {-2: 0, -1: 0, 0: 0, 1: 0, 2: 0}
                 for rating in ratings:
-                    if rating in rating_distribution:
-                        rating_distribution[rating] += 1
+                    rating_key = int(rating)  # Convert to int for dict key
+                    if rating_key in rating_distribution:
+                        rating_distribution[rating_key] += 1
             else:
                 average_rating = 0.0
                 total_score = 0
@@ -965,7 +975,7 @@ async def export_vote_data(
 
     try:
         # Get vote options
-        options_result = await session.execute(
+        options_result: Result[tuple[VoteOption]] = await session.execute(
             select(VoteOption)
             .where(VoteOption.vote_id == vote_uuid)
             .order_by(VoteOption.display_order)
@@ -973,7 +983,7 @@ async def export_vote_data(
         vote_options = options_result.scalars().all()
 
         # Get all responses
-        responses_result = await session.execute(
+        responses_result: Result[tuple[VoterResponse]] = await session.execute(
             select(VoterResponse)
             .where(VoterResponse.vote_id == vote_uuid)
             .order_by(VoterResponse.submitted_at)
@@ -993,9 +1003,7 @@ async def export_vote_data(
         ) from e
 
 
-async def _export_csv(
-    vote: Vote, options: list[VoteOption], responses: list[VoterResponse]
-) -> Response:
+async def _export_csv(vote: Vote, options: Any, responses: Any) -> Response:
     """Export vote data as CSV."""
     import csv
     import io
@@ -1022,14 +1030,16 @@ async def _export_csv(
         row = [
             response.voter_first_name,
             response.voter_last_name,
-            response.submitted_at.isoformat(),
+            response.submitted_at.isoformat()
+            if response.submitted_at
+            else datetime.utcnow().isoformat(),
             str(response.voter_ip) if response.voter_ip else "",
         ]
 
         # Add ratings for each option
         for option in options:
             option_id = str(option.id)
-            rating = response.responses.get(option_id, "")
+            rating = response.responses.get(option_id, "") if response.responses else ""
             row.append(str(rating))
 
         writer.writerow(row)
@@ -1049,9 +1059,7 @@ async def _export_csv(
     )
 
 
-async def _export_json(
-    vote: Vote, options: list[VoteOption], responses: list[VoterResponse]
-) -> Response:
+async def _export_json(vote: Vote, options: Any, responses: Any) -> Response:
     """Export vote data as JSON."""
     import json
 
@@ -1062,7 +1070,9 @@ async def _export_json(
             "description": vote.description,
             "slug": vote.slug,
             "status": vote.status,
-            "created_at": vote.created_at.isoformat(),
+            "created_at": vote.created_at.isoformat()
+            if vote.created_at
+            else datetime.utcnow().isoformat(),
             "starts_at": vote.starts_at.isoformat() if vote.starts_at else None,
             "ends_at": vote.ends_at.isoformat() if vote.ends_at else None,
         },
@@ -1083,7 +1093,9 @@ async def _export_json(
                 "voter_last_name": response.voter_last_name,
                 "voter_ip": str(response.voter_ip) if response.voter_ip else None,
                 "responses": response.responses,
-                "submitted_at": response.submitted_at.isoformat(),
+                "submitted_at": response.submitted_at.isoformat()
+                if response.submitted_at
+                else datetime.utcnow().isoformat(),
             }
             for response in responses
         ],
@@ -1117,15 +1129,15 @@ async def get_creator_dashboard_stats(
     """
     try:
         # Get user's votes count by status
-        votes_result = await session.execute(
+        votes_result: Result[tuple[str | None, int]] = await session.execute(
             select(Vote.status, func.count(Vote.id))
             .where(Vote.creator_id == current_user.id)
             .group_by(Vote.status)
         )
-        status_counts = dict(votes_result.fetchall())
+        status_counts = {k: v for k, v in votes_result.fetchall() if k is not None}
 
         # Get total responses across all user's votes
-        total_responses_result = await session.execute(
+        total_responses_result: Result[tuple[int]] = await session.execute(
             select(func.count(VoterResponse.id))
             .join(Vote, VoterResponse.vote_id == Vote.id)
             .where(Vote.creator_id == current_user.id)
@@ -1133,7 +1145,7 @@ async def get_creator_dashboard_stats(
         total_responses = total_responses_result.scalar() or 0
 
         # Get recent votes (last 5)
-        recent_votes_result = await session.execute(
+        recent_votes_result: Result[tuple[Vote]] = await session.execute(
             select(Vote)
             .where(Vote.creator_id == current_user.id)
             .order_by(Vote.created_at.desc())
@@ -1145,7 +1157,7 @@ async def get_creator_dashboard_stats(
         recent_votes_data = []
         for vote in recent_votes:
             # Get response count for this vote
-            response_count_result = await session.execute(
+            response_count_result: Result[tuple[int]] = await session.execute(
                 select(func.count(VoterResponse.id)).where(
                     VoterResponse.vote_id == vote.id
                 )
