@@ -6,8 +6,8 @@ This simulates the JavaScript fetch request that was failing.
 
 import sys
 
-from toveco_voting.admin_manager import AdminManager
-from toveco_voting.database import DatabaseManager
+from cardinal_vote.admin_manager import AdminManager
+from cardinal_vote.database import DatabaseManager
 
 sys.path.insert(0, "src")
 

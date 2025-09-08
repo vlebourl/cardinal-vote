@@ -38,10 +38,10 @@ class AdminManager:
         try:
             # Validate file size
             file_size_mb = len(file_content) / (1024 * 1024)
-            if file_size_mb > settings.MAX_UPLOAD_SIZE_MB:
+            if file_size_mb > settings.MAX_FILE_SIZE_MB:
                 return {
                     "success": False,
-                    "message": f"File too large. Maximum size is {settings.MAX_UPLOAD_SIZE_MB}MB",
+                    "message": f"File too large. Maximum size is {settings.MAX_FILE_SIZE_MB}MB",
                     "file_size": f"{file_size_mb:.2f}MB",
                 }
 
@@ -68,18 +68,22 @@ class AdminManager:
 
             # Determine final filename
             if new_name:
-                if not new_name.startswith("toveco") or not new_name.endswith(".png"):
+                if not new_name.startswith(
+                    settings.LOGO_PREFIX
+                ) or not new_name.endswith(".png"):
                     return {
                         "success": False,
-                        "message": "Filename must start with 'toveco' and end with '.png'",
+                        "message": f"Filename must start with '{settings.LOGO_PREFIX}' and end with '.png'",
                     }
                 final_filename = new_name
             else:
                 # Use original filename if it follows convention
-                if not filename.startswith("toveco") or not filename.endswith(".png"):
+                if not filename.startswith(
+                    settings.LOGO_PREFIX
+                ) or not filename.endswith(".png"):
                     return {
                         "success": False,
-                        "message": "Original filename must start with 'toveco' and end with '.png'",
+                        "message": f"Original filename must start with '{settings.LOGO_PREFIX}' and end with '.png'",
                     }
                 final_filename = filename
 
@@ -167,10 +171,12 @@ class AdminManager:
         """
         try:
             # Validate new name
-            if not new_name.startswith("toveco") or not new_name.endswith(".png"):
+            if not new_name.startswith(settings.LOGO_PREFIX) or not new_name.endswith(
+                ".png"
+            ):
                 return {
                     "success": False,
-                    "message": "New filename must start with 'toveco' and end with '.png'",
+                    "message": f"New filename must start with '{settings.LOGO_PREFIX}' and end with '.png'",
                 }
 
             old_path = settings.LOGOS_DIR / old_name
@@ -210,7 +216,7 @@ class AdminManager:
         """Get detailed information about all logos."""
         logos = []
 
-        for logo_path in settings.LOGOS_DIR.glob("toveco*.png"):
+        for logo_path in settings.LOGOS_DIR.glob(f"{settings.LOGO_PREFIX}*.png"):
             try:
                 stat = logo_path.stat()
 
