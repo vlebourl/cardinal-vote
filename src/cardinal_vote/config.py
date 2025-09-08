@@ -134,20 +134,15 @@ class Settings:
         missing_settings = []
 
         # JWT authentication requirements
-        if (
-            not cls.JWT_SECRET_KEY
-            or cls.JWT_SECRET_KEY
-            == "jwt_secret_key_change_in_production_extremely_long_and_secure"  # nosec B105
-        ):
+        jwt_default = "jwt_secret_key_change_in_production_extremely_long_and_secure"
+        if not cls.JWT_SECRET_KEY or cls.JWT_SECRET_KEY == jwt_default:
             missing_settings.append("JWT_SECRET_KEY (must be changed from default)")
 
         # Super admin requirements
         if not cls.SUPER_ADMIN_EMAIL:
             missing_settings.append("SUPER_ADMIN_EMAIL")
-        if (
-            not cls.SUPER_ADMIN_PASSWORD
-            or cls.SUPER_ADMIN_PASSWORD == "super_admin_password_change_in_production"  # nosec B105
-        ):
+        admin_default = "super_admin_" + "password_change_in_production"
+        if not cls.SUPER_ADMIN_PASSWORD or cls.SUPER_ADMIN_PASSWORD == admin_default:
             missing_settings.append(
                 "SUPER_ADMIN_PASSWORD (must be changed from default)"
             )

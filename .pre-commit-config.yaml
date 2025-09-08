@@ -43,10 +43,13 @@ repos:
           - types-Pillow
           - types-aiofiles
           - types-psutil
+          - types-python-jose
+          - types-passlib
           - sqlalchemy[mypy]
           - pydantic
           - fastapi
           - uvicorn
+          - aiosmtplib
         args: [--config-file=mypy.ini]
 
   # Security checks (STRICT MODE - NO IGNORING ALLOWED)

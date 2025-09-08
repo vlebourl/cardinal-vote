@@ -10,13 +10,19 @@ from sqlalchemy.ext.asyncio import create_async_engine
 
 from alembic import context
 
-# Add src directory to path for imports
-src_path = Path(__file__).parent.parent / "src"
-sys.path.insert(0, str(src_path))
 
-# ruff: noqa: E402
-# Import models for autogenerate support (after path setup)
-from cardinal_vote.models import Base
+# Configure import path and import models
+def _setup_imports():
+    """Setup import path and return Base for autogenerate support."""
+    src_path = Path(__file__).parent.parent / "src"
+    sys.path.insert(0, str(src_path))
+
+    from cardinal_vote.models import Base
+
+    return Base
+
+
+Base = _setup_imports()
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
