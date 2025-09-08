@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Repository Overview
 
-This repository contains the ToVéCo Logo Voting Platform - a FastAPI-based web application that allows users to vote on logo designs using a value-based voting system. The application includes both a public voting interface and an administrative dashboard.
+This repository contains the Cardinal Vote Logo Voting Platform - a FastAPI-based web application that allows users to vote on logo designs using a value-based voting system. The application includes both a public voting interface and an administrative dashboard.
 
 ## Technology Stack
 
@@ -17,7 +17,7 @@ This repository contains the ToVéCo Logo Voting Platform - a FastAPI-based web 
 ## Repository Structure
 
 ```
-toveco-voting/
+cardinal-vote-voting/
 ├── .github/                    # GitHub workflows and templates
 │   ├── workflows/
 │   │   ├── ci.yml             # CI pipeline

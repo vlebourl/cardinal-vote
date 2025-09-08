@@ -1,5 +1,5 @@
 /**
- * Admin JavaScript for ToVéCo Voting Platform
+ * Admin JavaScript for Cardinal Vote Voting Platform
  * Provides common functionality for admin interface
  */
 

@@ -416,7 +416,7 @@ Result: Working platform by Week 5
 
 Since we're not maintaining backward compatibility:
 
-1. **Clean Migration**: Export ToVéCo data, transform to new schema
+1. **Clean Migration**: Export Cardinal Vote data, transform to new schema
 2. **Fresh Start**: New codebase structure optimized for multi-tenant
 3. **Legacy Preservation**: Migrate existing votes as read-only historical data
 

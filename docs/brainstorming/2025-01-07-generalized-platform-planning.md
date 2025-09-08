@@ -10,11 +10,11 @@
 
 ### Feature Overview
 
-Transform the current single-purpose ToVéCo logo voting application into a generalized multi-tenant voting platform as a service, enabling users to create custom votes and share them with participants.
+Transform the current single-purpose Cardinal Vote logo voting application into a generalized multi-tenant voting platform as a service, enabling users to create custom votes and share them with participants.
 
 ### Current State Analysis
 
-- **Working ToVéCo Platform**: 101 vote records, SQLite database, Docker deployment
+- **Working Cardinal Vote Platform**: 101 vote records, SQLite database, Docker deployment
 - **Comprehensive PRP Document**: 12-week horizontal phase approach planned
 - **Technical Foundation**: FastAPI backend, responsive frontend, CI/CD pipeline
 - **Target Users**: Homelab enthusiasts seeking self-hosted voting solutions
@@ -63,9 +63,9 @@ Transform the current single-purpose ToVéCo logo voting application into a gene
 
 ### Database Migration Strategy
 
-- **Clean Break**: No backward compatibility required with ToVéCo platform
+- **Clean Break**: No backward compatibility required with Cardinal Vote platform
 - **Fresh Schema**: Complete PostgreSQL multi-tenant design
-- **Data Preservation**: Migrate existing ToVéCo votes as historical reference
+- **Data Preservation**: Migrate existing Cardinal Vote votes as historical reference
 - **Progressive Enhancement**: Start with core tables, expand in phases
 
 ## 4. Implementation Strategy
@@ -202,7 +202,7 @@ Transform the current single-purpose ToVéCo logo voting application into a gene
    - _Impact_: Local storage, mock emails, basic sharing only
    - _Trade-offs_: Less enterprise features but easier deployment
 
-3. **Clean Break from ToVéCo**
+3. **Clean Break from Cardinal Vote**
    - _Rationale_: No backward compatibility needed enables faster development
    - _Impact_: Complete architectural freedom, optimized multi-tenant design
    - _Trade-offs_: Migration effort but better end result

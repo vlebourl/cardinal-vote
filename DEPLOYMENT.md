@@ -1,6 +1,6 @@
-# 🐳 ToVéCo Logo Voting Platform - Complete Deployment Guide
+# 🐳 Cardinal Vote Logo Voting Platform - Complete Deployment Guide
 
-**Professional deployment guide for Ubuntu servers** with Docker, SSL, monitoring, and production-ready configuration for the ToVéCo logo voting platform.
+**Professional deployment guide for Ubuntu servers** with Docker, SSL, monitoring, and production-ready configuration for the Cardinal Vote logo voting platform.
 
 ![Deployment Architecture](static/deployment-architecture.png)
 
@@ -48,7 +48,7 @@ Deploy the complete stack with a single command:
 ```bash
 # Clone repository
 git clone <repository-url>
-cd toveco
+cd cardinal-vote
 
 # Make entrypoint script executable
 chmod +x docker-entrypoint.sh
@@ -58,7 +58,7 @@ docker compose up -d
 
 # Check status
 docker compose ps
-docker compose logs toveco-voting
+docker compose logs cardinal-vote-voting
 ```
 
 The application will be available at:
@@ -81,7 +81,7 @@ nano .env
 
 **Critical settings to update:**
 
-- `TOVECO_ENV=production`
+- `CARDINAL_VOTE_ENV=production`
 - `DEBUG=false`
 - `ALLOWED_ORIGINS=https://your-domain.com`
 - `DATABASE_PATH=/app/data/votes.db`
@@ -106,10 +106,10 @@ chmod 600 secrets/*.txt
 
 ```bash
 # Build optimized production image
-docker build -t toveco-voting:latest .
+docker build -t cardinal-vote-voting:latest .
 
 # Or build with specific tag
-docker build -t toveco-voting:v1.0.0 .
+docker build -t cardinal-vote-voting:v1.0.0 .
 ```
 
 ### 4. Deploy with Production Overrides
@@ -128,7 +128,7 @@ Update `docker-compose.prod.yml` with your domain:
 
 ```yaml
 labels:
-  - "traefik.http.routers.toveco.rule=Host(`voting.yourdomain.com`)"
+  - "traefik.http.routers.cardinal-vote.rule=Host(`voting.yourdomain.com`)"
 ```
 
 Then start with Traefik:
@@ -159,16 +159,16 @@ docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d
 
 ### Logo Configuration
 
-| Variable              | Default  | Description              |
-| --------------------- | -------- | ------------------------ |
-| `EXPECTED_LOGO_COUNT` | `11`     | Expected number of logos |
-| `LOGO_PREFIX`         | `toveco` | Logo filename prefix     |
-| `LOGO_EXTENSION`      | `.png`   | Logo file extension      |
+| Variable              | Default         | Description              |
+| --------------------- | --------------- | ------------------------ |
+| `EXPECTED_LOGO_COUNT` | `11`            | Expected number of logos |
+| `LOGO_PREFIX`         | `cardinal-vote` | Logo filename prefix     |
+| `LOGO_EXTENSION`      | `.png`          | Logo file extension      |
 
 ## 🗂️ File Structure
 
 ```
-toveco/
+cardinal-vote/
 ├── Dockerfile                 # Multi-stage production build
 ├── docker-compose.yml         # Base Docker Compose configuration
 ├── docker-compose.prod.yml    # Production overrides
@@ -176,7 +176,7 @@ toveco/
 ├── .dockerignore             # Docker build context optimization
 ├── .env.example              # Environment configuration template
 ├── src/                      # Application source code
-├── logos/                    # Logo files (toveco*.png)
+├── logos/                    # Logo files (cardinal-vote*.png)
 ├── templates/                # HTML templates
 ├── static/                   # CSS/JS static files
 ├── data/                     # Database storage (Docker volume)
@@ -195,7 +195,7 @@ curl http://localhost:8000/api/health
 
 # Check container health
 docker compose ps
-docker inspect toveco-voting --format='{{.State.Health.Status}}'
+docker inspect cardinal-vote-voting --format='{{.State.Health.Status}}'
 ```
 
 ### Optional: Full Monitoring Stack
@@ -215,16 +215,16 @@ docker compose -f docker-compose.yml -f docker-compose.prod.yml --profile monito
 
 ```bash
 # View application logs
-docker compose logs toveco-voting
+docker compose logs cardinal-vote-voting
 
 # Follow logs in real-time
-docker compose logs -f toveco-voting
+docker compose logs -f cardinal-vote-voting
 
 # View logs with timestamps
-docker compose logs -t toveco-voting
+docker compose logs -t cardinal-vote-voting
 
 # Logs are also stored in volume
-docker volume inspect toveco_logs
+docker volume inspect cardinal-vote_logs
 ```
 
 ## 🔄 Management Commands
@@ -239,23 +239,23 @@ docker compose up -d
 docker compose down
 
 # Restart specific service
-docker compose restart toveco-voting
+docker compose restart cardinal-vote-voting
 
 # Scale application (not recommended with SQLite)
-docker compose up -d --scale toveco-voting=1
+docker compose up -d --scale cardinal-vote-voting=1
 ```
 
 ### Database Management
 
 ```bash
 # Backup database
-docker compose exec toveco-voting cp /app/data/votes.db /app/data/backup-$(date +%Y%m%d).db
+docker compose exec cardinal-vote-voting cp /app/data/votes.db /app/data/backup-$(date +%Y%m%d).db
 
 # Access database directly
-docker compose exec toveco-voting sqlite3 /app/data/votes.db
+docker compose exec cardinal-vote-voting sqlite3 /app/data/votes.db
 
 # View database size
-docker compose exec toveco-voting ls -lh /app/data/votes.db
+docker compose exec cardinal-vote-voting ls -lh /app/data/votes.db
 ```
 
 ### Updates and Maintenance
@@ -265,7 +265,7 @@ docker compose exec toveco-voting ls -lh /app/data/votes.db
 docker compose pull
 
 # Rebuild and deploy
-docker compose build toveco-voting
+docker compose build cardinal-vote-voting
 docker compose up -d
 
 # Clean unused resources
@@ -357,11 +357,11 @@ sudo netstat -tulpn | grep :8000
 
 ```bash
 # Check database file permissions
-docker compose exec toveco-voting ls -la /app/data/
+docker compose exec cardinal-vote-voting ls -la /app/data/
 
 # Recreate database volume
 docker compose down
-docker volume rm toveco_data
+docker volume rm cardinal-vote_data
 docker compose up -d
 ```
 
@@ -369,10 +369,10 @@ docker compose up -d
 
 ```bash
 # Verify logo files
-docker compose exec toveco-voting ls -la /app/logos/
+docker compose exec cardinal-vote-voting ls -la /app/logos/
 
 # Check expected count
-docker compose exec toveco-voting find /app/logos -name "toveco*.png" | wc -l
+docker compose exec cardinal-vote-voting find /app/logos -name "cardinal-vote*.png" | wc -l
 ```
 
 ### Debug Mode
@@ -388,17 +388,17 @@ LOG_LEVEL=debug
 docker compose down && docker compose up -d
 
 # Check debug logs
-docker compose logs -f toveco-voting
+docker compose logs -f cardinal-vote-voting
 ```
 
 ### Container Shell Access
 
 ```bash
 # Access running container
-docker compose exec toveco-voting bash
+docker compose exec cardinal-vote-voting bash
 
 # Run one-off container for debugging
-docker compose run --rm toveco-voting bash
+docker compose run --rm cardinal-vote-voting bash
 ```
 
 ## 📱 Reverse Proxy Configuration
@@ -459,14 +459,14 @@ docker compose pull && docker compose up -d
 docker system prune -af
 
 # As needed: Backup database
-docker compose exec toveco-voting cp /app/data/votes.db /app/data/backup-$(date +%Y%m%d).db
+docker compose exec cardinal-vote-voting cp /app/data/votes.db /app/data/backup-$(date +%Y%m%d).db
 ```
 
 ### Performance Monitoring
 
 ```bash
 # Monitor resource usage
-docker stats toveco-voting
+docker stats cardinal-vote-voting
 
 # Check disk usage
 docker system df
@@ -488,9 +488,9 @@ Update the Traefik labels:
 
 ```yaml
 labels:
-  - "traefik.http.routers.toveco.rule=Host(`voting.yourdomain.com`)"
-  - "traefik.http.routers.toveco.tls=true"
-  - "traefik.http.routers.toveco.tls.certresolver=letsencrypt"
+  - "traefik.http.routers.cardinal-vote.rule=Host(`voting.yourdomain.com`)"
+  - "traefik.http.routers.cardinal-vote.tls=true"
+  - "traefik.http.routers.cardinal-vote.tls.certresolver=letsencrypt"
 ```
 
 2. **Configure Let's Encrypt**:
@@ -523,7 +523,7 @@ sudo apt install certbot python3-certbot-nginx
 sudo certbot --nginx -d voting.yourdomain.com
 ```
 
-3. **Nginx configuration** (`/etc/nginx/sites-available/toveco`):
+3. **Nginx configuration** (`/etc/nginx/sites-available/cardinal-vote`):
 
 ```nginx
 server {
@@ -583,14 +583,14 @@ docker compose -f docker-compose.yml -f docker-compose.prod.yml --profile monito
 
 ### Custom Health Monitoring Script
 
-Create `/opt/toveco/health-monitor.sh`:
+Create `/opt/cardinal-vote/health-monitor.sh`:
 
 ```bash
 #!/bin/bash
-# ToVéCo Health Monitor
+# Cardinal Vote Health Monitor
 
 HEALTH_URL="http://localhost:8000/api/health"
-LOG_FILE="/var/log/toveco/health-monitor.log"
+LOG_FILE="/var/log/cardinal-vote/health-monitor.log"
 
 # Function to log with timestamp
 log_message() {
@@ -604,14 +604,14 @@ check_health() {
         return 0
     else
         log_message "❌ Application unhealthy - attempting restart"
-        docker compose restart toveco-voting
+        docker compose restart cardinal-vote-voting
         return 1
     fi
 }
 
 # Check database size
 check_db_size() {
-    DB_SIZE=$(docker compose exec toveco-voting du -sh /app/data/votes.db 2>/dev/null | cut -f1)
+    DB_SIZE=$(docker compose exec cardinal-vote-voting du -sh /app/data/votes.db 2>/dev/null | cut -f1)
     log_message "📊 Database size: $DB_SIZE"
 }
 
@@ -638,12 +638,12 @@ Set up cron job:
 
 ```bash
 # Add to crontab (crontab -e)
-*/5 * * * * /opt/toveco/health-monitor.sh
+*/5 * * * * /opt/cardinal-vote/health-monitor.sh
 ```
 
 ### Log Aggregation
 
-1. **Configure log rotation** (`/etc/logrotate.d/toveco`):
+1. **Configure log rotation** (`/etc/logrotate.d/cardinal-vote`):
 
 ```
 /var/lib/docker/containers/*/*.log {
@@ -669,7 +669,7 @@ logging:
   driver: "syslog"
   options:
     syslog-address: "udp://localhost:514"
-    tag: "toveco-voting"
+    tag: "cardinal-vote-voting"
 ```
 
 ## 📊 Performance Tuning
@@ -696,8 +696,8 @@ services:
   postgres:
     image: postgres:15-alpine
     environment:
-      POSTGRES_DB: toveco_voting
-      POSTGRES_USER: toveco
+      POSTGRES_DB: cardinal-vote_voting
+      POSTGRES_USER: cardinal-vote
       POSTGRES_PASSWORD_FILE: /run/secrets/db_password
     volumes:
       - postgres_data:/var/lib/postgresql/data
@@ -706,9 +706,9 @@ services:
     profiles:
       - postgres
 
-  toveco-voting:
+  cardinal-vote-voting:
     environment:
-      - DATABASE_URL=postgresql://toveco@postgres:5432/toveco_voting
+      - DATABASE_URL=postgresql://cardinal-vote@postgres:5432/cardinal-vote_voting
 ```
 
 ### Application Scaling
@@ -725,7 +725,7 @@ environment:
 2. **Load Balancing with Nginx**:
 
 ```nginx
-upstream toveco_backend {
+upstream cardinal-vote_backend {
     server 127.0.0.1:8000;
     server 127.0.0.1:8001;  # Additional instances
     server 127.0.0.1:8002;
@@ -734,7 +734,7 @@ upstream toveco_backend {
 
 server {
     location / {
-        proxy_pass http://toveco_backend;
+        proxy_pass http://cardinal-vote_backend;
         # ... rest of configuration
     }
 }
@@ -762,10 +762,10 @@ sudo ufw deny 8000/tcp  # Only allow through reverse proxy
 curl -fsSL https://raw.githubusercontent.com/docker/scout-cli/main/install.sh | sh
 
 # Scan image for vulnerabilities
-docker scout cves toveco-voting:latest
+docker scout cves cardinal-vote-voting:latest
 
 # Scan for policy violations
-docker scout quickview toveco-voting:latest
+docker scout quickview cardinal-vote-voting:latest
 ```
 
 ### Security Headers Validation
@@ -806,13 +806,13 @@ The application includes PWA capabilities:
 
 ### Automated Database Backups
 
-Create `/opt/toveco/backup.sh`:
+Create `/opt/cardinal-vote/backup.sh`:
 
 ```bash
 #!/bin/bash
 # Automated backup script
 
-BACKUP_DIR="/opt/toveco/backups"
+BACKUP_DIR="/opt/cardinal-vote/backups"
 DATE=$(date +%Y%m%d_%H%M%S)
 RETENTION_DAYS=30
 
@@ -820,8 +820,8 @@ RETENTION_DAYS=30
 mkdir -p "$BACKUP_DIR"
 
 # Backup database
-docker compose exec toveco-voting sqlite3 /app/data/votes.db ".backup /app/data/backup_${DATE}.db"
-docker compose cp toveco-voting:/app/data/backup_${DATE}.db "${BACKUP_DIR}/"
+docker compose exec cardinal-vote-voting sqlite3 /app/data/votes.db ".backup /app/data/backup_${DATE}.db"
+docker compose cp cardinal-vote-voting:/app/data/backup_${DATE}.db "${BACKUP_DIR}/"
 
 # Backup configuration
 tar -czf "${BACKUP_DIR}/config_${DATE}.tar.gz" .env docker-compose*.yml
@@ -831,7 +831,7 @@ find "$BACKUP_DIR" -name "*.db" -mtime +$RETENTION_DAYS -delete
 find "$BACKUP_DIR" -name "config_*.tar.gz" -mtime +$RETENTION_DAYS -delete
 
 # Upload to cloud storage (optional)
-# aws s3 cp "${BACKUP_DIR}/" s3://your-backup-bucket/toveco/ --recursive
+# aws s3 cp "${BACKUP_DIR}/" s3://your-backup-bucket/cardinal-vote/ --recursive
 ```
 
 ### Disaster Recovery Plan
@@ -840,17 +840,17 @@ find "$BACKUP_DIR" -name "config_*.tar.gz" -mtime +$RETENTION_DAYS -delete
 
 ```bash
 # Backup entire deployment
-tar -czf toveco-full-backup-$(date +%Y%m%d).tar.gz \
+tar -czf cardinal-vote-full-backup-$(date +%Y%m%d).tar.gz \
     --exclude='data/votes.db-*' \
-    /opt/toveco/
+    /opt/cardinal-vote/
 ```
 
 2. **Recovery Procedure**:
 
 ```bash
 # Restore from backup
-tar -xzf toveco-full-backup-YYYYMMDD.tar.gz -C /opt/
-cd /opt/toveco
+tar -xzf cardinal-vote-full-backup-YYYYMMDD.tar.gz -C /opt/
+cd /opt/cardinal-vote
 docker compose up -d
 
 # Verify restoration
@@ -881,20 +881,20 @@ Example Kubernetes deployment:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: toveco-voting
+  name: cardinal-vote-voting
 spec:
   replicas: 3
   selector:
     matchLabels:
-      app: toveco-voting
+      app: cardinal-vote-voting
   template:
     metadata:
       labels:
-        app: toveco-voting
+        app: cardinal-vote-voting
     spec:
       containers:
-        - name: toveco-voting
-          image: toveco-voting:latest
+        - name: cardinal-vote-voting
+          image: cardinal-vote-voting:latest
           ports:
             - containerPort: 8000
           env:
@@ -914,7 +914,7 @@ spec:
 
 ```bash
 # Monitor memory usage
-docker stats toveco-voting
+docker stats cardinal-vote-voting
 
 # Adjust memory limits
 # In docker-compose.prod.yml:
@@ -933,10 +933,10 @@ deploy:
 
 ```bash
 # Check for long-running transactions
-docker compose exec toveco-voting sqlite3 /app/data/votes.db ".timeout 30000"
+docker compose exec cardinal-vote-voting sqlite3 /app/data/votes.db ".timeout 30000"
 
 # Enable WAL mode (automatic in production)
-docker compose exec toveco-voting sqlite3 /app/data/votes.db "PRAGMA journal_mode=WAL;"
+docker compose exec cardinal-vote-voting sqlite3 /app/data/votes.db "PRAGMA journal_mode=WAL;"
 ```
 
 ### Issue: SSL Certificate Renewal Failures
@@ -1003,4 +1003,4 @@ For additional support or questions, please refer to the application logs and Do
 
 ---
 
-_🚀 **Ready for production?** This deployment guide provides enterprise-grade setup for the ToVéCo voting platform with security, monitoring, and scaling best practices._
+_🚀 **Ready for production?** This deployment guide provides enterprise-grade setup for the Cardinal Vote voting platform with security, monitoring, and scaling best practices._

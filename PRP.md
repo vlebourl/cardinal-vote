@@ -1,10 +1,10 @@
 # Project Requirements & Planning (PRP)
 
-## ToVéCo Logo Voting Platform
+## Cardinal Vote Logo Voting Platform
 
 ### Executive Summary
 
-Development of a web-based voting application for selecting the ToVéCo brand logo using the "vote de valeur" (value voting) methodology. The system will present 11 logo variants to voters who rate each on a scale from -2 to +2, with results aggregated across all participants.
+Development of a web-based voting application for selecting the Cardinal Vote brand logo using the "vote de valeur" (value voting) methodology. The system will present 11 logo variants to voters who rate each on a scale from -2 to +2, with results aggregated across all participants.
 
 ### Project Objectives
 
@@ -52,8 +52,8 @@ Development of a web-based voting application for selecting the ToVéCo brand lo
         "voter_name": "string",
         "timestamp": "ISO 8601",
         "ratings": {
-          "toveco1.png": -2 to 2,
-          "toveco2.png": -2 to 2,
+          "cardinal-vote1.png": -2 to 2,
+          "cardinal-vote2.png": -2 to 2,
           ...
         }
       }
@@ -78,7 +78,7 @@ Development of a web-based voting application for selecting the ToVéCo brand lo
 - **Responsive Design**: Mobile-first approach, works on all devices
 - **Accessibility**: WCAG 2.1 AA compliance
 - **Visual Design**:
-  - Clean, modern aesthetic aligned with ToVéCo eco-friendly brand
+  - Clean, modern aesthetic aligned with Cardinal Vote eco-friendly brand
   - Green color palette with nature-inspired elements
   - Smooth transitions and micro-interactions
 
@@ -259,8 +259,8 @@ pip install -r requirements.txt
 uvicorn main:app --host 0.0.0.0 --port 8000
 
 # Option 3: Systemd service
-sudo systemctl start toveco-voting
-sudo systemctl enable toveco-voting
+sudo systemctl start cardinal-vote-voting
+sudo systemctl enable cardinal-vote-voting
 ```
 
 #### Reverse Proxy Configuration (Nginx example)

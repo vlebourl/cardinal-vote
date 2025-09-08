@@ -1,8 +1,8 @@
-# ToVéCo Logo Voting Platform - Comprehensive Test Suite
+# Cardinal Vote Logo Voting Platform - Comprehensive Test Suite
 
 ## 🎯 Test Suite Overview
 
-This comprehensive test suite validates the complete ToVéCo logo voting workflow and ensures production readiness. The suite covers all aspects from backend API validation to end-to-end user workflows.
+This comprehensive test suite validates the complete Cardinal Vote logo voting workflow and ensures production readiness. The suite covers all aspects from backend API validation to end-to-end user workflows.
 
 ## 📊 Test Coverage Summary
 
@@ -441,6 +441,6 @@ python tests/manual_frontend_tests.py
 4. **Customize performance benchmarks** for your deployment environment
 5. **Add custom tests** for any additional features or requirements
 
-The comprehensive test suite ensures the ToVéCo logo voting platform is production-ready, performant, and maintainable. It provides confidence in the system's reliability and serves as a foundation for future development and maintenance.
+The comprehensive test suite ensures the Cardinal Vote logo voting platform is production-ready, performant, and maintainable. It provides confidence in the system's reliability and serves as a foundation for future development and maintenance.
 
 **Total Test Investment**: 160+ automated tests across 9 test files, providing comprehensive validation of the entire voting platform from API endpoints to complete user workflows.

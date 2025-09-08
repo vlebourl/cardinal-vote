@@ -1,6 +1,6 @@
 # PRP: Generalized Voting Platform Transformation
 
-**Project**: ToVéCo Voting Platform → Multi-Tenant Generalized Voting Platform  
+**Project**: Cardinal Vote Voting Platform → Multi-Tenant Generalized Voting Platform  
 **Type**: Platform Architecture Transformation  
 **Priority**: High - Strategic Platform Evolution  
 **Implementation Timeline**: 12 weeks (4 phases, vertical slice approach)
@@ -9,7 +9,7 @@
 
 ### Business Context
 
-Transform the existing single-purpose ToVéCo logo voting application into a **generalized multi-tenant voting platform as a service** optimized for self-hosted homelab deployments. This evolution enables any user to deploy their own voting platform instance and create custom votes for their communities.
+Transform the existing single-purpose Cardinal Vote logo voting application into a **generalized multi-tenant voting platform as a service** optimized for self-hosted homelab deployments. This evolution enables any user to deploy their own voting platform instance and create custom votes for their communities.
 
 ### Strategic Goals
 
@@ -37,7 +37,7 @@ Transform the existing single-purpose ToVéCo logo voting application into a **g
 
 ### Current Limitations (To Address)
 
-- **Single-Tenant**: Hard-coded ToVéCo branding, SQLite single-database architecture
+- **Single-Tenant**: Hard-coded Cardinal Vote branding, SQLite single-database architecture
 - **Static Content**: Logo files baked into container, no dynamic media upload system
 - **No User Management**: Missing user registration, authentication, and account management
 - **Limited Scalability**: SQLite constraints for concurrent multi-user access
@@ -267,13 +267,13 @@ All Phase 1 Week 1-4 objectives have been **fully implemented and delivered**:
 
 ```python
 # Migration script pattern (extend from existing database.py)
-async def migrate_toveco_data():
-    """Migrate existing ToVéCo votes to new multi-tenant schema"""
-    # Create legacy user for historical ToVéCo data
+async def migrate_cardinal-vote_data():
+    """Migrate existing Cardinal Vote votes to new multi-tenant schema"""
+    # Create legacy user for historical Cardinal Vote data
     legacy_user = User(
-        email="legacy@toveco.system",
+        email="legacy@cardinal-vote.system",
         hashed_password="disabled",
-        first_name="ToVéCo",
+        first_name="Cardinal Vote",
         last_name="Legacy",
         is_verified=True
     )
@@ -281,8 +281,8 @@ async def migrate_toveco_data():
     # Create legacy vote campaign
     legacy_vote = Vote(
         creator_id=legacy_user.id,
-        title="ToVéCo Logo Selection",
-        slug="toveco-legacy",
+        title="Cardinal Vote Logo Selection",
+        slug="cardinal-vote-legacy",
         status="closed"
     )
 
@@ -690,7 +690,7 @@ uv run pytest --cov=src --cov-report=html
 
 ### Data Migration Strategy
 
-1. **Export ToVéCo Data**: Extract all 101+ vote records from existing SQLite database
+1. **Export Cardinal Vote Data**: Extract all 101+ vote records from existing SQLite database
 2. **Transform Schema**: Convert to new multi-tenant structure with legacy user
 3. **Preserve History**: Maintain all existing vote URLs and results for continuity
 4. **Validate Migration**: Comprehensive testing of data integrity and access

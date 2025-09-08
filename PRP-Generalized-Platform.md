@@ -4,11 +4,11 @@
 
 ### Executive Summary
 
-Transform the current ToVéCo Logo Voting Platform from a single-purpose application into a **generalized multi-tenant voting platform as a service**. Users will be able to register, create custom votes with text and/or image options, share voting links, and manage their own voting campaigns through dedicated admin panels.
+Transform the current Cardinal Vote Logo Voting Platform from a single-purpose application into a **generalized multi-tenant voting platform as a service**. Users will be able to register, create custom votes with text and/or image options, share voting links, and manage their own voting campaigns through dedicated admin panels.
 
 ### Project Vision
 
-**From**: Single ToVéCo logo vote with 11 predefined options
+**From**: Single Cardinal Vote logo vote with 11 predefined options
 **To**: Multi-tenant platform where any user can create unlimited custom votes
 
 **Core Value Proposition**:
@@ -31,7 +31,7 @@ Transform the current ToVéCo Logo Voting Platform from a single-purpose applica
 
 #### Current Limitations ⚠️
 
-- **Single-tenant**: Hard-coded for ToVéCo branding and specific logos
+- **Single-tenant**: Hard-coded for Cardinal Vote branding and specific logos
 - **No user management**: No registration or authentication system
 - **Static content**: Logo files are baked into the container
 - **Single vote instance**: Cannot create multiple concurrent votes
@@ -39,7 +39,7 @@ Transform the current ToVéCo Logo Voting Platform from a single-purpose applica
 
 #### Technical Debt Assessment
 
-- **Database schema**: Current tables are ToVéCo-specific, need generalization
+- **Database schema**: Current tables are Cardinal Vote-specific, need generalization
 - **File handling**: Static logo serving needs dynamic media management
 - **Authentication**: No existing user/session management
 - **Multi-tenancy**: No tenant isolation or data separation
@@ -444,14 +444,14 @@ _Week 3: Basic Vote Creation_
 - ✅ PostgreSQL database with complete schema
 - ✅ User registration and authentication system
 - ✅ Basic vote creation and management API
-- ✅ Database migration from current ToVéCo data
+- ✅ Database migration from current Cardinal Vote data
 
 **Success Criteria:**
 
 - Users can register and verify email accounts
 - Users can log in and access authenticated endpoints
 - Basic vote creation workflow functional
-- All existing ToVéCo vote data preserved and accessible
+- All existing Cardinal Vote vote data preserved and accessible
 
 #### Phase 2: Vote Creation & Management (Weeks 4-6)
 
@@ -594,7 +594,7 @@ _Week 12: Polish & Production Readiness_
 
 **Vote Data Migration**
 
-- Export existing ToVéCo vote data from current SQLite database
+- Export existing Cardinal Vote vote data from current SQLite database
 - Create migration script to populate new PostgreSQL schema
 - Preserve all voter responses and timestamps
 - Maintain results and analytics continuity
@@ -717,7 +717,7 @@ _Week 12: Polish & Production Readiness_
 
 **User Adoption Risk**
 
-- _Risk_: Current ToVéCo users unable to access historical data
+- _Risk_: Current Cardinal Vote users unable to access historical data
 - _Mitigation_: Preserve all existing URLs and functionality during transition
 - _Contingency_: Maintain read-only access to legacy system during transition period
 

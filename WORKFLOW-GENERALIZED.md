@@ -2,12 +2,12 @@
 
 ## Overview
 
-This document defines the strict branching and development workflow for transforming the ToVéCo voting platform into a generalized multi-tenant voting service while maintaining the stability of the current production system.
+This document defines the strict branching and development workflow for transforming the Cardinal Vote voting platform into a generalized multi-tenant voting service while maintaining the stability of the current production system.
 
 ## Branch Structure
 
 ```
-main (production - ToVéCo logos voting)
+main (production - Cardinal Vote logos voting)
 │
 └── develop/generalized-platform (integration branch for generalized version)
     ├── feature/gp-phase1-database (Phase 1: Database migration)
@@ -56,7 +56,7 @@ graph LR
 - ❌ Branch directly from `main` for generalized platform work
 - ❌ Merge directly to `main` from feature branches
 - ❌ Skip the `develop/generalized-platform` integration branch
-- ❌ Mix ToVéCo-specific fixes with generalized platform development
+- ❌ Mix Cardinal Vote-specific fixes with generalized platform development
 
 #### ALWAYS:
 
@@ -190,7 +190,7 @@ If applicable, add screenshots
 1. **Comprehensive PR**:
 
 - Full changelog of all phases
-- Migration guide from ToVéCo version
+- Migration guide from Cardinal Vote version
 - Performance comparison
 - Security audit results
 
@@ -205,11 +205,11 @@ If applicable, add screenshots
 
 While developing the generalized platform, the main branch may need updates:
 
-#### For ToVéCo-specific fixes:
+#### For Cardinal Vote-specific fixes:
 
 ```bash
 git checkout main
-git checkout -b hotfix/toveco-{issue}
+git checkout -b hotfix/cardinal-vote-{issue}
 # Fix issue
 git push
 # PR to main
@@ -356,7 +356,7 @@ git push
 Before merging `develop/generalized-platform` to `main`:
 
 - [ ] All 5 phases completed and tested
-- [ ] Migration from ToVéCo version documented and tested
+- [ ] Migration from Cardinal Vote version documented and tested
 - [ ] Performance meets or exceeds current version
 - [ ] Security audit passed
 - [ ] User documentation complete

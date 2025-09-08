@@ -1,8 +1,8 @@
-# ToVéCo Logo Voting Platform - API Documentation
+# Cardinal Vote Logo Voting Platform - API Documentation
 
 ## Overview
 
-The ToVéCo Logo Voting Platform is a FastAPI-based web application that implements a "vote de valeur" methodology for logo selection. Users can rate logos on a scale from -2 to +2 and view aggregated results.
+The Cardinal Vote Logo Voting Platform is a FastAPI-based web application that implements a "vote de valeur" methodology for logo selection. Users can rate logos on a scale from -2 to +2 and view aggregated results.
 
 ## Architecture
 
@@ -46,7 +46,7 @@ Returns a randomized list of available logo files.
 
 ```json
 {
-  "logos": ["toveco3.png", "toveco1.png", "toveco7.png", ...],
+  "logos": ["cardinal-vote3.png", "cardinal-vote1.png", "cardinal-vote7.png", ...],
   "total_count": 11
 }
 ```
@@ -61,9 +61,9 @@ Submit a complete vote with ratings for all logos.
 {
   "voter_name": "John Doe",
   "ratings": {
-    "toveco1.png": 2,
-    "toveco2.png": -1,
-    "toveco3.png": 0,
+    "cardinal-vote1.png": 2,
+    "cardinal-vote2.png": -1,
+    "cardinal-vote3.png": 0,
     ...
   }
 }
@@ -84,7 +84,7 @@ Submit a complete vote with ratings for all logos.
 - `voter_name`: 1-100 characters, non-empty after trimming
 - `ratings`: Must include all available logos
 - Rating values: Must be integers between -2 and +2
-- Logo names: Must match `toveco*.png` format
+- Logo names: Must match `cardinal-vote*.png` format
 
 #### `GET /api/results`
 
@@ -99,7 +99,7 @@ Get aggregated voting results with rankings.
 ```json
 {
   "summary": {
-    "toveco1.png": {
+    "cardinal-vote1.png": {
       "average": 1.5,
       "total_votes": 10,
       "total_score": 15,
@@ -164,7 +164,7 @@ CREATE TABLE votes (
   "id": 1,
   "voter_name": "John Doe",
   "timestamp": "2025-09-04T12:00:00.000000",
-  "ratings": "{\"toveco1.png\": 2, \"toveco2.png\": -1, ...}"
+  "ratings": "{\"cardinal-vote1.png\": 2, \"cardinal-vote2.png\": -1, ...}"
 }
 ```
 
@@ -176,11 +176,11 @@ CREATE TABLE votes (
 {
   "voter_name": "User Name",
   "ratings": {
-    "toveco1.png": 2,    // Strongly accepted
-    "toveco2.png": 1,    // Accepted
-    "toveco3.png": 0,    // Neutral
-    "toveco4.png": -1,   // Rejected
-    "toveco5.png": -2,   // Strongly rejected
+    "cardinal-vote1.png": 2,    // Strongly accepted
+    "cardinal-vote2.png": 1,    // Accepted
+    "cardinal-vote3.png": 0,    // Neutral
+    "cardinal-vote4.png": -1,   // Rejected
+    "cardinal-vote5.png": -2,   // Strongly rejected
     ...
   }
 }
@@ -245,14 +245,14 @@ CREATE TABLE votes (
 ### Directory Structure
 
 ```
-toveco/
-├── src/toveco_voting/          # Python package
+cardinal-vote/
+├── src/cardinal-vote_voting/          # Python package
 │   ├── __init__.py
 │   ├── main.py                 # FastAPI application
 │   ├── models.py               # Data models and validation
 │   ├── database.py             # Database operations
 │   └── config.py               # Configuration settings
-├── logos/                      # Logo PNG files (toveco1.png - toveco11.png)
+├── logos/                      # Logo PNG files (cardinal-vote1.png - cardinal-vote11.png)
 ├── templates/                  # Jinja2 HTML templates
 │   ├── index.html
 │   └── results.html
@@ -275,13 +275,13 @@ toveco/
 ### Production with Uvicorn
 
 ```bash
-uvicorn src.toveco_voting.main:app --host 0.0.0.0 --port 8000
+uvicorn src.cardinal-vote_voting.main:app --host 0.0.0.0 --port 8000
 ```
 
 ### Using uv (recommended)
 
 ```bash
-uv run uvicorn src.toveco_voting.main:app --host 0.0.0.0 --port 8000
+uv run uvicorn src.cardinal-vote_voting.main:app --host 0.0.0.0 --port 8000
 ```
 
 ### Docker Deployment
@@ -295,7 +295,7 @@ COPY . .
 RUN pip install uv && uv sync
 EXPOSE 8000
 
-CMD ["uv", "run", "uvicorn", "src.toveco_voting.main:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["uv", "run", "uvicorn", "src.cardinal-vote_voting.main:app", "--host", "0.0.0.0", "--port", "8000"]
 ```
 
 ## Performance Considerations
@@ -329,7 +329,7 @@ uv run pytest tests/ -v
 ### Test Coverage
 
 ```bash
-uv run pytest tests/ --cov=src/toveco_voting --cov-report=html
+uv run pytest tests/ --cov=src/cardinal-vote_voting --cov-report=html
 ```
 
 ### API Testing with curl
@@ -348,10 +348,10 @@ curl -X POST http://localhost:8000/api/vote \
   -d '{
     "voter_name": "Test User",
     "ratings": {
-      "toveco1.png": 2, "toveco2.png": 1, "toveco3.png": 0,
-      "toveco4.png": -1, "toveco5.png": -2, "toveco6.png": 1,
-      "toveco7.png": 0, "toveco8.png": 2, "toveco9.png": -1,
-      "toveco10.png": 1, "toveco11.png": 0
+      "cardinal-vote1.png": 2, "cardinal-vote2.png": 1, "cardinal-vote3.png": 0,
+      "cardinal-vote4.png": -1, "cardinal-vote5.png": -2, "cardinal-vote6.png": 1,
+      "cardinal-vote7.png": 0, "cardinal-vote8.png": 2, "cardinal-vote9.png": -1,
+      "cardinal-vote10.png": 1, "cardinal-vote11.png": 0
     }
   }'
 ```

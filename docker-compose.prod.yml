@@ -4,9 +4,9 @@ version: "3.8"
 # Usage: docker-compose -f docker-compose.yml -f docker-compose.prod.yml up -d
 
 services:
-  toveco-voting:
+  cardinal-voting:
     # Use pre-built image in production (build separately)
-    image: toveco-voting:latest
+    image: cardinal-voting:latest
 
     # Production environment variables
     # These will use values from .env file, with fallbacks if not set
@@ -15,7 +15,7 @@ services:
       - PORT=${PORT:-8000}
       - DEBUG=${DEBUG:-false}
       - DATABASE_PATH=${DATABASE_PATH:-/app/data/votes.db}
-      - TOVECO_ENV=${TOVECO_ENV:-production}
+      - CARDINAL_ENV=${CARDINAL_ENV:-production}
       # Security headers
       - SECURE_HEADERS=${SECURE_HEADERS:-true}
       # Rate limiting
@@ -66,12 +66,12 @@ services:
     # Production labels for monitoring and routing
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.toveco.rule=Host(`voting.toveco.com`)"
-      - "traefik.http.routers.toveco.entrypoints=websecure"
-      - "traefik.http.routers.toveco.tls.certresolver=letsencrypt"
-      - "traefik.http.services.toveco.loadbalancer.server.port=8000"
+      - "traefik.http.routers.cardinal.rule=Host(`voting.cardinal.com`)"
+      - "traefik.http.routers.cardinal.entrypoints=websecure"
+      - "traefik.http.routers.cardinal.tls.certresolver=letsencrypt"
+      - "traefik.http.services.cardinal.loadbalancer.server.port=8000"
       # Security headers
-      - "traefik.http.routers.toveco.middlewares=security-headers"
+      - "traefik.http.routers.cardinal.middlewares=security-headers"
       - "traefik.http.middlewares.security-headers.headers.customrequestheaders.X-Forwarded-Proto=https"
       - "traefik.http.middlewares.security-headers.headers.customrequestheaders.X-Forwarded-For="
       - "traefik.http.middlewares.security-headers.headers.sslredirect=true"
@@ -98,7 +98,7 @@ services:
       - "--entrypoints.web.address=:80"
       - "--entrypoints.websecure.address=:443"
       # SSL certificate resolver
-      - "--certificatesresolvers.letsencrypt.acme.email=admin@toveco.com"
+      - "--certificatesresolvers.letsencrypt.acme.email=admin@cardinal.com"
       - "--certificatesresolvers.letsencrypt.acme.storage=/letsencrypt/acme.json"
       - "--certificatesresolvers.letsencrypt.acme.httpchallenge.entrypoint=web"
       # Security
@@ -128,7 +128,7 @@ services:
     labels:
       # Dashboard
       - "traefik.enable=true"
-      - "traefik.http.routers.dashboard.rule=Host(`traefik.toveco.com`)"
+      - "traefik.http.routers.dashboard.rule=Host(`traefik.cardinal.com`)"
       - "traefik.http.routers.dashboard.entrypoints=websecure"
       - "traefik.http.routers.dashboard.tls.certresolver=letsencrypt"
       - "traefik.http.routers.dashboard.service=api@internal"
@@ -214,7 +214,7 @@ services:
     restart: unless-stopped
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.grafana.rule=Host(`grafana.toveco.com`)"
+      - "traefik.http.routers.grafana.rule=Host(`grafana.cardinal.com`)"
       - "traefik.http.routers.grafana.entrypoints=websecure"
       - "traefik.http.routers.grafana.tls.certresolver=letsencrypt"
       - "traefik.http.services.grafana.loadbalancer.server.port=3000"

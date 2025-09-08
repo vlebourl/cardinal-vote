@@ -106,9 +106,9 @@ jobs:
 
           # Create deployment README
           cat > deployment-package/README.md << 'EOF'
-          # ToVéCo Voting Platform - Deployment Package
+          # Cardinal Vote Voting Platform - Deployment Package
 
-          This package contains everything needed to deploy the ToVéCo voting platform.
+          This package contains everything needed to deploy the Cardinal Vote voting platform.
 
           ## Quick Start
 
@@ -148,7 +148,7 @@ jobs:
 
       - name: Archive deployment package
         run: |
-          tar -czf toveco-voting-${{ github.ref_name }}-deployment.tar.gz deployment-package/
+          tar -czf cardinal-voting-${{ github.ref_name }}-deployment.tar.gz deployment-package/
 
       - name: Upload deployment package to release
         uses: actions/upload-release-asset@v1
@@ -157,8 +157,8 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ github.event.release.upload_url }}
-          asset_path: ./toveco-voting-${{ github.ref_name }}-deployment.tar.gz
-          asset_name: toveco-voting-${{ github.ref_name }}-deployment.tar.gz
+          asset_path: ./cardinal-voting-${{ github.ref_name }}-deployment.tar.gz
+          asset_name: cardinal-voting-${{ github.ref_name }}-deployment.tar.gz
           asset_content_type: application/gzip
 
   release-notification:
@@ -192,7 +192,7 @@ jobs:
             \`\`\`bash
             # Download and extract deployment package
             wget ${release.assets.find(a => a.name.includes('deployment')).browser_download_url}
-            tar -xzf toveco-voting-${{ github.ref_name }}-deployment.tar.gz
+            tar -xzf cardinal-voting-${{ github.ref_name }}-deployment.tar.gz
             cd deployment-package
 
             # Configure environment
