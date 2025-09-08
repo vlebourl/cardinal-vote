@@ -1,9 +1,11 @@
 """Main FastAPI application for the ToVéCo voting platform."""
 
+import json
 import logging
 import random
 from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
+from datetime import datetime
 from typing import Any
 
 import uvicorn
@@ -13,6 +15,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
+from sqlalchemy import select
 
 from .admin_auth import AdminAuthManager
 from .admin_manager import AdminManager
@@ -25,10 +28,13 @@ from .auth_routes import auth_router
 from .config import settings
 from .database import DatabaseError, DatabaseManager
 from .database_manager import GeneralizedDatabaseManager
+from .dependencies import AsyncDatabaseSession, get_async_session
 from .models import (
     LegacyVoteResponse,
     LogoListResponse,
     ValidationError,
+    Vote,
+    VoteOption,
     VoteResults,
     VoteSubmission,
 )
@@ -254,7 +260,7 @@ async def home(request: Request) -> HTMLResponse:
     """Serve the main voting page."""
     try:
         return templates.TemplateResponse(
-            "index.html",
+            "legacy_index.html",
             {
                 "request": request,
                 "app_name": settings.APP_NAME,
@@ -286,6 +292,86 @@ async def results_page(request: Request) -> HTMLResponse:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to load results page",
+        ) from e
+
+
+@app.get("/vote/{slug}", response_class=HTMLResponse, tags=["Frontend"])
+async def public_vote_page(
+    request: Request,
+    slug: str,
+    session: AsyncDatabaseSession = Depends(get_async_session),
+) -> HTMLResponse:
+    """Serve the generalized public voting page."""
+    try:
+        # Get vote by slug - must be active status
+        result = await session.execute(
+            select(Vote).where(Vote.slug == slug, Vote.status == "active")
+        )
+        vote = result.scalar_one_or_none()
+
+        if not vote:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Vote not found or not active",
+            )
+
+        # Check if voting period is valid (if specified)
+        now = datetime.utcnow()
+        if vote.starts_at and now < vote.starts_at:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Voting has not started yet",
+            )
+        if vote.ends_at and now > vote.ends_at:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST, detail="Voting has ended"
+            )
+
+        # Load options for this vote
+        options_result = await session.execute(
+            select(VoteOption)
+            .where(VoteOption.vote_id == vote.id)
+            .order_by(VoteOption.display_order)
+        )
+        options = options_result.scalars().all()
+
+        # Prepare vote data for frontend
+        vote_data = {
+            "id": str(vote.id),
+            "title": vote.title,
+            "description": vote.description,
+            "slug": vote.slug,
+            "status": vote.status,
+            "starts_at": vote.starts_at.isoformat() if vote.starts_at else None,
+            "ends_at": vote.ends_at.isoformat() if vote.ends_at else None,
+            "options": [
+                {
+                    "id": str(option.id),
+                    "option_type": option.option_type,
+                    "title": option.title,
+                    "content": option.content,
+                    "display_order": option.display_order,
+                }
+                for option in options
+            ],
+        }
+
+        return templates.TemplateResponse(
+            "public_vote.html",
+            {
+                "request": request,
+                "vote": vote,  # For template rendering
+                "vote_json": json.dumps(vote_data),  # For JavaScript
+            },
+        )
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Failed to serve public vote page for slug {slug}: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to load voting page",
         ) from e
 
 
