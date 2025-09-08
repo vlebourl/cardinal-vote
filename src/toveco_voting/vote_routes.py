@@ -1,0 +1,655 @@
+"""Vote management routes for the generalized voting platform."""
+
+import logging
+import re
+import uuid
+from datetime import datetime
+
+from fastapi import APIRouter, HTTPException, status
+from sqlalchemy import func, select
+from sqlalchemy.exc import IntegrityError
+
+from .dependencies import (
+    AsyncDatabaseSession,
+    CurrentUser,
+)
+from .models import (
+    GeneralizedVoteSubmissionResponse,
+    Vote,
+    VoteCreate,
+    VoteListResponse,
+    VoteOption,
+    VoteResponse,
+    VoterResponse,
+    VoterResponseCreate,
+    VoteStatusUpdate,
+    VoteUpdate,
+)
+
+logger = logging.getLogger(__name__)
+
+# Create router
+vote_router = APIRouter(prefix="/api/votes", tags=["Votes"])
+
+
+# Utility functions
+def generate_slug(title: str, existing_slugs: set[str] | None = None) -> str:
+    """
+    Generate a unique URL-safe slug from a title.
+
+    Args:
+        title: The vote title to convert to a slug
+        existing_slugs: Set of existing slugs to avoid duplicates
+
+    Returns:
+        A unique URL-safe slug
+    """
+    # Convert to lowercase and replace spaces with hyphens
+    slug = re.sub(r"[^\w\s-]", "", title.lower())
+    slug = re.sub(r"[-\s]+", "-", slug).strip("-")
+
+    # Truncate if too long
+    if len(slug) > 50:
+        slug = slug[:50].rstrip("-")
+
+    # If no valid characters remain, use a UUID-based slug
+    if not slug or len(slug) < 3:
+        slug = f"vote-{str(uuid.uuid4())[:8]}"
+
+    # Ensure uniqueness by appending counter if needed
+    if existing_slugs is not None:
+        original_slug = slug
+        counter = 1
+        while slug in existing_slugs:
+            slug = f"{original_slug}-{counter}"
+            counter += 1
+
+    return slug
+
+
+async def get_existing_slugs(session: AsyncDatabaseSession) -> set[str]:
+    """Get all existing vote slugs to ensure uniqueness."""
+    result = await session.execute(select(Vote.slug))
+    return {row[0] for row in result.fetchall()}
+
+
+# API Endpoints
+
+
+@vote_router.post("/", response_model=VoteResponse, status_code=status.HTTP_201_CREATED)
+async def create_vote(
+    vote_data: VoteCreate,
+    current_user: CurrentUser,
+    session: AsyncDatabaseSession,
+) -> VoteResponse:
+    """
+    Create a new vote with options.
+
+    Multi-tenant isolation is automatically enforced via RLS policies.
+    Only the creator can see and manage their votes.
+    """
+    try:
+        # Generate unique slug if not provided
+        slug = vote_data.slug
+        if not slug:
+            existing_slugs = await get_existing_slugs(session)
+            slug = generate_slug(vote_data.title, existing_slugs)
+        else:
+            # Validate provided slug is unique
+            existing_vote = await session.execute(select(Vote).where(Vote.slug == slug))
+            if existing_vote.first():
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail="A vote with this slug already exists",
+                )
+
+        # Create the vote
+        vote = Vote(
+            creator_id=current_user.id,
+            title=vote_data.title,
+            description=vote_data.description,
+            slug=slug,
+            starts_at=vote_data.starts_at,
+            ends_at=vote_data.ends_at,
+            status="draft",  # Always start as draft
+        )
+
+        session.add(vote)
+        await session.flush()  # Get the vote ID
+
+        # Create default text options if none provided
+        # For Phase 1 Week 2, we'll create basic text options
+        default_options: list[dict[str, str | int]] = [
+            {"title": "Option A", "display_order": 0},
+            {"title": "Option B", "display_order": 1},
+        ]
+
+        for _idx, option_data in enumerate(default_options):
+            option = VoteOption(
+                vote_id=vote.id,
+                option_type="text",
+                title=str(option_data["title"]),
+                content=str(option_data["title"]),  # For text options, content = title
+                display_order=int(option_data["display_order"]),
+            )
+            session.add(option)
+
+        await session.commit()
+
+        # Reload the vote with relationships
+        result = await session.execute(select(Vote).where(Vote.id == vote.id))
+        created_vote = result.scalar_one()
+
+        # Convert to response format
+        return VoteResponse(
+            id=str(created_vote.id),
+            title=created_vote.title or "",
+            description=created_vote.description,
+            slug=created_vote.slug or "",
+            status=created_vote.status or "draft",
+            created_at=created_vote.created_at or datetime.utcnow(),
+            updated_at=created_vote.updated_at,
+            starts_at=created_vote.starts_at,
+            ends_at=created_vote.ends_at,
+            creator_email=current_user.email,
+            options=[],  # Will be loaded separately in Phase 1 Week 3
+        )
+
+    except IntegrityError as e:
+        await session.rollback()
+        logger.error(f"Database integrity error creating vote: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="A vote with this slug already exists",
+        ) from e
+    except Exception as e:
+        await session.rollback()
+        logger.error(f"Error creating vote: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to create vote",
+        ) from e
+
+
+@vote_router.get("/", response_model=VoteListResponse)
+async def list_votes(
+    current_user: CurrentUser,
+    session: AsyncDatabaseSession,
+    page: int = 1,
+    page_size: int = 20,
+    status_filter: str | None = None,
+    search: str | None = None,
+) -> VoteListResponse:
+    """
+    List votes for the current user with pagination and filtering.
+
+    Multi-tenant isolation ensures users only see their own votes.
+    """
+    try:
+        # Build base query - RLS will automatically filter to user's votes
+        query = select(Vote).where(Vote.creator_id == current_user.id)
+
+        # Apply status filter
+        if status_filter:
+            if status_filter not in ["draft", "active", "closed"]:
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail="Invalid status filter",
+                )
+            query = query.where(Vote.status == status_filter)
+
+        # Apply search filter
+        if search:
+            search_term = f"%{search}%"
+            query = query.where(
+                Vote.title.ilike(search_term) | Vote.description.ilike(search_term)
+            )
+
+        # Get total count
+        count_query = select(func.count()).select_from(query.subquery())
+        total_result = await session.execute(count_query)
+        total = total_result.scalar() or 0
+
+        # Apply pagination
+        offset = (page - 1) * page_size
+        query = query.order_by(Vote.created_at.desc()).offset(offset).limit(page_size)
+
+        # Execute query
+        result = await session.execute(query)
+        votes = result.scalars().all()
+
+        # Convert to response format
+        vote_responses = []
+        for vote in votes:
+            vote_responses.append(
+                VoteResponse(
+                    id=str(vote.id),
+                    title=vote.title or "",
+                    description=vote.description,
+                    slug=vote.slug or "",
+                    status=vote.status or "draft",
+                    created_at=vote.created_at or datetime.utcnow(),
+                    updated_at=vote.updated_at,
+                    starts_at=vote.starts_at,
+                    ends_at=vote.ends_at,
+                    creator_email=current_user.email,
+                    options=[],  # Options loaded separately
+                )
+            )
+
+        return VoteListResponse(
+            votes=vote_responses,
+            total=total,
+            page=page,
+            page_size=page_size,
+            has_more=(offset + page_size) < total,
+        )
+
+    except Exception as e:
+        logger.error(f"Error listing votes: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to list votes",
+        ) from e
+
+
+@vote_router.get("/{vote_id}", response_model=VoteResponse)
+async def get_vote(
+    vote_id: str,
+    current_user: CurrentUser,
+    session: AsyncDatabaseSession,
+) -> VoteResponse:
+    """
+    Get a specific vote by ID.
+
+    Multi-tenant isolation ensures users can only access their own votes.
+    """
+    try:
+        # Parse UUID
+        try:
+            vote_uuid = uuid.UUID(vote_id)
+        except ValueError:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid vote ID format"
+            ) from None
+
+        # Get vote - RLS will ensure only owner can access
+        result = await session.execute(select(Vote).where(Vote.id == vote_uuid))
+        vote = result.scalar_one_or_none()
+
+        if not vote:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND, detail="Vote not found"
+            )
+
+        return VoteResponse(
+            id=str(vote.id),
+            title=vote.title or "",
+            description=vote.description,
+            slug=vote.slug or "",
+            status=vote.status or "draft",
+            created_at=vote.created_at or datetime.utcnow(),
+            updated_at=vote.updated_at,
+            starts_at=vote.starts_at,
+            ends_at=vote.ends_at,
+            creator_email=current_user.email,
+            options=[],  # Options loaded separately
+        )
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error getting vote {vote_id}: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to get vote",
+        ) from e
+
+
+@vote_router.put("/{vote_id}", response_model=VoteResponse)
+async def update_vote(
+    vote_id: str,
+    vote_update: VoteUpdate,
+    current_user: CurrentUser,
+    session: AsyncDatabaseSession,
+) -> VoteResponse:
+    """
+    Update a vote's basic information.
+
+    Multi-tenant isolation ensures users can only update their own votes.
+    """
+    try:
+        # Parse UUID
+        try:
+            vote_uuid = uuid.UUID(vote_id)
+        except ValueError:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid vote ID format"
+            ) from None
+
+        # Get vote - RLS will ensure only owner can access
+        result = await session.execute(select(Vote).where(Vote.id == vote_uuid))
+        vote = result.scalar_one_or_none()
+
+        if not vote:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND, detail="Vote not found"
+            )
+
+        # Update fields
+        if vote_update.title is not None:
+            vote.title = vote_update.title
+        if vote_update.description is not None:
+            vote.description = vote_update.description
+        if vote_update.starts_at is not None:
+            vote.starts_at = vote_update.starts_at
+        if vote_update.ends_at is not None:
+            vote.ends_at = vote_update.ends_at
+
+        vote.updated_at = datetime.utcnow()
+
+        await session.commit()
+
+        return VoteResponse(
+            id=str(vote.id),
+            title=vote.title or "",
+            description=vote.description,
+            slug=vote.slug or "",
+            status=vote.status or "draft",
+            created_at=vote.created_at or datetime.utcnow(),
+            updated_at=vote.updated_at,
+            starts_at=vote.starts_at,
+            ends_at=vote.ends_at,
+            creator_email=current_user.email,
+            options=[],
+        )
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        await session.rollback()
+        logger.error(f"Error updating vote {vote_id}: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to update vote",
+        ) from e
+
+
+@vote_router.patch("/{vote_id}/status", response_model=VoteResponse)
+async def update_vote_status(
+    vote_id: str,
+    status_update: VoteStatusUpdate,
+    current_user: CurrentUser,
+    session: AsyncDatabaseSession,
+) -> VoteResponse:
+    """
+    Update a vote's status (draft -> active -> closed).
+
+    Multi-tenant isolation ensures users can only update their own votes.
+    """
+    try:
+        # Parse UUID
+        try:
+            vote_uuid = uuid.UUID(vote_id)
+        except ValueError:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid vote ID format"
+            ) from None
+
+        # Get vote
+        result = await session.execute(select(Vote).where(Vote.id == vote_uuid))
+        vote = result.scalar_one_or_none()
+
+        if not vote:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND, detail="Vote not found"
+            )
+
+        # Validate status transition
+        valid_transitions = {
+            "draft": ["active", "closed"],
+            "active": ["closed"],
+            "closed": [],  # Closed votes cannot be changed
+        }
+
+        if status_update.status not in valid_transitions.get(
+            vote.status or "draft", []
+        ):
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Cannot change status from {vote.status} to {status_update.status}",
+            )
+
+        # Update status
+        vote.status = status_update.status
+        vote.updated_at = datetime.utcnow()
+
+        await session.commit()
+
+        return VoteResponse(
+            id=str(vote.id),
+            title=vote.title or "",
+            description=vote.description,
+            slug=vote.slug or "",
+            status=vote.status or "draft",
+            created_at=vote.created_at or datetime.utcnow(),
+            updated_at=vote.updated_at,
+            starts_at=vote.starts_at,
+            ends_at=vote.ends_at,
+            creator_email=current_user.email,
+            options=[],
+        )
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        await session.rollback()
+        logger.error(f"Error updating vote status {vote_id}: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to update vote status",
+        ) from e
+
+
+@vote_router.delete("/{vote_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_vote(
+    vote_id: str,
+    current_user: CurrentUser,
+    session: AsyncDatabaseSession,
+) -> None:
+    """
+    Delete a vote and all associated data.
+
+    Multi-tenant isolation ensures users can only delete their own votes.
+    """
+    try:
+        # Parse UUID
+        try:
+            vote_uuid = uuid.UUID(vote_id)
+        except ValueError:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid vote ID format"
+            ) from None
+
+        # Get vote
+        result = await session.execute(select(Vote).where(Vote.id == vote_uuid))
+        vote = result.scalar_one_or_none()
+
+        if not vote:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND, detail="Vote not found"
+            )
+
+        # Delete vote (cascade will handle related records)
+        await session.delete(vote)
+        await session.commit()
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        await session.rollback()
+        logger.error(f"Error deleting vote {vote_id}: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to delete vote",
+        ) from e
+
+
+# Public voting endpoints (no authentication required)
+
+
+@vote_router.get("/public/{slug}", response_model=VoteResponse)
+async def get_public_vote(
+    slug: str,
+    session: AsyncDatabaseSession,
+) -> VoteResponse:
+    """
+    Get a public vote by slug for anonymous voting.
+
+    No authentication required. Only returns active votes.
+    """
+    try:
+        # Get vote by slug - must be active status
+        result = await session.execute(
+            select(Vote).where(Vote.slug == slug, Vote.status == "active")
+        )
+        vote = result.scalar_one_or_none()
+
+        if not vote:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Vote not found or not active",
+            )
+
+        # Load options for this vote
+        options_result = await session.execute(
+            select(VoteOption)
+            .where(VoteOption.vote_id == vote.id)
+            .order_by(VoteOption.display_order)
+        )
+        options = options_result.scalars().all()
+
+        from .models import VoteOptionResponse
+
+        option_responses = []
+        for option in options:
+            option_responses.append(
+                VoteOptionResponse(
+                    id=str(option.id),
+                    option_type=option.option_type or "text",
+                    title=option.title or "",
+                    content=option.content,
+                    display_order=option.display_order or 0,
+                    created_at=option.created_at or datetime.utcnow(),
+                )
+            )
+
+        return VoteResponse(
+            id=str(vote.id),
+            title=vote.title or "",
+            description=vote.description,
+            slug=vote.slug or "",
+            status=vote.status or "draft",
+            created_at=vote.created_at or datetime.utcnow(),
+            updated_at=vote.updated_at,
+            starts_at=vote.starts_at,
+            ends_at=vote.ends_at,
+            creator_email=None,  # Hide creator email for public access
+            options=option_responses,
+        )
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error getting public vote {slug}: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to get vote",
+        ) from e
+
+
+@vote_router.post(
+    "/public/{slug}/submit", response_model=GeneralizedVoteSubmissionResponse
+)
+async def submit_vote_response(
+    slug: str,
+    response_data: VoterResponseCreate,
+    session: AsyncDatabaseSession,
+) -> GeneralizedVoteSubmissionResponse:
+    """
+    Submit an anonymous vote response.
+
+    No authentication required. Implements IP-based duplicate prevention.
+    """
+    try:
+        # Get vote by slug - must be active
+        result = await session.execute(
+            select(Vote).where(Vote.slug == slug, Vote.status == "active")
+        )
+        vote = result.scalar_one_or_none()
+
+        if not vote:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Vote not found or not active",
+            )
+
+        # Check if voting period is valid (if specified)
+        now = datetime.utcnow()
+        if vote.starts_at and now < vote.starts_at:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Voting has not started yet",
+            )
+        if vote.ends_at and now > vote.ends_at:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST, detail="Voting has ended"
+            )
+
+        # Validate that all option IDs exist for this vote
+        option_ids = list(response_data.responses.keys())
+        options_result = await session.execute(
+            select(VoteOption.id).where(
+                VoteOption.vote_id == vote.id,
+                VoteOption.id.in_([uuid.UUID(oid) for oid in option_ids]),
+            )
+        )
+        valid_option_ids = {str(row[0]) for row in options_result.fetchall()}
+
+        if set(option_ids) != valid_option_ids:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Invalid option IDs provided",
+            )
+
+        # For Phase 1, we'll skip IP-based duplicate prevention
+        # and allow multiple responses (to be implemented in Week 3)
+
+        # Create voter response
+        voter_response = VoterResponse(
+            vote_id=vote.id,
+            voter_first_name=response_data.voter_first_name,
+            voter_last_name=response_data.voter_last_name,
+            voter_ip=None,  # Will be implemented with IP detection in Week 3
+            responses=response_data.responses,  # JSONB field
+        )
+
+        session.add(voter_response)
+        await session.commit()
+
+        return GeneralizedVoteSubmissionResponse(
+            success=True,
+            message="Vote submitted successfully!",
+            response_id=str(voter_response.id),
+            vote_id=str(vote.id),
+        )
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        await session.rollback()
+        logger.error(f"Error submitting vote response for {slug}: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to submit vote response",
+        ) from e

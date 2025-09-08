@@ -18,8 +18,13 @@ from .admin_auth import AdminAuthManager
 from .admin_manager import AdminManager
 from .admin_middleware import AdminSecurityMiddleware
 from .admin_routes_simple import admin_router, setup_admin_router
+
+# Generalized platform imports
+from .auth_manager import GeneralizedAuthManager
+from .auth_routes import auth_router
 from .config import settings
 from .database import DatabaseError, DatabaseManager
+from .database_manager import GeneralizedDatabaseManager
 from .models import (
     LegacyVoteResponse,
     LogoListResponse,
@@ -27,38 +32,88 @@ from .models import (
     VoteResults,
     VoteSubmission,
 )
+from .vote_routes import vote_router
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-# Global managers
+# Global managers (legacy platform)
 db_manager: DatabaseManager | None = None
 admin_auth_manager: AdminAuthManager | None = None
 admin_manager: AdminManager | None = None
+
+# Global managers (generalized platform)
+generalized_db_manager: GeneralizedDatabaseManager | None = None
+generalized_auth_manager: GeneralizedAuthManager | None = None
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     """Application lifespan manager."""
     global db_manager, admin_auth_manager, admin_manager
+    global generalized_db_manager, generalized_auth_manager
 
     # Startup
     logger.info(f"Starting {settings.APP_NAME} v{settings.APP_VERSION}")
 
     try:
-        # Validate directories
-        settings.validate_directories()
+        # Check if we're using the generalized platform (PostgreSQL) or legacy platform (SQLite)
+        import os
 
-        # Initialize database
-        db_manager = DatabaseManager(settings.DATABASE_PATH)
+        database_url = os.getenv("DATABASE_URL")
+        use_generalized_platform = database_url and "postgresql" in database_url
 
-        # Initialize admin managers
-        admin_auth_manager = AdminAuthManager(db_manager)
-        admin_manager = AdminManager(db_manager)
+        if use_generalized_platform:
+            logger.info("Starting in generalized platform mode (PostgreSQL)")
 
-        # Setup admin router with dependencies
-        setup_admin_router(templates, admin_auth_manager, admin_manager)
+            # Initialize generalized platform managers only
+            generalized_db_manager = GeneralizedDatabaseManager()
+            generalized_auth_manager = GeneralizedAuthManager()
+
+            # Set global instances for dependencies
+            import toveco_voting.dependencies as deps
+
+            deps.generalized_db_manager = generalized_db_manager
+            deps.generalized_auth_manager = generalized_auth_manager
+
+            logger.info("Generalized platform initialized successfully")
+
+            # Skip legacy system initialization
+            db_manager = None
+            admin_auth_manager = None
+            admin_manager = None
+
+        else:
+            logger.info("Starting in legacy platform mode (SQLite)")
+
+            # Validate directories
+            settings.validate_directories()
+
+            # Initialize legacy database
+            db_manager = DatabaseManager(settings.DATABASE_PATH)
+
+            # Initialize admin managers
+            admin_auth_manager = AdminAuthManager(db_manager)
+            admin_manager = AdminManager(db_manager)
+
+            # Setup admin router with dependencies
+            setup_admin_router(templates, admin_auth_manager, admin_manager)
+
+            # Include admin router only in legacy mode
+            app.include_router(admin_router)  # Legacy admin router
+
+            # Initialize generalized platform managers
+            generalized_db_manager = GeneralizedDatabaseManager()
+            generalized_auth_manager = GeneralizedAuthManager()
+
+            # Set global instances for dependencies
+            import toveco_voting.dependencies as deps
+
+            deps.generalized_db_manager = generalized_db_manager
+            deps.generalized_auth_manager = generalized_auth_manager
+
+            logger.info("Both legacy and generalized platforms initialized")
 
         # Verify logo files exist
         logo_files = settings.get_logo_files()
@@ -126,8 +181,10 @@ app.mount("/static", StaticFiles(directory=settings.STATIC_DIR), name="static")
 # Templates
 templates = Jinja2Templates(directory=settings.TEMPLATES_DIR)
 
-# Include admin router
-app.include_router(admin_router)
+# Include routers
+# Admin router is only included in legacy mode (will be conditionally added in lifespan)
+app.include_router(auth_router)  # Generalized platform auth
+app.include_router(vote_router)  # Generalized platform votes
 
 
 @app.exception_handler(RequestValidationError)
