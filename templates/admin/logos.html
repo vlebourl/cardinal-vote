@@ -50,10 +50,10 @@
                             id="newName"
                             name="new_name"
                             class="form-input"
-                            placeholder="ex: toveco12.png"
-                            pattern="^toveco.*\.png$"
+                            placeholder="ex: cardinal12.png"
+                            pattern="^cardinal.*\.png$"
                         >
-                        <small class="form-help">Doit commencer par "toveco" et finir par ".png"</small>
+                        <small class="form-help">Doit commencer par "cardinal" et finir par ".png"</small>
                     </div>
                 </div>
 
@@ -160,10 +160,10 @@
                         type="text"
                         id="renameNewName"
                         class="form-input"
-                        pattern="^toveco.*\.png$"
+                        pattern="^cardinal.*\.png$"
                         required
                     >
-                    <small class="form-help">Doit commencer par "toveco" et finir par ".png"</small>
+                    <small class="form-help">Doit commencer par "cardinal" et finir par ".png"</small>
                 </div>
             </form>
         </div>
@@ -415,8 +415,8 @@ function submitRename() {
         return;
     }
 
-    if (!newName.match(/^toveco.*\.png$/)) {
-        showMessage('Le nom doit commencer par "toveco" et finir par ".png"', 'error');
+    if (!newName.match(/^cardinal.*\.png$/)) {
+        showMessage('Le nom doit commencer par "cardinal" et finir par ".png"', 'error');
         return;
     }
 

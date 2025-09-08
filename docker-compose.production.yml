@@ -1,9 +1,9 @@
 version: "3.8"
 
 services:
-  toveco-voting:
+  cardinal-voting:
     # Use the pre-built image instead of building
-    image: toveco-voting:latest
+    image: cardinal-voting:latest
     ports:
       - "${EXTERNAL_PORT:-8000}:8000"
     environment:
@@ -12,18 +12,18 @@ services:
       - PORT=${PORT:-8000}
       - DEBUG=${DEBUG:-false}
       - DATABASE_PATH=${DATABASE_PATH:-/app/data/votes.db}
-      - TOVECO_ENV=${TOVECO_ENV:-production}
+      - CARDINAL_ENV=${CARDINAL_ENV:-production}
       # Admin credentials - MUST be set in .env file!
       - ADMIN_USERNAME=${ADMIN_USERNAME:-admin}
-      - ADMIN_PASSWORD=${ADMIN_PASSWORD:-toveco_admin_2025}
-      - SESSION_SECRET_KEY=${SESSION_SECRET_KEY:-toveco_secret_key_change_in_production_123456789}
+      - ADMIN_PASSWORD=${ADMIN_PASSWORD:-cardinal_admin_2025}
+      - SESSION_SECRET_KEY=${SESSION_SECRET_KEY:-cardinal_secret_key_change_in_production_123456789}
       # CORS settings for production
-      - ALLOWED_ORIGINS=${ALLOWED_ORIGINS:-https://toveco.tiarkaerell.com}
+      - ALLOWED_ORIGINS=${ALLOWED_ORIGINS:-https://cardinal.tiarkaerell.com}
     volumes:
       # Persistent storage for database
-      - toveco_data:/app/data
+      - cardinal_data:/app/data
       # Persistent storage for logs
-      - toveco_logs:/app/logs
+      - cardinal_logs:/app/logs
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/api/health"]
       interval: 30s
@@ -32,7 +32,7 @@ services:
       start_period: 60s
     restart: unless-stopped
     networks:
-      - toveco-network
+      - cardinal-network
     logging:
       driver: "json-file"
       options:
@@ -40,11 +40,11 @@ services:
         max-file: "3"
 
 volumes:
-  toveco_data:
+  cardinal_data:
     driver: local
-  toveco_logs:
+  cardinal_logs:
     driver: local
 
 networks:
-  toveco-network:
+  cardinal-network:
     driver: bridge

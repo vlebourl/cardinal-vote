@@ -143,7 +143,7 @@ jobs:
           uv run python -c "
           import asyncio
           from src.cardinal_vote.auth_manager import GeneralizedAuthManager
-          from src.toveco_voting.database_manager import GeneralizedDatabaseManager
+          from src.cardinal_vote.database_manager import GeneralizedDatabaseManager
           from src.cardinal_vote.auth_manager import GeneralizedAuthManager
           from src.cardinal_vote.database_manager import GeneralizedDatabaseManager
 
@@ -171,7 +171,7 @@ jobs:
           uv run python -c "
           import asyncio
           from src.cardinal_vote.database_manager import GeneralizedDatabaseManager
-          from src.toveco_voting.session_manager import session_manager
+          from src.cardinal_vote.session_manager import session_manager
           from src.cardinal_vote.database_manager import GeneralizedDatabaseManager
           from src.cardinal_vote.session_manager import session_manager
 
@@ -228,7 +228,7 @@ jobs:
           context: .
           load: true
           push: false
-          tags: toveco-generalized:test
+          tags: cardinal-vote-generalized:test
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
