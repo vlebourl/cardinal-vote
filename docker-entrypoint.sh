@@ -1,7 +1,7 @@
 #!/bin/bash
 set -euo pipefail
 
-# ToVéCo Logo Voting Platform - Docker Entrypoint
+# Cardinal Vote Logo Voting Platform - Docker Entrypoint
 # Production-ready startup script with health checks and proper error handling
 
 # Default values
@@ -9,7 +9,7 @@ DATABASE_PATH="${DATABASE_PATH:-/app/data/votes.db}"
 HOST="${HOST:-0.0.0.0}"
 PORT="${PORT:-8000}"
 DEBUG="${DEBUG:-false}"
-TOVECO_ENV="${TOVECO_ENV:-production}"
+CARDINAL_ENV="${CARDINAL_ENV:-production}"
 
 # Logging function
 log() {
@@ -174,8 +174,8 @@ health_check() {
 
 # Start application
 start_application() {
-    log "Starting ToVéCo Logo Voting Platform..."
-    log "Environment: $TOVECO_ENV"
+    log "Starting Cardinal Vote Logo Voting Platform..."
+    log "Environment: $CARDINAL_ENV"
     log "Host: $HOST"
     log "Port: $PORT"
     log "Debug: $DEBUG"
@@ -198,7 +198,7 @@ start_application() {
     fi
 
     # Production-specific optimizations
-    if [[ "$TOVECO_ENV" == "production" ]]; then
+    if [[ "$CARDINAL_ENV" == "production" ]]; then
         uvicorn_args+=("--workers" "1")  # Single worker for SQLite
         log "Production mode enabled"
     fi
@@ -223,7 +223,7 @@ start_application() {
 
 # Main execution
 main() {
-    log "Starting ToVéCo Logo Voting Platform container"
+    log "Starting Cardinal Vote Logo Voting Platform container"
     log "Entrypoint version: 1.0.0"
 
     # Run all setup steps

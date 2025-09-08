@@ -1,11 +1,11 @@
 #!/bin/bash
-# Deployment script for ToVéCo voting platform from Docker tar image
+# Deployment script for Cardinal Vote voting platform from Docker tar image
 # Version: 1.0.5
 
 set -e
 
 echo "╔══════════════════════════════════════════════════╗"
-echo "║  ToVéCo Voting Platform - Docker Deployment     ║"
+echo "║  Cardinal Vote Voting Platform - Docker Deployment     ║"
 echo "║  Version: 1.0.5                                  ║"
 echo "╚══════════════════════════════════════════════════╝"
 echo ""
@@ -28,7 +28,7 @@ else
 fi
 
 # Check if tar file exists
-TAR_FILE="toveco-voting-v1.0.5.tar"
+TAR_FILE="cardinal-voting-v1.0.5.tar"
 if [ ! -f "$TAR_FILE" ]; then
     echo "❌ Image tar file not found: $TAR_FILE"
     echo "   Please ensure the tar file is in the current directory."
@@ -47,7 +47,7 @@ fi
 
 echo ""
 echo "🏷️  Available images:"
-docker images | grep toveco-voting
+docker images | grep cardinal-voting
 
 echo ""
 echo "📋 Environment setup:"
@@ -59,8 +59,8 @@ if [ ! -f .env ]; then
     else
         echo "   ⚠️  No .env file found. Creating minimal .env..."
         cat > .env << EOF
-# ToVéCo Voting Platform Environment Configuration
-TOVECO_ENV=production
+# Cardinal Vote Voting Platform Environment Configuration
+CARDINAL_ENV=production
 DEBUG=false
 HOST=0.0.0.0
 PORT=8000
@@ -74,7 +74,7 @@ SESSION_SECRET_KEY=change_this_secret_key_in_production_$(openssl rand -hex 32)
 DATABASE_PATH=/app/data/votes.db
 
 # Security
-ALLOWED_ORIGINS=https://toveco.tiarkaerell.com
+ALLOWED_ORIGINS=https://cardinal.tiarkaerell.com
 MAX_VOTES_PER_IP_PER_HOUR=5
 ENABLE_RATE_LIMITING=true
 EOF
@@ -101,12 +101,12 @@ echo "🛑 Stopping any existing containers..."
 $COMPOSE_CMD -f docker-compose.production.yml down 2>/dev/null || true
 
 # Start the application
-echo "🚀 Starting ToVéCo voting platform..."
+echo "🚀 Starting Cardinal Vote voting platform..."
 $COMPOSE_CMD -f docker-compose.production.yml up -d
 
 # Check if container started successfully
 sleep 5
-if $COMPOSE_CMD -f docker-compose.production.yml ps | grep -q "toveco-voting.*Up"; then
+if $COMPOSE_CMD -f docker-compose.production.yml ps | grep -q "cardinal-voting.*Up"; then
     echo ""
     echo "✅ Deployment successful!"
     echo ""
