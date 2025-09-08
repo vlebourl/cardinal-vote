@@ -5,7 +5,7 @@ from abc import ABC, abstractmethod
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 
-import aiosmtplib
+import aiosmtplib  # type: ignore[import-not-found]
 
 from .config import settings
 

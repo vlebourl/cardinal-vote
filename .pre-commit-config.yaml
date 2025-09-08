@@ -100,7 +100,7 @@ repos:
       # Check logo files are in correct format
       - id: logo-format
         name: Check logo file format
-        entry: bash -c 'shopt -s nullglob; for logo in logos/*.png; do [[ "$logo" =~ ^logos/toveco[0-9]+\.png$ ]] || { echo "Logo $logo should follow toveco{number}.png format"; exit 1; }; done'
+        entry: bash -c 'shopt -s nullglob; for logo in logos/*.png; do [[ "$logo" =~ ^logos/cardinal_vote[0-9]+\.png$ ]] || { echo "Logo $logo should follow cardinal_vote{number}.png format"; exit 1; }; done'
         language: system
         files: ^logos/.*\.png$
 

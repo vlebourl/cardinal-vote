@@ -24,7 +24,7 @@ toveco-voting/
 │   │   └── release.yml        # Release pipeline
 │   ├── ISSUE_TEMPLATE/        # Issue templates
 │   └── pull_request_template.md
-├── src/toveco_voting/         # Main application code
+├── src/cardinal_vote/         # Main application code
 │   ├── __init__.py
 │   ├── main.py               # FastAPI application entry point
 │   ├── config.py             # Configuration settings
@@ -187,7 +187,7 @@ uv sync --dev
 export ADMIN_USERNAME=admin
 export ADMIN_PASSWORD=secure-password
 export SESSION_SECRET_KEY=$(python -c "import secrets; print(secrets.token_urlsafe(32))")
-uv run python src/toveco_voting/main.py
+uv run python src/cardinal_vote/main.py
 
 # Run tests
 uv run pytest

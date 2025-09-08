@@ -22,6 +22,8 @@ from sqlalchemy.ext.declarative import DeclarativeMeta, declarative_base
 from sqlalchemy.orm import Mapped, relationship
 from sqlalchemy.sql import func
 
+from .config import settings
+
 Base: DeclarativeMeta = declarative_base()
 
 
@@ -302,7 +304,7 @@ class VoteSubmission(BaseModel):
                 )
 
             # Validate logo filename format
-            if not logo.startswith("toveco") or not logo.endswith(".png"):
+            if not logo.startswith(settings.LOGO_PREFIX) or not logo.endswith(".png"):
                 raise ValueError(f"Invalid logo filename: {logo}")
 
         return v

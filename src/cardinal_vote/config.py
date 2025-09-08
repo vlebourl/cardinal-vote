@@ -36,7 +36,7 @@ class Settings:
     STATIC_DIR: Path = BASE_DIR / "static"
 
     # Logo settings
-    LOGO_PREFIX: str = "toveco"
+    LOGO_PREFIX: str = "cardinal_vote"
     LOGO_EXTENSION: str = ".png"
     EXPECTED_LOGO_COUNT: int = 11
 
@@ -137,7 +137,7 @@ class Settings:
         if (
             not cls.JWT_SECRET_KEY
             or cls.JWT_SECRET_KEY
-            == "jwt_secret_key_change_in_production_extremely_long_and_secure"
+            == "jwt_secret_key_change_in_production_extremely_long_and_secure"  # nosec B105
         ):
             missing_settings.append("JWT_SECRET_KEY (must be changed from default)")
 
@@ -146,7 +146,7 @@ class Settings:
             missing_settings.append("SUPER_ADMIN_EMAIL")
         if (
             not cls.SUPER_ADMIN_PASSWORD
-            or cls.SUPER_ADMIN_PASSWORD == "super_admin_password_change_in_production"
+            or cls.SUPER_ADMIN_PASSWORD == "super_admin_password_change_in_production"  # nosec B105
         ):
             missing_settings.append(
                 "SUPER_ADMIN_PASSWORD (must be changed from default)"

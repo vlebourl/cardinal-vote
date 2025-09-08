@@ -1,7 +1,5 @@
 import asyncio
 import os
-
-# Import models for autogenerate support
 import sys
 from logging.config import fileConfig
 from pathlib import Path
@@ -16,7 +14,9 @@ from alembic import context
 src_path = Path(__file__).parent.parent / "src"
 sys.path.insert(0, str(src_path))
 
-from toveco_voting.models import Base
+# ruff: noqa: E402
+# Import models for autogenerate support (after path setup)
+from cardinal_vote.models import Base
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
