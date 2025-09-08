@@ -65,7 +65,7 @@ COPY --from=builder --chown=app:app /build/.venv /opt/venv
 COPY --from=builder /build/src /app/src
 
 # Fix virtual environment paths and shebangs
-RUN sed -i 's|/build/src|/app/src|' /opt/venv/lib/python3.13/site-packages/_toveco_voting.pth && \
+RUN find /opt/venv/lib/python3.13/site-packages -name "*.pth" -exec sed -i 's|/build/src|/app/src|g' {} \; && \
     find /opt/venv/bin -type f -executable -exec sed -i '1s|#!/build/.venv/bin/python|#!/opt/venv/bin/python|' {} \;
 
 # Switch to app user
