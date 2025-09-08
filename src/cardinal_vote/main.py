@@ -72,7 +72,7 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
             generalized_auth_manager = GeneralizedAuthManager()
 
             # Set global instances for dependencies
-            import toveco_voting.dependencies as deps
+            import cardinal_vote.dependencies as deps
 
             deps.generalized_db_manager = generalized_db_manager
             deps.generalized_auth_manager = generalized_auth_manager
@@ -108,7 +108,7 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
             generalized_auth_manager = GeneralizedAuthManager()
 
             # Set global instances for dependencies
-            import toveco_voting.dependencies as deps
+            import cardinal_vote.dependencies as deps
 
             deps.generalized_db_manager = generalized_db_manager
             deps.generalized_auth_manager = generalized_auth_manager
@@ -440,7 +440,7 @@ async def get_stats(db: DatabaseManager = Depends(get_db_manager)) -> dict[str, 
 def main() -> None:
     """Main entry point for running the application."""
     uvicorn.run(
-        "toveco_voting.main:app",
+        "cardinal_vote.main:app",
         host=settings.HOST,
         port=settings.PORT,
         reload=settings.DEBUG,

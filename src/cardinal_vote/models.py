@@ -671,7 +671,7 @@ class VoteOptionResponse(BaseModel):
         from_attributes = True
 
     @validator("id", pre=True)
-    def convert_uuid(cls, v):
+    def convert_uuid(cls, v: Any) -> str | None:
         """Convert UUID to string."""
         return str(v) if v else None
 
@@ -695,7 +695,7 @@ class VoteResponse(BaseModel):
         from_attributes = True
 
     @validator("id", pre=True)
-    def convert_uuid(cls, v):
+    def convert_uuid(cls, v: Any) -> str | None:
         """Convert UUID to string."""
         return str(v) if v else None
 
@@ -724,7 +724,7 @@ class VoterResponseData(BaseModel):
         from_attributes = True
 
     @validator("id", pre=True)
-    def convert_uuid(cls, v):
+    def convert_uuid(cls, v: Any) -> str | None:
         """Convert UUID to string."""
         return str(v) if v else None
 
@@ -745,7 +745,7 @@ class VoteResultsSummary(BaseModel):
     total_score: int
 
     @validator("option_id", pre=True)
-    def convert_uuid(cls, v):
+    def convert_uuid(cls, v: Any) -> str | None:
         """Convert UUID to string."""
         return str(v) if v else None
 
@@ -767,7 +767,7 @@ class VoteAnalytics(BaseModel):
         from_attributes = True
 
     @validator("vote_id", pre=True)
-    def convert_uuid(cls, v):
+    def convert_uuid(cls, v: Any) -> str | None:
         """Convert UUID to string."""
         return str(v) if v else None
 
@@ -781,7 +781,7 @@ class GeneralizedVoteSubmissionResponse(BaseModel):
     vote_id: str
 
     @validator("response_id", "vote_id", pre=True)
-    def convert_uuid(cls, v):
+    def convert_uuid(cls, v: Any) -> str | None:
         """Convert UUID to string."""
         return str(v) if v else None
 
