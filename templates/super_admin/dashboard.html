@@ -1,0 +1,507 @@
+{% extends "super_admin/base.html" %}
+
+{% block title %}Super Admin Dashboard{% endblock %}
+
+{% block content %}
+<div class="admin-dashboard super-admin-dashboard">
+    <div class="dashboard-header">
+        <h1 class="page-title">
+            <i class="fas fa-tachometer-alt"></i>
+            Super Admin Dashboard
+        </h1>
+        <p class="page-subtitle">System overview and user management for Cardinal Vote Platform</p>
+    </div>
+
+    <!-- System Statistics Cards -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-icon">
+                <i class="fas fa-users"></i>
+            </div>
+            <div class="stat-content">
+                <h3 class="stat-number" id="totalUsers">-</h3>
+                <p class="stat-label">Total Users</p>
+                <div class="stat-meta">
+                    <span class="stat-verified" id="verifiedUsers">0 verified</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-icon">
+                <i class="fas fa-vote-yea"></i>
+            </div>
+            <div class="stat-content">
+                <h3 class="stat-number" id="totalVotes">-</h3>
+                <p class="stat-label">Total Votes</p>
+                <div class="stat-meta">
+                    <span class="stat-active" id="activeVotes">0 active</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-icon">
+                <i class="fas fa-chart-line"></i>
+            </div>
+            <div class="stat-content">
+                <h3 class="stat-number" id="totalResponses">-</h3>
+                <p class="stat-label">Vote Responses</p>
+                <div class="stat-meta">
+                    <span class="stat-today" id="responsesToday">0 today</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-icon">
+                <i class="fas fa-user-shield"></i>
+            </div>
+            <div class="stat-content">
+                <h3 class="stat-number" id="superAdmins">-</h3>
+                <p class="stat-label">Super Admins</p>
+                <div class="stat-meta">
+                    <span class="stat-new" id="usersToday">0 new today</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Dashboard Grid -->
+    <div class="dashboard-grid">
+        <!-- Recent User Activity -->
+        <div class="dashboard-card">
+            <div class="card-header">
+                <h2 class="card-title">
+                    <i class="fas fa-user-clock"></i>
+                    Recent User Activity
+                </h2>
+                <a href="/api/admin/users" class="card-link">View All Users</a>
+            </div>
+            <div class="card-content">
+                <div id="recentActivity" class="activity-list">
+                    <div class="loading-state">
+                        <i class="fas fa-spinner fa-spin"></i>
+                        <p>Loading recent activity...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Platform Health -->
+        <div class="dashboard-card">
+            <div class="card-header">
+                <h2 class="card-title">
+                    <i class="fas fa-heartbeat"></i>
+                    Platform Health
+                </h2>
+                <div class="health-score" id="healthScore">
+                    <span class="score-value">--</span>
+                    <span class="score-max">/100</span>
+                </div>
+            </div>
+            <div class="card-content">
+                <div id="platformHealth" class="health-info">
+                    <div class="loading-state">
+                        <i class="fas fa-spinner fa-spin"></i>
+                        <p>Checking platform health...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- User Management Summary -->
+    <div class="dashboard-grid">
+        <div class="dashboard-card">
+            <div class="card-header">
+                <h2 class="card-title">
+                    <i class="fas fa-users-cog"></i>
+                    User Management Summary
+                </h2>
+                <a href="/api/admin/users" class="card-link">Manage Users</a>
+            </div>
+            <div class="card-content">
+                <div id="userSummary" class="user-summary">
+                    <div class="loading-state">
+                        <i class="fas fa-spinner fa-spin"></i>
+                        <p>Loading user summary...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- System Information -->
+        <div class="dashboard-card">
+            <div class="card-header">
+                <h2 class="card-title">
+                    <i class="fas fa-server"></i>
+                    System Information
+                </h2>
+            </div>
+            <div class="card-content">
+                <div id="systemInfo" class="system-info">
+                    <div class="loading-state">
+                        <i class="fas fa-spinner fa-spin"></i>
+                        <p>Loading system information...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="dashboard-card">
+        <div class="card-header">
+            <h2 class="card-title">
+                <i class="fas fa-bolt"></i>
+                Quick Actions
+            </h2>
+        </div>
+        <div class="card-content">
+            <div class="quick-actions">
+                <button class="quick-action" onclick="openUserManagement()">
+                    <i class="fas fa-user-plus"></i>
+                    <span>Manage Users</span>
+                </button>
+
+                <button class="quick-action" onclick="bulkVerifyUsers()">
+                    <i class="fas fa-user-check"></i>
+                    <span>Bulk Verify Users</span>
+                </button>
+
+                <button class="quick-action" onclick="exportSystemStats()">
+                    <i class="fas fa-download"></i>
+                    <span>Export Statistics</span>
+                </button>
+
+                <button class="quick-action" onclick="viewAuditLog()">
+                    <i class="fas fa-clipboard-list"></i>
+                    <span>Audit Log</span>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Dashboard data management
+let dashboardData = {
+    stats: null,
+    health: null,
+    activity: null,
+    refreshInterval: null
+};
+
+// Initialize dashboard when page loads
+document.addEventListener('DOMContentLoaded', function() {
+    initializeDashboard();
+    startAutoRefresh();
+});
+
+async function initializeDashboard() {
+    try {
+        showLoading();
+
+        // Load all dashboard data in parallel
+        await Promise.all([
+            loadSystemStats(),
+            loadPlatformHealth(),
+            loadRecentActivity(),
+            loadUserSummary()
+        ]);
+
+    } catch (error) {
+        console.error('Dashboard initialization error:', error);
+        showMessage('Error loading dashboard data', 'error');
+    } finally {
+        hideLoading();
+    }
+}
+
+async function loadSystemStats() {
+    try {
+        const response = await fetch('/api/admin/stats');
+
+        if (!response.ok) {
+            if (handleAuthError(response)) return;
+            throw new Error('Failed to load system statistics');
+        }
+
+        const stats = await response.json();
+        dashboardData.stats = stats;
+        updateStatsDisplay(stats);
+
+    } catch (error) {
+        console.error('Error loading system stats:', error);
+        showMessage('Error loading system statistics', 'error');
+    }
+}
+
+async function loadPlatformHealth() {
+    try {
+        // Platform health is included in comprehensive stats from super_admin_manager
+        const response = await fetch('/api/admin/comprehensive-stats');
+
+        if (!response.ok) {
+            if (handleAuthError(response)) return;
+            throw new Error('Failed to load platform health');
+        }
+
+        const data = await response.json();
+        dashboardData.health = data.platform_health;
+        updateHealthDisplay(data.platform_health);
+
+    } catch (error) {
+        console.error('Error loading platform health:', error);
+        showMessage('Error loading platform health', 'error');
+    }
+}
+
+async function loadRecentActivity() {
+    try {
+        const response = await fetch('/api/admin/recent-activity?limit=10');
+
+        if (!response.ok) {
+            if (handleAuthError(response)) return;
+            throw new Error('Failed to load recent activity');
+        }
+
+        const activity = await response.json();
+        dashboardData.activity = activity;
+        updateActivityDisplay(activity);
+
+    } catch (error) {
+        console.error('Error loading recent activity:', error);
+        document.getElementById('recentActivity').innerHTML = `
+            <div class="error-state">
+                <i class="fas fa-exclamation-triangle"></i>
+                <p>Error loading recent activity</p>
+            </div>
+        `;
+    }
+}
+
+async function loadUserSummary() {
+    try {
+        const response = await fetch('/api/admin/user-summary');
+
+        if (!response.ok) {
+            if (handleAuthError(response)) return;
+            throw new Error('Failed to load user summary');
+        }
+
+        const summary = await response.json();
+        updateUserSummaryDisplay(summary);
+
+    } catch (error) {
+        console.error('Error loading user summary:', error);
+        document.getElementById('userSummary').innerHTML = `
+            <div class="error-state">
+                <i class="fas fa-exclamation-triangle"></i>
+                <p>Error loading user summary</p>
+            </div>
+        `;
+    }
+}
+
+function updateStatsDisplay(stats) {
+    document.getElementById('totalUsers').textContent = stats.total_users || 0;
+    document.getElementById('totalVotes').textContent = stats.total_votes || 0;
+    document.getElementById('totalResponses').textContent = stats.total_responses || 0;
+    document.getElementById('superAdmins').textContent = stats.super_admins || 0;
+
+    document.getElementById('verifiedUsers').textContent = `${stats.verified_users || 0} verified`;
+    document.getElementById('activeVotes').textContent = `${stats.active_votes || 0} active`;
+    document.getElementById('responsesToday').textContent = `${stats.responses_today || 0} today`;
+    document.getElementById('usersToday').textContent = `${stats.users_created_today || 0} new today`;
+}
+
+function updateHealthDisplay(health) {
+    const healthScore = document.getElementById('healthScore');
+    const platformHealth = document.getElementById('platformHealth');
+    const sidebarIndicator = document.getElementById('healthIndicator');
+
+    if (health) {
+        // Update health score
+        healthScore.querySelector('.score-value').textContent = health.score || 0;
+
+        // Update health status
+        const statusClass = health.status === 'healthy' ? 'status-healthy' :
+                          health.status === 'warning' ? 'status-warning' : 'status-critical';
+
+        platformHealth.innerHTML = `
+            <div class="health-status ${statusClass}">
+                <div class="health-indicator">
+                    <span class="health-dot"></span>
+                    <span class="health-text">${health.status.charAt(0).toUpperCase() + health.status.slice(1)}</span>
+                </div>
+                <div class="health-score-large">${health.score}/100</div>
+            </div>
+            ${health.warnings && health.warnings.length > 0 ? `
+                <div class="health-warnings">
+                    <h4>Warnings:</h4>
+                    <ul>
+                        ${health.warnings.map(warning => `<li>${warning}</li>`).join('')}
+                    </ul>
+                </div>
+            ` : ''}
+        `;
+
+        // Update sidebar indicator
+        sidebarIndicator.innerHTML = `
+            <span class="status-dot ${statusClass}"></span>
+            <span class="status-text">${health.status}</span>
+        `;
+    }
+}
+
+function updateActivityDisplay(activity) {
+    const container = document.getElementById('recentActivity');
+
+    if (activity && activity.length > 0) {
+        container.innerHTML = activity.map(item => `
+            <div class="activity-item">
+                <div class="activity-icon">
+                    <i class="fas ${item.event_type === 'user_registration' ? 'fa-user-plus' : 'fa-vote-yea'}"></i>
+                </div>
+                <div class="activity-content">
+                    <div class="activity-title">${item.details}</div>
+                    <div class="activity-meta">
+                        <span class="activity-user">${item.user_email}</span>
+                        <span class="activity-time">${formatDateTime(item.timestamp)}</span>
+                    </div>
+                </div>
+            </div>
+        `).join('');
+    } else {
+        container.innerHTML = `
+            <div class="empty-state">
+                <i class="fas fa-inbox"></i>
+                <p>No recent activity</p>
+            </div>
+        `;
+    }
+}
+
+function updateUserSummaryDisplay(summary) {
+    const container = document.getElementById('userSummary');
+
+    container.innerHTML = `
+        <div class="summary-stats">
+            <div class="summary-stat">
+                <div class="stat-value">${summary.verified_users_count || 0}</div>
+                <div class="stat-label">Verified Users</div>
+            </div>
+            <div class="summary-stat">
+                <div class="stat-value">${summary.unverified_users_count || 0}</div>
+                <div class="stat-label">Pending Verification</div>
+            </div>
+            <div class="summary-stat">
+                <div class="stat-value">${summary.super_admins_count || 0}</div>
+                <div class="stat-label">Super Admins</div>
+            </div>
+        </div>
+
+        ${summary.most_active_users && summary.most_active_users.length > 0 ? `
+            <div class="active-users">
+                <h4>Most Active Users</h4>
+                <div class="user-list">
+                    ${summary.most_active_users.map(user => `
+                        <div class="user-item">
+                            <span class="user-name">${user.first_name} ${user.last_name}</span>
+                            <span class="user-votes">${user.vote_count} votes</span>
+                        </div>
+                    `).join('')}
+                </div>
+            </div>
+        ` : ''}
+    `;
+}
+
+// Quick action functions
+function openUserManagement() {
+    window.location.href = '/api/admin/users';
+}
+
+function bulkVerifyUsers() {
+    // This would open a bulk verification modal
+    showMessage('Bulk verification feature coming soon', 'info');
+}
+
+function exportSystemStats() {
+    // Export current dashboard data
+    if (dashboardData.stats) {
+        const dataStr = JSON.stringify(dashboardData.stats, null, 2);
+        const dataBlob = new Blob([dataStr], {type: 'application/json'});
+        const url = URL.createObjectURL(dataBlob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `system_stats_${new Date().toISOString().slice(0, 10)}.json`;
+        link.click();
+        URL.revokeObjectURL(url);
+    }
+}
+
+function viewAuditLog() {
+    // Open audit log in a new window or modal
+    showMessage('Audit log feature coming soon', 'info');
+}
+
+// Auto-refresh functionality
+function startAutoRefresh() {
+    dashboardData.refreshInterval = setInterval(async () => {
+        try {
+            await loadSystemStats();
+            await loadPlatformHealth();
+        } catch (error) {
+            console.error('Auto-refresh error:', error);
+        }
+    }, 30000); // 30 seconds
+}
+
+// Utility functions
+function formatDateTime(dateString) {
+    if (!dateString) return 'Unknown';
+
+    const date = new Date(dateString);
+    const now = new Date();
+    const diff = now - date;
+
+    // Less than 1 hour ago
+    if (diff < 3600000) {
+        const minutes = Math.floor(diff / 60000);
+        return `${minutes} min${minutes !== 1 ? 's' : ''} ago`;
+    }
+
+    // Less than 24 hours ago
+    if (diff < 86400000) {
+        const hours = Math.floor(diff / 3600000);
+        return `${hours} hour${hours !== 1 ? 's' : ''} ago`;
+    }
+
+    // More than 24 hours ago
+    return date.toLocaleDateString();
+}
+
+// Stop auto-refresh when page is hidden
+document.addEventListener('visibilitychange', function() {
+    if (document.hidden) {
+        if (dashboardData.refreshInterval) {
+            clearInterval(dashboardData.refreshInterval);
+        }
+    } else {
+        startAutoRefresh();
+    }
+});
+
+// Cleanup when leaving page
+window.addEventListener('beforeunload', function() {
+    if (dashboardData.refreshInterval) {
+        clearInterval(dashboardData.refreshInterval);
+    }
+});
+</script>
+{% endblock %}

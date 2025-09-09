@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Super Admin{% endblock %} - {{ app_name or 'Cardinal Vote' }}</title>
+
+    <!-- Security Headers -->
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline';">
+    <meta http-equiv="X-Frame-Options" content="DENY">
+    <meta http-equiv="X-Content-Type-Options" content="nosniff">
+
+    <!-- Super Admin CSS -->
+    <link href="{{ url_for('static', path='/css/admin.css') }}" rel="stylesheet">
+    <link href="{{ url_for('static', path='/css/super-admin.css') }}" rel="stylesheet">
+
+    <!-- Font Awesome for icons (local) -->
+    <link href="{{ url_for('static', path='/css/fontawesome.css') }}" rel="stylesheet">
+
+    {% block extra_css %}{% endblock %}
+</head>
+<body class="admin-body super-admin-body">
+    <div class="admin-layout">
+        <!-- Super Admin Header -->
+        <header class="admin-header super-admin-header">
+            <div class="admin-header-content">
+                <div class="admin-logo">
+                    <i class="fas fa-shield-alt"></i>
+                    <span>Super Admin</span>
+                </div>
+
+                {% if user %}
+                <div class="admin-user-info">
+                    <span class="admin-username">
+                        <i class="fas fa-user-shield"></i>
+                        {{ user.first_name }} {{ user.last_name }}
+                        <small>({{ user.email }})</small>
+                    </span>
+                    <button id="logoutBtn" class="admin-logout-btn" title="Logout">
+                        <i class="fas fa-sign-out-alt"></i>
+                    </button>
+                </div>
+                {% endif %}
+            </div>
+        </header>
+
+        <div class="admin-main">
+            {% if user %}
+            <!-- Super Admin Sidebar -->
+            <nav class="admin-sidebar super-admin-sidebar">
+                <div class="admin-nav">
+                    <a href="/api/admin/dashboard" class="admin-nav-item {% if request.url.path == '/api/admin/dashboard' %}active{% endif %}">
+                        <i class="fas fa-tachometer-alt"></i>
+                        <span>Dashboard</span>
+                    </a>
+
+                    <a href="/api/admin/users" class="admin-nav-item {% if request.url.path.startswith('/api/admin/users') %}active{% endif %}">
+                        <i class="fas fa-users"></i>
+                        <span>User Management</span>
+                    </a>
+
+                    <a href="/api/admin/system" class="admin-nav-item {% if request.url.path == '/api/admin/system' %}active{% endif %}">
+                        <i class="fas fa-server"></i>
+                        <span>System Monitor</span>
+                    </a>
+
+                    <div class="admin-nav-divider"></div>
+
+                    <a href="/" class="admin-nav-item" target="_blank">
+                        <i class="fas fa-external-link-alt"></i>
+                        <span>View Site</span>
+                    </a>
+
+                    <a href="/results" class="admin-nav-item" target="_blank">
+                        <i class="fas fa-chart-bar"></i>
+                        <span>Vote Results</span>
+                    </a>
+                </div>
+
+                <!-- Platform Health Status -->
+                <div class="platform-status" id="platformStatus">
+                    <div class="status-header">
+                        <i class="fas fa-heartbeat"></i>
+                        <span>Platform Health</span>
+                    </div>
+                    <div class="status-indicator" id="healthIndicator">
+                        <span class="status-dot status-loading"></span>
+                        <span class="status-text">Loading...</span>
+                    </div>
+                </div>
+            </nav>
+            {% endif %}
+
+            <!-- Super Admin Content -->
+            <main class="admin-content">
+                {% block content %}
+                {% endblock %}
+            </main>
+        </div>
+    </div>
+
+    <!-- Success/Error Messages -->
+    <div id="messageContainer" class="message-container"></div>
+
+    <!-- Confirmation Modal -->
+    <div id="confirmModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="confirmTitle">Confirmation</h3>
+            </div>
+            <div class="modal-body">
+                <p id="confirmMessage">Are you sure you want to continue?</p>
+            </div>
+            <div class="modal-footer">
+                <button id="confirmCancel" class="btn btn-secondary">Cancel</button>
+                <button id="confirmOk" class="btn btn-danger">Confirm</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay" class="loading-overlay">
+        <div class="loading-spinner">
+            <i class="fas fa-spinner fa-spin"></i>
+            <p>Loading...</p>
+        </div>
+    </div>
+
+    <!-- Base JavaScript -->
+    <script src="{{ url_for('static', path='/js/admin.js') }}"></script>
+    <script src="{{ url_for('static', path='/js/super-admin.js') }}"></script>
+
+    <!-- JWT Token management -->
+    <script>
+        // JWT token management for API calls
+        window.apiConfig = {
+            baseURL: '/api/admin',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${localStorage.getItem('jwt_token') || ''}`
+            }
+        };
+
+        // Add authorization header to all fetch requests
+        const originalFetch = window.fetch;
+        window.fetch = function(url, options = {}) {
+            const token = localStorage.getItem('jwt_token');
+            if (token && !options.headers?.Authorization) {
+                options.headers = {
+                    ...options.headers,
+                    'Authorization': `Bearer ${token}`
+                };
+            }
+            return originalFetch(url, options);
+        };
+
+        // Handle authentication errors
+        function handleAuthError(response) {
+            if (response.status === 401) {
+                localStorage.removeItem('jwt_token');
+                window.location.href = '/login';
+                return true;
+            }
+            return false;
+        }
+    </script>
+
+    {% block extra_js %}{% endblock %}
+
+    <!-- Logout functionality -->
+    {% if user %}
+    <script>
+    document.getElementById('logoutBtn').addEventListener('click', async function() {
+        if (confirm('Are you sure you want to logout?')) {
+            try {
+                // Clear JWT token
+                localStorage.removeItem('jwt_token');
+
+                // Redirect to login
+                window.location.href = '/login';
+
+            } catch (error) {
+                console.error('Logout error:', error);
+                showMessage('Error during logout', 'error');
+            }
+        }
+    });
+    </script>
+    {% endif %}
+</body>
+</html>

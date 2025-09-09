@@ -1,0 +1,550 @@
+/**
+ * Super Admin JavaScript for Cardinal Vote Platform
+ * Provides specialized functionality for super admin operations
+ */
+
+// Super Admin API utilities
+window.SuperAdminAPI = {
+    baseURL: '/api/admin',
+
+    // Get JWT token from localStorage
+    getAuthHeaders: function() {
+        const token = localStorage.getItem('jwt_token');
+        return {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token || ''}`
+        };
+    },
+
+    // Generic API call wrapper
+    async call(endpoint, options = {}) {
+        const url = `${this.baseURL}${endpoint}`;
+        const config = {
+            headers: this.getAuthHeaders(),
+            ...options
+        };
+
+        const response = await fetch(url, config);
+
+        // Handle authentication errors
+        if (response.status === 401) {
+            localStorage.removeItem('jwt_token');
+            window.location.href = '/login';
+            return null;
+        }
+
+        if (!response.ok) {
+            throw new Error(`API call failed: ${response.statusText}`);
+        }
+
+        return response.json();
+    },
+
+    // System statistics
+    async getStats() {
+        return this.call('/stats');
+    },
+
+    async getComprehensiveStats() {
+        return this.call('/comprehensive-stats');
+    },
+
+    // User management
+    async getUsers(page = 1, limit = 20, search = '') {
+        const params = new URLSearchParams({ page: page.toString(), limit: limit.toString() });
+        if (search) params.append('search', search);
+        return this.call(`/users?${params}`);
+    },
+
+    async getUserDetails(userId) {
+        return this.call(`/users/${userId}`);
+    },
+
+    async updateUser(userId, data) {
+        return this.call('/users/manage', {
+            method: 'POST',
+            body: JSON.stringify({
+                operation: 'update_user',
+                user_id: userId,
+                ...data
+            })
+        });
+    },
+
+    async bulkUpdateUsers(userIds, operation, data = {}) {
+        return this.call('/users/bulk-update', {
+            method: 'POST',
+            body: JSON.stringify({
+                user_ids: userIds,
+                operation,
+                ...data
+            })
+        });
+    },
+
+    // Activity and monitoring
+    async getRecentActivity(limit = 20) {
+        return this.call(`/recent-activity?limit=${limit}`);
+    },
+
+    async getUserSummary() {
+        return this.call('/user-summary');
+    },
+
+    async getAuditLog(limit = 50) {
+        return this.call(`/audit-log?limit=${limit}`);
+    }
+};
+
+// Super Admin utilities extending AdminUtils
+window.SuperAdminUtils = {
+    ...window.AdminUtils,
+
+    // Enhanced user management functions
+    async verifyUsers(userIds) {
+        try {
+            showLoading();
+            const result = await SuperAdminAPI.bulkUpdateUsers(userIds, 'verify_users');
+            if (result.success) {
+                showMessage(result.message, 'success');
+                return true;
+            } else {
+                showMessage(result.message || 'Failed to verify users', 'error');
+                return false;
+            }
+        } catch (error) {
+            console.error('Error verifying users:', error);
+            showMessage('Error verifying users', 'error');
+            return false;
+        } finally {
+            hideLoading();
+        }
+    },
+
+    async unverifyUsers(userIds) {
+        try {
+            showLoading();
+            const result = await SuperAdminAPI.bulkUpdateUsers(userIds, 'unverify_users');
+            if (result.success) {
+                showMessage(result.message, 'success');
+                return true;
+            } else {
+                showMessage(result.message || 'Failed to unverify users', 'error');
+                return false;
+            }
+        } catch (error) {
+            console.error('Error unverifying users:', error);
+            showMessage('Error unverifying users', 'error');
+            return false;
+        } finally {
+            hideLoading();
+        }
+    },
+
+    // Platform health monitoring
+    updatePlatformHealth: function(health) {
+        if (!health) return;
+
+        const indicator = document.getElementById('healthIndicator');
+        if (indicator) {
+            const statusClass = health.status === 'healthy' ? 'status-healthy' :
+                              health.status === 'warning' ? 'status-warning' : 'status-critical';
+
+            indicator.innerHTML = `
+                <span class="status-dot ${statusClass}"></span>
+                <span class="status-text">${health.status}</span>
+            `;
+        }
+    },
+
+    // Export system data
+    exportData: function(data, filename, format = 'json') {
+        let content, mimeType;
+
+        if (format === 'json') {
+            content = JSON.stringify(data, null, 2);
+            mimeType = 'application/json';
+        } else if (format === 'csv') {
+            content = this.convertToCSV(data);
+            mimeType = 'text/csv';
+        } else {
+            console.error('Unsupported export format:', format);
+            return;
+        }
+
+        const blob = new Blob([content], { type: mimeType });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `${filename}_${new Date().toISOString().slice(0, 10)}.${format}`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+
+        showMessage(`Data exported successfully as ${format.toUpperCase()}`, 'success');
+    },
+
+    // Convert data to CSV format
+    convertToCSV: function(data) {
+        if (!Array.isArray(data) || data.length === 0) {
+            return '';
+        }
+
+        const headers = Object.keys(data[0]);
+        const csvRows = [headers.join(',')];
+
+        for (const row of data) {
+            const values = headers.map(header => {
+                const value = row[header];
+                // Escape quotes and wrap in quotes if necessary
+                if (typeof value === 'string' && (value.includes(',') || value.includes('"') || value.includes('\n'))) {
+                    return `"${value.replace(/"/g, '""')}"`;
+                }
+                return value;
+            });
+            csvRows.push(values.join(','));
+        }
+
+        return csvRows.join('\n');
+    },
+
+    // Format date/time for display
+    formatDateTime: function(dateString) {
+        if (!dateString) return 'Unknown';
+
+        const date = new Date(dateString);
+        if (isNaN(date.getTime())) return 'Invalid Date';
+
+        const now = new Date();
+        const diff = now - date;
+
+        // Less than 1 minute ago
+        if (diff < 60000) {
+            return 'Just now';
+        }
+
+        // Less than 1 hour ago
+        if (diff < 3600000) {
+            const minutes = Math.floor(diff / 60000);
+            return `${minutes} minute${minutes !== 1 ? 's' : ''} ago`;
+        }
+
+        // Less than 24 hours ago
+        if (diff < 86400000) {
+            const hours = Math.floor(diff / 3600000);
+            return `${hours} hour${hours !== 1 ? 's' : ''} ago`;
+        }
+
+        // Less than 7 days ago
+        if (diff < 604800000) {
+            const days = Math.floor(diff / 86400000);
+            return `${days} day${days !== 1 ? 's' : ''} ago`;
+        }
+
+        // More than 7 days ago
+        return date.toLocaleDateString();
+    },
+
+    // Format numbers with commas
+    formatNumber: function(num) {
+        return new Intl.NumberFormat().format(num);
+    },
+
+    // Validate email address
+    isValidEmail: function(email) {
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        return emailRegex.test(email);
+    },
+
+    // Debounce function for search inputs
+    debounce: function(func, wait) {
+        let timeout;
+        return function executedFunction(...args) {
+            const later = () => {
+                clearTimeout(timeout);
+                func(...args);
+            };
+            clearTimeout(timeout);
+            timeout = setTimeout(later, wait);
+        };
+    }
+};
+
+// Super Admin Dashboard Management
+window.SuperAdminDashboard = {
+    refreshInterval: null,
+
+    // Initialize dashboard
+    init: function() {
+        this.loadInitialData();
+        this.setupEventListeners();
+        this.startAutoRefresh();
+    },
+
+    // Load all dashboard data
+    loadInitialData: async function() {
+        try {
+            showLoading();
+
+            await Promise.all([
+                this.loadSystemStats(),
+                this.loadPlatformHealth(),
+                this.loadRecentActivity(),
+                this.loadUserSummary()
+            ]);
+
+        } catch (error) {
+            console.error('Error loading dashboard data:', error);
+            showMessage('Error loading dashboard data', 'error');
+        } finally {
+            hideLoading();
+        }
+    },
+
+    // Load system statistics
+    loadSystemStats: async function() {
+        try {
+            const stats = await SuperAdminAPI.getStats();
+            this.updateStatsDisplay(stats);
+        } catch (error) {
+            console.error('Error loading system stats:', error);
+        }
+    },
+
+    // Load platform health
+    loadPlatformHealth: async function() {
+        try {
+            const data = await SuperAdminAPI.getComprehensiveStats();
+            if (data.platform_health) {
+                SuperAdminUtils.updatePlatformHealth(data.platform_health);
+            }
+        } catch (error) {
+            console.error('Error loading platform health:', error);
+        }
+    },
+
+    // Load recent activity
+    loadRecentActivity: async function() {
+        try {
+            const activity = await SuperAdminAPI.getRecentActivity(10);
+            this.updateActivityDisplay(activity);
+        } catch (error) {
+            console.error('Error loading recent activity:', error);
+            this.showActivityError();
+        }
+    },
+
+    // Load user summary
+    loadUserSummary: async function() {
+        try {
+            const summary = await SuperAdminAPI.getUserSummary();
+            this.updateUserSummaryDisplay(summary);
+        } catch (error) {
+            console.error('Error loading user summary:', error);
+            this.showUserSummaryError();
+        }
+    },
+
+    // Update statistics display
+    updateStatsDisplay: function(stats) {
+        const elements = {
+            totalUsers: stats.total_users || 0,
+            totalVotes: stats.total_votes || 0,
+            totalResponses: stats.total_responses || 0,
+            superAdmins: stats.super_admins || 0,
+            verifiedUsers: `${stats.verified_users || 0} verified`,
+            activeVotes: `${stats.active_votes || 0} active`,
+            responsesToday: `${stats.responses_today || 0} today`,
+            usersToday: `${stats.users_created_today || 0} new today`
+        };
+
+        Object.entries(elements).forEach(([id, value]) => {
+            const element = document.getElementById(id);
+            if (element) {
+                element.textContent = value;
+            }
+        });
+    },
+
+    // Update activity display
+    updateActivityDisplay: function(activity) {
+        const container = document.getElementById('recentActivity');
+        if (!container) return;
+
+        if (activity && activity.length > 0) {
+            container.innerHTML = activity.map(item => `
+                <div class="activity-item">
+                    <div class="activity-icon">
+                        <i class="fas ${item.event_type === 'user_registration' ? 'fa-user-plus' : 'fa-vote-yea'}"></i>
+                    </div>
+                    <div class="activity-content">
+                        <div class="activity-title">${item.details}</div>
+                        <div class="activity-meta">
+                            <span class="activity-user">${item.user_email}</span>
+                            <span class="activity-time">${SuperAdminUtils.formatDateTime(item.timestamp)}</span>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        } else {
+            container.innerHTML = `
+                <div class="empty-state">
+                    <i class="fas fa-inbox"></i>
+                    <p>No recent activity</p>
+                </div>
+            `;
+        }
+    },
+
+    // Update user summary display
+    updateUserSummaryDisplay: function(summary) {
+        const container = document.getElementById('userSummary');
+        if (!container) return;
+
+        container.innerHTML = `
+            <div class="summary-stats">
+                <div class="summary-stat">
+                    <div class="stat-value">${SuperAdminUtils.formatNumber(summary.verified_users_count || 0)}</div>
+                    <div class="stat-label">Verified Users</div>
+                </div>
+                <div class="summary-stat">
+                    <div class="stat-value">${SuperAdminUtils.formatNumber(summary.unverified_users_count || 0)}</div>
+                    <div class="stat-label">Pending Verification</div>
+                </div>
+                <div class="summary-stat">
+                    <div class="stat-value">${SuperAdminUtils.formatNumber(summary.super_admins_count || 0)}</div>
+                    <div class="stat-label">Super Admins</div>
+                </div>
+            </div>
+
+            ${summary.most_active_users && summary.most_active_users.length > 0 ? `
+                <div class="active-users">
+                    <h4>Most Active Users</h4>
+                    <div class="user-list">
+                        ${summary.most_active_users.map(user => `
+                            <div class="user-item">
+                                <span class="user-name">${user.first_name} ${user.last_name}</span>
+                                <span class="user-votes">${SuperAdminUtils.formatNumber(user.vote_count)} votes</span>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            ` : ''}
+        `;
+    },
+
+    // Show error states
+    showActivityError: function() {
+        const container = document.getElementById('recentActivity');
+        if (container) {
+            container.innerHTML = `
+                <div class="error-state">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <p>Error loading recent activity</p>
+                </div>
+            `;
+        }
+    },
+
+    showUserSummaryError: function() {
+        const container = document.getElementById('userSummary');
+        if (container) {
+            container.innerHTML = `
+                <div class="error-state">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <p>Error loading user summary</p>
+                </div>
+            `;
+        }
+    },
+
+    // Setup event listeners
+    setupEventListeners: function() {
+        // Handle page visibility changes
+        document.addEventListener('visibilitychange', () => {
+            if (document.hidden) {
+                this.stopAutoRefresh();
+            } else {
+                this.startAutoRefresh();
+            }
+        });
+
+        // Handle window unload
+        window.addEventListener('beforeunload', () => {
+            this.stopAutoRefresh();
+        });
+    },
+
+    // Auto-refresh functionality
+    startAutoRefresh: function() {
+        this.stopAutoRefresh(); // Clear any existing interval
+
+        this.refreshInterval = setInterval(async () => {
+            try {
+                await this.loadSystemStats();
+                await this.loadPlatformHealth();
+            } catch (error) {
+                console.error('Auto-refresh error:', error);
+            }
+        }, 30000); // 30 seconds
+    },
+
+    stopAutoRefresh: function() {
+        if (this.refreshInterval) {
+            clearInterval(this.refreshInterval);
+            this.refreshInterval = null;
+        }
+    }
+};
+
+// Global utility functions for templates
+function showLoading() {
+    SuperAdminUtils.showLoading();
+}
+
+function hideLoading() {
+    SuperAdminUtils.hideLoading();
+}
+
+function showMessage(message, type, duration) {
+    SuperAdminUtils.showMessage(message, type, duration);
+}
+
+// Export system statistics (used by dashboard template)
+function exportSystemStats() {
+    const data = window.dashboardData?.stats;
+    if (data) {
+        SuperAdminUtils.exportData(data, 'system_stats', 'json');
+    } else {
+        showMessage('No data available to export', 'warning');
+    }
+}
+
+// Open user management (used by dashboard template)
+function openUserManagement() {
+    window.location.href = '/api/admin/users';
+}
+
+// Bulk verify users (used by dashboard template)
+function bulkVerifyUsers() {
+    showMessage('Bulk verification feature coming soon', 'info');
+}
+
+// View audit log (used by dashboard template)
+function viewAuditLog() {
+    showMessage('Audit log feature coming soon', 'info');
+}
+
+// Initialize Super Admin Dashboard when DOM is loaded
+document.addEventListener('DOMContentLoaded', function() {
+    // Only initialize if we're on a super admin page
+    if (document.body.classList.contains('super-admin-body')) {
+        SuperAdminDashboard.init();
+    }
+});
+
+// Export for use in other modules
+window.SuperAdminAPI = SuperAdminAPI;
+window.SuperAdminUtils = SuperAdminUtils;
+window.SuperAdminDashboard = SuperAdminDashboard;

@@ -38,6 +38,7 @@ from .models import (
     VoteResults,
     VoteSubmission,
 )
+from .super_admin_routes import setup_super_admin_templates, super_admin_router
 from .vote_routes import vote_router
 
 # Configure logging
@@ -83,6 +84,10 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
             deps.generalized_db_manager = generalized_db_manager
             deps.generalized_auth_manager = generalized_auth_manager
 
+            # Setup super admin templates and include router
+            setup_super_admin_templates(templates)
+            app.include_router(super_admin_router)  # Super admin router
+
             logger.info("Generalized platform initialized successfully")
 
             # Skip legacy system initialization
@@ -118,6 +123,10 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
 
             deps.generalized_db_manager = generalized_db_manager
             deps.generalized_auth_manager = generalized_auth_manager
+
+            # Setup super admin templates and include router
+            setup_super_admin_templates(templates)
+            app.include_router(super_admin_router)  # Super admin router
 
             logger.info("Both legacy and generalized platforms initialized")
 

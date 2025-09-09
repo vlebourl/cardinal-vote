@@ -251,6 +251,102 @@ class GeneralizedAuthManager:
             logger.error(f"Failed to set session context: {e}")
             # Don't raise - this is not critical for basic operation
 
+    def create_password_reset_token(self, user: User) -> str:
+        """Create a password reset token for a user."""
+        token_data = {
+            "sub": str(user.id),
+            "type": "password_reset",
+            "iat": datetime.utcnow().timestamp(),
+        }
+        # Password reset tokens expire in 1 hour
+        expires = timedelta(hours=1)
+        return self.create_access_token(token_data, expires_delta=expires)
+
+    def verify_password_reset_token(self, token: str) -> dict[str, Any] | None:
+        """Verify a password reset token and return user data if valid."""
+        payload = self.verify_token(token)
+        if not payload:
+            return None
+
+        # Verify it's a password reset token
+        if payload.get("type") != "password_reset":
+            logger.warning("Invalid token type for password reset")
+            return None
+
+        return payload
+
+    def create_email_verification_token(self, user: User) -> str:
+        """Create an email verification token for a user."""
+        token_data = {
+            "sub": str(user.id),
+            "email": user.email,
+            "type": "email_verification",
+            "iat": datetime.utcnow().timestamp(),
+        }
+        # Email verification tokens expire in 24 hours
+        expires = timedelta(hours=24)
+        return self.create_access_token(token_data, expires_delta=expires)
+
+    def verify_email_verification_token(self, token: str) -> dict[str, Any] | None:
+        """Verify an email verification token and return user data if valid."""
+        payload = self.verify_token(token)
+        if not payload:
+            return None
+
+        # Verify it's an email verification token
+        if payload.get("type") != "email_verification":
+            logger.warning("Invalid token type for email verification")
+            return None
+
+        return payload
+
+    async def update_user_password(
+        self, user_id: UUID, new_password: str, session: AsyncSession
+    ) -> bool:
+        """Update user password."""
+        try:
+            result = await session.execute(select(User).where(User.id == user_id))
+            user = result.scalar_one_or_none()
+
+            if not user:
+                logger.warning(f"User {user_id} not found for password update")
+                return False
+
+            # Hash the new password
+            hashed_password = self.hash_password(new_password)
+            user.hashed_password = hashed_password
+
+            await session.commit()
+            logger.info(f"Password updated for user {user_id}")
+            return True
+
+        except SQLAlchemyError as e:
+            await session.rollback()
+            logger.error(f"Failed to update password for user {user_id}: {e}")
+            return False
+
+    async def verify_user_email(self, user_id: UUID, session: AsyncSession) -> bool:
+        """Mark user's email as verified."""
+        try:
+            result = await session.execute(select(User).where(User.id == user_id))
+            user = result.scalar_one_or_none()
+
+            if not user:
+                logger.warning(f"User {user_id} not found for email verification")
+                return False
+
+            # Mark as verified
+            user.is_verified = True
+
+            await session.commit()
+            logger.info(f"Email verified for user {user_id}")
+            return True
+
+        except SQLAlchemyError as e:
+            await session.rollback()
+            logger.error(f"Failed to verify email for user {user_id}: {e}")
+            return False
+
     async def create_initial_super_admin(self, session: AsyncSession) -> None:
         """Create initial super admin user if it doesn't exist."""
         try:
