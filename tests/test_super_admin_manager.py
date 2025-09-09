@@ -344,6 +344,28 @@ class TestSuperAdminManager:
         assert result["message"] == "No users specified"
 
     @pytest.mark.unit
+    async def test_bulk_update_users_size_limit(
+        self, super_admin_manager, mock_session
+    ):
+        """Test bulk update with too many users."""
+        from cardinal_vote.super_admin_manager import BULK_OPERATION_LIMITS
+
+        # Create more user IDs than the limit allows
+        user_ids = [
+            uuid4() for _ in range(BULK_OPERATION_LIMITS["max_users_per_operation"] + 1)
+        ]
+
+        result = await super_admin_manager.bulk_update_users(
+            mock_session, user_ids, "verify_users"
+        )
+
+        assert result["success"] is False
+        assert "Too many users specified" in result["message"]
+        assert (
+            str(BULK_OPERATION_LIMITS["max_users_per_operation"]) in result["message"]
+        )
+
+    @pytest.mark.unit
     async def test_bulk_update_users_invalid_operation(
         self, super_admin_manager, mock_session
     ):

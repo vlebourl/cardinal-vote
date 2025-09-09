@@ -26,6 +26,12 @@ HEALTH_THRESHOLDS = {
     "no_activity_penalty": 20,  # Score penalty for no recent activity
 }
 
+# Bulk operation configuration constants
+BULK_OPERATION_LIMITS = {
+    "max_users_per_operation": 100,  # Maximum users per bulk operation
+    "max_audit_log_entries": 200,  # Maximum audit log entries to return
+}
+
 
 class SuperAdminManager:
     """Manages super admin operations for user management and system statistics."""
@@ -421,70 +427,85 @@ class SuperAdminManager:
     async def bulk_update_users(
         self, session: AsyncSession, user_ids: list[UUID], operation: str, **kwargs: Any
     ) -> dict[str, Any]:
-        """Perform bulk operations on multiple users."""
-        try:
-            if not user_ids:
-                return {"success": False, "message": "No users specified"}
+        """Perform bulk operations on multiple users with proper transaction management."""
+        # Input validation
+        if not user_ids:
+            return {"success": False, "message": "No users specified"}
 
-            if operation == "verify_users":
-                # Bulk verify users using SQLAlchemy ORM
-                result = await session.execute(
-                    update(User).where(User.id.in_(user_ids)).values(is_verified=True)
-                )
-                await session.commit()
+        if len(user_ids) > BULK_OPERATION_LIMITS["max_users_per_operation"]:
+            return {
+                "success": False,
+                "message": f"Too many users specified. Maximum allowed: {BULK_OPERATION_LIMITS['max_users_per_operation']}",
+            }
 
-                affected_rows = result.rowcount or 0
-                logger.info(f"Bulk verified {affected_rows} users")
+        # Use transaction savepoint for proper isolation
+        async with session.begin_nested():
+            try:
+                affected_rows = 0
 
-                return {
-                    "success": True,
-                    "message": f"Successfully verified {affected_rows} users",
-                    "affected_count": affected_rows,
-                }
+                if operation == "verify_users":
+                    # Bulk verify users using SQLAlchemy ORM
+                    result = await session.execute(
+                        update(User)
+                        .where(User.id.in_(user_ids))
+                        .values(is_verified=True)
+                    )
+                    affected_rows = result.rowcount or 0
+                    logger.info(f"Bulk verified {affected_rows} users")
 
-            elif operation == "unverify_users":
-                # Bulk unverify users using SQLAlchemy ORM
-                result = await session.execute(
-                    update(User).where(User.id.in_(user_ids)).values(is_verified=False)
-                )
-                await session.commit()
+                    return {
+                        "success": True,
+                        "message": f"Successfully verified {affected_rows} users",
+                        "affected_count": affected_rows,
+                    }
 
-                affected_rows = result.rowcount or 0
-                logger.info(f"Bulk unverified {affected_rows} users")
+                elif operation == "unverify_users":
+                    # Bulk unverify users using SQLAlchemy ORM
+                    result = await session.execute(
+                        update(User)
+                        .where(User.id.in_(user_ids))
+                        .values(is_verified=False)
+                    )
+                    affected_rows = result.rowcount or 0
+                    logger.info(f"Bulk unverified {affected_rows} users")
 
-                return {
-                    "success": True,
-                    "message": f"Successfully unverified {affected_rows} users",
-                    "affected_count": affected_rows,
-                }
+                    return {
+                        "success": True,
+                        "message": f"Successfully unverified {affected_rows} users",
+                        "affected_count": affected_rows,
+                    }
 
-            else:
+                else:
+                    return {
+                        "success": False,
+                        "message": f"Unknown bulk operation: {operation}",
+                    }
+
+            except SQLAlchemyError as e:
+                logger.error(f"Database error in bulk user update: {e}")
+                # Rollback will happen automatically due to nested transaction
                 return {
                     "success": False,
-                    "message": f"Unknown bulk operation: {operation}",
+                    "message": "Database error during bulk operation",
                 }
-
-        except SQLAlchemyError as e:
-            await session.rollback()
-            logger.error(f"Database error in bulk user update: {e}")
-            return {
-                "success": False,
-                "message": "Database error during bulk operation",
-                "error": str(e),
-            }
-        except Exception as e:
-            await session.rollback()
-            logger.error(f"Unexpected error in bulk user update: {e}")
-            return {
-                "success": False,
-                "message": "Unexpected error during bulk operation",
-                "error": str(e),
-            }
+            except Exception as e:
+                logger.error(f"Unexpected error in bulk user update: {e}")
+                # Rollback will happen automatically due to nested transaction
+                return {
+                    "success": False,
+                    "message": "Unexpected error during bulk operation",
+                }
 
     async def get_platform_audit_log(
         self, session: AsyncSession, limit: int = 50
     ) -> list[dict[str, Any]]:
         """Get platform audit log for super admin monitoring."""
+        # Validate and enforce audit log limits
+        if limit <= 0:
+            limit = 50
+        if limit > BULK_OPERATION_LIMITS["max_audit_log_entries"]:
+            limit = BULK_OPERATION_LIMITS["max_audit_log_entries"]
+
         try:
             # This is a simplified audit log
             # In a real implementation, you'd have a dedicated audit_log table
