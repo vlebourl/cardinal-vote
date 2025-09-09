@@ -1,12 +1,12 @@
-# 🔗 ToVéCo Logo Voting Platform - API Integration Guide
+# 🔗 Cardinal Vote Logo Voting Platform - API Integration Guide
 
-**Complete API reference for integration, troubleshooting, and advanced usage** of the ToVéCo logo voting platform.
+**Complete API reference for integration, troubleshooting, and advanced usage** of the Cardinal Vote logo voting platform.
 
 ![API Architecture](static/api-architecture.png)
 
 ## 🎯 API Overview
 
-The ToVéCo API provides RESTful endpoints for:
+The Cardinal Vote API provides RESTful endpoints for:
 
 - **Logo management**: Retrieve available logos
 - **Vote submission**: Submit value-based votes (-2 to +2 scale)
@@ -49,17 +49,17 @@ curl -X POST "https://voting.yourdomain.com/api/vote" \
   -d '{
     "voter_name": "John Doe",
     "ratings": {
-      "toveco1.png": 2,
-      "toveco2.png": -1,
-      "toveco3.png": 0,
-      "toveco4.png": 1,
-      "toveco5.png": -2,
-      "toveco6.png": 1,
-      "toveco7.png": 0,
-      "toveco8.png": 2,
-      "toveco9.png": -1,
-      "toveco10.png": 1,
-      "toveco11.png": 0
+      "cardinal-vote1.png": 2,
+      "cardinal-vote2.png": -1,
+      "cardinal-vote3.png": 0,
+      "cardinal-vote4.png": 1,
+      "cardinal-vote5.png": -2,
+      "cardinal-vote6.png": 1,
+      "cardinal-vote7.png": 0,
+      "cardinal-vote8.png": 2,
+      "cardinal-vote9.png": -1,
+      "cardinal-vote10.png": 1,
+      "cardinal-vote11.png": 0
     }
   }'
 ```
@@ -124,17 +124,17 @@ curl -X GET "https://voting.yourdomain.com/results" \
 ```json
 {
   "logos": [
-    "toveco3.png",
-    "toveco1.png",
-    "toveco7.png",
-    "toveco11.png",
-    "toveco2.png",
-    "toveco9.png",
-    "toveco5.png",
-    "toveco8.png",
-    "toveco10.png",
-    "toveco4.png",
-    "toveco6.png"
+    "cardinal-vote3.png",
+    "cardinal-vote1.png",
+    "cardinal-vote7.png",
+    "cardinal-vote11.png",
+    "cardinal-vote2.png",
+    "cardinal-vote9.png",
+    "cardinal-vote5.png",
+    "cardinal-vote8.png",
+    "cardinal-vote10.png",
+    "cardinal-vote4.png",
+    "cardinal-vote6.png"
   ],
   "total_count": 11
 }
@@ -176,17 +176,17 @@ curl -X GET "https://voting.yourdomain.com/results" \
 {
   "voter_name": "Alice Johnson",
   "ratings": {
-    "toveco1.png": 2,
-    "toveco2.png": -1,
-    "toveco3.png": 0,
-    "toveco4.png": 1,
-    "toveco5.png": -2,
-    "toveco6.png": 1,
-    "toveco7.png": 0,
-    "toveco8.png": 2,
-    "toveco9.png": -1,
-    "toveco10.png": 1,
-    "toveco11.png": 0
+    "cardinal-vote1.png": 2,
+    "cardinal-vote2.png": -1,
+    "cardinal-vote3.png": 0,
+    "cardinal-vote4.png": 1,
+    "cardinal-vote5.png": -2,
+    "cardinal-vote6.png": 1,
+    "cardinal-vote7.png": 0,
+    "cardinal-vote8.png": 2,
+    "cardinal-vote9.png": -1,
+    "cardinal-vote10.png": 1,
+    "cardinal-vote11.png": 0
   }
 }
 ```
@@ -215,8 +215,8 @@ curl -X GET "https://voting.yourdomain.com/results" \
   "success": false,
   "message": "Données invalides",
   "details": [
-    "ratings.toveco5.png: Rating must be between -2 and +2",
-    "Missing ratings for: toveco11.png"
+    "ratings.cardinal-vote5.png: Rating must be between -2 and +2",
+    "Missing ratings for: cardinal-vote11.png"
   ]
 }
 ```
@@ -256,19 +256,19 @@ curl -X GET "https://voting.yourdomain.com/results" \
 ```json
 {
   "summary": {
-    "toveco3.png": {
+    "cardinal-vote3.png": {
       "average": 1.8,
       "total_votes": 25,
       "total_score": 45,
       "ranking": 1
     },
-    "toveco7.png": {
+    "cardinal-vote7.png": {
       "average": 1.2,
       "total_votes": 25,
       "total_score": 30,
       "ranking": 2
     },
-    "toveco1.png": {
+    "cardinal-vote1.png": {
       "average": 0.8,
       "total_votes": 25,
       "total_score": 20,
@@ -293,9 +293,9 @@ curl -X GET "https://voting.yourdomain.com/results" \
       "voter_name": "Alice Johnson",
       "timestamp": "2025-09-04T12:00:00.000000",
       "ratings": {
-        "toveco1.png": 2,
-        "toveco2.png": -1,
-        "toveco3.png": 0
+        "cardinal-vote1.png": 2,
+        "cardinal-vote2.png": -1,
+        "cardinal-vote3.png": 0
       }
     }
   ]
@@ -399,7 +399,7 @@ Retry-After: 3600
 ### JavaScript/TypeScript Client
 
 ```typescript
-class ToVeCoVotingAPI {
+class CardinalVoteAPI {
   private baseUrl: string;
 
   constructor(baseUrl: string) {
@@ -466,7 +466,7 @@ class ToVeCoVotingAPI {
 }
 
 // Usage example
-const api = new ToVeCoVotingAPI("https://voting.yourdomain.com");
+const api = new CardinalVoteAPI("https://voting.yourdomain.com");
 
 async function submitSampleVote() {
   try {
@@ -499,7 +499,7 @@ import requests
 import json
 from typing import Dict, List, Optional
 
-class ToVeCoVotingAPI:
+class CardinalVoteAPI:
     def __init__(self, base_url: str):
         self.base_url = base_url.rstrip('/')
         self.session = requests.Session()
@@ -549,7 +549,7 @@ class ToVeCoVotingAPI:
 
 # Usage example
 def main():
-    api = ToVeCoVotingAPI('https://voting.yourdomain.com')
+    api = CardinalVoteAPI('https://voting.yourdomain.com')
 
     try:
         # Check system health
@@ -592,12 +592,12 @@ Create `test-api.sh`:
 
 ```bash
 #!/bin/bash
-# ToVéCo API Test Script
+# Cardinal Vote API Test Script
 
 API_BASE="https://voting.yourdomain.com/api"
 VOTER_NAME="Test User $(date +%s)"
 
-echo "🔍 Testing ToVéCo Voting API..."
+echo "🔍 Testing Cardinal Vote Voting API..."
 
 # Test health check
 echo "1. Health Check:"
@@ -718,7 +718,7 @@ ENABLE_RATE_LIMITING=false
 curl -s https://voting.yourdomain.com/api/logos | jq '.logos'
 
 # Validate your ratings object matches exactly
-echo '{"voter_name": "Test", "ratings": {"toveco1.png": 2}}' | jq '.ratings | keys'
+echo '{"voter_name": "Test", "ratings": {"cardinal-vote1.png": 2}}' | jq '.ratings | keys'
 ```
 
 #### 4. Database Connection Issues
@@ -730,15 +730,15 @@ echo '{"voter_name": "Test", "ratings": {"toveco1.png": 2}}' | jq '.ratings | ke
 
 ```bash
 # Check database file permissions
-docker compose exec toveco-voting ls -la /app/data/
+docker compose exec cardinal-vote-voting ls -la /app/data/
 
 # Restart with database recreation
 docker compose down
-docker volume rm toveco_data
+docker volume rm cardinal-vote_data
 docker compose up -d
 
 # Check application logs
-docker compose logs toveco-voting
+docker compose logs cardinal-vote-voting
 ```
 
 ### Monitoring & Debugging
@@ -761,10 +761,10 @@ done
 HEALTH_ENDPOINT="https://voting.yourdomain.com/api/health"
 
 if curl -sf "$HEALTH_ENDPOINT" | grep -q '"status": "healthy"'; then
-    echo "OK - ToVéCo API is healthy"
+    echo "OK - Cardinal Vote API is healthy"
     exit 0
 else
-    echo "CRITICAL - ToVéCo API is unhealthy"
+    echo "CRITICAL - Cardinal Vote API is unhealthy"
     exit 2
 fi
 ```
@@ -773,13 +773,13 @@ fi
 
 ```bash
 # Filter API logs for errors
-docker compose logs toveco-voting 2>&1 | grep -E "(ERROR|WARNING|CRITICAL)"
+docker compose logs cardinal-vote-voting 2>&1 | grep -E "(ERROR|WARNING|CRITICAL)"
 
 # Monitor vote submissions
-docker compose logs -f toveco-voting 2>&1 | grep "Vote submitted"
+docker compose logs -f cardinal-vote-voting 2>&1 | grep "Vote submitted"
 
 # Check database operations
-docker compose logs toveco-voting 2>&1 | grep -i database
+docker compose logs cardinal-vote-voting 2>&1 | grep -i database
 ```
 
 ### Performance Optimization
@@ -788,7 +788,7 @@ docker compose logs toveco-voting 2>&1 | grep -i database
 
 ```javascript
 // Client-side logo caching
-class CachedToVeCoAPI extends ToVeCoVotingAPI {
+class CachedCardinalVoteAPI extends CardinalVoteAPI {
   private logoCache: {logos: string[], total_count: number} | null = null;
   private cacheTimestamp: number = 0;
   private cacheTimeout: number = 5 * 60 * 1000; // 5 minutes
@@ -810,7 +810,7 @@ class CachedToVeCoAPI extends ToVeCoVotingAPI {
 
 ```python
 # Efficient batch vote processing
-def submit_multiple_votes(api: ToVeCoVotingAPI, votes: List[Dict]):
+def submit_multiple_votes(api: CardinalVoteAPI, votes: List[Dict]):
     """Submit multiple votes with proper error handling and rate limiting."""
     results = []
 
@@ -867,7 +867,7 @@ class APIMetrics:
 
 # Usage
 metrics = APIMetrics()
-api = ToVeCoVotingAPI('https://voting.yourdomain.com')
+api = CardinalVoteAPI('https://voting.yourdomain.com')
 
 def timed_api_call(func, *args, **kwargs):
     start_time = time.time()
@@ -922,4 +922,4 @@ print(metrics.get_summary())
 
 ---
 
-_🔧 **Need help integrating?** This API guide provides everything needed to successfully integrate with the ToVéCo voting platform, from basic usage to advanced troubleshooting._
+_🔧 **Need help integrating?** This API guide provides everything needed to successfully integrate with the Cardinal Vote voting platform, from basic usage to advanced troubleshooting._

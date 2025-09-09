@@ -1,10 +1,10 @@
-# 🐳 ToVéCo Voting Platform - Docker Image Deployment Guide
+# 🐳 Cardinal Vote Voting Platform - Docker Image Deployment Guide
 
 ## 📦 Package Contents
 
 This deployment package contains:
 
-- `toveco-voting-v1.0.5.tar` - Docker image (220MB)
+- `cardinal-vote-voting-v1.0.5.tar` - Docker image (220MB)
 - `docker-compose.production.yml` - Production Docker Compose configuration
 - `deploy-from-tar.sh` - Automated deployment script
 - `.env.example` - Environment configuration template
@@ -16,7 +16,7 @@ This deployment package contains:
 Copy the following files to your deployment server:
 
 ```bash
-scp toveco-voting-v1.0.5.tar user@server:/path/to/deployment/
+scp cardinal-vote-voting-v1.0.5.tar user@server:/path/to/deployment/
 scp docker-compose.production.yml user@server:/path/to/deployment/
 scp deploy-from-tar.sh user@server:/path/to/deployment/
 scp .env.example user@server:/path/to/deployment/  # Optional
@@ -45,16 +45,16 @@ If you prefer manual deployment:
 ### Load Docker Image
 
 ```bash
-docker load -i toveco-voting-v1.0.5.tar
+docker load -i cardinal-vote-voting-v1.0.5.tar
 ```
 
 ### Verify Image
 
 ```bash
-docker images | grep toveco-voting
+docker images | grep cardinal-vote-voting
 # Should show:
-# toveco-voting   latest    ...
-# toveco-voting   v1.0.5    ...
+# cardinal-vote-voting   latest    ...
+# cardinal-vote-voting   v1.0.5    ...
 ```
 
 ### Configure Environment
@@ -95,7 +95,7 @@ docker compose -f docker-compose.production.yml logs -f
 
 ```env
 # Production settings
-TOVECO_ENV=production
+CARDINAL_VOTE_ENV=production
 DEBUG=false
 
 # Admin credentials (MUST CHANGE!)
@@ -183,12 +183,12 @@ docker compose -f docker-compose.production.yml logs --tail=100
 
 ```bash
 # Create backup
-docker compose -f docker-compose.production.yml exec toveco-voting \
+docker compose -f docker-compose.production.yml exec cardinal-vote-voting \
     cp /app/data/votes.db /app/data/votes_backup_$(date +%Y%m%d).db
 
 # Export backup
 docker compose -f docker-compose.production.yml cp \
-    toveco-voting:/app/data/votes_backup_*.db ./backups/
+    cardinal-vote-voting:/app/data/votes_backup_*.db ./backups/
 ```
 
 ## 🔄 Updating the Application
@@ -198,7 +198,7 @@ To deploy a new version:
 1. Load new image:
 
 ```bash
-docker load -i toveco-voting-v1.0.6.tar  # New version
+docker load -i cardinal-vote-voting-v1.0.6.tar  # New version
 ```
 
 2. Update docker-compose.production.yml if needed
@@ -226,7 +226,7 @@ sudo netstat -tulpn | grep 8000
 
 ```bash
 # Check database file permissions
-docker compose -f docker-compose.production.yml exec toveco-voting \
+docker compose -f docker-compose.production.yml exec cardinal-vote-voting \
     ls -la /app/data/
 
 # Reset database (WARNING: deletes all votes)
@@ -238,11 +238,11 @@ docker compose -f docker-compose.production.yml up -d
 
 ```bash
 # Manual health check
-docker compose -f docker-compose.production.yml exec toveco-voting \
+docker compose -f docker-compose.production.yml exec cardinal-vote-voting \
     curl -f http://localhost:8000/api/health
 
 # Check application logs
-docker compose -f docker-compose.production.yml logs --tail=100 toveco-voting
+docker compose -f docker-compose.production.yml logs --tail=100 cardinal-vote-voting
 ```
 
 ## 📋 System Requirements
@@ -256,7 +256,7 @@ docker compose -f docker-compose.production.yml logs --tail=100 toveco-voting
 ## 🏷️ Version Information
 
 - Application Version: 1.0.5
-- Docker Image: toveco-voting:v1.0.5
+- Docker Image: cardinal-vote-voting:v1.0.5
 - Image Size: ~220MB
 - Base Image: Python 3.11-slim
 

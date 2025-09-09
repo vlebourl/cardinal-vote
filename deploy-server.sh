@@ -18,8 +18,8 @@ NC='\033[0m' # No Color
 
 # Configuration
 COMPOSE_FILE="docker-compose.yml"
-IMAGE_NAME="toveco-voting"
-SERVICE_NAME="toveco-voting"
+IMAGE_NAME="cardinal-voting"
+SERVICE_NAME="cardinal-voting"
 
 # Function to print colored output
 print_status() {
@@ -41,8 +41,8 @@ print_error() {
 # Get tar file from command line argument
 if [[ $# -lt 1 ]]; then
     print_error "Usage: $0 <tar-file> [--yes]"
-    print_error "Example: $0 toveco-voting-v1.0.4.tar"
-    print_error "         $0 toveco-voting-latest.tar --yes"
+    print_error "Example: $0 cardinal-voting-v1.0.4.tar"
+    print_error "         $0 cardinal-voting-latest.tar --yes"
     exit 1
 fi
 
@@ -86,11 +86,11 @@ wait_for_containers_stop() {
     docker compose kill 2>/dev/null || true
 }
 
-# Function to remove all toveco images
+# Function to remove all cardinal images
 cleanup_images() {
     print_status "Cleaning up old ToV'éCo images..."
 
-    # Get all toveco-voting images
+    # Get all cardinal-voting images
     local images=$(docker images "${IMAGE_NAME}" --format "{{.Repository}}:{{.Tag}}" 2>/dev/null || true)
 
     if [[ -n "$images" ]]; then
@@ -99,7 +99,7 @@ cleanup_images() {
             echo "  - $image"
         done
 
-        # Remove all toveco-voting images
+        # Remove all cardinal-voting images
         echo "$images" | while read -r image; do
             print_status "Removing image: $image"
             docker rmi "$image" -f 2>/dev/null || print_warning "Could not remove $image"
@@ -123,7 +123,7 @@ load_new_image() {
         # Get the loaded image name and tag
         local loaded_image=$(docker load -i "$TAR_FILE" 2>&1 | grep "Loaded image:" | sed 's/Loaded image: //' || true)
         if [[ -z "$loaded_image" ]]; then
-            # Try to find the loaded image by looking for recently loaded toveco images
+            # Try to find the loaded image by looking for recently loaded cardinal images
             loaded_image=$(docker images "${IMAGE_NAME}" --format "{{.Repository}}:{{.Tag}}" | head -1)
         fi
 
@@ -245,7 +245,7 @@ main() {
     if [[ "${2:-}" != "--yes" ]]; then
         echo -e "${YELLOW}This will:${NC}"
         echo "  1. Stop all containers from $COMPOSE_FILE"
-        echo "  2. Remove ALL toveco-voting Docker images"
+        echo "  2. Remove ALL cardinal-voting Docker images"
         echo "  3. Load new image from $TAR_FILE ($tar_size)"
         echo "  4. Tag the loaded image as 'latest'"
         echo "  5. Start fresh containers"

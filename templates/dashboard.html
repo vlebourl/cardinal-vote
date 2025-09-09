@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+    <title>Tableau de bord - Plateforme de Vote</title>
+    <meta name="description" content="Gérez vos votes et campagnes depuis votre tableau de bord personnel.">
+    <meta name="theme-color" content="#2D5820">
+    <link rel="stylesheet" href="/static/style.css">
+    <link rel="stylesheet" href="/static/dashboard.css">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🗳️</text></svg>">
+</head>
+<body>
+    <!-- Skip link for accessibility -->
+    <a href="#main-content" class="skip-link">Aller au contenu principal</a>
+
+    <!-- Header Navigation -->
+    <header class="dashboard-header" role="banner">
+        <div class="header-container">
+            <div class="header-brand">
+                <h1 class="brand-title">
+                    <span class="brand-icon">🗳️</span>
+                    Plateforme de Vote
+                </h1>
+            </div>
+
+            <nav class="header-nav" role="navigation" aria-label="Navigation principale">
+                <div class="nav-items">
+                    <a href="#dashboard" class="nav-item active" data-section="dashboard">
+                        <span class="nav-icon">📊</span>
+                        <span class="nav-text">Tableau de bord</span>
+                    </a>
+                    <a href="#votes" class="nav-item" data-section="votes">
+                        <span class="nav-icon">🗳️</span>
+                        <span class="nav-text">Mes votes</span>
+                    </a>
+                    <a href="#create" class="nav-item" data-section="create">
+                        <span class="nav-icon">➕</span>
+                        <span class="nav-text">Créer un vote</span>
+                    </a>
+                </div>
+            </nav>
+
+            <div class="header-user">
+                <div class="user-menu" tabindex="0" role="button" aria-haspopup="true" aria-expanded="false">
+                    <div class="user-avatar">
+                        <span class="avatar-initials" id="user-initials">U</span>
+                    </div>
+                    <span class="user-name" id="user-name">Utilisateur</span>
+                    <span class="user-menu-icon">▼</span>
+
+                    <div class="user-dropdown" role="menu">
+                        <a href="#profile" class="dropdown-item" role="menuitem">
+                            <span class="item-icon">👤</span>
+                            Mon profil
+                        </a>
+                        <a href="#settings" class="dropdown-item" role="menuitem">
+                            <span class="item-icon">⚙️</span>
+                            Paramètres
+                        </a>
+                        <div class="dropdown-divider"></div>
+                        <button class="dropdown-item logout-btn" role="menuitem">
+                            <span class="item-icon">🚪</span>
+                            Déconnexion
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main id="main-content" class="dashboard-main" role="main">
+
+        <!-- Dashboard Overview Section -->
+        <section id="dashboard-section" class="dashboard-section active" aria-labelledby="dashboard-title">
+            <div class="section-header">
+                <h2 id="dashboard-title">Tableau de bord</h2>
+                <p class="section-subtitle">Vue d'ensemble de vos activités</p>
+            </div>
+
+            <!-- Stats Grid -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon">🗳️</div>
+                    <div class="stat-content">
+                        <div class="stat-number" id="total-votes">0</div>
+                        <div class="stat-label">Votes créés</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">✅</div>
+                    <div class="stat-content">
+                        <div class="stat-number" id="active-votes">0</div>
+                        <div class="stat-label">Votes actifs</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">👥</div>
+                    <div class="stat-content">
+                        <div class="stat-number" id="total-participants">0</div>
+                        <div class="stat-label">Participants total</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">📈</div>
+                    <div class="stat-content">
+                        <div class="stat-number" id="total-responses">0</div>
+                        <div class="stat-label">Réponses reçues</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Activity -->
+            <div class="dashboard-grid">
+                <div class="dashboard-card">
+                    <h3 class="card-title">Activité récente</h3>
+                    <div class="activity-list" id="recent-activity">
+                        <div class="activity-item loading">
+                            <div class="activity-icon">⏳</div>
+                            <div class="activity-content">
+                                <div class="activity-text">Chargement...</div>
+                                <div class="activity-time">--</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="dashboard-card">
+                    <h3 class="card-title">Votes populaires</h3>
+                    <div class="popular-votes" id="popular-votes">
+                        <div class="vote-item loading">
+                            <div class="vote-title">Chargement...</div>
+                            <div class="vote-stats">-- participants</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- My Votes Section -->
+        <section id="votes-section" class="dashboard-section" aria-labelledby="votes-title">
+            <div class="section-header">
+                <h2 id="votes-title">Mes votes</h2>
+                <p class="section-subtitle">Gérez tous vos votes et campagnes</p>
+                <div class="section-actions">
+                    <button class="btn btn-primary" data-action="create-vote">
+                        <span class="btn-icon">➕</span>
+                        Créer un vote
+                    </button>
+                </div>
+            </div>
+
+            <!-- Filters -->
+            <div class="filter-bar">
+                <div class="filter-group">
+                    <label for="status-filter" class="filter-label">Statut :</label>
+                    <select id="status-filter" class="filter-select">
+                        <option value="all">Tous les statuts</option>
+                        <option value="draft">Brouillon</option>
+                        <option value="active">Actif</option>
+                        <option value="ended">Terminé</option>
+                        <option value="archived">Archivé</option>
+                    </select>
+                </div>
+
+                <div class="filter-group">
+                    <label for="search-votes" class="filter-label">Rechercher :</label>
+                    <input type="search" id="search-votes" class="filter-input" placeholder="Titre du vote...">
+                </div>
+            </div>
+
+            <!-- Votes List -->
+            <div class="votes-container">
+                <div class="votes-list" id="votes-list">
+                    <!-- Loading state -->
+                    <div class="loading-state">
+                        <div class="spinner"></div>
+                        <p>Chargement de vos votes...</p>
+                    </div>
+                </div>
+
+                <!-- Empty state -->
+                <div class="empty-state" id="empty-votes" hidden>
+                    <div class="empty-icon">📝</div>
+                    <h3>Aucun vote trouvé</h3>
+                    <p>Commencez par créer votre premier vote pour engager votre audience.</p>
+                    <button class="btn btn-primary" data-action="create-vote">
+                        <span class="btn-icon">➕</span>
+                        Créer mon premier vote
+                    </button>
+                </div>
+            </div>
+
+            <!-- Pagination -->
+            <div class="pagination" id="votes-pagination" hidden>
+                <button class="pagination-btn" id="prev-page" disabled>
+                    <span class="btn-icon">←</span>
+                    Précédent
+                </button>
+                <span class="pagination-info" id="pagination-info">Page 1 sur 1</span>
+                <button class="pagination-btn" id="next-page" disabled>
+                    Suivant
+                    <span class="btn-icon">→</span>
+                </button>
+            </div>
+        </section>
+
+        <!-- Create Vote Section -->
+        <section id="create-section" class="dashboard-section" aria-labelledby="create-title">
+            <div class="section-header">
+                <h2 id="create-title">Créer un vote</h2>
+                <p class="section-subtitle">Créez une nouvelle campagne de vote</p>
+            </div>
+
+            <div class="create-vote-placeholder">
+                <div class="placeholder-icon">🚧</div>
+                <h3>Interface de création en cours</h3>
+                <p>L'interface de création de vote sera disponible dans la prochaine étape.</p>
+                <p>Pour l'instant, vous pouvez utiliser l'API directement ou attendre la finalisation de l'interface.</p>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Modals -->
+
+    <!-- Vote Details Modal -->
+    <div id="vote-details-modal" class="modal" hidden>
+        <div class="modal-content modal-large">
+            <div class="modal-header">
+                <h3 id="vote-details-title">Détails du vote</h3>
+                <button type="button" class="modal-close" aria-label="Fermer">×</button>
+            </div>
+            <div class="modal-body" id="vote-details-content">
+                <!-- Content will be loaded dynamically -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Delete Vote Confirmation Modal -->
+    <div id="delete-vote-modal" class="modal" hidden>
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Supprimer le vote</h3>
+                <button type="button" class="modal-close" aria-label="Fermer">×</button>
+            </div>
+            <div class="modal-body">
+                <p>Êtes-vous sûr de vouloir supprimer ce vote ?</p>
+                <p class="warning-text">⚠️ Cette action est irréversible. Toutes les données et réponses seront perdues.</p>
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-secondary" data-action="cancel">Annuler</button>
+                    <button type="button" class="btn btn-danger" id="confirm-delete-btn">
+                        <span class="btn-text">Supprimer</span>
+                        <span class="btn-loading" hidden>
+                            <span class="spinner"></span>
+                            Suppression...
+                        </span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Live region for screen reader announcements -->
+    <div id="live-region" class="sr-only" aria-live="polite" aria-atomic="true"></div>
+
+    <!-- User data (passed from backend) -->
+    <script type="application/json" id="user-data">{{ user_json|safe }}</script>
+
+    <script src="/static/dashboard.js"></script>
+</body>
+</html>

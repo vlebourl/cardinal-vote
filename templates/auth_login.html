@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+    <title>Connexion - Plateforme de Vote</title>
+    <meta name="description" content="Connectez-vous à la plateforme de vote pour créer et gérer vos campagnes de vote.">
+    <meta name="theme-color" content="#2D5820">
+    <link rel="stylesheet" href="/static/style.css">
+    <link rel="stylesheet" href="/static/auth.css">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🗳️</text></svg>">
+</head>
+<body>
+    <div class="container">
+        <div class="screen active" role="main" aria-labelledby="login-title">
+            <div class="auth-content">
+                <div class="auth-header">
+                    <h1 id="login-title">Connexion</h1>
+                    <p class="subtitle">Accédez à votre compte pour créer et gérer vos votes</p>
+                </div>
+
+                <form id="login-form" class="auth-form" novalidate>
+                    <div class="field-group">
+                        <label for="email" class="field-label">Adresse email *</label>
+                        <input type="email"
+                               id="email"
+                               name="email"
+                               placeholder="votre@email.com"
+                               required
+                               autocomplete="email"
+                               maxlength="255"
+                               aria-describedby="email-help email-error">
+                        <div id="email-help" class="field-help">Votre adresse email de connexion</div>
+                        <div id="email-error" class="field-error" role="alert"></div>
+                    </div>
+
+                    <div class="field-group">
+                        <label for="password" class="field-label">Mot de passe *</label>
+                        <div class="password-input-container">
+                            <input type="password"
+                                   id="password"
+                                   name="password"
+                                   placeholder="Votre mot de passe"
+                                   required
+                                   autocomplete="current-password"
+                                   minlength="8"
+                                   maxlength="255"
+                                   aria-describedby="password-help password-error">
+                            <button type="button" class="password-toggle" aria-label="Afficher/masquer le mot de passe">
+                                <span class="password-toggle-icon">👁️</span>
+                            </button>
+                        </div>
+                        <div id="password-help" class="field-help">Votre mot de passe (8 caractères minimum)</div>
+                        <div id="password-error" class="field-error" role="alert"></div>
+                    </div>
+
+                    <div class="form-options">
+                        <div class="checkbox-group">
+                            <label class="checkbox-label">
+                                <input type="checkbox" id="remember-me" name="remember-me">
+                                <span class="checkbox-custom"></span>
+                                Se souvenir de moi
+                            </label>
+                        </div>
+                        <a href="#forgot-password" class="forgot-password-link">Mot de passe oublié ?</a>
+                    </div>
+
+                    <div class="auth-actions">
+                        <button type="submit" class="btn btn-primary btn-large">
+                            <span class="btn-text">Se connecter</span>
+                            <span class="btn-loading" hidden>
+                                <span class="spinner"></span>
+                                Connexion...
+                            </span>
+                        </button>
+                    </div>
+
+                    <div id="form-message" class="form-message" role="alert" hidden></div>
+                </form>
+
+                <div class="auth-footer">
+                    <p class="auth-footer-text">
+                        Pas encore de compte ?
+                        <a href="/auth/register" class="auth-link">Créer un compte</a>
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Password Reset Modal -->
+        <div id="forgot-password-modal" class="modal" hidden>
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>Réinitialiser le mot de passe</h3>
+                    <button type="button" class="modal-close" aria-label="Fermer">×</button>
+                </div>
+                <div class="modal-body">
+                    <p class="modal-description">
+                        Entrez votre adresse email et nous vous enverrons un lien pour réinitialiser votre mot de passe.
+                    </p>
+                    <form id="forgot-password-form" novalidate>
+                        <div class="field-group">
+                            <label for="reset-email" class="field-label">Adresse email *</label>
+                            <input type="email"
+                                   id="reset-email"
+                                   name="email"
+                                   placeholder="votre@email.com"
+                                   required
+                                   autocomplete="email"
+                                   maxlength="255"
+                                   aria-describedby="reset-email-error">
+                            <div id="reset-email-error" class="field-error" role="alert"></div>
+                        </div>
+                        <div class="modal-actions">
+                            <button type="button" class="btn btn-secondary" data-action="cancel">Annuler</button>
+                            <button type="submit" class="btn btn-primary">
+                                <span class="btn-text">Envoyer le lien</span>
+                                <span class="btn-loading" hidden>
+                                    <span class="spinner"></span>
+                                    Envoi...
+                                </span>
+                            </button>
+                        </div>
+                    </form>
+                    <div id="reset-message" class="form-message" role="alert" hidden></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Live region for screen reader announcements -->
+    <div id="live-region" class="sr-only" aria-live="polite" aria-atomic="true"></div>
+
+    <script src="/static/auth_login.js"></script>
+</body>
+</html>

@@ -1,14 +1,14 @@
 [project]
-name = "toveco-voting"
+name = "cardinal-vote"
 version = "1.2.2"
-description = "Logo voting platform using value voting methodology"
+description = "Generalized cardinal voting platform for collaborative decision making"
 readme = "README.md"
 requires-python = ">=3.11"
 authors = [
-    { name = "ToVéCo Team" },
+    { name = "Cardinal Vote Team" },
 ]
 license = { text = "MIT" }
-keywords = ["voting", "logo", "value-voting", "fastapi"]
+keywords = ["voting", "cardinal-voting", "decision-making", "fastapi", "collaborative"]
 classifiers = [
     "Development Status :: 3 - Alpha",
     "Intended Audience :: End Users/Desktop",
@@ -43,9 +43,9 @@ dependencies = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/toveco/voting"
-Repository = "https://github.com/toveco/voting.git"
-Issues = "https://github.com/toveco/voting/issues"
+Homepage = "https://github.com/vlebourl/cardinal-vote"
+Repository = "https://github.com/vlebourl/cardinal-vote.git"
+Issues = "https://github.com/vlebourl/cardinal-vote/issues"
 
 [project.scripts]
 cardinal-vote = "cardinal_vote.main:main"
