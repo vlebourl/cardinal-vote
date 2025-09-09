@@ -170,7 +170,8 @@ class Vote(Base):
     # Constraints and Indexes
     __table_args__ = (
         CheckConstraint(
-            "status IN ('draft', 'active', 'closed')", name="check_vote_status"
+            "status IN ('draft', 'active', 'closed', 'disabled', 'hidden')",
+            name="check_vote_status",
         ),
         Index("idx_votes_creator_id", "creator_id"),
         Index("idx_votes_slug", "slug"),
@@ -474,6 +475,115 @@ class AdminDashboardData(BaseModel):
     recent_votes: list[dict[str, Any]]
     logo_count: int
     session_info: dict[str, Any]
+
+
+# Moderation Models
+
+
+class VoteModerationFlag(Base):
+    """SQLAlchemy model for vote moderation flags."""
+
+    __tablename__ = "vote_moderation_flags"
+
+    id = Column(
+        PostgreSQL_UUID(as_uuid=True),
+        primary_key=True,
+        server_default=func.gen_random_uuid(),
+    )
+    vote_id = Column(
+        PostgreSQL_UUID(as_uuid=True),
+        ForeignKey("generalized_votes.id", ondelete="CASCADE"),
+        nullable=False,
+    )
+    flagger_id = Column(
+        PostgreSQL_UUID(as_uuid=True),
+        ForeignKey("users.id", ondelete="CASCADE"),
+        nullable=True,  # Anonymous flags allowed
+    )
+    flag_type = Column(String(50), nullable=False)
+    reason = Column(Text, nullable=False)
+    status = Column(String(20), default="pending", nullable=False)
+    reviewed_by = Column(
+        PostgreSQL_UUID(as_uuid=True),
+        ForeignKey("users.id", ondelete="SET NULL"),
+        nullable=True,
+    )
+    reviewed_at = Column(DateTime(timezone=True))
+    review_notes = Column(Text)
+    created_at = Column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False
+    )
+
+    # Relationships
+    vote: Mapped["Vote"] = relationship("Vote")
+    flagger: Mapped["User"] = relationship("User", foreign_keys=[flagger_id])
+    reviewer: Mapped["User"] = relationship("User", foreign_keys=[reviewed_by])
+
+    # Constraints and Indexes
+    __table_args__ = (
+        CheckConstraint(
+            "flag_type IN ('inappropriate_content', 'spam', 'harassment', 'copyright', 'other')",
+            name="check_flag_type",
+        ),
+        CheckConstraint(
+            "status IN ('pending', 'approved', 'rejected', 'resolved')",
+            name="check_flag_status",
+        ),
+        Index("idx_moderation_flags_vote_id", "vote_id"),
+        Index("idx_moderation_flags_status", "status"),
+        Index("idx_moderation_flags_created_at", "created_at"),
+    )
+
+    def __repr__(self) -> str:
+        return f"<VoteModerationFlag(id={self.id}, vote_id={self.vote_id}, type='{self.flag_type}')>"
+
+
+class VoteModerationAction(Base):
+    """SQLAlchemy model for moderation actions taken on votes."""
+
+    __tablename__ = "vote_moderation_actions"
+
+    id = Column(
+        PostgreSQL_UUID(as_uuid=True),
+        primary_key=True,
+        server_default=func.gen_random_uuid(),
+    )
+    vote_id = Column(
+        PostgreSQL_UUID(as_uuid=True),
+        ForeignKey("generalized_votes.id", ondelete="CASCADE"),
+        nullable=False,
+    )
+    moderator_id = Column(
+        PostgreSQL_UUID(as_uuid=True),
+        ForeignKey("users.id", ondelete="CASCADE"),
+        nullable=False,
+    )
+    action_type = Column(String(50), nullable=False)
+    reason = Column(Text, nullable=False)
+    previous_status = Column(String(20))
+    new_status = Column(String(20))
+    additional_data = Column(JSONB)  # For storing action-specific data
+    created_at = Column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False
+    )
+
+    # Relationships
+    vote: Mapped["Vote"] = relationship("Vote")
+    moderator: Mapped["User"] = relationship("User")
+
+    # Constraints and Indexes
+    __table_args__ = (
+        CheckConstraint(
+            "action_type IN ('close_vote', 'disable_vote', 'hide_vote', 'delete_vote', 'restore_vote', 'warning_issued')",
+            name="check_action_type",
+        ),
+        Index("idx_moderation_actions_vote_id", "vote_id"),
+        Index("idx_moderation_actions_moderator_id", "moderator_id"),
+        Index("idx_moderation_actions_created_at", "created_at"),
+    )
+
+    def __repr__(self) -> str:
+        return f"<VoteModerationAction(id={self.id}, action='{self.action_type}', moderator_id={self.moderator_id})>"
 
 
 # ============================================================================
@@ -813,9 +923,191 @@ class PaginationQuery(BaseModel):
     def validate_status(cls, v: str | None) -> str | None:
         """Validate status filter."""
         if v is not None:
-            allowed_statuses = ["draft", "active", "closed"]
+            allowed_statuses = ["draft", "active", "closed", "disabled", "hidden"]
             if v not in allowed_statuses:
                 raise ValueError(
                     f"Status must be one of: {', '.join(allowed_statuses)}"
                 )
+        return v
+
+
+# ============================================================================
+# Moderation Pydantic Models
+# ============================================================================
+
+
+class VoteFlagCreate(BaseModel):
+    """Pydantic model for creating vote flags."""
+
+    flag_type: str = Field(..., description="Type of flag")
+    reason: str = Field(
+        ..., min_length=10, max_length=1000, description="Detailed reason for flag"
+    )
+
+    @validator("flag_type")
+    def validate_flag_type(cls, v: str) -> str:
+        """Validate flag type."""
+        allowed_types = [
+            "inappropriate_content",
+            "spam",
+            "harassment",
+            "copyright",
+            "other",
+        ]
+        if v not in allowed_types:
+            raise ValueError(f"Flag type must be one of: {', '.join(allowed_types)}")
+        return v
+
+    @validator("reason")
+    def validate_reason(cls, v: str) -> str:
+        """Validate and sanitize reason."""
+        v = v.strip()
+        if not v:
+            raise ValueError("Reason cannot be empty")
+        return v
+
+
+class VoteFlagResponse(BaseModel):
+    """Pydantic model for vote flag response."""
+
+    id: str
+    vote_id: str
+    flag_type: str
+    reason: str
+    status: str
+    flagger_email: str | None
+    reviewer_email: str | None
+    reviewed_at: datetime | None
+    review_notes: str | None
+    created_at: datetime
+
+    class Config:
+        from_attributes = True
+
+    @validator("id", "vote_id", pre=True)
+    def convert_uuid(cls, v: Any) -> str | None:
+        """Convert UUID to string."""
+        return str(v) if v else None
+
+
+class VoteFlagReview(BaseModel):
+    """Pydantic model for reviewing vote flags."""
+
+    status: str = Field(..., description="Review decision")
+    review_notes: str = Field(
+        ..., min_length=5, max_length=1000, description="Review notes"
+    )
+
+    @validator("status")
+    def validate_status(cls, v: str) -> str:
+        """Validate review status."""
+        allowed_statuses = ["approved", "rejected", "resolved"]
+        if v not in allowed_statuses:
+            raise ValueError(
+                f"Review status must be one of: {', '.join(allowed_statuses)}"
+            )
+        return v
+
+
+class VoteModerationActionCreate(BaseModel):
+    """Pydantic model for creating moderation actions."""
+
+    action_type: str = Field(..., description="Type of moderation action")
+    reason: str = Field(
+        ..., min_length=10, max_length=1000, description="Reason for action"
+    )
+    additional_data: dict[str, Any] | None = Field(
+        None, description="Additional action data"
+    )
+
+    @validator("action_type")
+    def validate_action_type(cls, v: str) -> str:
+        """Validate action type."""
+        allowed_actions = [
+            "close_vote",
+            "disable_vote",
+            "hide_vote",
+            "delete_vote",
+            "restore_vote",
+            "warning_issued",
+        ]
+        if v not in allowed_actions:
+            raise ValueError(
+                f"Action type must be one of: {', '.join(allowed_actions)}"
+            )
+        return v
+
+
+class VoteModerationActionResponse(BaseModel):
+    """Pydantic model for moderation action response."""
+
+    id: str
+    vote_id: str
+    action_type: str
+    reason: str
+    previous_status: str | None
+    new_status: str | None
+    moderator_email: str
+    additional_data: dict[str, Any] | None
+    created_at: datetime
+
+    class Config:
+        from_attributes = True
+
+    @validator("id", "vote_id", pre=True)
+    def convert_uuid(cls, v: Any) -> str | None:
+        """Convert UUID to string."""
+        return str(v) if v else None
+
+
+class VoteModerationSummary(BaseModel):
+    """Pydantic model for vote moderation summary."""
+
+    vote_id: str
+    vote_title: str
+    vote_slug: str
+    vote_status: str
+    creator_email: str
+    total_flags: int
+    pending_flags: int
+    approved_flags: int
+    rejected_flags: int
+    recent_actions: list[VoteModerationActionResponse]
+    flags: list[VoteFlagResponse]
+
+    @validator("vote_id", pre=True)
+    def convert_uuid(cls, v: Any) -> str | None:
+        """Convert UUID to string."""
+        return str(v) if v else None
+
+
+class BulkModerationActionCreate(BaseModel):
+    """Pydantic model for bulk moderation actions."""
+
+    vote_ids: list[str] = Field(
+        description="List of vote IDs", min_length=1, max_length=50
+    )
+    action_type: str = Field(..., description="Type of moderation action")
+    reason: str = Field(
+        ..., min_length=10, max_length=1000, description="Reason for bulk action"
+    )
+
+    @validator("action_type")
+    def validate_action_type(cls, v: str) -> str:
+        """Validate action type."""
+        allowed_actions = ["close_vote", "disable_vote", "hide_vote", "restore_vote"]
+        if v not in allowed_actions:
+            raise ValueError(
+                f"Bulk action type must be one of: {', '.join(allowed_actions)}"
+            )
+        return v
+
+    @validator("vote_ids")
+    def validate_vote_ids(cls, v: list[str]) -> list[str]:
+        """Validate UUID format for vote IDs."""
+        for vote_id in v:
+            try:
+                UUID(vote_id)
+            except ValueError:
+                raise ValueError(f"Invalid vote ID format: {vote_id}") from None
         return v

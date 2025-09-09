@@ -1,0 +1,808 @@
+{% extends "super_admin/base.html" %}
+
+{% block title %}Content Moderation{% endblock %}
+
+{% block content %}
+<div class="admin-dashboard moderation-dashboard">
+    <div class="dashboard-header">
+        <h1 class="page-title">
+            <i class="fas fa-shield-alt"></i>
+            Content Moderation
+        </h1>
+        <p class="page-subtitle">Monitor and manage vote content, handle flags and violations</p>
+    </div>
+
+    <!-- Moderation Statistics Cards -->
+    <div class="stats-grid">
+        <div class="stat-card urgent">
+            <div class="stat-icon">
+                <i class="fas fa-flag"></i>
+            </div>
+            <div class="stat-content">
+                <h3 class="stat-number" id="pendingFlags">-</h3>
+                <p class="stat-label">Pending Flags</p>
+                <div class="stat-meta">
+                    <span class="stat-status" id="flagsStatus">Requires attention</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-icon">
+                <i class="fas fa-gavel"></i>
+            </div>
+            <div class="stat-content">
+                <h3 class="stat-number" id="moderatedVotes">-</h3>
+                <p class="stat-label">Moderated Votes</p>
+                <div class="stat-meta">
+                    <span class="stat-type" id="disabledCount">0 disabled</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-icon">
+                <i class="fas fa-chart-bar"></i>
+            </div>
+            <div class="stat-content">
+                <h3 class="stat-number" id="weeklyActions">-</h3>
+                <p class="stat-label">Actions (7 days)</p>
+                <div class="stat-meta">
+                    <span class="stat-trend" id="actionsTrend">trending</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-icon">
+                <i class="fas fa-eye-slash"></i>
+            </div>
+            <div class="stat-content">
+                <h3 class="stat-number" id="hiddenVotes">-</h3>
+                <p class="stat-label">Hidden Votes</p>
+                <div class="stat-meta">
+                    <span class="stat-type" id="hiddenType">from flags</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Navigation Tabs -->
+    <div class="moderation-tabs">
+        <button class="tab-btn active" onclick="switchTab('pending-flags')">
+            <i class="fas fa-flag"></i> Pending Flags
+        </button>
+        <button class="tab-btn" onclick="switchTab('flagged-votes')">
+            <i class="fas fa-exclamation-triangle"></i> Flagged Votes
+        </button>
+        <button class="tab-btn" onclick="switchTab('moderation-log')">
+            <i class="fas fa-history"></i> Moderation Log
+        </button>
+        <button class="tab-btn" onclick="switchTab('bulk-actions')">
+            <i class="fas fa-tasks"></i> Bulk Actions
+        </button>
+    </div>
+
+    <!-- Pending Flags Tab -->
+    <div id="pending-flags-tab" class="tab-content active">
+        <div class="dashboard-card">
+            <div class="card-header">
+                <h2 class="card-title">
+                    <i class="fas fa-flag"></i>
+                    Pending Flags
+                </h2>
+                <div class="card-actions">
+                    <button class="btn-secondary" onclick="refreshPendingFlags()">
+                        <i class="fas fa-sync-alt"></i> Refresh
+                    </button>
+                </div>
+            </div>
+            <div class="card-content">
+                <div id="pendingFlagsList" class="flags-list">
+                    <div class="loading-state">
+                        <i class="fas fa-spinner fa-spin"></i>
+                        <p>Loading pending flags...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Flagged Votes Tab -->
+    <div id="flagged-votes-tab" class="tab-content">
+        <div class="dashboard-card">
+            <div class="card-header">
+                <h2 class="card-title">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    Flagged Votes
+                </h2>
+                <div class="card-filters">
+                    <select id="flagStatusFilter" onchange="filterFlaggedVotes()">
+                        <option value="">All Flags</option>
+                        <option value="pending">Pending Only</option>
+                        <option value="approved">Approved</option>
+                        <option value="rejected">Rejected</option>
+                    </select>
+                </div>
+            </div>
+            <div class="card-content">
+                <div id="flaggedVotesList" class="votes-list">
+                    <div class="loading-state">
+                        <i class="fas fa-spinner fa-spin"></i>
+                        <p>Loading flagged votes...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Moderation Log Tab -->
+    <div id="moderation-log-tab" class="tab-content">
+        <div class="dashboard-card">
+            <div class="card-header">
+                <h2 class="card-title">
+                    <i class="fas fa-history"></i>
+                    Moderation History
+                </h2>
+            </div>
+            <div class="card-content">
+                <div id="moderationLog" class="moderation-log">
+                    <div class="loading-state">
+                        <i class="fas fa-spinner fa-spin"></i>
+                        <p>Loading moderation history...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bulk Actions Tab -->
+    <div id="bulk-actions-tab" class="tab-content">
+        <div class="dashboard-card">
+            <div class="card-header">
+                <h2 class="card-title">
+                    <i class="fas fa-tasks"></i>
+                    Bulk Moderation Actions
+                </h2>
+            </div>
+            <div class="card-content">
+                <div class="bulk-action-form">
+                    <div class="form-section">
+                        <h3>Select Votes</h3>
+                        <div class="selection-controls">
+                            <input type="text" id="bulkVoteIds" placeholder="Paste vote IDs (comma-separated)" class="form-control">
+                            <p class="form-help">Enter vote IDs separated by commas, or use the checkboxes in the Flagged Votes tab</p>
+                        </div>
+                    </div>
+
+                    <div class="form-section">
+                        <h3>Action Type</h3>
+                        <select id="bulkActionType" class="form-control">
+                            <option value="">Select action...</option>
+                            <option value="close_vote">Close Votes</option>
+                            <option value="disable_vote">Disable Votes</option>
+                            <option value="hide_vote">Hide Votes</option>
+                            <option value="restore_vote">Restore Votes</option>
+                        </select>
+                    </div>
+
+                    <div class="form-section">
+                        <h3>Reason</h3>
+                        <textarea id="bulkActionReason" class="form-control" rows="3" placeholder="Explain the reason for this bulk action..." maxlength="1000"></textarea>
+                        <div class="char-counter">
+                            <span id="reasonCharCount">0</span>/1000 characters
+                        </div>
+                    </div>
+
+                    <div class="form-actions">
+                        <button class="btn-primary" onclick="executeBulkAction()" id="bulkActionBtn">
+                            <i class="fas fa-bolt"></i> Execute Bulk Action
+                        </button>
+                        <button class="btn-secondary" onclick="clearBulkForm()">
+                            Clear Form
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Flag Review Modal -->
+<div id="flagReviewModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>Review Flag</h3>
+            <span class="close" onclick="closeFlagReviewModal()">&times;</span>
+        </div>
+        <div class="modal-body">
+            <div id="flagDetails" class="flag-details"></div>
+
+            <div class="review-form">
+                <div class="form-section">
+                    <label for="reviewDecision">Decision</label>
+                    <select id="reviewDecision" class="form-control">
+                        <option value="">Select decision...</option>
+                        <option value="approved">Approve Flag - Take action</option>
+                        <option value="rejected">Reject Flag - No violation</option>
+                        <option value="resolved">Mark Resolved - Already handled</option>
+                    </select>
+                </div>
+
+                <div class="form-section">
+                    <label for="reviewNotes">Review Notes</label>
+                    <textarea id="reviewNotes" class="form-control" rows="4" placeholder="Explain your decision..." maxlength="1000"></textarea>
+                </div>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn-primary" onclick="submitFlagReview()">Submit Review</button>
+            <button class="btn-secondary" onclick="closeFlagReviewModal()">Cancel</button>
+        </div>
+    </div>
+</div>
+
+<!-- Vote Action Modal -->
+<div id="voteActionModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>Take Moderation Action</h3>
+            <span class="close" onclick="closeVoteActionModal()">&times;</span>
+        </div>
+        <div class="modal-body">
+            <div id="voteDetails" class="vote-details"></div>
+
+            <div class="action-form">
+                <div class="form-section">
+                    <label for="actionType">Action Type</label>
+                    <select id="actionType" class="form-control">
+                        <option value="">Select action...</option>
+                        <option value="close_vote">Close Vote</option>
+                        <option value="disable_vote">Disable Vote</option>
+                        <option value="hide_vote">Hide Vote</option>
+                        <option value="restore_vote">Restore Vote</option>
+                        <option value="warning_issued">Issue Warning</option>
+                    </select>
+                </div>
+
+                <div class="form-section">
+                    <label for="actionReason">Reason</label>
+                    <textarea id="actionReason" class="form-control" rows="4" placeholder="Explain the reason for this action..." maxlength="1000"></textarea>
+                </div>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn-primary" onclick="submitModerationAction()">Take Action</button>
+            <button class="btn-secondary" onclick="closeVoteActionModal()">Cancel</button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Moderation dashboard data management
+let moderationData = {
+    stats: null,
+    pendingFlags: [],
+    flaggedVotes: [],
+    moderationLog: [],
+    refreshInterval: null,
+    currentTab: 'pending-flags',
+    selectedVotes: new Set()
+};
+
+// Initialize moderation dashboard when page loads
+document.addEventListener('DOMContentLoaded', function() {
+    initializeModerationDashboard();
+    startAutoRefresh();
+    setupFormHandlers();
+});
+
+async function initializeModerationDashboard() {
+    try {
+        showLoading();
+        await loadModerationDashboard();
+    } catch (error) {
+        console.error('Moderation dashboard initialization error:', error);
+        showMessage('Error loading moderation dashboard', 'error');
+    } finally {
+        hideLoading();
+    }
+}
+
+async function loadModerationDashboard() {
+    try {
+        const response = await fetch('/api/admin/moderation/dashboard');
+
+        if (!response.ok) {
+            if (handleAuthError(response)) return;
+            throw new Error('Failed to load moderation dashboard');
+        }
+
+        const data = await response.json();
+        moderationData.stats = data.stats;
+        moderationData.pendingFlags = data.pending_flags;
+        moderationData.flaggedVotes = data.flagged_votes;
+
+        updateModerationStats(data.stats);
+        updatePendingFlagsList(data.pending_flags);
+        updateFlaggedVotesList(data.flagged_votes);
+
+    } catch (error) {
+        console.error('Error loading moderation dashboard:', error);
+        showMessage('Error loading moderation dashboard', 'error');
+    }
+}
+
+function updateModerationStats(stats) {
+    document.getElementById('pendingFlags').textContent = stats.pending_flags || 0;
+    document.getElementById('moderatedVotes').textContent = stats.total_moderated_votes || 0;
+    document.getElementById('hiddenVotes').textContent = stats.moderated_votes_by_status?.hidden || 0;
+
+    // Calculate weekly actions
+    const weeklyActions = Object.values(stats.recent_actions_by_type || {}).reduce((a, b) => a + b, 0);
+    document.getElementById('weeklyActions').textContent = weeklyActions;
+
+    // Update status indicators
+    const flagsStatus = stats.pending_flags > 0 ? 'Requires attention' : 'All clear';
+    document.getElementById('flagsStatus').textContent = flagsStatus;
+
+    const disabledCount = stats.moderated_votes_by_status?.disabled || 0;
+    document.getElementById('disabledCount').textContent = `${disabledCount} disabled`;
+}
+
+function updatePendingFlagsList(flags) {
+    const container = document.getElementById('pendingFlagsList');
+
+    if (flags && flags.length > 0) {
+        container.innerHTML = flags.map(flag => `
+            <div class="flag-item" data-flag-id="${flag.id}">
+                <div class="flag-header">
+                    <div class="flag-type ${flag.flag_type}">
+                        <i class="fas ${getFlagTypeIcon(flag.flag_type)}"></i>
+                        ${formatFlagType(flag.flag_type)}
+                    </div>
+                    <div class="flag-actions">
+                        <button class="btn-sm btn-primary" onclick="reviewFlag('${flag.id}')">
+                            <i class="fas fa-gavel"></i> Review
+                        </button>
+                        <button class="btn-sm btn-secondary" onclick="viewVoteDetails('${flag.vote_id}')">
+                            <i class="fas fa-eye"></i> View Vote
+                        </button>
+                    </div>
+                </div>
+                <div class="flag-content">
+                    <h4 class="vote-title">${flag.vote_title}</h4>
+                    <p class="flag-reason">${flag.reason}</p>
+                    <div class="flag-meta">
+                        <span class="flagger">By: ${flag.flagger_email}</span>
+                        <span class="flag-date">${formatDateTime(flag.created_at)}</span>
+                        <span class="vote-creator">Creator: ${flag.creator_email}</span>
+                    </div>
+                </div>
+            </div>
+        `).join('');
+    } else {
+        container.innerHTML = `
+            <div class="empty-state">
+                <i class="fas fa-check-circle"></i>
+                <h3>No Pending Flags</h3>
+                <p>All flags have been reviewed. Great job!</p>
+            </div>
+        `;
+    }
+}
+
+function updateFlaggedVotesList(votes) {
+    const container = document.getElementById('flaggedVotesList');
+
+    if (votes && votes.length > 0) {
+        container.innerHTML = votes.map(vote => `
+            <div class="vote-item" data-vote-id="${vote.id}">
+                <div class="vote-header">
+                    <div class="vote-checkbox">
+                        <input type="checkbox" id="vote-${vote.id}" onchange="toggleVoteSelection('${vote.id}')">
+                    </div>
+                    <div class="vote-info">
+                        <h4 class="vote-title">${vote.title}</h4>
+                        <div class="vote-meta">
+                            <span class="vote-status status-${vote.status}">${vote.status}</span>
+                            <span class="vote-creator">By: ${vote.creator_email}</span>
+                            <span class="vote-date">${formatDateTime(vote.created_at)}</span>
+                        </div>
+                    </div>
+                    <div class="vote-actions">
+                        <button class="btn-sm btn-primary" onclick="takeVoteAction('${vote.id}')">
+                            <i class="fas fa-gavel"></i> Take Action
+                        </button>
+                        <button class="btn-sm btn-secondary" onclick="viewVoteModeration('${vote.id}')">
+                            <i class="fas fa-eye"></i> View Details
+                        </button>
+                    </div>
+                </div>
+                <div class="vote-flags">
+                    ${Object.entries(vote.flag_counts || {}).map(([status, count]) =>
+                        `<span class="flag-count flag-${status}">${count} ${status}</span>`
+                    ).join(' ')}
+                    <span class="total-flags">${vote.total_flags} total flags</span>
+                </div>
+            </div>
+        `).join('');
+    } else {
+        container.innerHTML = `
+            <div class="empty-state">
+                <i class="fas fa-shield-check"></i>
+                <h3>No Flagged Votes</h3>
+                <p>No votes have been flagged for review.</p>
+            </div>
+        `;
+    }
+}
+
+// Tab switching
+function switchTab(tabName) {
+    // Update active tab button
+    document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+    event.target.classList.add('active');
+
+    // Update active tab content
+    document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+    document.getElementById(tabName + '-tab').classList.add('active');
+
+    moderationData.currentTab = tabName;
+
+    // Load tab-specific data if needed
+    if (tabName === 'moderation-log' && moderationData.moderationLog.length === 0) {
+        loadModerationLog();
+    }
+}
+
+// Flag review functions
+async function reviewFlag(flagId) {
+    try {
+        // Get flag details
+        const flag = moderationData.pendingFlags.find(f => f.id === flagId);
+        if (!flag) {
+            showMessage('Flag not found', 'error');
+            return;
+        }
+
+        // Show modal with flag details
+        document.getElementById('flagDetails').innerHTML = `
+            <div class="flag-review-details">
+                <h4>Vote: ${flag.vote_title}</h4>
+                <p><strong>Flag Type:</strong> ${formatFlagType(flag.flag_type)}</p>
+                <p><strong>Flagged By:</strong> ${flag.flagger_email}</p>
+                <p><strong>Date:</strong> ${formatDateTime(flag.created_at)}</p>
+                <div class="flag-reason-box">
+                    <strong>Reason:</strong>
+                    <p>${flag.reason}</p>
+                </div>
+                <p><strong>Vote Creator:</strong> ${flag.creator_email}</p>
+            </div>
+        `;
+
+        document.getElementById('flagReviewModal').style.display = 'block';
+        document.getElementById('flagReviewModal').setAttribute('data-flag-id', flagId);
+
+    } catch (error) {
+        console.error('Error reviewing flag:', error);
+        showMessage('Error loading flag details', 'error');
+    }
+}
+
+async function submitFlagReview() {
+    try {
+        const modal = document.getElementById('flagReviewModal');
+        const flagId = modal.getAttribute('data-flag-id');
+        const decision = document.getElementById('reviewDecision').value;
+        const notes = document.getElementById('reviewNotes').value;
+
+        if (!decision || !notes.trim()) {
+            showMessage('Please select a decision and provide review notes', 'warning');
+            return;
+        }
+
+        const response = await fetch(`/api/admin/moderation/flags/${flagId}/review`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                status: decision,
+                review_notes: notes.trim()
+            })
+        });
+
+        if (!response.ok) {
+            if (handleAuthError(response)) return;
+            const error = await response.json();
+            throw new Error(error.detail || 'Failed to submit review');
+        }
+
+        const result = await response.json();
+        showMessage(result.message || 'Flag reviewed successfully', 'success');
+
+        closeFlagReviewModal();
+        await refreshPendingFlags();
+
+    } catch (error) {
+        console.error('Error submitting flag review:', error);
+        showMessage(error.message || 'Error submitting flag review', 'error');
+    }
+}
+
+function closeFlagReviewModal() {
+    document.getElementById('flagReviewModal').style.display = 'none';
+    document.getElementById('reviewDecision').value = '';
+    document.getElementById('reviewNotes').value = '';
+}
+
+// Vote action functions
+async function takeVoteAction(voteId) {
+    try {
+        // Get vote details
+        const vote = moderationData.flaggedVotes.find(v => v.id === voteId);
+        if (!vote) {
+            showMessage('Vote not found', 'error');
+            return;
+        }
+
+        // Show modal with vote details
+        document.getElementById('voteDetails').innerHTML = `
+            <div class="vote-action-details">
+                <h4>${vote.title}</h4>
+                <p><strong>Status:</strong> <span class="status-${vote.status}">${vote.status}</span></p>
+                <p><strong>Creator:</strong> ${vote.creator_email}</p>
+                <p><strong>Created:</strong> ${formatDateTime(vote.created_at)}</p>
+                <p><strong>Responses:</strong> ${vote.total_responses}</p>
+                <div class="flag-summary">
+                    <strong>Flag Summary:</strong>
+                    ${Object.entries(vote.flag_counts || {}).map(([status, count]) =>
+                        `<span class="flag-count flag-${status}">${count} ${status}</span>`
+                    ).join(' ')}
+                </div>
+            </div>
+        `;
+
+        document.getElementById('voteActionModal').style.display = 'block';
+        document.getElementById('voteActionModal').setAttribute('data-vote-id', voteId);
+
+    } catch (error) {
+        console.error('Error preparing vote action:', error);
+        showMessage('Error loading vote details', 'error');
+    }
+}
+
+async function submitModerationAction() {
+    try {
+        const modal = document.getElementById('voteActionModal');
+        const voteId = modal.getAttribute('data-vote-id');
+        const actionType = document.getElementById('actionType').value;
+        const reason = document.getElementById('actionReason').value;
+
+        if (!actionType || !reason.trim()) {
+            showMessage('Please select an action type and provide a reason', 'warning');
+            return;
+        }
+
+        const response = await fetch(`/api/admin/moderation/votes/${voteId}/action`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                action_type: actionType,
+                reason: reason.trim()
+            })
+        });
+
+        if (!response.ok) {
+            if (handleAuthError(response)) return;
+            const error = await response.json();
+            throw new Error(error.detail || 'Failed to take moderation action');
+        }
+
+        const result = await response.json();
+        showMessage(result.message || 'Moderation action completed successfully', 'success');
+
+        closeVoteActionModal();
+        await loadModerationDashboard();
+
+    } catch (error) {
+        console.error('Error taking moderation action:', error);
+        showMessage(error.message || 'Error taking moderation action', 'error');
+    }
+}
+
+function closeVoteActionModal() {
+    document.getElementById('voteActionModal').style.display = 'none';
+    document.getElementById('actionType').value = '';
+    document.getElementById('actionReason').value = '';
+}
+
+// Bulk actions
+function toggleVoteSelection(voteId) {
+    const checkbox = document.getElementById(`vote-${voteId}`);
+    if (checkbox.checked) {
+        moderationData.selectedVotes.add(voteId);
+    } else {
+        moderationData.selectedVotes.delete(voteId);
+    }
+    updateBulkSelectionInput();
+}
+
+function updateBulkSelectionInput() {
+    const selectedIds = Array.from(moderationData.selectedVotes).join(', ');
+    document.getElementById('bulkVoteIds').value = selectedIds;
+}
+
+async function executeBulkAction() {
+    try {
+        const voteIds = document.getElementById('bulkVoteIds').value.split(',').map(id => id.trim()).filter(id => id);
+        const actionType = document.getElementById('bulkActionType').value;
+        const reason = document.getElementById('bulkActionReason').value;
+
+        if (voteIds.length === 0) {
+            showMessage('Please provide vote IDs', 'warning');
+            return;
+        }
+
+        if (!actionType) {
+            showMessage('Please select an action type', 'warning');
+            return;
+        }
+
+        if (!reason.trim()) {
+            showMessage('Please provide a reason for the bulk action', 'warning');
+            return;
+        }
+
+        const confirmMessage = `Are you sure you want to ${actionType.replace('_', ' ')} ${voteIds.length} vote(s)?`;
+        if (!confirm(confirmMessage)) {
+            return;
+        }
+
+        document.getElementById('bulkActionBtn').disabled = true;
+        document.getElementById('bulkActionBtn').innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
+
+        const response = await fetch('/api/admin/moderation/bulk-action', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                vote_ids: voteIds,
+                action_type: actionType,
+                reason: reason.trim()
+            })
+        });
+
+        if (!response.ok) {
+            if (handleAuthError(response)) return;
+            const error = await response.json();
+            throw new Error(error.detail || 'Failed to execute bulk action');
+        }
+
+        const result = await response.json();
+        showMessage(`Bulk action completed: ${result.success_count} successful, ${result.error_count} failed`, 'success');
+
+        clearBulkForm();
+        await loadModerationDashboard();
+
+    } catch (error) {
+        console.error('Error executing bulk action:', error);
+        showMessage(error.message || 'Error executing bulk action', 'error');
+    } finally {
+        document.getElementById('bulkActionBtn').disabled = false;
+        document.getElementById('bulkActionBtn').innerHTML = '<i class="fas fa-bolt"></i> Execute Bulk Action';
+    }
+}
+
+function clearBulkForm() {
+    document.getElementById('bulkVoteIds').value = '';
+    document.getElementById('bulkActionType').value = '';
+    document.getElementById('bulkActionReason').value = '';
+    moderationData.selectedVotes.clear();
+
+    // Uncheck all vote checkboxes
+    document.querySelectorAll('input[type="checkbox"][id^="vote-"]').forEach(checkbox => {
+        checkbox.checked = false;
+    });
+
+    updateReasonCharCount();
+}
+
+// Utility functions
+function getFlagTypeIcon(flagType) {
+    const icons = {
+        'inappropriate_content': 'fa-exclamation-triangle',
+        'spam': 'fa-ban',
+        'harassment': 'fa-user-times',
+        'copyright': 'fa-copyright',
+        'other': 'fa-question-circle'
+    };
+    return icons[flagType] || 'fa-flag';
+}
+
+function formatFlagType(flagType) {
+    return flagType.split('_').map(word =>
+        word.charAt(0).toUpperCase() + word.slice(1)
+    ).join(' ');
+}
+
+function formatDateTime(dateString) {
+    if (!dateString) return 'Unknown';
+
+    const date = new Date(dateString);
+    const now = new Date();
+    const diff = now - date;
+
+    // Less than 1 hour ago
+    if (diff < 3600000) {
+        const minutes = Math.floor(diff / 60000);
+        return `${minutes} min${minutes !== 1 ? 's' : ''} ago`;
+    }
+
+    // Less than 24 hours ago
+    if (diff < 86400000) {
+        const hours = Math.floor(diff / 3600000);
+        return `${hours} hour${hours !== 1 ? 's' : ''} ago`;
+    }
+
+    // More than 24 hours ago
+    return date.toLocaleDateString();
+}
+
+// Form handlers
+function setupFormHandlers() {
+    // Character counter for bulk action reason
+    const reasonTextarea = document.getElementById('bulkActionReason');
+    if (reasonTextarea) {
+        reasonTextarea.addEventListener('input', updateReasonCharCount);
+    }
+}
+
+function updateReasonCharCount() {
+    const textarea = document.getElementById('bulkActionReason');
+    const counter = document.getElementById('reasonCharCount');
+    if (textarea && counter) {
+        counter.textContent = textarea.value.length;
+    }
+}
+
+// Auto-refresh functionality
+function startAutoRefresh() {
+    moderationData.refreshInterval = setInterval(async () => {
+        try {
+            await loadModerationDashboard();
+        } catch (error) {
+            console.error('Auto-refresh error:', error);
+        }
+    }, 60000); // 1 minute
+}
+
+async function refreshPendingFlags() {
+    await loadModerationDashboard();
+}
+
+// Stop auto-refresh when page is hidden
+document.addEventListener('visibilitychange', function() {
+    if (document.hidden) {
+        if (moderationData.refreshInterval) {
+            clearInterval(moderationData.refreshInterval);
+        }
+    } else {
+        startAutoRefresh();
+    }
+});
+
+// Cleanup when leaving page
+window.addEventListener('beforeunload', function() {
+    if (moderationData.refreshInterval) {
+        clearInterval(moderationData.refreshInterval);
+    }
+});
+</script>
+{% endblock %}
