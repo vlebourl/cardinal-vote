@@ -13,6 +13,19 @@ from .models import User, Vote, VoterResponse
 
 logger = logging.getLogger(__name__)
 
+# Platform health configuration constants
+HEALTH_THRESHOLDS = {
+    "min_verification_rate": 0.5,  # Minimum user verification rate
+    "min_active_vote_rate": 0.3,  # Minimum active vote rate
+    "min_users_for_activity_check": 10,  # Minimum users before checking activity
+    "healthy_score": 80,  # Minimum score for healthy status
+    "warning_score": 60,  # Minimum score for warning status
+    "verification_penalty": 10,  # Score penalty for low verification
+    "active_vote_penalty": 5,  # Score penalty for low active votes
+    "no_users_penalty": 15,  # Score penalty for no recent users
+    "no_activity_penalty": 20,  # Score penalty for no recent activity
+}
+
 
 class SuperAdminManager:
     """Manages super admin operations for user management and system statistics."""
@@ -173,7 +186,7 @@ class SuperAdminManager:
     async def _calculate_platform_health(
         self, session: AsyncSession, stats: dict
     ) -> dict[str, Any]:
-        """Calculate platform health metrics."""
+        """Calculate platform health metrics with zero-division protection."""
         try:
             health: dict[str, Any] = {
                 "status": "healthy",
@@ -181,33 +194,48 @@ class SuperAdminManager:
                 "warnings": [],
             }
 
-            # Check user engagement
-            if stats["total_users"] > 0:
-                verification_rate = stats["verified_users"] / stats["total_users"]
-                if verification_rate < 0.5:
-                    health["warnings"].append("Low user verification rate")
-                    health["score"] -= 10
+            # Check user engagement with zero-division protection
+            total_users = stats.get("total_users", 0)
+            verified_users = stats.get("verified_users", 0)
 
-            # Check vote activity
-            if stats["total_votes"] > 0:
-                active_rate = stats["active_votes"] / stats["total_votes"]
-                if active_rate < 0.3:
-                    health["warnings"].append("Many votes are not active")
-                    health["score"] -= 5
+            if total_users > 0:
+                verification_rate = verified_users / total_users
+                if verification_rate < HEALTH_THRESHOLDS["min_verification_rate"]:
+                    health["warnings"].append(
+                        f"Low user verification rate: {verification_rate:.1%}"
+                    )
+                    health["score"] -= HEALTH_THRESHOLDS["verification_penalty"]
+
+            # Check vote activity with zero-division protection
+            total_votes = stats.get("total_votes", 0)
+            active_votes = stats.get("active_votes", 0)
+
+            if total_votes > 0:
+                active_rate = active_votes / total_votes
+                if active_rate < HEALTH_THRESHOLDS["min_active_vote_rate"]:
+                    health["warnings"].append(
+                        f"Low active vote rate: {active_rate:.1%}"
+                    )
+                    health["score"] -= HEALTH_THRESHOLDS["active_vote_penalty"]
 
             # Check recent activity
-            if stats["recent_users"] == 0 and stats["total_users"] > 10:
+            recent_users = stats.get("recent_users", 0)
+            if (
+                recent_users == 0
+                and total_users > HEALTH_THRESHOLDS["min_users_for_activity_check"]
+            ):
                 health["warnings"].append("No new users in the past 7 days")
-                health["score"] -= 15
+                health["score"] -= HEALTH_THRESHOLDS["no_users_penalty"]
 
-            if stats["recent_responses"] == 0 and stats["total_votes"] > 0:
+            recent_responses = stats.get("recent_responses", 0)
+            if recent_responses == 0 and total_votes > 0:
                 health["warnings"].append("No voting activity in the past 7 days")
-                health["score"] -= 20
+                health["score"] -= HEALTH_THRESHOLDS["no_activity_penalty"]
 
-            # Determine overall status
-            if health["score"] >= 80:
+            # Determine overall status using configured thresholds
+            if health["score"] >= HEALTH_THRESHOLDS["healthy_score"]:
                 health["status"] = "healthy"
-            elif health["score"] >= 60:
+            elif health["score"] >= HEALTH_THRESHOLDS["warning_score"]:
                 health["status"] = "warning"
             else:
                 health["status"] = "critical"

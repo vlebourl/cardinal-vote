@@ -208,6 +208,30 @@ class TestSuperAdminManager:
         assert len(health["warnings"]) > 0
 
     @pytest.mark.unit
+    async def test_calculate_platform_health_zero_division_protection(
+        self, super_admin_manager, mock_session
+    ):
+        """Test platform health calculation with zero values (zero-division protection)."""
+        stats = {
+            "total_users": 0,
+            "verified_users": 0,
+            "total_votes": 0,
+            "active_votes": 0,
+            "recent_users": 0,
+            "recent_responses": 0,
+        }
+
+        health = await super_admin_manager._calculate_platform_health(
+            mock_session, stats
+        )
+
+        # Should handle zero division gracefully and return healthy status
+        # (no penalties applied due to zero-division protection)
+        assert health["status"] == "healthy"
+        assert health["score"] == 100
+        assert len(health["warnings"]) == 0
+
+    @pytest.mark.unit
     @pytest.mark.database
     async def test_get_recent_user_activity_success(
         self, super_admin_manager, mock_session
