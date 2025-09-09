@@ -292,30 +292,21 @@ class SuperAdminManager:
     ) -> dict[str, Any]:
         """Get summary information for user management dashboard."""
         try:
-            summary = {}
-
-            # Get users by verification status
-            verified_users_result = await session.execute(
-                select(User)
-                .where(User.is_verified.is_(True))
-                .order_by(desc(User.created_at))
+            # Use COUNT queries instead of loading all users into memory
+            verified_count_result = await session.execute(
+                select(func.count(User.id)).where(User.is_verified.is_(True))
             )
-            verified_users = verified_users_result.scalars().all()
+            verified_users_count = verified_count_result.scalar() or 0
 
-            unverified_users_result = await session.execute(
-                select(User)
-                .where(User.is_verified.is_(False))
-                .order_by(desc(User.created_at))
+            unverified_count_result = await session.execute(
+                select(func.count(User.id)).where(User.is_verified.is_(False))
             )
-            unverified_users = unverified_users_result.scalars().all()
+            unverified_users_count = unverified_count_result.scalar() or 0
 
-            # Get super admins
-            super_admin_result = await session.execute(
-                select(User)
-                .where(User.is_super_admin.is_(True))
-                .order_by(desc(User.created_at))
+            super_admins_count_result = await session.execute(
+                select(func.count(User.id)).where(User.is_super_admin.is_(True))
             )
-            super_admins = super_admin_result.scalars().all()
+            super_admins_count = super_admins_count_result.scalar() or 0
 
             # Get most active users (by vote count) using SQLAlchemy ORM
             most_active_result = await session.execute(
@@ -334,10 +325,25 @@ class SuperAdminManager:
             )
             most_active_users = most_active_result.fetchall()
 
+            # Get recent registrations (limit to 10 to avoid memory issues)
+            recent_registrations_result = await session.execute(
+                select(User).order_by(desc(User.created_at)).limit(10)
+            )
+            recent_registrations = recent_registrations_result.scalars().all()
+
+            # Get pending verifications (unverified users, limit to 10)
+            pending_verifications_result = await session.execute(
+                select(User)
+                .where(User.is_verified.is_(False))
+                .order_by(desc(User.created_at))
+                .limit(10)
+            )
+            pending_verifications = pending_verifications_result.scalars().all()
+
             summary = {
-                "verified_users_count": len(verified_users),
-                "unverified_users_count": len(unverified_users),
-                "super_admins_count": len(super_admins),
+                "verified_users_count": verified_users_count,
+                "unverified_users_count": unverified_users_count,
+                "super_admins_count": super_admins_count,
                 "most_active_users": [
                     {
                         "user_id": str(row.id),
@@ -359,7 +365,7 @@ class SuperAdminManager:
                         if user.created_at
                         else None,
                     }
-                    for user in (list(verified_users) + list(unverified_users))[:10]
+                    for user in recent_registrations
                 ],
                 "pending_verifications": [
                     {
@@ -371,7 +377,7 @@ class SuperAdminManager:
                         if user.created_at
                         else None,
                     }
-                    for user in unverified_users[:10]
+                    for user in pending_verifications
                 ],
             }
 

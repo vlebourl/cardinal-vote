@@ -1,6 +1,7 @@
 """Super admin routes for the generalized voting platform."""
 
 import logging
+from enum import Enum
 from typing import Any
 from uuid import UUID
 
@@ -24,7 +25,7 @@ from .dependencies import (
     get_auth_manager,
     get_current_super_admin,
 )
-from .models import User, Vote, VoterResponse
+from .models import User, Vote
 from .super_admin_manager import SuperAdminManager
 
 logger = logging.getLogger(__name__)
@@ -42,11 +43,22 @@ def setup_super_admin_templates(template_engine: Jinja2Templates) -> None:
     templates = template_engine
 
 
+# Enums for request validation
+class UserOperation(str, Enum):
+    """Valid user management operations."""
+
+    UPDATE_USER = "update_user"
+    VERIFY_USERS = "verify_users"
+    UNVERIFY_USERS = "unverify_users"
+    PROMOTE_TO_ADMIN = "promote_to_admin"
+    DEMOTE_FROM_ADMIN = "demote_from_admin"
+
+
 # Pydantic models for API requests/responses
 class UserManagementRequest(BaseModel):
     """Request model for user management operations."""
 
-    operation: str = Field(..., description="Operation to perform")
+    operation: UserOperation = Field(..., description="Operation to perform")
     user_id: UUID | None = Field(None, description="User ID for single user operations")
     is_verified: bool | None = Field(
         None, description="Update user verification status"
@@ -116,48 +128,21 @@ async def get_system_statistics(
 ) -> SystemStatsResponse:
     """Get comprehensive system statistics for super admins."""
     try:
-        # User statistics
-        total_users_result = await session.execute(select(func.count(User.id)))
-        total_users = total_users_result.scalar() or 0
-
-        verified_users_result = await session.execute(
-            select(func.count(User.id)).where(User.is_verified.is_(True))
+        # Use SuperAdminManager to avoid code duplication
+        super_admin_manager = SuperAdminManager()
+        comprehensive_stats = await super_admin_manager.get_comprehensive_system_stats(
+            session
         )
-        verified_users = verified_users_result.scalar() or 0
-
-        super_admins_result = await session.execute(
-            select(func.count(User.id)).where(User.is_super_admin.is_(True))
-        )
-        super_admins = super_admins_result.scalar() or 0
-
-        # Vote statistics
-        total_votes_result = await session.execute(select(func.count(Vote.id)))
-        total_votes = total_votes_result.scalar() or 0
-
-        active_votes_result = await session.execute(
-            select(func.count(Vote.id)).where(Vote.status == "active")
-        )
-        active_votes = active_votes_result.scalar() or 0
-
-        # Response statistics
-        total_responses_result = await session.execute(
-            select(func.count(VoterResponse.id))
-        )
-        total_responses = total_responses_result.scalar() or 0
-
-        # Today's statistics (simplified for now)
-        users_created_today = 0  # TODO: Implement date filtering
-        votes_created_today = 0  # TODO: Implement date filtering
 
         return SystemStatsResponse(
-            total_users=total_users,
-            verified_users=verified_users,
-            super_admins=super_admins,
-            total_votes=total_votes,
-            active_votes=active_votes,
-            total_responses=total_responses,
-            users_created_today=users_created_today,
-            votes_created_today=votes_created_today,
+            total_users=comprehensive_stats["total_users"],
+            verified_users=comprehensive_stats["verified_users"],
+            super_admins=comprehensive_stats["super_admins"],
+            total_votes=comprehensive_stats["total_votes"],
+            active_votes=comprehensive_stats["active_votes"],
+            total_responses=comprehensive_stats["total_responses"],
+            users_created_today=comprehensive_stats["users_created_today"],
+            votes_created_today=comprehensive_stats["votes_created_today"],
         )
 
     except Exception as e:
@@ -367,7 +352,7 @@ async def manage_user(
 ) -> JSONResponse:
     """Manage user accounts (update status, roles, etc)."""
     try:
-        if request_data.operation == "update_user" and request_data.user_id:
+        if request_data.operation == UserOperation.UPDATE_USER and request_data.user_id:
             # Get user from database
             user = await auth_manager.get_user_by_id(request_data.user_id, session)
             if not user:
