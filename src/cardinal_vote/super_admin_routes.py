@@ -121,12 +121,12 @@ async def get_system_statistics(
         total_users = total_users_result.scalar() or 0
 
         verified_users_result = await session.execute(
-            select(func.count(User.id)).where(User.is_verified)
+            select(func.count(User.id)).where(User.is_verified.is_(True))
         )
         verified_users = verified_users_result.scalar() or 0
 
         super_admins_result = await session.execute(
-            select(func.count(User.id)).where(User.is_super_admin)
+            select(func.count(User.id)).where(User.is_super_admin.is_(True))
         )
         super_admins = super_admins_result.scalar() or 0
 

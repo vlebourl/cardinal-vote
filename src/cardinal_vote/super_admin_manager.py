@@ -26,24 +26,24 @@ class SuperAdminManager:
     ) -> dict[str, Any]:
         """Get comprehensive system statistics for super admin dashboard."""
         try:
-            stats = {}
+            stats: dict[str, Any] = {}
 
             # User statistics
             total_users_result = await session.execute(select(func.count(User.id)))
             stats["total_users"] = total_users_result.scalar() or 0
 
             verified_users_result = await session.execute(
-                select(func.count(User.id)).where(User.is_verified)
+                select(func.count(User.id)).where(User.is_verified.is_(True))
             )
             stats["verified_users"] = verified_users_result.scalar() or 0
 
             unverified_users_result = await session.execute(
-                select(func.count(User.id)).where(~User.is_verified)
+                select(func.count(User.id)).where(User.is_verified.is_(False))
             )
             stats["unverified_users"] = unverified_users_result.scalar() or 0
 
             super_admins_result = await session.execute(
-                select(func.count(User.id)).where(User.is_super_admin)
+                select(func.count(User.id)).where(User.is_super_admin.is_(True))
             )
             stats["super_admins"] = super_admins_result.scalar() or 0
 
@@ -115,9 +115,8 @@ class SuperAdminManager:
             stats["responses_today"] = responses_today_result.scalar() or 0
 
             # Platform health metrics
-            stats["platform_health"] = await self._calculate_platform_health(
-                session, stats
-            )
+            platform_health = await self._calculate_platform_health(session, stats)
+            stats["platform_health"] = platform_health
 
             # Add timestamp
             stats["timestamp"] = datetime.utcnow().isoformat()
@@ -238,18 +237,24 @@ class SuperAdminManager:
 
             # Get users by verification status
             verified_users_result = await session.execute(
-                select(User).where(User.is_verified).order_by(desc(User.created_at))
+                select(User)
+                .where(User.is_verified.is_(True))
+                .order_by(desc(User.created_at))
             )
             verified_users = verified_users_result.scalars().all()
 
             unverified_users_result = await session.execute(
-                select(User).where(~User.is_verified).order_by(desc(User.created_at))
+                select(User)
+                .where(User.is_verified.is_(False))
+                .order_by(desc(User.created_at))
             )
             unverified_users = unverified_users_result.scalars().all()
 
             # Get super admins
             super_admin_result = await session.execute(
-                select(User).where(User.is_super_admin).order_by(desc(User.created_at))
+                select(User)
+                .where(User.is_super_admin.is_(True))
+                .order_by(desc(User.created_at))
             )
             super_admins = super_admin_result.scalars().all()
 
@@ -334,7 +339,7 @@ class SuperAdminManager:
                 )
                 await session.commit()
 
-                affected_rows = result.rowcount or 0
+                affected_rows = getattr(result, "rowcount", 0) or 0
                 logger.info(f"Bulk verified {affected_rows} users")
 
                 return {
@@ -353,7 +358,7 @@ class SuperAdminManager:
                 )
                 await session.commit()
 
-                affected_rows = result.rowcount or 0
+                affected_rows = getattr(result, "rowcount", 0) or 0
                 logger.info(f"Bulk unverified {affected_rows} users")
 
                 return {
