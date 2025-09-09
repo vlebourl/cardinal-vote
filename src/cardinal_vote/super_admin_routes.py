@@ -179,8 +179,33 @@ async def list_users(
 ) -> dict[str, Any]:
     """List all users with pagination and search."""
     try:
-        # Base query
-        query = select(User).order_by(desc(User.created_at))
+        # Base query with vote counts using JOIN to avoid N+1 query problem
+        query = (
+            select(
+                User.id,
+                User.email,
+                User.first_name,
+                User.last_name,
+                User.is_verified,
+                User.is_super_admin,
+                User.created_at,
+                User.last_login,
+                func.count(Vote.id).label("vote_count"),
+            )
+            .select_from(User)
+            .outerjoin(Vote, User.id == Vote.creator_id)
+            .group_by(
+                User.id,
+                User.email,
+                User.first_name,
+                User.last_name,
+                User.is_verified,
+                User.is_super_admin,
+                User.created_at,
+                User.last_login,
+            )
+            .order_by(desc(User.created_at))
+        )
 
         # Apply search filter if provided
         if search:
@@ -197,27 +222,26 @@ async def list_users(
 
         # Execute query
         result = await session.execute(query)
-        users = result.scalars().all()
+        users = result.fetchall()
 
-        # Get vote counts for each user
+        # Build user list from optimized query results
         user_list = []
-        for user in users:
-            vote_count_result = await session.execute(
-                select(func.count(Vote.id)).where(Vote.creator_id == user.id)
-            )
-            vote_count = vote_count_result.scalar() or 0
-
+        for user_row in users:
             user_list.append(
                 UserListResponse(
-                    id=str(user.id),
-                    email=user.email or "",
-                    first_name=user.first_name or "",
-                    last_name=user.last_name or "",
-                    is_verified=user.is_verified or False,
-                    is_super_admin=user.is_super_admin or False,
-                    created_at=user.created_at.isoformat() if user.created_at else "",
-                    last_login=user.last_login.isoformat() if user.last_login else None,
-                    vote_count=vote_count,
+                    id=str(user_row.id),
+                    email=user_row.email or "",
+                    first_name=user_row.first_name or "",
+                    last_name=user_row.last_name or "",
+                    is_verified=user_row.is_verified or False,
+                    is_super_admin=user_row.is_super_admin or False,
+                    created_at=user_row.created_at.isoformat()
+                    if user_row.created_at
+                    else "",
+                    last_login=user_row.last_login.isoformat()
+                    if user_row.last_login
+                    else None,
+                    vote_count=user_row.vote_count or 0,
                 )
             )
 

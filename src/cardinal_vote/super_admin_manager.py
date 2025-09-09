@@ -5,7 +5,7 @@ from datetime import datetime, timedelta
 from typing import Any
 from uuid import UUID
 
-from sqlalchemy import desc, func, select, text
+from sqlalchemy import desc, func, select, update
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -28,91 +28,131 @@ class SuperAdminManager:
         try:
             stats: dict[str, Any] = {}
 
-            # User statistics
-            total_users_result = await session.execute(select(func.count(User.id)))
-            stats["total_users"] = total_users_result.scalar() or 0
-
-            verified_users_result = await session.execute(
-                select(func.count(User.id)).where(User.is_verified.is_(True))
-            )
-            stats["verified_users"] = verified_users_result.scalar() or 0
-
-            unverified_users_result = await session.execute(
-                select(func.count(User.id)).where(User.is_verified.is_(False))
-            )
-            stats["unverified_users"] = unverified_users_result.scalar() or 0
-
-            super_admins_result = await session.execute(
-                select(func.count(User.id)).where(User.is_super_admin.is_(True))
-            )
-            stats["super_admins"] = super_admins_result.scalar() or 0
-
-            # Vote statistics
-            total_votes_result = await session.execute(select(func.count(Vote.id)))
-            stats["total_votes"] = total_votes_result.scalar() or 0
-
-            draft_votes_result = await session.execute(
-                select(func.count(Vote.id)).where(Vote.status == "draft")
-            )
-            stats["draft_votes"] = draft_votes_result.scalar() or 0
-
-            active_votes_result = await session.execute(
-                select(func.count(Vote.id)).where(Vote.status == "active")
-            )
-            stats["active_votes"] = active_votes_result.scalar() or 0
-
-            closed_votes_result = await session.execute(
-                select(func.count(Vote.id)).where(Vote.status == "closed")
-            )
-            stats["closed_votes"] = closed_votes_result.scalar() or 0
-
-            # Response statistics
-            total_responses_result = await session.execute(
-                select(func.count(VoterResponse.id))
-            )
-            stats["total_responses"] = total_responses_result.scalar() or 0
-
-            # Recent activity statistics (last 7 days)
+            # Calculate all statistics with efficient queries
             seven_days_ago = datetime.utcnow() - timedelta(days=7)
-
-            recent_users_result = await session.execute(
-                select(func.count(User.id)).where(User.created_at >= seven_days_ago)
-            )
-            stats["recent_users"] = recent_users_result.scalar() or 0
-
-            recent_votes_result = await session.execute(
-                select(func.count(Vote.id)).where(Vote.created_at >= seven_days_ago)
-            )
-            stats["recent_votes"] = recent_votes_result.scalar() or 0
-
-            recent_responses_result = await session.execute(
-                select(func.count(VoterResponse.id)).where(
-                    VoterResponse.submitted_at >= seven_days_ago
-                )
-            )
-            stats["recent_responses"] = recent_responses_result.scalar() or 0
-
-            # Today's statistics
             today_start = datetime.utcnow().replace(
                 hour=0, minute=0, second=0, microsecond=0
             )
 
-            users_today_result = await session.execute(
-                select(func.count(User.id)).where(User.created_at >= today_start)
-            )
-            stats["users_created_today"] = users_today_result.scalar() or 0
-
-            votes_today_result = await session.execute(
-                select(func.count(Vote.id)).where(Vote.created_at >= today_start)
-            )
-            stats["votes_created_today"] = votes_today_result.scalar() or 0
-
-            responses_today_result = await session.execute(
-                select(func.count(VoterResponse.id)).where(
-                    VoterResponse.submitted_at >= today_start
+            # Single query for all user statistics using conditional aggregation
+            user_stats_result = await session.execute(
+                select(
+                    func.count(User.id).label("total_users"),
+                    func.count(func.case((User.is_verified.is_(True), 1))).label(
+                        "verified_users"
+                    ),
+                    func.count(func.case((User.is_verified.is_(False), 1))).label(
+                        "unverified_users"
+                    ),
+                    func.count(func.case((User.is_super_admin.is_(True), 1))).label(
+                        "super_admins"
+                    ),
+                    func.count(func.case((User.created_at >= seven_days_ago, 1))).label(
+                        "recent_users"
+                    ),
+                    func.count(func.case((User.created_at >= today_start, 1))).label(
+                        "users_created_today"
+                    ),
                 )
             )
-            stats["responses_today"] = responses_today_result.scalar() or 0
+            user_stats = user_stats_result.fetchone()
+            if user_stats:
+                stats.update(
+                    {
+                        "total_users": user_stats.total_users or 0,
+                        "verified_users": user_stats.verified_users or 0,
+                        "unverified_users": user_stats.unverified_users or 0,
+                        "super_admins": user_stats.super_admins or 0,
+                        "recent_users": user_stats.recent_users or 0,
+                        "users_created_today": user_stats.users_created_today or 0,
+                    }
+                )
+            else:
+                stats.update(
+                    {
+                        "total_users": 0,
+                        "verified_users": 0,
+                        "unverified_users": 0,
+                        "super_admins": 0,
+                        "recent_users": 0,
+                        "users_created_today": 0,
+                    }
+                )
+
+            # Single query for all vote statistics using conditional aggregation
+            vote_stats_result = await session.execute(
+                select(
+                    func.count(Vote.id).label("total_votes"),
+                    func.count(func.case((Vote.status == "draft", 1))).label(
+                        "draft_votes"
+                    ),
+                    func.count(func.case((Vote.status == "active", 1))).label(
+                        "active_votes"
+                    ),
+                    func.count(func.case((Vote.status == "closed", 1))).label(
+                        "closed_votes"
+                    ),
+                    func.count(func.case((Vote.created_at >= seven_days_ago, 1))).label(
+                        "recent_votes"
+                    ),
+                    func.count(func.case((Vote.created_at >= today_start, 1))).label(
+                        "votes_created_today"
+                    ),
+                )
+            )
+            vote_stats = vote_stats_result.fetchone()
+            if vote_stats:
+                stats.update(
+                    {
+                        "total_votes": vote_stats.total_votes or 0,
+                        "draft_votes": vote_stats.draft_votes or 0,
+                        "active_votes": vote_stats.active_votes or 0,
+                        "closed_votes": vote_stats.closed_votes or 0,
+                        "recent_votes": vote_stats.recent_votes or 0,
+                        "votes_created_today": vote_stats.votes_created_today or 0,
+                    }
+                )
+            else:
+                stats.update(
+                    {
+                        "total_votes": 0,
+                        "draft_votes": 0,
+                        "active_votes": 0,
+                        "closed_votes": 0,
+                        "recent_votes": 0,
+                        "votes_created_today": 0,
+                    }
+                )
+
+            # Single query for all response statistics using conditional aggregation
+            response_stats_result = await session.execute(
+                select(
+                    func.count(VoterResponse.id).label("total_responses"),
+                    func.count(
+                        func.case((VoterResponse.submitted_at >= seven_days_ago, 1))
+                    ).label("recent_responses"),
+                    func.count(
+                        func.case((VoterResponse.submitted_at >= today_start, 1))
+                    ).label("responses_today"),
+                )
+            )
+            response_stats = response_stats_result.fetchone()
+            if response_stats:
+                stats.update(
+                    {
+                        "total_responses": response_stats.total_responses or 0,
+                        "recent_responses": response_stats.recent_responses or 0,
+                        "responses_today": response_stats.responses_today or 0,
+                    }
+                )
+            else:
+                stats.update(
+                    {
+                        "total_responses": 0,
+                        "recent_responses": 0,
+                        "responses_today": 0,
+                    }
+                )
 
             # Platform health metrics
             platform_health = await self._calculate_platform_health(session, stats)
@@ -187,34 +227,53 @@ class SuperAdminManager:
     ) -> list[dict[str, Any]]:
         """Get recent user activity for monitoring."""
         try:
-            # Get recently created users
+            # Get recently created users with their vote counts in a single query
+            # Use LEFT JOIN to include users with zero votes
             result = await session.execute(
-                select(User).order_by(desc(User.created_at)).limit(limit)
+                select(
+                    User.id,
+                    User.email,
+                    User.first_name,
+                    User.last_name,
+                    User.is_verified,
+                    User.is_super_admin,
+                    User.created_at,
+                    User.last_login,
+                    func.count(Vote.id).label("vote_count"),
+                )
+                .select_from(User)
+                .outerjoin(Vote, User.id == Vote.creator_id)
+                .group_by(
+                    User.id,
+                    User.email,
+                    User.first_name,
+                    User.last_name,
+                    User.is_verified,
+                    User.is_super_admin,
+                    User.created_at,
+                    User.last_login,
+                )
+                .order_by(desc(User.created_at))
+                .limit(limit)
             )
-            recent_users = result.scalars().all()
+            recent_users = result.fetchall()
 
             activity = []
-            for user in recent_users:
-                # Get user's vote count
-                vote_count_result = await session.execute(
-                    select(func.count(Vote.id)).where(Vote.creator_id == user.id)
-                )
-                vote_count = vote_count_result.scalar() or 0
-
+            for user_row in recent_users:
                 activity.append(
                     {
                         "type": "user_registration",
-                        "user_id": str(user.id),
-                        "user_email": user.email,
-                        "user_name": f"{user.first_name} {user.last_name}",
-                        "is_verified": user.is_verified,
-                        "is_super_admin": user.is_super_admin,
-                        "vote_count": vote_count,
-                        "created_at": user.created_at.isoformat()
-                        if user.created_at
+                        "user_id": str(user_row.id),
+                        "user_email": user_row.email,
+                        "user_name": f"{user_row.first_name} {user_row.last_name}",
+                        "is_verified": user_row.is_verified,
+                        "is_super_admin": user_row.is_super_admin,
+                        "vote_count": user_row.vote_count or 0,
+                        "created_at": user_row.created_at.isoformat()
+                        if user_row.created_at
                         else None,
-                        "last_login": user.last_login.isoformat()
-                        if user.last_login
+                        "last_login": user_row.last_login.isoformat()
+                        if user_row.last_login
                         else None,
                     }
                 )
@@ -258,16 +317,20 @@ class SuperAdminManager:
             )
             super_admins = super_admin_result.scalars().all()
 
-            # Get most active users (by vote count)
+            # Get most active users (by vote count) using SQLAlchemy ORM
             most_active_result = await session.execute(
-                text("""
-                    SELECT u.*, COUNT(v.id) as vote_count
-                    FROM users u
-                    LEFT JOIN votes v ON u.id = v.creator_id
-                    GROUP BY u.id
-                    ORDER BY vote_count DESC, u.created_at DESC
-                    LIMIT 10
-                """)
+                select(
+                    User.id,
+                    User.email,
+                    User.first_name,
+                    User.last_name,
+                    func.count(Vote.id).label("vote_count"),
+                )
+                .select_from(User)
+                .outerjoin(Vote, User.id == Vote.creator_id)
+                .group_by(User.id, User.email, User.first_name, User.last_name)
+                .order_by(desc(func.count(Vote.id)), desc(User.created_at))
+                .limit(10)
             )
             most_active_users = most_active_result.fetchall()
 
@@ -277,11 +340,11 @@ class SuperAdminManager:
                 "super_admins_count": len(super_admins),
                 "most_active_users": [
                     {
-                        "user_id": str(row[0]),  # id
-                        "email": row[1],  # email
-                        "first_name": row[2],  # first_name
-                        "last_name": row[3],  # last_name
-                        "vote_count": row[-1],  # vote_count (last column)
+                        "user_id": str(row.id),
+                        "email": row.email,
+                        "first_name": row.first_name,
+                        "last_name": row.last_name,
+                        "vote_count": row.vote_count,
                     }
                     for row in most_active_users[:5]  # Top 5 only
                 ],
@@ -330,16 +393,13 @@ class SuperAdminManager:
                 return {"success": False, "message": "No users specified"}
 
             if operation == "verify_users":
-                # Bulk verify users
+                # Bulk verify users using SQLAlchemy ORM
                 result = await session.execute(
-                    text(
-                        "UPDATE users SET is_verified = true WHERE id = ANY(:user_ids)"
-                    ),
-                    {"user_ids": [str(uid) for uid in user_ids]},
+                    update(User).where(User.id.in_(user_ids)).values(is_verified=True)
                 )
                 await session.commit()
 
-                affected_rows = getattr(result, "rowcount", 0) or 0
+                affected_rows = result.rowcount or 0
                 logger.info(f"Bulk verified {affected_rows} users")
 
                 return {
@@ -349,16 +409,13 @@ class SuperAdminManager:
                 }
 
             elif operation == "unverify_users":
-                # Bulk unverify users
+                # Bulk unverify users using SQLAlchemy ORM
                 result = await session.execute(
-                    text(
-                        "UPDATE users SET is_verified = false WHERE id = ANY(:user_ids)"
-                    ),
-                    {"user_ids": [str(uid) for uid in user_ids]},
+                    update(User).where(User.id.in_(user_ids)).values(is_verified=False)
                 )
                 await session.commit()
 
-                affected_rows = getattr(result, "rowcount", 0) or 0
+                affected_rows = result.rowcount or 0
                 logger.info(f"Bulk unverified {affected_rows} users")
 
                 return {
