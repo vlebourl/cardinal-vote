@@ -2,7 +2,6 @@
 
 import json
 import logging
-import random
 from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
 from datetime import datetime
@@ -24,7 +23,6 @@ from .database import DatabaseError
 from .database_manager import GeneralizedDatabaseManager
 from .dependencies import AsyncDatabaseSession
 from .models import (
-    LogoListResponse,
     ValidationError,
     Vote,
     VoteOption,
@@ -74,17 +72,6 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
         app.include_router(super_admin_router)
 
         logger.info("Generalized platform initialized successfully")
-
-        # Verify logo files exist
-        logo_files = settings.get_logo_files()
-        if len(logo_files) != settings.EXPECTED_LOGO_COUNT:
-            logger.warning(
-                f"Expected {settings.EXPECTED_LOGO_COUNT} logo files, "
-                f"found {len(logo_files)}: {logo_files}"
-            )
-        else:
-            logger.info(f"Found {len(logo_files)} logo files")
-
         logger.info("Application startup completed successfully")
 
     except Exception as e:
@@ -121,7 +108,7 @@ app.add_middleware(
 # Legacy admin middleware removed - generalized platform uses JWT auth instead
 
 # Mount static files
-app.mount("/logos", StaticFiles(directory=settings.LOGOS_DIR), name="logos")
+app.mount("/uploads", StaticFiles(directory=settings.UPLOADS_DIR), name="uploads")
 app.mount("/static", StaticFiles(directory=settings.STATIC_DIR), name="static")
 
 # Templates
@@ -312,37 +299,6 @@ async def public_vote_page(
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to load voting page",
-        ) from e
-
-
-@app.get("/api/logos", response_model=LogoListResponse, tags=["API"])
-async def get_logos_api() -> LogoListResponse:
-    """Get randomized list of logo filenames."""
-    try:
-        logo_files = settings.get_logo_files()
-
-        if not logo_files:
-            logger.error("No logo files found")
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND, detail="Aucun logo trouvé"
-            )
-
-        # Randomize order for each request
-        randomized_logos = logo_files.copy()
-        random.shuffle(randomized_logos)
-
-        logger.info(f"Returning {len(randomized_logos)} randomized logos")
-        return LogoListResponse(
-            logos=randomized_logos, total_count=len(randomized_logos)
-        )
-
-    except HTTPException:
-        raise
-    except Exception as e:
-        logger.error(f"Failed to get logos: {e}")
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Impossible de récupérer la liste des logos",
         ) from e
 
 

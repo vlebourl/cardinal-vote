@@ -22,8 +22,6 @@ from sqlalchemy.ext.declarative import DeclarativeMeta, declarative_base
 from sqlalchemy.orm import Mapped, relationship
 from sqlalchemy.sql import func
 
-from .config import settings
-
 Base: DeclarativeMeta = declarative_base()
 
 
@@ -311,15 +309,11 @@ class VoteSubmission(BaseModel):
             raise ValueError("Ratings cannot be empty")
 
         # Validate rating values are in allowed range
-        for logo, rating in v.items():
+        for item, rating in v.items():
             if not isinstance(rating, int) or rating < -2 or rating > 2:
                 raise ValueError(
-                    f"Invalid rating {rating} for {logo}. Must be integer between -2 and 2"
+                    f"Invalid rating {rating} for {item}. Must be integer between -2 and 2"
                 )
-
-            # Validate logo filename format
-            if not logo.startswith(settings.LOGO_PREFIX) or not logo.endswith(".png"):
-                raise ValueError(f"Invalid logo filename: {logo}")
 
         return v
 
@@ -330,13 +324,6 @@ class LegacyVoteResponse(BaseModel):
     success: bool
     message: str
     vote_id: int | None = None
-
-
-class LogoListResponse(BaseModel):
-    """Pydantic model for logo list response."""
-
-    logos: list[str]
-    total_count: int
 
 
 class VoteResultSummary(BaseModel):

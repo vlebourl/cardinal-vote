@@ -55,7 +55,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 RUN useradd --create-home --shell /bin/bash --uid 1000 app
 
 # Create application directories
-RUN mkdir -p /app/data /app/logs \
+RUN mkdir -p /app/data /app/logs /app/uploads \
     && chown -R app:app /app
 
 # Copy virtual environment from builder with proper ownership
@@ -73,7 +73,6 @@ USER app
 WORKDIR /app
 
 # Copy application files
-COPY --chown=app:app logos/ ./logos/
 COPY --chown=app:app templates/ ./templates/
 COPY --chown=app:app static/ ./static/
 COPY --chown=app:app docker-entrypoint.sh ./docker-entrypoint.sh

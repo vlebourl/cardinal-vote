@@ -60,15 +60,18 @@ validate_environment() {
         log "✓ Directory verified: $dir"
     done
 
-    # Optional directories (created if needed, not required for startup)
-    local optional_dirs=("/app/logos")
-    for dir in "${optional_dirs[@]}"; do
-        if [[ -d "$dir" ]]; then
-            log "✓ Optional directory available: $dir"
-        else
-            log "ℹ Optional directory not found: $dir (will be created if needed)"
-        fi
-    done
+    # Create uploads directory for vote content (images, files, etc.)
+    local uploads_dir="/app/uploads"
+    if [[ ! -d "$uploads_dir" ]]; then
+        mkdir -p "$uploads_dir" || error_exit "Failed to create uploads directory: $uploads_dir"
+        log "✓ Created uploads directory: $uploads_dir"
+    fi
+
+    # Ensure proper permissions for uploads
+    if [[ ! -w "$uploads_dir" ]]; then
+        error_exit "Uploads directory not writable: $uploads_dir"
+    fi
+    log "✓ Uploads directory ready: $uploads_dir"
 
     log "✓ Generalized voting platform directory validation complete"
 
