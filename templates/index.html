@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
-    <title>ToV'éCo - Vote de Logo</title>
-    <meta name="description" content="Plateforme de vote pour sélectionner le logo ToV'éCo. Évaluez chaque logo sur une échelle de -2 à +2.">
+    <title>{{ app_name }} - Voting Platform</title>
+    <meta name="description" content="Generalized voting platform supporting flexible content types with value voting methodology (-2 to +2 scale).">
     <meta name="theme-color" content="#2D5820">
     <link rel="stylesheet" href="/static/style.css">
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🗳️</text></svg>">
@@ -13,36 +13,36 @@
     <div class="container">
         <div id="welcome-screen" class="screen active" role="main" aria-labelledby="main-title">
             <div class="logo-header">
-                <h1 id="main-title">ToV'éCo</h1>
+                <h1 id="main-title">{{ app_name }}</h1>
             </div>
             <div class="welcome-content">
                 <div id="voter-counter" class="voter-counter loading" role="status" aria-live="polite">
                     <span>Chargement...</span>
                 </div>
                 <p class="instructions">
-                    Bienvenue dans le système de vote pour choisir le logo ToV'éCo.
-                    Vous allez évaluer chaque logo sur une échelle de -2 à +2.
+                    Welcome to the generalized voting platform.
+                    This platform supports voting on various content types using value voting methodology.
                 </p>
-                <div class="scale-explanation" role="table" aria-label="Échelle de notation">
+                <div class="scale-explanation" role="table" aria-label="Rating scale">
                     <div class="scale-item" role="row">
                         <span class="scale-value negative" role="cell">-2</span>
-                        <span class="scale-label" role="cell">Fortement rejeté</span>
+                        <span class="scale-label" role="cell">Strongly reject</span>
                     </div>
                     <div class="scale-item" role="row">
                         <span class="scale-value negative" role="cell">-1</span>
-                        <span class="scale-label" role="cell">Rejeté</span>
+                        <span class="scale-label" role="cell">Reject</span>
                     </div>
                     <div class="scale-item" role="row">
                         <span class="scale-value neutral" role="cell">0</span>
-                        <span class="scale-label" role="cell">Neutre</span>
+                        <span class="scale-label" role="cell">Neutral</span>
                     </div>
                     <div class="scale-item" role="row">
                         <span class="scale-value positive" role="cell">+1</span>
-                        <span class="scale-label" role="cell">Accepté</span>
+                        <span class="scale-label" role="cell">Accept</span>
                     </div>
                     <div class="scale-item" role="row">
                         <span class="scale-value positive" role="cell">+2</span>
-                        <span class="scale-label" role="cell">Fortement accepté</span>
+                        <span class="scale-label" role="cell">Strongly accept</span>
                     </div>
                 </div>
                 <form id="name-form" novalidate>
@@ -176,7 +176,7 @@
     <!-- Live region for screen reader announcements -->
     <div id="live-region" class="sr-only" aria-live="polite" aria-atomic="true"></div>
 
-    <script src="/static/legacy_app.js"></script>
+    <script src="/static/app.js"></script>
 
     <!-- Keyboard shortcuts help -->
     <div id="keyboard-help" class="sr-only" role="dialog" aria-labelledby="keyboard-help-title" aria-describedby="keyboard-help-content">

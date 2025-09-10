@@ -1,5 +1,5 @@
-"""ToVéCo Logo Voting Platform."""
+"""Cardinal Vote - Generalized Voting Platform."""
 
-__version__ = "1.1.1"
-__author__ = "ToVéCo Team"
-__description__ = "Logo voting platform using value voting methodology"
+__version__ = "2.0.0"
+__author__ = "Cardinal Vote Team"
+__description__ = "Generalized voting platform supporting flexible content types and value voting methodology"

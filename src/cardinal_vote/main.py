@@ -1,4 +1,4 @@
-"""Main FastAPI application for the ToVéCo voting platform."""
+"""Main FastAPI application for the Cardinal Vote generalized voting platform."""
 
 import json
 import logging
@@ -91,7 +91,7 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
 app = FastAPI(
     title=settings.APP_NAME,
     version=settings.APP_VERSION,
-    description="A logo voting platform using value voting methodology (-2 to +2 scale)",
+    description="A generalized voting platform supporting flexible content types and value voting methodology (-2 to +2 scale)",
     lifespan=lifespan,
 )
 
@@ -187,7 +187,7 @@ async def home(request: Request) -> HTMLResponse:
     """Serve the main voting page."""
     try:
         return templates.TemplateResponse(
-            "legacy_index.html",
+            "index.html",
             {
                 "request": request,
                 "app_name": settings.APP_NAME,

@@ -1,5 +1,5 @@
 /**
- * ToV'éCo Logo Voting Platform - Frontend JavaScript
+ * Cardinal Vote Generalized Voting Platform - Frontend JavaScript
  * Mobile-first responsive voting application with accessibility support
  */
 
