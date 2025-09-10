@@ -88,6 +88,12 @@ class Settings:
     # Security settings
     MAX_VOTES_PER_IP_PER_HOUR: int = 5  # Rate limiting
 
+    # Content moderation rate limiting
+    FLAG_RATE_LIMIT: int = int(os.getenv("FLAG_RATE_LIMIT", "5"))  # flags per minute
+    FLAG_RATE_WINDOW_MINUTES: int = int(
+        os.getenv("FLAG_RATE_WINDOW_MINUTES", "1")
+    )  # window in minutes
+
     # Legacy Admin settings (backward compatibility)
     ADMIN_USERNAME: str = os.getenv("ADMIN_USERNAME", "")
     ADMIN_PASSWORD: str = os.getenv("ADMIN_PASSWORD", "")

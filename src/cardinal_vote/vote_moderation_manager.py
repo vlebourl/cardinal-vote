@@ -1,7 +1,7 @@
 """Vote moderation manager for content oversight and policy enforcement."""
 
 import logging
-from datetime import datetime, timedelta
+from datetime import UTC, datetime, timedelta
 from typing import Any
 
 from sqlalchemy import desc, func, select
@@ -110,7 +110,7 @@ class VoteModerationManager:
             # Update flag
             flag.status = status
             flag.reviewed_by = reviewer_id
-            flag.reviewed_at = datetime.utcnow()
+            flag.reviewed_at = datetime.now(UTC)
             flag.review_notes = review_notes
 
             await session.commit()
@@ -435,7 +435,7 @@ class VoteModerationManager:
             pending_flags = pending_flags_result.scalar() or 0
 
             # Flags by type in the last 7 days
-            week_ago = datetime.utcnow() - timedelta(days=7)
+            week_ago = datetime.now(UTC) - timedelta(days=7)
             recent_flags_result = await session.execute(
                 select(
                     VoteModerationFlag.flag_type,
@@ -516,30 +516,56 @@ class VoteModerationManager:
             result = await session.execute(query)
             votes = result.scalars().all()
 
+            if not votes:
+                return []
+
+            # Get all vote IDs for batch queries
+            vote_ids = [vote.id for vote in votes]
+
+            # Get flag counts for all votes in one query (fixes N+1 query issue)
+            flags_result = await session.execute(
+                select(
+                    VoteModerationFlag.vote_id,
+                    VoteModerationFlag.status,
+                    func.count(VoteModerationFlag.id).label("count"),
+                )
+                .where(VoteModerationFlag.vote_id.in_(vote_ids))
+                .group_by(VoteModerationFlag.vote_id, VoteModerationFlag.status)
+            )
+
+            # Organize flag counts by vote_id
+            all_flag_counts: dict[str, dict[str, int]] = {}
+            for row in flags_result:
+                vote_id = str(row[0])
+                status = row[1] if row[1] else "unknown"
+                count = int(row[2]) if row[2] else 0
+
+                if vote_id not in all_flag_counts:
+                    all_flag_counts[vote_id] = {}
+                all_flag_counts[vote_id][status] = count
+
+            # Get response counts for all votes in one query
+            responses_result = await session.execute(
+                select(
+                    VoterResponse.vote_id,
+                    func.count(VoterResponse.id).label("count"),
+                )
+                .where(VoterResponse.vote_id.in_(vote_ids))
+                .group_by(VoterResponse.vote_id)
+            )
+
+            # Organize response counts by vote_id
+            response_counts = {}
+            for response_row in responses_result:
+                vote_id = str(response_row[0])
+                count = int(response_row[1]) if response_row[1] else 0
+                response_counts[vote_id] = count
+
             vote_data = []
             for vote in votes:
-                # Get flag summary for this vote
-                flags_result = await session.execute(
-                    select(
-                        VoteModerationFlag.status,
-                        func.count(VoteModerationFlag.id).label("count"),
-                    )
-                    .where(VoteModerationFlag.vote_id == vote.id)
-                    .group_by(VoteModerationFlag.status)
-                )
-                flag_counts: dict[str, int] = {}
-                for row in flags_result:
-                    status = row[0] if row[0] else "unknown"
-                    count = int(row[1]) if row[1] else 0
-                    flag_counts[status] = count
-
-                # Get total responses
-                responses_result = await session.execute(
-                    select(func.count(VoterResponse.id)).where(
-                        VoterResponse.vote_id == vote.id
-                    )
-                )
-                total_responses = responses_result.scalar() or 0
+                vote_id_str = str(vote.id)
+                flag_counts = all_flag_counts.get(vote_id_str, {})
+                total_responses = response_counts.get(vote_id_str, 0)
 
                 vote_data.append(
                     {

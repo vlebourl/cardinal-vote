@@ -22,6 +22,7 @@ from sqlalchemy import desc, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from .auth_manager import GeneralizedAuthManager
+from .config import settings
 from .dependencies import (
     get_async_session,
     get_auth_manager,
@@ -45,8 +46,7 @@ logger = logging.getLogger(__name__)
 # Simple in-memory rate limiting for flag endpoint
 # In production, use Redis or similar distributed cache
 flag_rate_limit_store: dict[str, list[datetime]] = defaultdict(list)
-FLAG_RATE_LIMIT = 5  # Max 5 flags per minute per IP
-FLAG_RATE_WINDOW = timedelta(minutes=1)
+FLAG_RATE_WINDOW = timedelta(minutes=settings.FLAG_RATE_WINDOW_MINUTES)
 
 # Router for super admin endpoints
 super_admin_router = APIRouter(prefix="/api/admin", tags=["Super Admin"])
@@ -64,7 +64,7 @@ def check_rate_limit(client_ip: str) -> bool:
     ]
 
     # Check if under limit
-    if len(flag_rate_limit_store[client_ip]) >= FLAG_RATE_LIMIT:
+    if len(flag_rate_limit_store[client_ip]) >= settings.FLAG_RATE_LIMIT:
         return False
 
     # Add current request

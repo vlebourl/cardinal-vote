@@ -608,16 +608,23 @@ class TestGetFlaggedVotes:
         votes_result = Mock()
         votes_result.scalars.return_value.all.return_value = [mock_vote]
 
-        # Mock flag counts - create proper row objects that can be iterated
+        # Mock flag counts batch query - create proper row objects
         flags_result = Mock()
         flag_row = Mock()
-        flag_row.__getitem__ = Mock(side_effect=lambda x: "pending" if x == 0 else 2)
+        flag_row.__getitem__ = Mock(
+            side_effect=lambda x: {0: mock_vote.id, 1: "pending", 2: 2}[x]
+        )
         flags_result.__iter__ = Mock(return_value=iter([flag_row]))
 
+        # Mock response counts batch query
         responses_result = Mock()
-        responses_result.scalar.return_value = 10
+        response_row = Mock()
+        response_row.__getitem__ = Mock(
+            side_effect=lambda x: {0: mock_vote.id, 1: 10}[x]
+        )
+        responses_result.__iter__ = Mock(return_value=iter([response_row]))
 
-        # Mock the multiple calls to execute properly
+        # Mock the three calls to execute: votes, flag counts, response counts
         call_count = 0
 
         async def mock_execute(query):
