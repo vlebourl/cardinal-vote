@@ -20,7 +20,6 @@ from sqlalchemy import select
 from .admin_auth import AdminAuthManager
 from .admin_manager import AdminManager
 from .admin_middleware import AdminSecurityMiddleware
-from .admin_routes_simple import admin_router, setup_admin_router
 
 # Generalized platform imports
 from .auth_manager import GeneralizedAuthManager
@@ -65,11 +64,17 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     logger.info(f"Starting {settings.APP_NAME} v{settings.APP_VERSION}")
 
     try:
-        # Check if we're using the generalized platform (PostgreSQL) or legacy platform (SQLite)
-        import os
+        # Always use the generalized platform (PostgreSQL) - legacy SQLite support removed
+        use_generalized_platform = True
 
-        database_url = os.getenv("DATABASE_URL")
-        use_generalized_platform = database_url and "postgresql" in database_url
+        # Ensure DATABASE_URL is configured
+        if "postgresql" not in settings.DATABASE_URL:
+            logger.warning(
+                "DATABASE_URL not configured for PostgreSQL, using default configuration"
+            )
+            logger.warning(
+                "Please set DATABASE_URL environment variable for production deployment"
+            )
 
         if use_generalized_platform:
             logger.info("Starting in generalized platform mode (PostgreSQL)")
@@ -90,45 +95,10 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
 
             logger.info("Generalized platform initialized successfully")
 
-            # Skip legacy system initialization
-            db_manager = None
-            admin_auth_manager = None
-            admin_manager = None
-
-        else:
-            logger.info("Starting in legacy platform mode (SQLite)")
-
-            # Validate directories
-            settings.validate_directories()
-
-            # Initialize legacy database
-            db_manager = DatabaseManager(settings.DATABASE_PATH)
-
-            # Initialize admin managers
-            admin_auth_manager = AdminAuthManager(db_manager)
-            admin_manager = AdminManager(db_manager)
-
-            # Setup admin router with dependencies
-            setup_admin_router(templates, admin_auth_manager, admin_manager)
-
-            # Include admin router only in legacy mode
-            app.include_router(admin_router)  # Legacy admin router
-
-            # Initialize generalized platform managers
-            generalized_db_manager = GeneralizedDatabaseManager()
-            generalized_auth_manager = GeneralizedAuthManager()
-
-            # Set global instances for dependencies
-            import cardinal_vote.dependencies as deps
-
-            deps.generalized_db_manager = generalized_db_manager
-            deps.generalized_auth_manager = generalized_auth_manager
-
-            # Setup super admin templates and include router
-            setup_super_admin_templates(templates)
-            app.include_router(super_admin_router)  # Super admin router
-
-            logger.info("Both legacy and generalized platforms initialized")
+        # Legacy SQLite mode has been removed - only PostgreSQL generalized platform supported
+        db_manager = None
+        admin_auth_manager = None
+        admin_manager = None
 
         # Verify logo files exist
         logo_files = settings.get_logo_files()
