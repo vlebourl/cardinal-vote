@@ -1,6 +1,8 @@
 """Super admin routes for the generalized voting platform."""
 
 import logging
+from collections import defaultdict
+from datetime import datetime, timedelta
 from enum import Enum
 from typing import Any
 from uuid import UUID
@@ -20,18 +22,55 @@ from sqlalchemy import desc, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from .auth_manager import GeneralizedAuthManager
+from .config import settings
 from .dependencies import (
     get_async_session,
     get_auth_manager,
     get_current_super_admin,
 )
-from .models import User, Vote
+from .models import (
+    BulkModerationActionCreate,
+    User,
+    Vote,
+    VoteFlagCreate,
+    VoteFlagReview,
+    VoteModerationActionCreate,
+    VoteModerationFlag,
+    VoteModerationSummary,
+)
 from .super_admin_manager import SuperAdminManager
+from .vote_moderation_manager import VoteModerationManager
 
 logger = logging.getLogger(__name__)
 
+# Simple in-memory rate limiting for flag endpoint
+# In production, use Redis or similar distributed cache
+flag_rate_limit_store: dict[str, list[datetime]] = defaultdict(list)
+FLAG_RATE_WINDOW = timedelta(minutes=settings.FLAG_RATE_WINDOW_MINUTES)
+
 # Router for super admin endpoints
 super_admin_router = APIRouter(prefix="/api/admin", tags=["Super Admin"])
+
+
+def check_rate_limit(client_ip: str) -> bool:
+    """Check if client IP is within rate limit for flagging."""
+    now = datetime.utcnow()
+
+    # Clean old entries
+    flag_rate_limit_store[client_ip] = [
+        timestamp
+        for timestamp in flag_rate_limit_store[client_ip]
+        if now - timestamp < FLAG_RATE_WINDOW
+    ]
+
+    # Check if under limit
+    if len(flag_rate_limit_store[client_ip]) >= settings.FLAG_RATE_LIMIT:
+        return False
+
+    # Add current request
+    flag_rate_limit_store[client_ip].append(now)
+    return True
+
 
 # Templates will be injected from main.py
 templates: Jinja2Templates | None = None
@@ -524,3 +563,325 @@ async def bulk_update_users_endpoint(
             "message": "Bulk update failed due to server error",
             "error": str(e),
         }
+
+
+# ============================================================================
+# Moderation Endpoints
+# ============================================================================
+
+
+@super_admin_router.get("/moderation/dashboard")
+async def get_moderation_dashboard(
+    current_user: User = Depends(get_current_super_admin),
+    session: AsyncSession = Depends(get_async_session),
+) -> dict[str, Any]:
+    """Get moderation dashboard statistics and overview."""
+    try:
+        moderation_manager = VoteModerationManager()
+        stats = await moderation_manager.get_moderation_dashboard_stats(session)
+
+        # Get recent pending flags
+        pending_flags = await moderation_manager.get_pending_flags(session, limit=10)
+
+        # Get recently flagged votes
+        flagged_votes = await moderation_manager.get_flagged_votes(session, limit=10)
+
+        return {
+            "stats": stats,
+            "pending_flags": pending_flags,
+            "flagged_votes": flagged_votes,
+        }
+
+    except Exception as e:
+        logger.error(f"Error fetching moderation dashboard: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to fetch moderation dashboard",
+        ) from e
+
+
+@super_admin_router.get("/moderation/flags")
+async def get_pending_flags(
+    current_user: User = Depends(get_current_super_admin),
+    session: AsyncSession = Depends(get_async_session),
+    limit: int = Query(
+        20, ge=1, le=100, description="Maximum number of flags to return"
+    ),
+    offset: int = Query(0, ge=0, description="Number of flags to skip"),
+) -> dict[str, Any]:
+    """Get list of pending moderation flags."""
+    try:
+        moderation_manager = VoteModerationManager()
+        flags = await moderation_manager.get_pending_flags(session, limit, offset)
+
+        # Get total count for pagination
+        total_result = await session.execute(
+            select(func.count(VoteModerationFlag.id)).where(
+                VoteModerationFlag.status == "pending"
+            )
+        )
+        total_count = total_result.scalar() or 0
+
+        return {
+            "flags": flags,
+            "total_count": total_count,
+            "limit": limit,
+            "offset": offset,
+            "has_more": (offset + limit) < total_count,
+        }
+
+    except Exception as e:
+        logger.error(f"Error fetching pending flags: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to fetch pending flags",
+        ) from e
+
+
+@super_admin_router.post("/moderation/flags/{flag_id}/review")
+async def review_flag(
+    flag_id: str,
+    review_data: VoteFlagReview,
+    current_user: User = Depends(get_current_super_admin),
+    session: AsyncSession = Depends(get_async_session),
+) -> dict[str, Any]:
+    """Review a moderation flag."""
+    try:
+        # Parse UUID
+        try:
+            flag_uuid = UUID(flag_id)
+        except ValueError:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid flag ID format"
+            ) from None
+
+        moderation_manager = VoteModerationManager()
+        result = await moderation_manager.review_vote_flag(
+            session,
+            flag_uuid,
+            current_user.id,
+            review_data.status,
+            review_data.review_notes,
+        )
+
+        if not result["success"]:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST, detail=result["message"]
+            )
+
+        return result
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error reviewing flag {flag_id}: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to review flag",
+        ) from e
+
+
+@super_admin_router.get("/moderation/votes")
+async def get_flagged_votes(
+    current_user: User = Depends(get_current_super_admin),
+    session: AsyncSession = Depends(get_async_session),
+    limit: int = Query(
+        20, ge=1, le=100, description="Maximum number of votes to return"
+    ),
+    offset: int = Query(0, ge=0, description="Number of votes to skip"),
+    flag_status: str | None = Query(None, description="Filter by flag status"),
+) -> dict[str, Any]:
+    """Get votes that have been flagged."""
+    try:
+        moderation_manager = VoteModerationManager()
+        votes = await moderation_manager.get_flagged_votes(
+            session, limit, offset, flag_status
+        )
+
+        return {
+            "votes": votes,
+            "limit": limit,
+            "offset": offset,
+        }
+
+    except Exception as e:
+        logger.error(f"Error fetching flagged votes: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to fetch flagged votes",
+        ) from e
+
+
+@super_admin_router.get("/moderation/votes/{vote_id}")
+async def get_vote_moderation_summary(
+    vote_id: str,
+    current_user: User = Depends(get_current_super_admin),
+    session: AsyncSession = Depends(get_async_session),
+) -> VoteModerationSummary:
+    """Get comprehensive moderation summary for a specific vote."""
+    try:
+        # Parse UUID
+        try:
+            vote_uuid = UUID(vote_id)
+        except ValueError:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid vote ID format"
+            ) from None
+
+        moderation_manager = VoteModerationManager()
+        summary = await moderation_manager.get_vote_moderation_summary(
+            session, vote_uuid
+        )
+
+        if not summary:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND, detail="Vote not found"
+            )
+
+        return VoteModerationSummary(**summary)
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error fetching vote moderation summary {vote_id}: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to fetch vote moderation summary",
+        ) from e
+
+
+@super_admin_router.post("/moderation/votes/{vote_id}/action")
+async def take_moderation_action(
+    vote_id: str,
+    action_data: VoteModerationActionCreate,
+    current_user: User = Depends(get_current_super_admin),
+    session: AsyncSession = Depends(get_async_session),
+) -> dict[str, Any]:
+    """Take a moderation action on a vote."""
+    try:
+        # Parse UUID
+        try:
+            vote_uuid = UUID(vote_id)
+        except ValueError:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid vote ID format"
+            ) from None
+
+        moderation_manager = VoteModerationManager()
+        result = await moderation_manager.take_moderation_action(
+            session,
+            vote_uuid,
+            current_user.id,
+            action_data.action_type,
+            action_data.reason,
+            action_data.additional_data,
+        )
+
+        if not result["success"]:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST, detail=result["message"]
+            )
+
+        return result
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error taking moderation action on vote {vote_id}: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to take moderation action",
+        ) from e
+
+
+@super_admin_router.post("/moderation/bulk-action")
+async def bulk_moderation_action(
+    action_data: BulkModerationActionCreate,
+    current_user: User = Depends(get_current_super_admin),
+    session: AsyncSession = Depends(get_async_session),
+) -> dict[str, Any]:
+    """Take bulk moderation actions on multiple votes."""
+    try:
+        # Convert string UUIDs to UUID objects
+        vote_uuids = []
+        for vote_id in action_data.vote_ids:
+            try:
+                vote_uuids.append(UUID(vote_id))
+            except ValueError:
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail=f"Invalid vote ID format: {vote_id}",
+                ) from None
+
+        moderation_manager = VoteModerationManager()
+        result = await moderation_manager.bulk_moderation_action(
+            session,
+            vote_uuids,
+            current_user.id,
+            action_data.action_type,
+            action_data.reason,
+        )
+
+        return result
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error in bulk moderation action: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to complete bulk moderation action",
+        ) from e
+
+
+# Public endpoint for users to flag votes (not super admin only)
+@super_admin_router.post("/flag-vote/{vote_id}")
+async def flag_vote(
+    vote_id: str,
+    flag_data: VoteFlagCreate,
+    request: Request,
+    session: AsyncSession = Depends(get_async_session),
+) -> dict[str, Any]:
+    """Flag a vote for moderation (public endpoint)."""
+    try:
+        # Rate limiting check for public flags
+        # This is a public endpoint so always apply rate limiting
+        client_ip = request.client.host if request.client else "unknown"
+        if not check_rate_limit(client_ip):
+            raise HTTPException(
+                status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+                detail="Rate limit exceeded. Maximum 5 flags per minute.",
+            )
+
+        # Parse UUID
+        try:
+            vote_uuid = UUID(vote_id)
+        except ValueError:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid vote ID format"
+            ) from None
+
+        moderation_manager = VoteModerationManager()
+        result = await moderation_manager.create_vote_flag(
+            session,
+            vote_uuid,
+            flag_data.flag_type,
+            flag_data.reason,
+            None,  # Anonymous public flag
+        )
+
+        if not result["success"]:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST, detail=result["message"]
+            )
+
+        return result
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error flagging vote {vote_id}: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to flag vote",
+        ) from e

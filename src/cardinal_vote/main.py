@@ -28,7 +28,7 @@ from .auth_routes import auth_router
 from .config import settings
 from .database import DatabaseError, DatabaseManager
 from .database_manager import GeneralizedDatabaseManager
-from .dependencies import AsyncDatabaseSession, get_async_session
+from .dependencies import AsyncDatabaseSession
 from .models import (
     LegacyVoteResponse,
     LogoListResponse,
@@ -308,7 +308,7 @@ async def results_page(request: Request) -> HTMLResponse:
 async def public_vote_page(
     request: Request,
     slug: str,
-    session: AsyncDatabaseSession = Depends(get_async_session),
+    session: AsyncDatabaseSession,
 ) -> HTMLResponse:
     """Serve the generalized public voting page."""
     try:
