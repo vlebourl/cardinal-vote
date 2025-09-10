@@ -80,8 +80,15 @@ class VoteModerationManager:
 
         except Exception as e:
             await session.rollback()
-            logger.error(f"Error creating vote flag: {e}")
-            return {"success": False, "message": "Failed to create flag"}
+            logger.error(
+                f"Error creating vote flag (vote_id={vote_id}, flag_type={flag_type}, flagger_id={flagger_id}): {e}",
+                exc_info=True,
+            )
+            return {
+                "success": False,
+                "message": "Failed to create flag",
+                "error": str(e),
+            }
 
     async def review_vote_flag(
         self,
@@ -128,8 +135,15 @@ class VoteModerationManager:
 
         except Exception as e:
             await session.rollback()
-            logger.error(f"Error reviewing vote flag: {e}")
-            return {"success": False, "message": "Failed to review flag"}
+            logger.error(
+                f"Error reviewing vote flag (flag_id={flag_id}, status={status}, reviewer_id={reviewer_id}): {e}",
+                exc_info=True,
+            )
+            return {
+                "success": False,
+                "message": "Failed to review flag",
+                "error": str(e),
+            }
 
     async def take_moderation_action(
         self,
@@ -221,8 +235,15 @@ class VoteModerationManager:
 
         except Exception as e:
             await session.rollback()
-            logger.error(f"Error taking moderation action: {e}")
-            return {"success": False, "message": "Failed to take moderation action"}
+            logger.error(
+                f"Error taking moderation action (vote_id={vote_id}, action={action}, moderator_id={moderator_id}): {e}",
+                exc_info=True,
+            )
+            return {
+                "success": False,
+                "message": "Failed to take moderation action",
+                "error": str(e),
+            }
 
     async def bulk_moderation_action(
         self,
@@ -275,13 +296,26 @@ class VoteModerationManager:
 
         except Exception as e:
             await session.rollback()
-            logger.error(f"Error in bulk moderation action: {e}")
-            return {"success": False, "message": "Failed to complete bulk action"}
+            logger.error(
+                f"Error in bulk moderation action (vote_count={len(vote_ids)}, action={action_type}, moderator_id={moderator_id}): {e}",
+                exc_info=True,
+            )
+            return {
+                "success": False,
+                "message": "Failed to complete bulk action",
+                "error": str(e),
+                "processed_count": 0,
+                "failed_count": len(vote_ids),
+            }
 
     async def get_pending_flags(
         self, session: AsyncSession, limit: int = 50, offset: int = 0
     ) -> list[dict[str, Any]]:
-        """Get pending moderation flags."""
+        """Get pending moderation flags with pagination."""
+        # Validate pagination parameters
+        limit = max(1, min(limit, 100))  # Between 1 and 100
+        offset = max(0, offset)  # Non-negative
+
         try:
             result = await session.execute(
                 select(VoteModerationFlag)
@@ -320,7 +354,11 @@ class VoteModerationManager:
             return flag_data
 
         except Exception as e:
-            logger.error(f"Error getting pending flags: {e}")
+            logger.error(
+                f"Error getting pending flags (limit={limit}, offset={offset}): {e}",
+                exc_info=True,
+            )
+            await session.rollback()
             return []
 
     async def get_vote_moderation_summary(
@@ -418,7 +456,11 @@ class VoteModerationManager:
             }
 
         except Exception as e:
-            logger.error(f"Error getting vote moderation summary: {e}")
+            logger.error(
+                f"Error getting vote moderation summary (vote_id={vote_id}): {e}",
+                exc_info=True,
+            )
+            await session.rollback()
             return None
 
     async def get_moderation_dashboard_stats(
@@ -482,13 +524,18 @@ class VoteModerationManager:
             }
 
         except Exception as e:
-            logger.error(f"Error getting moderation dashboard stats: {e}")
+            logger.error(
+                f"Error getting moderation dashboard stats: {e}",
+                exc_info=True,
+            )
+            await session.rollback()
             return {
                 "pending_flags": 0,
                 "recent_flags_by_type": {},
                 "recent_actions_by_type": {},
                 "moderated_votes_by_status": {},
                 "total_moderated_votes": 0,
+                "error": str(e),
             }
 
     async def get_flagged_votes(
@@ -498,7 +545,11 @@ class VoteModerationManager:
         offset: int = 0,
         flag_status: str | None = None,
     ) -> list[dict[str, Any]]:
-        """Get votes that have been flagged, with optional status filter."""
+        """Get votes that have been flagged, with optional status filter and pagination."""
+        # Validate pagination parameters
+        limit = max(1, min(limit, 100))  # Between 1 and 100
+        offset = max(0, offset)  # Non-negative
+
         try:
             # Build query for votes with flags
             query = (
@@ -587,5 +638,9 @@ class VoteModerationManager:
             return vote_data
 
         except Exception as e:
-            logger.error(f"Error getting flagged votes: {e}")
+            logger.error(
+                f"Error getting flagged votes (limit={limit}, offset={offset}, flag_status={flag_status}): {e}",
+                exc_info=True,
+            )
+            await session.rollback()
             return []
