@@ -1,15 +1,20 @@
 #!/bin/bash
 set -euo pipefail
 
-# Cardinal Vote Logo Voting Platform - Docker Entrypoint
-# Production-ready startup script with health checks and proper error handling
+# Cardinal Vote Generalized Voting Platform - Docker Entrypoint
+# Production-ready startup script with PostgreSQL support and health checks
 
 # Default values
-DATABASE_PATH="${DATABASE_PATH:-/app/data/votes.db}"
+DATABASE_URL="${DATABASE_URL:-}"
 HOST="${HOST:-0.0.0.0}"
 PORT="${PORT:-8000}"
 DEBUG="${DEBUG:-false}"
 CARDINAL_ENV="${CARDINAL_ENV:-production}"
+
+# Required security environment variables
+SUPER_ADMIN_EMAIL="${SUPER_ADMIN_EMAIL:-}"
+SUPER_ADMIN_PASSWORD="${SUPER_ADMIN_PASSWORD:-}"
+JWT_SECRET_KEY="${JWT_SECRET_KEY:-}"
 
 # Logging function
 log() {
@@ -62,6 +67,27 @@ validate_environment() {
     fi
     log "✓ Found $logo_count logo files"
 
+    # Validate PostgreSQL DATABASE_URL
+    if [[ -z "$DATABASE_URL" ]]; then
+        error_exit "DATABASE_URL environment variable is required for PostgreSQL connection"
+    fi
+    if [[ ! "$DATABASE_URL" =~ postgresql ]]; then
+        error_exit "DATABASE_URL must be a PostgreSQL connection string (contains 'postgresql')"
+    fi
+    log "✓ PostgreSQL DATABASE_URL validated"
+
+    # Validate required security settings
+    if [[ -z "$SUPER_ADMIN_EMAIL" ]]; then
+        error_exit "SUPER_ADMIN_EMAIL environment variable is required"
+    fi
+    if [[ -z "$SUPER_ADMIN_PASSWORD" ]]; then
+        error_exit "SUPER_ADMIN_PASSWORD environment variable is required"
+    fi
+    if [[ -z "$JWT_SECRET_KEY" ]]; then
+        error_exit "JWT_SECRET_KEY environment variable is required"
+    fi
+    log "✓ Security configuration validated"
+
     # Validate port
     if ! [[ "$PORT" =~ ^[0-9]+$ ]] || [[ $PORT -lt 1024 ]] || [[ $PORT -gt 65535 ]]; then
         error_exit "Invalid port: $PORT (must be between 1024-65535)"
@@ -75,14 +101,12 @@ validate_environment() {
     log "✓ Host validated: $HOST"
 }
 
-# Setup data directory and database
-setup_data_directory() {
-    log "Setting up data directory..."
+# Setup application directories
+setup_application_directories() {
+    log "Setting up application directories..."
 
-    local data_dir
-    data_dir=$(dirname "$DATABASE_PATH")
-
-    # Create data directory if it doesn't exist
+    # Create data directory for any temporary files or uploads
+    local data_dir="/app/data"
     if [[ ! -d "$data_dir" ]]; then
         mkdir -p "$data_dir" || error_exit "Failed to create data directory: $data_dir"
         log "✓ Created data directory: $data_dir"
@@ -92,18 +116,10 @@ setup_data_directory() {
     if [[ ! -w "$data_dir" ]]; then
         error_exit "Data directory not writable: $data_dir"
     fi
-    log "✓ Data directory writable: $data_dir"
+    log "✓ Data directory ready: $data_dir"
 
-    # Initialize database if it doesn't exist
-    if [[ ! -f "$DATABASE_PATH" ]]; then
-        log "Initializing new database: $DATABASE_PATH"
-        # The database will be created automatically when the app starts
-        # We just need to ensure the directory exists and is writable
-        touch "$DATABASE_PATH" || error_exit "Failed to create database file: $DATABASE_PATH"
-        log "✓ Database file created: $DATABASE_PATH"
-    else
-        log "✓ Using existing database: $DATABASE_PATH"
-    fi
+    # PostgreSQL database connection will be handled by the application
+    log "✓ PostgreSQL database connection configured via DATABASE_URL"
 }
 
 # Setup logs directory
@@ -159,7 +175,8 @@ health_check() {
     log "Waiting for application to start..."
 
     while [[ $attempt -lt $max_attempts ]]; do
-        if curl -f -s "http://localhost:$PORT/api/health" >/dev/null 2>&1; then
+        # Use the root endpoint for health check (always available)
+        if curl -f -s "http://localhost:$PORT/" >/dev/null 2>&1; then
             log "✓ Application health check passed"
             return 0
         fi
@@ -174,12 +191,12 @@ health_check() {
 
 # Start application
 start_application() {
-    log "Starting Cardinal Vote Logo Voting Platform..."
+    log "Starting Cardinal Vote Generalized Voting Platform..."
     log "Environment: $CARDINAL_ENV"
     log "Host: $HOST"
     log "Port: $PORT"
     log "Debug: $DEBUG"
-    log "Database: $DATABASE_PATH"
+    log "Database: PostgreSQL (via DATABASE_URL)"
 
     # Build uvicorn command
     local uvicorn_args=(
@@ -199,7 +216,7 @@ start_application() {
 
     # Production-specific optimizations
     if [[ "$CARDINAL_ENV" == "production" ]]; then
-        uvicorn_args+=("--workers" "1")  # Single worker for SQLite
+        uvicorn_args+=("--workers" "1")  # Single worker for containerized deployment
         log "Production mode enabled"
     fi
 
@@ -223,12 +240,12 @@ start_application() {
 
 # Main execution
 main() {
-    log "Starting Cardinal Vote Logo Voting Platform container"
-    log "Entrypoint version: 1.0.0"
+    log "Starting Cardinal Vote Generalized Voting Platform container"
+    log "Entrypoint version: 2.0.0 (PostgreSQL-only)"
 
     # Run all setup steps
     validate_environment
-    setup_data_directory
+    setup_application_directories
     setup_logs_directory
     preflight_checks
 
