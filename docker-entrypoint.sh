@@ -10,6 +10,7 @@ HOST="${HOST:-0.0.0.0}"
 PORT="${PORT:-8000}"
 DEBUG="${DEBUG:-false}"
 CARDINAL_ENV="${CARDINAL_ENV:-production}"
+WORKERS="${WORKERS:-1}"
 
 # Required security environment variables
 SUPER_ADMIN_EMAIL="${SUPER_ADMIN_EMAIL:-}"
@@ -44,8 +45,8 @@ trap shutdown_handler SIGTERM SIGINT
 validate_environment() {
     log "Validating environment..."
 
-    # Check required directories
-    local required_dirs=("/app/logos" "/app/templates" "/app/static")
+    # Check required directories (templates and static are essential for web interface)
+    local required_dirs=("/app/templates" "/app/static")
     for dir in "${required_dirs[@]}"; do
         if [[ ! -d "$dir" ]]; then
             error_exit "Required directory not found: $dir"
@@ -59,20 +60,24 @@ validate_environment() {
         log "✓ Directory verified: $dir"
     done
 
-    # Check logo files
-    local logo_count
-    logo_count=$(find /app/logos -name "cardinal_vote*.png" 2>/dev/null | wc -l)
-    if [[ $logo_count -eq 0 ]]; then
-        error_exit "No logo files found in /app/logos"
-    fi
-    log "✓ Found $logo_count logo files"
+    # Optional directories (created if needed, not required for startup)
+    local optional_dirs=("/app/logos")
+    for dir in "${optional_dirs[@]}"; do
+        if [[ -d "$dir" ]]; then
+            log "✓ Optional directory available: $dir"
+        else
+            log "ℹ Optional directory not found: $dir (will be created if needed)"
+        fi
+    done
+
+    log "✓ Generalized voting platform directory validation complete"
 
     # Validate PostgreSQL DATABASE_URL
     if [[ -z "$DATABASE_URL" ]]; then
-        error_exit "DATABASE_URL environment variable is required for PostgreSQL connection"
+        error_exit "DATABASE_URL environment variable is required for PostgreSQL connection. Example: postgresql+asyncpg://user:pass@host:5432/db"
     fi
     if [[ ! "$DATABASE_URL" =~ postgresql ]]; then
-        error_exit "DATABASE_URL must be a PostgreSQL connection string (contains 'postgresql')"
+        error_exit "DATABASE_URL must be a PostgreSQL connection string. Examples: postgresql://user:pass@host:5432/db or postgresql+asyncpg://user:pass@host:5432/db"
     fi
     log "✓ PostgreSQL DATABASE_URL validated"
 
@@ -216,8 +221,8 @@ start_application() {
 
     # Production-specific optimizations
     if [[ "$CARDINAL_ENV" == "production" ]]; then
-        uvicorn_args+=("--workers" "1")  # Single worker for containerized deployment
-        log "Production mode enabled"
+        uvicorn_args+=("--workers" "$WORKERS")
+        log "Production mode enabled with $WORKERS worker(s)"
     fi
 
     # Start the application in background for health checking
