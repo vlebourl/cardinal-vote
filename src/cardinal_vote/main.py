@@ -6,10 +6,9 @@ import random
 from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
 from datetime import datetime
-from typing import Any
 
 import uvicorn
-from fastapi import Depends, FastAPI, HTTPException, Request, status
+from fastapi import FastAPI, HTTPException, Request, status
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse, JSONResponse
@@ -17,26 +16,18 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from sqlalchemy import select
 
-from .admin_auth import AdminAuthManager
-from .admin_manager import AdminManager
-from .admin_middleware import AdminSecurityMiddleware
-from .admin_routes_simple import admin_router, setup_admin_router
-
 # Generalized platform imports
 from .auth_manager import GeneralizedAuthManager
 from .auth_routes import auth_router
 from .config import settings
-from .database import DatabaseError, DatabaseManager
+from .database import DatabaseError
 from .database_manager import GeneralizedDatabaseManager
 from .dependencies import AsyncDatabaseSession
 from .models import (
-    LegacyVoteResponse,
     LogoListResponse,
     ValidationError,
     Vote,
     VoteOption,
-    VoteResults,
-    VoteSubmission,
 )
 from .super_admin_routes import setup_super_admin_templates, super_admin_router
 from .vote_routes import vote_router
@@ -45,12 +36,7 @@ from .vote_routes import vote_router
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-# Global managers (legacy platform)
-db_manager: DatabaseManager | None = None
-admin_auth_manager: AdminAuthManager | None = None
-admin_manager: AdminManager | None = None
-
-# Global managers (generalized platform)
+# Global managers (generalized platform only - legacy support removed)
 generalized_db_manager: GeneralizedDatabaseManager | None = None
 generalized_auth_manager: GeneralizedAuthManager | None = None
 
@@ -58,77 +44,36 @@ generalized_auth_manager: GeneralizedAuthManager | None = None
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     """Application lifespan manager."""
-    global db_manager, admin_auth_manager, admin_manager
     global generalized_db_manager, generalized_auth_manager
 
     # Startup
     logger.info(f"Starting {settings.APP_NAME} v{settings.APP_VERSION}")
 
     try:
-        # Check if we're using the generalized platform (PostgreSQL) or legacy platform (SQLite)
-        import os
+        # Validate PostgreSQL configuration
+        if "postgresql" not in settings.DATABASE_URL:
+            raise RuntimeError(
+                "Invalid DATABASE_URL: PostgreSQL required for generalized platform. "
+                "Please set DATABASE_URL environment variable with PostgreSQL connection string."
+            )
 
-        database_url = os.getenv("DATABASE_URL")
-        use_generalized_platform = database_url and "postgresql" in database_url
+        logger.info("Starting in generalized platform mode (PostgreSQL)")
 
-        if use_generalized_platform:
-            logger.info("Starting in generalized platform mode (PostgreSQL)")
+        # Initialize generalized platform managers
+        generalized_db_manager = GeneralizedDatabaseManager()
+        generalized_auth_manager = GeneralizedAuthManager()
 
-            # Initialize generalized platform managers only
-            generalized_db_manager = GeneralizedDatabaseManager()
-            generalized_auth_manager = GeneralizedAuthManager()
+        # Set global instances for dependencies
+        import cardinal_vote.dependencies as deps
 
-            # Set global instances for dependencies
-            import cardinal_vote.dependencies as deps
+        deps.generalized_db_manager = generalized_db_manager
+        deps.generalized_auth_manager = generalized_auth_manager
 
-            deps.generalized_db_manager = generalized_db_manager
-            deps.generalized_auth_manager = generalized_auth_manager
+        # Setup super admin templates and include router
+        setup_super_admin_templates(templates)
+        app.include_router(super_admin_router)
 
-            # Setup super admin templates and include router
-            setup_super_admin_templates(templates)
-            app.include_router(super_admin_router)  # Super admin router
-
-            logger.info("Generalized platform initialized successfully")
-
-            # Skip legacy system initialization
-            db_manager = None
-            admin_auth_manager = None
-            admin_manager = None
-
-        else:
-            logger.info("Starting in legacy platform mode (SQLite)")
-
-            # Validate directories
-            settings.validate_directories()
-
-            # Initialize legacy database
-            db_manager = DatabaseManager(settings.DATABASE_PATH)
-
-            # Initialize admin managers
-            admin_auth_manager = AdminAuthManager(db_manager)
-            admin_manager = AdminManager(db_manager)
-
-            # Setup admin router with dependencies
-            setup_admin_router(templates, admin_auth_manager, admin_manager)
-
-            # Include admin router only in legacy mode
-            app.include_router(admin_router)  # Legacy admin router
-
-            # Initialize generalized platform managers
-            generalized_db_manager = GeneralizedDatabaseManager()
-            generalized_auth_manager = GeneralizedAuthManager()
-
-            # Set global instances for dependencies
-            import cardinal_vote.dependencies as deps
-
-            deps.generalized_db_manager = generalized_db_manager
-            deps.generalized_auth_manager = generalized_auth_manager
-
-            # Setup super admin templates and include router
-            setup_super_admin_templates(templates)
-            app.include_router(super_admin_router)  # Super admin router
-
-            logger.info("Both legacy and generalized platforms initialized")
+        logger.info("Generalized platform initialized successfully")
 
         # Verify logo files exist
         logo_files = settings.get_logo_files()
@@ -152,14 +97,7 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     logger.info("Application shutting down")
 
 
-def get_db_manager() -> DatabaseManager:
-    """Dependency to get database manager."""
-    if db_manager is None:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Database manager not initialized",
-        )
-    return db_manager
+# Legacy database manager dependency removed - use generalized platform APIs instead
 
 
 # Create FastAPI application
@@ -180,14 +118,7 @@ app.add_middleware(
 )
 
 
-# Add admin security middleware (will be initialized in lifespan)
-def get_admin_middleware() -> AdminSecurityMiddleware:
-    """Get admin middleware after initialization."""
-    assert admin_auth_manager is not None
-    return AdminSecurityMiddleware(app, admin_auth_manager)
-
-
-# We'll add the middleware after initialization
+# Legacy admin middleware removed - generalized platform uses JWT auth instead
 
 # Mount static files
 app.mount("/logos", StaticFiles(directory=settings.LOGOS_DIR), name="logos")
@@ -415,121 +346,8 @@ async def get_logos_api() -> LogoListResponse:
         ) from e
 
 
-@app.post("/api/vote", response_model=LegacyVoteResponse, tags=["API"])
-async def submit_vote(
-    vote: VoteSubmission, db: DatabaseManager = Depends(get_db_manager)
-) -> LegacyVoteResponse:
-    """Submit a complete vote with voter name and ratings."""
-    try:
-        # Additional validation
-        logo_files = settings.get_logo_files()
-
-        # Check if all expected logos are rated
-        missing_logos = set(logo_files) - set(vote.ratings.keys())
-        if missing_logos:
-            raise ValidationError(
-                f"Évaluations manquantes pour: {', '.join(sorted(missing_logos))}"
-            )
-
-        # Check for unexpected logos
-        unexpected_logos = set(vote.ratings.keys()) - set(logo_files)
-        if unexpected_logos:
-            raise ValidationError(
-                f"Logos inattendus: {', '.join(sorted(unexpected_logos))}"
-            )
-
-        # Save vote to database
-        vote_id = db.save_vote(
-            vote.voter_first_name, vote.voter_last_name, vote.ratings
-        )
-
-        full_name = f"{vote.voter_first_name} {vote.voter_last_name}"
-        logger.info(f"Vote submitted successfully by '{full_name}' with ID {vote_id}")
-
-        return LegacyVoteResponse(
-            success=True, message="Vote enregistré avec succès!", vote_id=vote_id
-        )
-
-    except ValidationError as e:
-        raise e
-    except DatabaseError as e:
-        raise e
-    except Exception as e:
-        logger.error(f"Unexpected error during vote submission: {e}")
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Erreur lors de l'enregistrement du vote",
-        ) from e
-
-
-@app.get("/api/results", response_model=VoteResults, tags=["API"])
-async def get_results(
-    include_votes: bool = False, db: DatabaseManager = Depends(get_db_manager)
-) -> VoteResults:
-    """Get aggregated voting results."""
-    try:
-        results_data = db.calculate_results()
-
-        # Create response model
-        response = VoteResults(
-            summary=results_data["summary"],
-            total_voters=results_data["total_voters"],
-            votes=None,
-        )
-
-        # Include individual votes if requested (admin feature)
-        if include_votes:
-            response.votes = results_data.get("votes", [])
-
-        logger.info(f"Results retrieved for {results_data['total_voters']} voters")
-        return response
-
-    except DatabaseError as e:
-        raise e
-    except Exception as e:
-        logger.error(f"Failed to get results: {e}")
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Impossible de récupérer les résultats",
-        ) from e
-
-
-@app.get("/api/health", tags=["System"])
-async def health_check(db: DatabaseManager = Depends(get_db_manager)) -> dict[str, Any]:
-    """Health check endpoint."""
-    try:
-        db_healthy = db.health_check()
-        logo_count = len(settings.get_logo_files())
-
-        return {
-            "status": "healthy" if db_healthy else "unhealthy",
-            "database": "connected" if db_healthy else "disconnected",
-            "logos_available": logo_count,
-            "version": settings.APP_VERSION,
-        }
-    except Exception as e:
-        logger.error(f"Health check failed: {e}")
-        return {"status": "unhealthy", "error": str(e), "version": settings.APP_VERSION}
-
-
-@app.get("/api/stats", tags=["API"])
-async def get_stats(db: DatabaseManager = Depends(get_db_manager)) -> dict[str, Any]:
-    """Get basic voting statistics."""
-    try:
-        vote_count = db.get_vote_count()
-        logo_count = len(settings.get_logo_files())
-
-        return {
-            "total_votes": vote_count,
-            "total_logos": logo_count,
-            "voting_scale": {"min": settings.MIN_RATING, "max": settings.MAX_RATING},
-        }
-    except Exception as e:
-        logger.error(f"Failed to get stats: {e}")
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Impossible de récupérer les statistiques",
-        ) from e
+# Legacy API endpoints removed - these were broken due to removed DatabaseManager dependency
+# Use generalized platform API endpoints instead (available through auth_router and vote_router)
 
 
 def main() -> None:
