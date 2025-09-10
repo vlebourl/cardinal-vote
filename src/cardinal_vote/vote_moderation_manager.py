@@ -24,10 +24,10 @@ class VoteModerationManager:
     async def create_vote_flag(
         self,
         session: AsyncSession,
-        vote_id: Any,
+        vote_id: Any,  # SQLAlchemy UUID type compatibility
         flag_type: str,
         reason: str,
-        flagger_id: Any | None = None,
+        flagger_id: Any | None = None,  # SQLAlchemy UUID type compatibility
     ) -> dict[str, Any]:
         """Create a new moderation flag for a vote."""
         try:
@@ -86,8 +86,8 @@ class VoteModerationManager:
     async def review_vote_flag(
         self,
         session: AsyncSession,
-        flag_id: Any,
-        reviewer_id: Any,
+        flag_id: Any,  # SQLAlchemy UUID type compatibility
+        reviewer_id: Any,  # SQLAlchemy UUID type compatibility
         status: str,
         review_notes: str,
     ) -> dict[str, Any]:
@@ -134,8 +134,8 @@ class VoteModerationManager:
     async def take_moderation_action(
         self,
         session: AsyncSession,
-        vote_id: Any,
-        moderator_id: Any,
+        vote_id: Any,  # SQLAlchemy UUID type compatibility
+        moderator_id: Any,  # SQLAlchemy UUID type compatibility
         action_type: str,
         reason: str,
         additional_data: dict[str, Any] | None = None,
@@ -227,8 +227,8 @@ class VoteModerationManager:
     async def bulk_moderation_action(
         self,
         session: AsyncSession,
-        vote_ids: list[Any],
-        moderator_id: Any,
+        vote_ids: list[Any],  # SQLAlchemy UUID type compatibility
+        moderator_id: Any,  # SQLAlchemy UUID type compatibility
         action_type: str,
         reason: str,
     ) -> dict[str, Any]:
@@ -324,7 +324,9 @@ class VoteModerationManager:
             return []
 
     async def get_vote_moderation_summary(
-        self, session: AsyncSession, vote_id: Any
+        self,
+        session: AsyncSession,
+        vote_id: Any,  # SQLAlchemy UUID type compatibility
     ) -> dict[str, Any] | None:
         """Get comprehensive moderation summary for a vote."""
         try:

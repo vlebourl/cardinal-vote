@@ -1,6 +1,8 @@
 """Super admin routes for the generalized voting platform."""
 
 import logging
+from collections import defaultdict
+from datetime import datetime, timedelta
 from enum import Enum
 from typing import Any
 from uuid import UUID
@@ -40,8 +42,35 @@ from .vote_moderation_manager import VoteModerationManager
 
 logger = logging.getLogger(__name__)
 
+# Simple in-memory rate limiting for flag endpoint
+# In production, use Redis or similar distributed cache
+flag_rate_limit_store: dict[str, list[datetime]] = defaultdict(list)
+FLAG_RATE_LIMIT = 5  # Max 5 flags per minute per IP
+FLAG_RATE_WINDOW = timedelta(minutes=1)
+
 # Router for super admin endpoints
 super_admin_router = APIRouter(prefix="/api/admin", tags=["Super Admin"])
+
+
+def check_rate_limit(client_ip: str) -> bool:
+    """Check if client IP is within rate limit for flagging."""
+    now = datetime.utcnow()
+
+    # Clean old entries
+    flag_rate_limit_store[client_ip] = [
+        timestamp
+        for timestamp in flag_rate_limit_store[client_ip]
+        if now - timestamp < FLAG_RATE_WINDOW
+    ]
+
+    # Check if under limit
+    if len(flag_rate_limit_store[client_ip]) >= FLAG_RATE_LIMIT:
+        return False
+
+    # Add current request
+    flag_rate_limit_store[client_ip].append(now)
+    return True
+
 
 # Templates will be injected from main.py
 templates: Jinja2Templates | None = None
@@ -810,11 +839,20 @@ async def bulk_moderation_action(
 async def flag_vote(
     vote_id: str,
     flag_data: VoteFlagCreate,
+    request: Request,
     session: AsyncSession = Depends(get_async_session),
-    current_user: User | None = None,  # Optional authentication
 ) -> dict[str, Any]:
     """Flag a vote for moderation (public endpoint)."""
     try:
+        # Rate limiting check for public flags
+        # This is a public endpoint so always apply rate limiting
+        client_ip = request.client.host if request.client else "unknown"
+        if not check_rate_limit(client_ip):
+            raise HTTPException(
+                status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+                detail="Rate limit exceeded. Maximum 5 flags per minute.",
+            )
+
         # Parse UUID
         try:
             vote_uuid = UUID(vote_id)
@@ -829,7 +867,7 @@ async def flag_vote(
             vote_uuid,
             flag_data.flag_type,
             flag_data.reason,
-            current_user.id if current_user else None,
+            None,  # Anonymous public flag
         )
 
         if not result["success"]:

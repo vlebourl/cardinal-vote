@@ -193,9 +193,11 @@ uv run python src/cardinal_vote/main.py
 uv run pytest
 
 # Code quality checks
-uv run ruff check src/ tests/      # Linting
-uv run ruff format src/ tests/     # Formatting
+uv run ruff check src/ tests/      # Python linting
+uv run ruff format src/ tests/     # Python formatting
 uv run mypy src/                   # Type checking
+npm run lint                       # JavaScript linting
+npm run format:check               # JavaScript formatting check
 ```
 
 ### Docker Development
