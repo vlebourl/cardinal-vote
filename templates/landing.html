@@ -6,10 +6,21 @@
     <title>{{ app_name }} - Modern Voting Platform</title>
     <meta name="description" content="Professional voting platform for organizations. Create sophisticated votes with value-based ratings and custom content types. Trusted by teams worldwide.">
     <meta name="theme-color" content="#2D5820">
+    <!-- Preload critical assets -->
+    <link rel="preload" href="/static/style.css" as="style">
+    <link rel="preload" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" as="style">
+    
+    <!-- Critical CSS -->
     <link rel="stylesheet" href="/static/style.css">
+    
+    <!-- Font optimization -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Lazy load fonts with critical subset first -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+    <noscript><link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;700&display=swap" rel="stylesheet"></noscript>
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🗳️</text></svg>">
 </head>
 <body class="modern-landing">
@@ -314,6 +325,6 @@
         <button class="toast-close" onclick="hideToast('errorToast')" aria-label="Close error">×</button>
     </div>
 
-    <script src="/static/landing.js"></script>
+    <script src="/static/landing.js" defer></script>
 </body>
 </html>

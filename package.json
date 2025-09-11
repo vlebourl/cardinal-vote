@@ -4,31 +4,52 @@
   "description": "Generalized voting platform with multi-tenant support",
   "main": "index.js",
   "scripts": {
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage",
     "lint": "eslint static/**/*.js",
     "lint:fix": "eslint static/**/*.js --fix",
     "format": "prettier --write static/**/*.{js,css}",
     "format:check": "prettier --check static/**/*.{js,css}",
-    "validate": "npm run lint && npm run format:check",
+    "validate": "npm run lint && npm run format:check && npm run test",
     "validate:fix": "npm run lint:fix && npm run format"
   },
   "keywords": [
     "voting",
     "democracy",
     "fastapi",
-    "multi-tenant"
+    "multi-tenant",
+    "javascript",
+    "accessibility"
   ],
   "author": "Cardinal Vote Team",
   "license": "MIT",
   "devDependencies": {
+    "@testing-library/dom": "^9.3.4",
+    "@testing-library/jest-dom": "^6.1.5",
+    "@testing-library/user-event": "^14.5.1",
     "eslint": "^8.57.0",
     "eslint-config-standard": "^17.1.0",
     "eslint-plugin-import": "^2.29.1",
     "eslint-plugin-n": "^16.6.2",
     "eslint-plugin-promise": "^6.1.1",
+    "jest": "^29.7.0",
+    "jest-environment-jsdom": "^29.7.0",
     "prettier": "^3.2.5"
   },
   "engines": {
     "node": ">=16.0.0",
     "npm": ">=8.0.0"
+  },
+  "jest": {
+    "testEnvironment": "jsdom",
+    "setupFilesAfterEnv": ["<rootDir>/tests/setup.js"],
+    "testMatch": ["<rootDir>/tests/**/*.test.js"],
+    "collectCoverageFrom": [
+      "static/**/*.js",
+      "!static/**/*.min.js"
+    ],
+    "coverageDirectory": "coverage",
+    "coverageReporters": ["text", "lcov", "html"]
   }
 }
