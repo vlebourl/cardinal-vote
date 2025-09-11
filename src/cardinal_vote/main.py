@@ -2,10 +2,9 @@
 
 import json
 import logging
-from collections.abc import AsyncGenerator, Callable
+from collections.abc import AsyncGenerator, Awaitable, Callable
 from contextlib import asynccontextmanager
 from datetime import datetime
-from typing import Awaitable
 
 import uvicorn
 from fastapi import FastAPI, HTTPException, Request, Response, status
@@ -93,7 +92,9 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
 class SecurityHeadersMiddleware(BaseHTTPMiddleware):
     """Middleware to add security headers to all responses."""
 
-    async def dispatch(self, request: Request, call_next: Callable[[Request], Awaitable[Response]]) -> Response:
+    async def dispatch(
+        self, request: Request, call_next: Callable[[Request], Awaitable[Response]]
+    ) -> Response:
         """Add security headers to response."""
         response = await call_next(request)
 
