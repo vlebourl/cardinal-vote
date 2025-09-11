@@ -60,18 +60,15 @@ validate_environment() {
         log "✓ Directory verified: $dir"
     done
 
-    # Create uploads directory for vote content (images, files, etc.)
+    # Validate uploads directory exists (created by Dockerfile)
     local uploads_dir="/app/uploads"
     if [[ ! -d "$uploads_dir" ]]; then
-        mkdir -p "$uploads_dir" || error_exit "Failed to create uploads directory: $uploads_dir"
-        log "✓ Created uploads directory: $uploads_dir"
+        error_exit "Uploads directory missing: $uploads_dir (should be created by Dockerfile)"
     fi
-
-    # Ensure proper permissions for uploads
     if [[ ! -w "$uploads_dir" ]]; then
         error_exit "Uploads directory not writable: $uploads_dir"
     fi
-    log "✓ Uploads directory ready: $uploads_dir"
+    log "✓ Uploads directory validated: $uploads_dir"
 
     log "✓ Generalized voting platform directory validation complete"
 
@@ -79,8 +76,8 @@ validate_environment() {
     if [[ -z "$DATABASE_URL" ]]; then
         error_exit "DATABASE_URL environment variable is required for PostgreSQL connection. Example: postgresql+asyncpg://user:pass@host:5432/db"
     fi
-    if [[ ! "$DATABASE_URL" =~ postgresql ]]; then
-        error_exit "DATABASE_URL must be a PostgreSQL connection string. Examples: postgresql://user:pass@host:5432/db or postgresql+asyncpg://user:pass@host:5432/db"
+    if [[ ! "$DATABASE_URL" =~ ^postgresql(\+asyncpg)?:// ]]; then
+        error_exit "DATABASE_URL must start with 'postgresql://' or 'postgresql+asyncpg://'. Examples: postgresql://user:pass@host:5432/db or postgresql+asyncpg://user:pass@host:5432/db"
     fi
     log "✓ PostgreSQL DATABASE_URL validated"
 
@@ -91,14 +88,14 @@ validate_environment() {
     if [[ -z "$SUPER_ADMIN_PASSWORD" ]]; then
         error_exit "SUPER_ADMIN_PASSWORD environment variable is required"
     fi
-    if [[ -z "$JWT_SECRET_KEY" ]]; then
-        error_exit "JWT_SECRET_KEY environment variable is required"
+    if [[ -z "$JWT_SECRET_KEY" ]] || [[ ${#JWT_SECRET_KEY} -lt 32 ]]; then
+        error_exit "JWT_SECRET_KEY must be at least 32 characters long for security"
     fi
     log "✓ Security configuration validated"
 
     # Validate port
-    if ! [[ "$PORT" =~ ^[0-9]+$ ]] || [[ $PORT -lt 1024 ]] || [[ $PORT -gt 65535 ]]; then
-        error_exit "Invalid port: $PORT (must be between 1024-65535)"
+    if ! [[ "$PORT" =~ ^[0-9]+$ ]] || [[ $PORT -lt 1 ]] || [[ $PORT -gt 65535 ]]; then
+        error_exit "Invalid port: $PORT (must be between 1-65535)"
     fi
     log "✓ Port validated: $PORT"
 
@@ -107,6 +104,12 @@ validate_environment() {
         error_exit "HOST environment variable is required"
     fi
     log "✓ Host validated: $HOST"
+
+    # Validate WORKERS
+    if ! [[ "$WORKERS" =~ ^[0-9]+$ ]] || [[ $WORKERS -lt 1 ]] || [[ $WORKERS -gt 32 ]]; then
+        error_exit "Invalid WORKERS value: $WORKERS (must be between 1-32)"
+    fi
+    log "✓ Workers validated: $WORKERS"
 }
 
 # Setup application directories

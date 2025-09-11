@@ -23,6 +23,12 @@ class Settings:
         "postgresql+asyncpg://voting_user:voting_password_change_in_production@localhost:5432/voting_platform",
     )
 
+    # Database connection pool settings for production scaling
+    DB_POOL_SIZE: int = int(os.getenv("DB_POOL_SIZE", "5"))
+    DB_MAX_OVERFLOW: int = int(os.getenv("DB_MAX_OVERFLOW", "10"))
+    DB_POOL_TIMEOUT: int = int(os.getenv("DB_POOL_TIMEOUT", "30"))
+    DB_POOL_RECYCLE: int = int(os.getenv("DB_POOL_RECYCLE", "3600"))
+
     # File paths
     BASE_DIR: Path = Path(__file__).resolve().parent.parent.parent
     UPLOADS_DIR: Path = BASE_DIR / "uploads"

@@ -14,8 +14,8 @@ from cardinal_vote.main import app
 from cardinal_vote.models import Base, User, Vote, VoterResponse
 from cardinal_vote.super_admin_manager import SuperAdminManager
 
-# Test database setup
-TEST_DATABASE_URL = "postgresql+asyncpg://test:test@localhost:5432/test"
+# Test database setup - Use SQLite for CI compatibility
+TEST_DATABASE_URL = "sqlite+aiosqlite:///test_admin.db"
 
 
 @pytest.fixture
