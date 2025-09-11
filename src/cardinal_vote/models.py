@@ -1,4 +1,4 @@
-"""Database models for the ToVéCo voting platform."""
+"""Database models for the Cardinal Vote generalized voting platform."""
 
 from datetime import datetime
 from typing import Any
@@ -22,8 +22,6 @@ from sqlalchemy.ext.declarative import DeclarativeMeta, declarative_base
 from sqlalchemy.orm import Mapped, relationship
 from sqlalchemy.sql import func
 
-from .config import settings
-
 Base: DeclarativeMeta = declarative_base()
 
 
@@ -37,7 +35,7 @@ class VoteRecord(Base):
     voter_last_name = Column(String(50), nullable=False)
     voter_name = Column(String(100), nullable=True)  # Keep for backward compatibility
     timestamp = Column(DateTime, nullable=False, default=datetime.utcnow)
-    ratings = Column(Text, nullable=False)  # JSON string of logo ratings
+    ratings = Column(Text, nullable=False)  # JSON string of option ratings
 
     def __repr__(self) -> str:
         full_name = f"{self.voter_first_name} {self.voter_last_name}"
@@ -286,7 +284,7 @@ class VoteSubmission(BaseModel):
     voter_last_name: str = Field(
         ..., min_length=1, max_length=50, description="Last name of the voter"
     )
-    ratings: dict[str, int] = Field(..., description="Logo ratings dictionary")
+    ratings: dict[str, int] = Field(..., description="Option ratings dictionary")
 
     @validator("voter_first_name")
     def validate_voter_first_name(cls, v: str) -> str:
@@ -311,15 +309,11 @@ class VoteSubmission(BaseModel):
             raise ValueError("Ratings cannot be empty")
 
         # Validate rating values are in allowed range
-        for logo, rating in v.items():
+        for item, rating in v.items():
             if not isinstance(rating, int) or rating < -2 or rating > 2:
                 raise ValueError(
-                    f"Invalid rating {rating} for {logo}. Must be integer between -2 and 2"
+                    f"Invalid rating {rating} for {item}. Must be integer between -2 and 2"
                 )
-
-            # Validate logo filename format
-            if not logo.startswith(settings.LOGO_PREFIX) or not logo.endswith(".png"):
-                raise ValueError(f"Invalid logo filename: {logo}")
 
         return v
 
@@ -332,19 +326,12 @@ class LegacyVoteResponse(BaseModel):
     vote_id: int | None = None
 
 
-class LogoListResponse(BaseModel):
-    """Pydantic model for logo list response."""
-
-    logos: list[str]
-    total_count: int
-
-
 class VoteResultSummary(BaseModel):
-    """Pydantic model for individual logo vote summary."""
+    """Pydantic model for individual vote option summary."""
 
-    average: float = Field(..., description="Average rating for this logo")
-    total_votes: int = Field(..., description="Number of votes for this logo")
-    total_score: int = Field(..., description="Sum of all ratings for this logo")
+    average: float = Field(..., description="Average rating for this option")
+    total_votes: int = Field(..., description="Number of votes for this option")
+    total_score: int = Field(..., description="Sum of all ratings for this option")
     ranking: int = Field(..., description="Ranking position (1-based)")
 
 
@@ -352,7 +339,7 @@ class VoteResults(BaseModel):
     """Pydantic model for complete voting results."""
 
     summary: dict[str, VoteResultSummary] = Field(
-        ..., description="Per-logo voting summary"
+        ..., description="Per-option voting summary"
     )
     total_voters: int = Field(..., description="Total number of voters")
     votes: list[dict[str, Any]] | None = Field(
@@ -403,38 +390,6 @@ class AdminUserData(BaseModel):
 
     class Config:
         from_attributes = True
-
-
-class LogoUpload(BaseModel):
-    """Pydantic model for logo upload validation."""
-
-    filename: str = Field(..., description="Original filename")
-    new_name: str | None = Field(None, description="New filename (optional)")
-
-    @validator("filename")
-    def validate_filename(cls, v: str) -> str:
-        """Validate filename format."""
-        if not v.lower().endswith(".png"):
-            raise ValueError("Logo must be a PNG file")
-        return v
-
-
-class LogoManagement(BaseModel):
-    """Pydantic model for logo management operations."""
-
-    operation: str = Field(
-        ..., description="Operation type: delete, rename, bulk_delete"
-    )
-    logos: list[str] = Field(..., description="List of logo filenames")
-    new_name: str | None = Field(None, description="New name for rename operation")
-
-    @validator("operation")
-    def validate_operation(cls, v: str) -> str:
-        """Validate operation type."""
-        allowed_ops = ["delete", "rename", "bulk_delete"]
-        if v not in allowed_ops:
-            raise ValueError(f"Operation must be one of: {', '.join(allowed_ops)}")
-        return v
 
 
 class VoteManagement(BaseModel):

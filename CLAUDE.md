@@ -4,11 +4,11 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Repository Overview
 
-This repository contains the Cardinal Vote Logo Voting Platform - a FastAPI-based web application that allows users to vote on logo designs using a value-based voting system. The application includes both a public voting interface and an administrative dashboard.
+This repository contains the Cardinal Vote Generalized Voting Platform - a FastAPI-based web application that allows vote organizers to create votes with any content type using a value-based voting system. The application includes public voting interfaces and a super admin management system.
 
 ## Technology Stack
 
-- **Backend**: Python 3.11+, FastAPI, SQLAlchemy, SQLite
+- **Backend**: Python 3.11+, FastAPI, SQLAlchemy, PostgreSQL
 - **Frontend**: HTML, CSS, JavaScript (vanilla)
 - **Deployment**: Docker, Docker Compose
 - **CI/CD**: GitHub Actions
@@ -33,7 +33,7 @@ cardinal-vote-voting/
 │   └── admin_*.py            # Admin interface modules
 ├── templates/                 # Jinja2 HTML templates
 ├── static/                    # CSS, JS, and static assets
-├── logos/                     # Logo images for voting
+├── uploads/                   # Content files for vote options
 ├── tests/                     # Test suite
 ├── scripts/                   # Deployment and utility scripts
 ├── docker-compose*.yml        # Docker configurations

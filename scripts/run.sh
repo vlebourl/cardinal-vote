@@ -1,5 +1,5 @@
 #!/bin/bash
-# Script to run the ToVéCo Voting Platform
+# Script to run the Cardinal Vote Generalized Voting Platform
 
 set -e
 
@@ -7,7 +7,7 @@ set -e
 cd "$(dirname "$0")/.."
 
 # Activate virtual environment and run the application
-echo "Starting ToVéCo Voting Platform..."
+echo "Starting Cardinal Vote Generalized Voting Platform..."
 echo "Syncing dependencies..."
 uv sync
 

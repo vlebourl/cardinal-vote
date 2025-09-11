@@ -1,13 +1,13 @@
-version: "3.8"
+version: '3.8'
 
-# Standalone production deployment for ToV'éCo voting platform
+# Standalone production deployment for Cardinal Vote platform
 # Usage: docker-compose -f docker-compose.standalone.yml up -d
 
 services:
   cardinal-voting:
     image: cardinal-voting:latest
     ports:
-      - "${PORT:-8000}:8000"
+      - '${PORT:-8000}:8000'
 
     # Environment variables from .env file
     environment:
@@ -49,10 +49,10 @@ services:
     deploy:
       resources:
         limits:
-          cpus: "1.0"
+          cpus: '1.0'
           memory: 512M
         reservations:
-          cpus: "0.25"
+          cpus: '0.25'
           memory: 128M
       restart_policy:
         condition: on-failure
@@ -62,7 +62,7 @@ services:
 
     # Health check
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8000/api/health"]
+      test: ['CMD', 'curl', '-f', 'http://localhost:8000/api/health']
       interval: 30s
       timeout: 10s
       retries: 3
@@ -70,11 +70,11 @@ services:
 
     # Logging configuration
     logging:
-      driver: "json-file"
+      driver: 'json-file'
       options:
-        max-size: "50m"
-        max-file: "5"
-        compress: "true"
+        max-size: '50m'
+        max-file: '5'
+        compress: 'true'
 
     # Restart policy
     restart: unless-stopped
@@ -84,10 +84,10 @@ volumes:
   cardinal_data:
     driver: local
     labels:
-      - "backup.enable=true"
-      - "backup.path=/app/data"
+      - 'backup.enable=true'
+      - 'backup.path=/app/data'
 
   cardinal_logs:
     driver: local
     labels:
-      - "backup.enable=false"
+      - 'backup.enable=false'

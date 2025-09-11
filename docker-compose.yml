@@ -1,5 +1,3 @@
-version: "3.8"
-
 services:
   # PostgreSQL Database for Generalized Platform
   postgres:
@@ -14,12 +12,12 @@ services:
       - postgres_data:/var/lib/postgresql/data
       - ./scripts/init_db.sql:/docker-entrypoint-initdb.d/01_init.sql:ro
     ports:
-      - "5432:5432"
+      - '5432:5432'
     healthcheck:
       test:
         [
-          "CMD-SHELL",
-          "pg_isready -U ${POSTGRES_USER:-voting_user} -d ${POSTGRES_DB:-voting_platform}",
+          'CMD-SHELL',
+          'pg_isready -U ${POSTGRES_USER:-voting_user} -d ${POSTGRES_DB:-voting_platform}'
         ]
       interval: 10s
       timeout: 5s
@@ -27,10 +25,10 @@ services:
     networks:
       - voting-platform-network
     logging:
-      driver: "json-file"
+      driver: 'json-file'
       options:
-        max-size: "10m"
-        max-file: "3"
+        max-size: '10m'
+        max-file: '3'
 
   # Generalized Voting Platform Application
   voting-platform:
@@ -39,7 +37,7 @@ services:
       dockerfile: Dockerfile
       target: production
     ports:
-      - "8000:8000"
+      - '8000:8000'
     depends_on:
       postgres:
         condition: service_healthy
@@ -55,6 +53,7 @@ services:
       - JWT_SECRET_KEY=${JWT_SECRET_KEY:-jwt_secret_key_change_in_production_extremely_long_and_secure}
       - JWT_ALGORITHM=${JWT_ALGORITHM:-HS256}
       - JWT_ACCESS_TOKEN_EXPIRE_MINUTES=${JWT_ACCESS_TOKEN_EXPIRE_MINUTES:-30}
+      - JWT_REFRESH_TOKEN_EXPIRE_DAYS=${JWT_REFRESH_TOKEN_EXPIRE_DAYS:-7}
       # Session Configuration (legacy compatibility)
       - SESSION_SECRET_KEY=${SESSION_SECRET_KEY:-session_secret_key_change_in_production_123456789}
       # Email Configuration (Mock for Development)
@@ -78,8 +77,7 @@ services:
       - voting_uploads:/app/uploads
       # Persistent storage for logs
       - voting_logs:/app/logs
-      # Legacy SQLite data (for migration)
-      - cardinal_data:/app/data
+      # PostgreSQL uses separate container - no local data volume needed
       # Development mounts (uncomment for development)
       # - ./src:/app/src:ro
       # - ./templates:/app/templates:ro
@@ -87,10 +85,10 @@ services:
     healthcheck:
       test:
         [
-          "CMD",
-          "python",
-          "-c",
-          "import requests; requests.get('http://localhost:8000/api/health', timeout=5)",
+          'CMD',
+          'python',
+          '-c',
+          "import requests; requests.get('http://localhost:8000/api/health', timeout=5)"
         ]
       interval: 30s
       timeout: 10s
@@ -98,28 +96,28 @@ services:
       start_period: 90s
     restart: unless-stopped
     labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.voting-platform.rule=Host(`voting.localhost`)"
-      - "traefik.http.services.voting-platform.loadbalancer.server.port=8000"
+      - 'traefik.enable=true'
+      - 'traefik.http.routers.voting-platform.rule=Host(`voting.localhost`)'
+      - 'traefik.http.services.voting-platform.loadbalancer.server.port=8000'
     networks:
       - voting-platform-network
     logging:
-      driver: "json-file"
+      driver: 'json-file'
       options:
-        max-size: "10m"
-        max-file: "3"
+        max-size: '10m'
+        max-file: '3'
 
   # Optional: Traefik reverse proxy for production-like setup
   traefik:
     image: traefik:v3.0
     command:
-      - "--api.insecure=true"
-      - "--providers.docker=true"
-      - "--providers.docker.exposedbydefault=false"
-      - "--entrypoints.web.address=:80"
+      - '--api.insecure=true'
+      - '--providers.docker=true'
+      - '--providers.docker.exposedbydefault=false'
+      - '--entrypoints.web.address=:80'
     ports:
-      - "80:80"
-      - "8080:8080"
+      - '80:80'
+      - '8080:8080'
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
     networks:
@@ -138,9 +136,7 @@ volumes:
   # Application logs persistent storage
   voting_logs:
     driver: local
-  # Legacy SQLite data (for migration)
-  cardinal_data:
-    driver: local
+  # PostgreSQL data managed by postgres service
 
 networks:
   voting-platform-network:

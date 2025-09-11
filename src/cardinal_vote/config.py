@@ -23,22 +23,17 @@ class Settings:
         "postgresql+asyncpg://voting_user:voting_password_change_in_production@localhost:5432/voting_platform",
     )
 
-    # Legacy SQLite support (backward compatibility)
-    @property
-    def DATABASE_PATH(self) -> str:
-        """Get database path from environment or default (legacy support)."""
-        return os.getenv("DATABASE_PATH", "votes.db")
+    # Database connection pool settings for production scaling
+    DB_POOL_SIZE: int = int(os.getenv("DB_POOL_SIZE", "5"))
+    DB_MAX_OVERFLOW: int = int(os.getenv("DB_MAX_OVERFLOW", "10"))
+    DB_POOL_TIMEOUT: int = int(os.getenv("DB_POOL_TIMEOUT", "30"))
+    DB_POOL_RECYCLE: int = int(os.getenv("DB_POOL_RECYCLE", "3600"))
 
     # File paths
     BASE_DIR: Path = Path(__file__).resolve().parent.parent.parent
-    LOGOS_DIR: Path = BASE_DIR / "logos"
+    UPLOADS_DIR: Path = BASE_DIR / "uploads"
     TEMPLATES_DIR: Path = BASE_DIR / "templates"
     STATIC_DIR: Path = BASE_DIR / "static"
-
-    # Logo settings
-    LOGO_PREFIX: str = "cardinal_vote"
-    LOGO_EXTENSION: str = ".png"
-    EXPECTED_LOGO_COUNT: int = 11
 
     # Vote settings
     MIN_RATING: int = -2
@@ -117,7 +112,6 @@ class Settings:
     def validate_directories(cls) -> None:
         """Validate that required directories exist."""
         directories = [
-            ("LOGOS_DIR", cls.LOGOS_DIR),
             ("TEMPLATES_DIR", cls.TEMPLATES_DIR),
             ("STATIC_DIR", cls.STATIC_DIR),
         ]
@@ -130,7 +124,9 @@ class Settings:
         if missing_dirs:
             raise ValueError(f"Missing required directories: {', '.join(missing_dirs)}")
 
-        # Create upload temp directory if it doesn't exist
+        # Create upload directories if they don't exist
+        if not cls.UPLOADS_DIR.exists():
+            cls.UPLOADS_DIR.mkdir(parents=True, exist_ok=True)
         if not cls.UPLOAD_TEMP_DIR.exists():
             cls.UPLOAD_TEMP_DIR.mkdir(parents=True, exist_ok=True)
 
@@ -201,18 +197,6 @@ class Settings:
                     f"SMTP email backend requires: {', '.join(missing_settings)}. "
                     "Set EMAIL_BACKEND=mock for development."
                 )
-
-    @classmethod
-    def get_logo_files(cls) -> list[str]:
-        """Get list of available logo files."""
-        if not cls.LOGOS_DIR.exists():
-            return []
-
-        logo_files = []
-        for file_path in cls.LOGOS_DIR.glob(f"{cls.LOGO_PREFIX}*{cls.LOGO_EXTENSION}"):
-            logo_files.append(file_path.name)
-
-        return sorted(logo_files)
 
     @classmethod
     def validate_all(cls) -> None:

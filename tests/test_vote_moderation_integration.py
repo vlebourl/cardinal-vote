@@ -15,8 +15,8 @@ from cardinal_vote.models import (
 )
 from cardinal_vote.vote_moderation_manager import VoteModerationManager
 
-# Test database setup
-TEST_DATABASE_URL = "sqlite+aiosqlite:///:memory:"
+# Test database setup - Use SQLite for CI compatibility
+TEST_DATABASE_URL = "sqlite+aiosqlite:///test_moderation.db"
 
 
 @pytest.fixture

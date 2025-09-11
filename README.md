@@ -1,4 +1,4 @@
-# 🗳️ Cardinal Vote Logo Voting Platform
+# 🗳️ Cardinal Vote - Generalized Voting Platform
 
 ## Build Status & Quality
 
@@ -49,18 +49,17 @@
 
 ---
 
-A modern, mobile-first logo voting platform built with FastAPI that implements **value voting methodology** ("vote de valeur"). Users can rate logos on a -2 to +2 scale, providing nuanced feedback for democratic logo selection.
-
-![ToV'éCo Voting Interface](static/voting-interface-preview.png)
+A modern, generalized voting platform built with FastAPI that implements **value voting methodology**. Vote organizers can create votes with any content type (images, text, etc.), and voters rate options on a -2 to +2 scale, providing nuanced feedback for democratic decision making.
 
 ## ✨ Features
 
 ### 🎯 Core Functionality
 
-- **Value-based voting**: Rate logos from -2 (strongly rejected) to +2 (strongly accepted)
-- **Complete vote validation**: Ensures all logos are rated before submission
-- **Real-time results**: Aggregated statistics with ranking and averages
-- **Randomized presentation**: Logos shown in random order to avoid bias
+- **Flexible content types**: Vote on images, text options, or any content defined by organizers
+- **Value-based voting**: Rate options from -2 (strongly rejected) to +2 (strongly accepted)
+- **Complete vote validation**: Ensures all options are rated before submission
+- **Individual vote pages**: Each vote has its own unique URL (/vote/{slug})
+- **JWT-based authentication**: Super admin system for vote management
 
 ### 📱 User Experience
 
@@ -72,9 +71,10 @@ A modern, mobile-first logo voting platform built with FastAPI that implements *
 ### 🔧 Technical Features
 
 - **Production-ready**: Docker deployment with security best practices
-- **Fast and reliable**: Built with FastAPI and SQLite/PostgreSQL support
-- **Monitoring**: Health checks, logging, and optional metrics
-- **Security**: Input validation, rate limiting, CORS protection
+- **PostgreSQL backend**: Enterprise-grade database for scalability
+- **Content moderation**: Vote flagging and admin oversight tools
+- **Security**: JWT authentication, input validation, rate limiting
+- **Super admin interface**: Create and manage votes through web interface
 
 ## 🚀 Quick Start
 
@@ -90,12 +90,13 @@ services:
     ports:
       - "8000:8000"
     environment:
-      - ADMIN_USERNAME=admin
-      - ADMIN_PASSWORD=your-secure-password-here
-      - SESSION_SECRET_KEY=your-session-secret-key-here
+      - DATABASE_URL=postgresql+asyncpg://user:password@postgres:5432/cardinal_vote
+      - SUPER_ADMIN_EMAIL=admin@example.com
+      - SUPER_ADMIN_PASSWORD=your-secure-password-here
+      - JWT_SECRET_KEY=your-jwt-secret-key-here
     volumes:
-      - ./logos:/app/logos:ro
-      - ./data:/app/data
+      - ./uploads:/app/uploads:rw  # Content upload directory
+      - ./data:/app/data  # Database storage
     restart: unless-stopped
 EOF
 
@@ -130,9 +131,10 @@ cd cardinal-vote
 uv sync
 
 # Set required environment variables
-export ADMIN_USERNAME=admin
-export ADMIN_PASSWORD=secure-password-123
-export SESSION_SECRET_KEY=$(python -c "import secrets; print(secrets.token_urlsafe(32))")
+export DATABASE_URL=postgresql+asyncpg://user:password@localhost:5432/cardinal_vote
+export SUPER_ADMIN_EMAIL=admin@example.com
+export SUPER_ADMIN_PASSWORD=secure-password-123
+export JWT_SECRET_KEY=$(python -c "import secrets; print(secrets.token_urlsafe(32))")
 
 # Run the application
 ./scripts/run.sh
@@ -164,38 +166,39 @@ uv run pre-commit run ruff --all-files
 - ✅ **Docker linting** - Hadolint for Dockerfile best practices
 - ✅ **Security checks** - Prevents hardcoded secrets
 - ✅ **Test naming** - Enforces test file conventions
-- ✅ **Logo format** - Validates logo file naming
+- ✅ **Content validation** - Validates upload formats and sizes
 
 **Access the application:**
 
-- 🗳️ **Voting Interface**: http://localhost:8000
-- 📊 **Results Page**: http://localhost:8000/results
+- 🏠 **Landing Page**: http://localhost:8000
+- 🗳️ **Vote Pages**: http://localhost:8000/vote/{slug}
+- 👑 **Super Admin**: http://localhost:8000/super-admin
 - 🔍 **API Documentation**: http://localhost:8000/docs
-- ❤️ **Health Check**: http://localhost:8000/api/health
 
 ## 🏗️ Architecture Overview
 
 ```
 ┌─────────────────┐    ┌──────────────────┐    ┌─────────────────┐
-│   Mobile Web    │    │    FastAPI       │    │    SQLite       │
-│   Interface     │◄──►│   Application    │◄──►│   Database      │
-│  (Responsive)   │    │  (REST API)      │    │  (votes.db)     │
+│   Vote Pages    │    │    FastAPI       │    │   PostgreSQL    │
+│ /vote/{slug}    │◄──►│   Application    │◄──►│   Database      │
+│  (Responsive)   │    │  (REST API)      │    │ (cardinal_vote) │
 └─────────────────┘    └──────────────────┘    └─────────────────┘
                                │
                        ┌──────────────────┐
-                       │   Static Files   │
-                       │ (Logos, CSS, JS) │
+                       │ Super Admin UI   │
+                       │ Vote Management  │
                        └──────────────────┘
 ```
 
 ### Technology Stack
 
 - **Backend**: FastAPI + Uvicorn ASGI server
-- **Database**: SQLite (production) / PostgreSQL (enterprise)
+- **Database**: PostgreSQL with async SQLAlchemy
 - **Frontend**: Vanilla JavaScript + CSS Grid/Flexbox
+- **Authentication**: JWT-based with super admin roles
 - **Deployment**: Docker + Docker Compose
 - **Testing**: pytest + coverage
-- **Code Quality**: ruff + mypy + black
+- **Code Quality**: ruff + mypy
 
 ## 📖 Documentation
 
@@ -208,9 +211,9 @@ uv run pre-commit run ruff --all-files
 
 ## 🎮 How It Works
 
-### 1. **Logo Evaluation**
+### 1. **Option Evaluation**
 
-Users rate each logo on a scale:
+Users rate each option on a scale:
 
 - **+2**: Strongly accepted ✅✅
 - **+1**: Accepted ✅
@@ -222,18 +225,19 @@ Users rate each logo on a scale:
 
 The platform validates that:
 
-- All logos have been rated
-- Voter name is provided
-- Ratings are within valid range
+- All options have been rated
+- Voter first and last name are provided
+- Ratings are within valid range (-2 to +2)
+- Vote is active and within time bounds
 
 ### 3. **Results Calculation**
 
 Aggregated results show:
 
-- Average rating per logo
-- Total vote count
+- Average rating per option
+- Total vote count per option
 - Ranking from highest to lowest rated
-- Individual vote details (admin view)
+- Content moderation flags and status
 
 ## 🛡️ Security Features
 
@@ -247,21 +251,26 @@ Aggregated results show:
 
 ```json
 {
-  "summary": {
-    "cardinal_vote3.png": {
-      "average": 1.8,
-      "total_votes": 25,
-      "total_score": 45,
+  "vote_title": "Choose Our New Logo",
+  "options": [
+    {
+      "id": "uuid-1",
+      "title": "Modern Design",
+      "option_type": "image",
+      "average_rating": 1.8,
+      "total_ratings": 25,
       "ranking": 1
     },
-    "cardinal_vote7.png": {
-      "average": 1.2,
-      "total_votes": 25,
-      "total_score": 30,
+    {
+      "id": "uuid-2",
+      "title": "Classic Style",
+      "option_type": "image",
+      "average_rating": 1.2,
+      "total_ratings": 25,
       "ranking": 2
     }
-  },
-  "total_voters": 25
+  ],
+  "total_participants": 25
 }
 ```
 
@@ -269,14 +278,14 @@ Aggregated results show:
 
 | Component              | Status            | Notes                                           |
 | ---------------------- | ----------------- | ----------------------------------------------- |
-| Core Voting            | ✅ Production     | Fully functional with validation                |
+| Core Voting            | ✅ Production     | Generalized voting with flexible content types  |
+| Super Admin UI         | ✅ Production     | Vote creation and management interface          |
+| Content Moderation     | ✅ Production     | Vote flagging and oversight tools               |
 | Mobile UI              | ✅ Production     | Responsive design tested on devices             |
-| API                    | ✅ Production     | RESTful API with OpenAPI docs                   |
+| JWT Authentication     | ✅ Production     | Secure admin access and user management         |
+| PostgreSQL Backend     | ✅ Production     | Enterprise-grade database with async support    |
 | Docker Deployment      | ✅ Production     | Multi-architecture containers (amd64, arm64)    |
-| Database               | ✅ Production     | SQLite with PostgreSQL support                  |
 | Testing                | ✅ Production     | 90%+ code coverage, automated CI                |
-| Documentation          | ✅ Production     | Comprehensive guides and API docs               |
-| Monitoring             | ✅ Production     | Health checks, logging, metrics                 |
 | **CI/CD Pipeline**     | ✅ **Production** | **Automated testing, security scans, releases** |
 | **Security Scanning**  | ✅ **Production** | **Trivy, Bandit, CodeQL integration**           |
 | **GitHub Flow**        | ✅ **Production** | **Branch protection, PR templates, automation** |
@@ -321,24 +330,24 @@ ghcr.io/vlebourl/cardinal-vote:latest-arm64
 
 ```yaml
 # docker-compose.production.yml
-version: "3.8"
+version: '3.8'
 services:
   cardinal-vote:
     image: ghcr.io/vlebourl/cardinal-vote:latest
     ports:
-      - "8000:8000"
+      - '8000:8000'
     environment:
       # Security: Set these via .env file or secrets
-      - ADMIN_USERNAME=${ADMIN_USERNAME}
-      - ADMIN_PASSWORD=${ADMIN_PASSWORD}
-      - SESSION_SECRET_KEY=${SESSION_SECRET_KEY}
-      - DATABASE_PATH=/app/data/votes.db
+      - DATABASE_URL=${DATABASE_URL}
+      - SUPER_ADMIN_EMAIL=${SUPER_ADMIN_EMAIL}
+      - SUPER_ADMIN_PASSWORD=${SUPER_ADMIN_PASSWORD}
+      - JWT_SECRET_KEY=${JWT_SECRET_KEY}
     volumes:
-      - ./logos:/app/logos:ro # Your logo files
+      - ./uploads:/app/uploads:rw # Content upload directory
       - ./data:/app/data # Persistent database
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8000/api/health"]
+      test: ['CMD', 'curl', '-f', 'http://localhost:8000/']
       interval: 30s
       timeout: 10s
       retries: 3

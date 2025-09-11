@@ -1,6 +1,8 @@
-# Project Requirements & Planning (PRP)
+# Project Requirements & Planning (PRP) - LEGACY DOCUMENT
 
-## Cardinal Vote Logo Voting Platform
+## Cardinal Vote Logo Voting Platform (Legacy)
+
+> **⚠️ LEGACY DOCUMENT**: This document describes the original logo voting platform. For current generalized platform requirements, see [PRP-Generalized-Platform.md](PRP-Generalized-Platform.md).
 
 ### Executive Summary
 
@@ -43,7 +45,7 @@ Development of a web-based voting application for selecting the Cardinal Vote br
 
 - **Storage Solution**:
   - JSON file-based storage for simplicity
-  - Alternative: SQLite for more robust data handling
+  - **Current Implementation**: PostgreSQL with async support for production deployment
 - **Data Structure**:
   ```json
   {
@@ -52,8 +54,8 @@ Development of a web-based voting application for selecting the Cardinal Vote br
         "voter_name": "string",
         "timestamp": "ISO 8601",
         "ratings": {
-          "cardinal-vote1.png": -2 to 2,
-          "cardinal-vote2.png": -2 to 2,
+          "option-uuid-1": -2 to 2,
+          "option-uuid-2": -2 to 2,
           ...
         }
       }
@@ -103,7 +105,7 @@ Development of a web-based voting application for selecting the Cardinal Vote br
 
 - **Framework**: FastAPI (Python) - modern, fast, with automatic API documentation
 - **Server**: Uvicorn ASGI server for production deployment
-- **Storage**: SQLite for simplicity or PostgreSQL for scalability
+- **Storage**: PostgreSQL with async support (current implementation)
 - **File Handling**: Static file serving for logo images
 
 **Frontend: Vanilla JavaScript + Modern CSS**
@@ -119,7 +121,7 @@ Development of a web-based voting application for selecting the Cardinal Vote br
 [Internet] → [Nginx/Apache Reverse Proxy + SSL]
             → [Uvicorn on localhost:8000]
             → [FastAPI Application]
-            → [SQLite/PostgreSQL Database]
+            → [PostgreSQL Database (async)]
 ```
 
 #### Alternative Deployment Options
@@ -179,7 +181,7 @@ Development of a web-based voting application for selecting the Cardinal Vote br
 
 #### Phase 1: MVP (2-3 days)
 
-- FastAPI backend with SQLite database
+- FastAPI backend with PostgreSQL database (async)
 - Mobile-first responsive interface
 - Core voting functionality
 - Basic results display

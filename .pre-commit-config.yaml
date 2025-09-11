@@ -1,4 +1,4 @@
-# Pre-commit configuration for ToVéCo voting platform
+# Pre-commit configuration for Cardinal Vote generalized voting platform
 # This ensures code quality and consistency before commits
 repos:
   # Pre-commit hooks for basic file checks
@@ -14,9 +14,9 @@ repos:
       - id: check-merge-conflict
       - id: check-case-conflict
       - id: check-added-large-files
-        args: ["--maxkb=1000"] # 1MB limit
+        args: ['--maxkb=1000'] # 1MB limit
       - id: mixed-line-ending
-        args: ["--fix=lf"]
+        args: ['--fix=lf']
       - id: check-executables-have-shebangs
       - id: check-shebang-scripts-are-executable
 
@@ -58,7 +58,7 @@ repos:
     hooks:
       - id: bandit
         args: [-c, pyproject.toml]
-        additional_dependencies: ["bandit[toml]"]
+        additional_dependencies: ['bandit[toml]']
 
   # Safety check (disabled - only works with Poetry)
   # - repo: https://github.com/Lucas-C/pre-commit-hooks-safety
@@ -100,17 +100,10 @@ repos:
         language: system
         files: \.(py|yaml|yml|json|toml)$
 
-      # Check logo files are in correct format
-      - id: logo-format
-        name: Check logo file format
-        entry: bash -c 'shopt -s nullglob; for logo in logos/*.png; do [[ "$logo" =~ ^logos/cardinal_vote[0-9]+\.png$ ]] || { echo "Logo $logo should follow cardinal_vote{number}.png format"; exit 1; }; done'
-        language: system
-        files: ^logos/.*\.png$
-
 # Global configuration
 default_stages: [pre-commit, pre-push]
 fail_fast: false
-minimum_pre_commit_version: "3.6.0"
+minimum_pre_commit_version: '3.6.0'
 
 # CI configuration
 ci:
@@ -119,8 +112,8 @@ ci:
 
     for more information, see https://pre-commit.ci
   autofix_prs: true
-  autoupdate_branch: ""
-  autoupdate_commit_msg: "[pre-commit.ci] pre-commit autoupdate"
+  autoupdate_branch: ''
+  autoupdate_commit_msg: '[pre-commit.ci] pre-commit autoupdate'
   autoupdate_schedule: weekly
   skip: [mypy, python-safety-dependencies-check] # Skip heavy checks in CI
   submodules: false

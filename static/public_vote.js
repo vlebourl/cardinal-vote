@@ -40,7 +40,7 @@ class PublicVotingApp {
       }
     } catch (error) {
       console.error('Failed to load vote data:', error)
-      this.showError('Erreur lors du chargement des données du vote')
+      this.showError('Error loading vote data')
     }
   }
 
@@ -163,31 +163,31 @@ class PublicVotingApp {
 
     // Validate fields
     if (!firstName) {
-      this.showError('Veuillez entrer votre prénom')
+      this.showError('Please enter your first name')
       firstNameInput.setAttribute('aria-invalid', 'true')
       firstNameInput.focus()
-      this.announceToScreenReader('Erreur : le prénom est requis')
+      this.announceToScreenReader('Error: first name is required')
       return
     }
 
     if (!lastName) {
-      this.showError('Veuillez entrer votre nom')
+      this.showError('Please enter your last name')
       lastNameInput.setAttribute('aria-invalid', 'true')
       lastNameInput.focus()
-      this.announceToScreenReader('Erreur : le nom est requis')
+      this.announceToScreenReader('Error: last name is required')
       return
     }
 
     // Validate name formats
     if (!/^[a-zA-ZÀ-ÿ\s\-']{1,50}$/.test(firstName)) {
-      this.showError('Le prénom ne peut contenir que des lettres, espaces, tirets et apostrophes')
+      this.showError('First name can only contain letters, spaces, hyphens, and apostrophes')
       firstNameInput.setAttribute('aria-invalid', 'true')
       firstNameInput.focus()
       return
     }
 
     if (!/^[a-zA-ZÀ-ÿ\s\-']{1,50}$/.test(lastName)) {
-      this.showError('Le nom ne peut contenir que des lettres, espaces, tirets et apostrophes')
+      this.showError('Last name can only contain letters, spaces, hyphens, and apostrophes')
       lastNameInput.setAttribute('aria-invalid', 'true')
       lastNameInput.focus()
       return
@@ -195,7 +195,7 @@ class PublicVotingApp {
 
     this.voterFirstName = firstName
     this.voterLastName = lastName
-    this.announceToScreenReader(`Bonjour ${firstName} ${lastName}, début du vote...`)
+    this.announceToScreenReader(`Hello ${firstName} ${lastName}, starting vote...`)
 
     this.showVotingScreen()
   }
@@ -217,7 +217,7 @@ class PublicVotingApp {
    */
   showVotingScreen() {
     if (!this.voteData || !this.voteData.options) {
-      this.showError('Données du vote non disponibles')
+      this.showError('Vote data not available')
       return
     }
 
@@ -234,7 +234,7 @@ class PublicVotingApp {
     }
 
     this.announceToScreenReader(
-      `Écran de vote. Option ${this.currentOptionIndex + 1} sur ${this.voteData.options.length}`
+      `Voting screen. Option ${this.currentOptionIndex + 1} of ${this.voteData.options.length}`
     )
   }
 
@@ -244,7 +244,7 @@ class PublicVotingApp {
   displayCurrentOption() {
     if (!this.voteData || !this.voteData.options || this.voteData.options.length === 0) {
       console.error('No options available')
-      this.announceToScreenReader('Erreur : aucune option disponible')
+      this.announceToScreenReader('Error: no options available')
       return
     }
 
@@ -268,7 +268,7 @@ class PublicVotingApp {
       imageElement.alt = `Option: ${option.title}`
       imageElement.className = 'option-image'
       imageElement.onerror = () => {
-        this.showError(`Impossible de charger l'image pour ${option.title}`)
+        this.showError(`Unable to load image for ${option.title}`)
       }
       container.appendChild(imageElement)
     } else if (option.content && option.content !== option.title) {
@@ -293,11 +293,11 @@ class PublicVotingApp {
     // Announce option change to screen readers
     if (previousRating !== undefined) {
       this.announceToScreenReader(
-        `Option ${this.currentOptionIndex + 1} sur ${this.voteData.options.length}: ${option.title}. Note actuelle : ${this.getRatingLabel(previousRating)}`
+        `Option ${this.currentOptionIndex + 1} of ${this.voteData.options.length}: ${option.title}. Current rating: ${this.getRatingLabel(previousRating)}`
       )
     } else {
       this.announceToScreenReader(
-        `Option ${this.currentOptionIndex + 1} sur ${this.voteData.options.length}: ${option.title}. Aucune note attribuée`
+        `Option ${this.currentOptionIndex + 1} of ${this.voteData.options.length}: ${option.title}. No rating assigned`
       )
     }
   }
@@ -315,7 +315,7 @@ class PublicVotingApp {
       console.log(`Rated option ${option.id} (${option.title}): ${rating}`)
 
       this.updateNavigation()
-      this.announceToScreenReader(`Note attribuée : ${this.getRatingLabel(rating)}`)
+      this.announceToScreenReader(`Rating assigned: ${this.getRatingLabel(rating)}`)
     }
   }
 
@@ -341,7 +341,7 @@ class PublicVotingApp {
       progressBar.setAttribute('aria-valuemax', this.voteData.options.length)
       progressBar.setAttribute(
         'aria-valuetext',
-        `Option ${this.currentOptionIndex + 1} sur ${this.voteData.options.length}`
+        `Option ${this.currentOptionIndex + 1} of ${this.voteData.options.length}`
       )
     }
   }
@@ -361,7 +361,7 @@ class PublicVotingApp {
         currentRating.focus()
       }
     } else {
-      this.announceToScreenReader('Déjà à la première option')
+      this.announceToScreenReader('Already at the first option')
     }
   }
 
@@ -370,7 +370,7 @@ class PublicVotingApp {
    */
   nextOption() {
     if (!this.voteData || !this.voteData.options) {
-      this.showError('Données du vote non disponibles')
+      this.showError('Vote data not available')
       return
     }
 
@@ -378,8 +378,8 @@ class PublicVotingApp {
     const hasRating = this.responses.hasOwnProperty(currentOption.id)
 
     if (!hasRating) {
-      this.showError('Veuillez attribuer une note avant de continuer')
-      this.announceToScreenReader('Une note est requise pour cette option')
+      this.showError('Please assign a rating before continuing')
+      this.announceToScreenReader('A rating is required for this option')
       // Focus on first rating option
       const firstRating = document.querySelector('input[name="rating"]')
       if (firstRating) {
@@ -429,9 +429,9 @@ class PublicVotingApp {
 
     // Update button text for last option
     if (this.currentOptionIndex === this.voteData.options.length - 1) {
-      nextBtn.textContent = 'Terminer'
+      nextBtn.textContent = 'Finish'
     } else {
-      nextBtn.textContent = 'Suivant'
+      nextBtn.textContent = 'Next'
     }
   }
 
@@ -440,15 +440,15 @@ class PublicVotingApp {
    */
   showReviewScreen() {
     if (!this.voteData || !this.voteData.options) {
-      this.showError('Données du vote non disponibles')
+      this.showError('Vote data not available')
       return
     }
 
     // Check if all options have been rated
     const unratedOptions = this.voteData.options.filter(option => !this.responses.hasOwnProperty(option.id))
     if (unratedOptions.length > 0) {
-      this.showError(`Évaluations manquantes pour ${unratedOptions.length} option(s)`)
-      this.announceToScreenReader(`${unratedOptions.length} option(s) sans note`)
+      this.showError(`Missing ratings for ${unratedOptions.length} option(s)`)
+      this.announceToScreenReader(`${unratedOptions.length} option(s) without rating`)
       return
     }
 
@@ -462,7 +462,7 @@ class PublicVotingApp {
       reviewTitle.focus()
     }
 
-    this.announceToScreenReader('Page de révision. Vérifiez vos notes avant envoi')
+    this.announceToScreenReader('Review page. Check your ratings before submitting')
   }
 
   /**
@@ -481,7 +481,7 @@ class PublicVotingApp {
       card.dataset.optionIndex = index
       card.setAttribute('role', 'gridcell')
       card.setAttribute('tabindex', '0')
-      card.setAttribute('aria-label', `Option ${index + 1}: ${option.title}, note: ${this.getRatingLabel(rating)}`)
+      card.setAttribute('aria-label', `Option ${index + 1}: ${option.title}, rating: ${this.getRatingLabel(rating)}`)
 
       const ratingClass = this.getRatingClass(rating)
       const ratingText = rating > 0 ? `+${rating}` : rating.toString()
@@ -518,7 +518,7 @@ class PublicVotingApp {
     card.classList.add('editing')
 
     // Announce to screen reader
-    this.announceToScreenReader(`Modification de l'option ${optionIndex + 1}`)
+    this.announceToScreenReader(`Modifying option ${optionIndex + 1}`)
 
     setTimeout(() => {
       this.showVotingScreen()
@@ -530,7 +530,7 @@ class PublicVotingApp {
    */
   async submitVote() {
     if (!this.voteData || !this.voteData.options) {
-      this.showError('Données du vote non disponibles')
+      this.showError('Vote data not available')
       return
     }
 
@@ -547,9 +547,9 @@ class PublicVotingApp {
       const originalText = submitBtn.textContent
       submitBtn.disabled = true
       submitBtn.setAttribute('aria-busy', 'true')
-      submitBtn.innerHTML = '<span class="spinner"></span> Envoi en cours...'
+      submitBtn.innerHTML = '<span class="spinner"></span> Submitting...'
 
-      this.announceToScreenReader('Envoi de votre vote en cours...')
+      this.announceToScreenReader('Submitting your vote...')
 
       const voteData = {
         voter_first_name: this.voterFirstName,
@@ -574,9 +574,9 @@ class PublicVotingApp {
         let errorMessage
         try {
           const errorData = JSON.parse(errorText)
-          errorMessage = errorData.detail || errorData.message || 'Erreur serveur'
+          errorMessage = errorData.detail || errorData.message || 'Server error'
         } catch {
-          errorMessage = `Erreur HTTP ${response.status}: ${response.statusText}`
+          errorMessage = `HTTP Error ${response.status}: ${response.statusText}`
         }
         throw new Error(errorMessage)
       }
@@ -586,30 +586,30 @@ class PublicVotingApp {
       if (result.success) {
         this.showSuccessScreen(result.message)
       } else {
-        throw new Error(result.message || "Erreur lors de l'envoi du vote")
+        throw new Error(result.message || "Error submitting vote")
       }
     } catch (error) {
       console.error('Error submitting vote:', error)
 
       let errorMessage
       if (error.name === 'AbortError' || error.name === 'TimeoutError') {
-        errorMessage = 'Timeout: la requête a pris trop de temps. Veuillez réessayer.'
+        errorMessage = 'Timeout: request took too long. Please try again.'
       } else if (error.message.includes('Failed to fetch') || error.message.includes('NetworkError')) {
-        errorMessage = 'Erreur de connexion. Vérifiez votre connexion internet et réessayez.'
+        errorMessage = 'Connection error. Check your internet connection and try again.'
       } else if (error.message.includes('already voted') || error.message.includes('already been submitted')) {
-        errorMessage = "Vous avez déjà voté. Chaque personne ne peut voter qu'une seule fois."
+        errorMessage = "You have already voted. Each person can only vote once."
       } else {
-        errorMessage = error.message || "Erreur lors de l'envoi du vote"
+        errorMessage = error.message || "Error submitting vote"
       }
 
       this.showError(errorMessage)
-      this.announceToScreenReader(`Erreur: ${errorMessage}`)
+      this.announceToScreenReader(`Error: ${errorMessage}`)
 
       // Re-enable submit button
       const submitBtn = document.getElementById('submit-vote')
       submitBtn.disabled = false
       submitBtn.setAttribute('aria-busy', 'false')
-      submitBtn.textContent = 'Confirmer et envoyer'
+      submitBtn.textContent = 'Confirm and Submit'
       submitBtn.focus()
     }
   }
@@ -631,7 +631,7 @@ class PublicVotingApp {
       successTitle.focus()
     }
 
-    this.announceToScreenReader('Vote envoyé avec succès! Merci pour votre participation.')
+    this.announceToScreenReader('Vote submitted successfully! Thank you for your participation.')
     console.log('Vote submitted successfully')
   }
 
@@ -684,13 +684,13 @@ class PublicVotingApp {
    */
   getRatingLabel(rating) {
     const labels = {
-      '-2': 'Fortement rejeté',
-      '-1': 'Rejeté',
-      0: 'Neutre',
-      1: 'Accepté',
-      2: 'Fortement accepté'
+      '-2': 'Strongly rejected',
+      '-1': 'Rejected',
+      0: 'Neutral',
+      1: 'Accepted',
+      2: 'Strongly accepted'
     }
-    return labels[rating.toString()] || 'Inconnu'
+    return labels[rating.toString()] || 'Unknown'
   }
 
   /**
@@ -709,7 +709,7 @@ class PublicVotingApp {
    * Show keyboard help
    */
   showKeyboardHelp() {
-    this.announceToScreenReader('Raccourcis clavier : Flèches pour naviguer, 1-5 pour noter, Entrée pour confirmer')
+    this.announceToScreenReader('Keyboard shortcuts: Arrow keys to navigate, 1-5 to rate, Enter to confirm')
   }
 }
 
@@ -724,10 +724,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const fallbackError = document.createElement('div')
     fallbackError.innerHTML = `
             <div style="text-align: center; padding: 2rem; color: #dc2626;">
-                <h2>Erreur d'initialisation</h2>
-                <p>Une erreur est survenue lors du chargement de l'application de vote.</p>
+                <h2>Initialization Error</h2>
+                <p>An error occurred while loading the voting application.</p>
                 <button onclick="window.location.reload()" style="margin: 1rem; padding: 0.5rem 1rem; border: none; background: #2D5820; color: white; border-radius: 4px; cursor: pointer;">
-                    Recharger la page
+                    Reload page
                 </button>
             </div>
         `

@@ -165,7 +165,7 @@ check_prerequisites() {
     fi
 
     # Check required directories
-    local required_dirs=("logos" "templates" "static")
+    local required_dirs=("uploads" "templates" "static")
     for dir in "${required_dirs[@]}"; do
         if [[ ! -d "$PROJECT_DIR/$dir" ]]; then
             log_error "Required directory not found: $dir"
@@ -173,14 +173,12 @@ check_prerequisites() {
         fi
     done
 
-    # Check logo files
-    local logo_count
-    logo_count=$(find "$PROJECT_DIR/logos" -name "cardinal*.png" 2>/dev/null | wc -l)
-    if [[ $logo_count -eq 0 ]]; then
-        log_error "No logo files found in logos/ directory"
-        exit 1
+    # Check uploads directory is writable
+    if [[ ! -w "$PROJECT_DIR/uploads" ]]; then
+        log_warning "Uploads directory not writable, fixing permissions..."
+        chmod 755 "$PROJECT_DIR/uploads" || log_warning "Failed to fix uploads permissions"
     fi
-    log_info "Found $logo_count logo files"
+    log_info "Uploads directory ready"
 
     # Make entrypoint executable
     if [[ -f "$PROJECT_DIR/docker-entrypoint.sh" ]]; then

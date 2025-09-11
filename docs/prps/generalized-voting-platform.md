@@ -46,7 +46,7 @@ Transform the existing single-purpose Cardinal Vote logo voting application into
 
 - **Database**: Clean migration path from SQLite to PostgreSQL required
 - **Authentication**: Extend session-based admin auth to full JWT multi-user system
-- **File Handling**: Replace static logo serving with dynamic media management
+- **File Handling**: Implement dynamic media management for vote content uploads
 - **Multi-tenancy**: Implement tenant isolation with PostgreSQL Row-Level Security
 
 ## 3. Target Architecture
@@ -553,9 +553,9 @@ services:
       - postgres_data:/var/lib/postgresql/data
       - ./init-db.sql:/docker-entrypoint-initdb.d/init-db.sql
     ports:
-      - "5432:5432"
+      - '5432:5432'
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U voting_admin -d generalized_voting"]
+      test: ['CMD-SHELL', 'pg_isready -U voting_admin -d generalized_voting']
       interval: 10s
       timeout: 5s
       retries: 5
@@ -570,7 +570,6 @@ services:
       - JWT_SECRET_KEY=${JWT_SECRET_KEY}
     volumes:
       - app_uploads:/app/uploads # File storage persistence
-      - ./logos:/app/logos:ro # Legacy logo access
 
 volumes:
   postgres_data:
@@ -763,7 +762,7 @@ uv run pytest --cov=src --cov-report=html
 
 ```yaml
 # Production docker-compose.yml
-version: "3.8"
+version: '3.8'
 
 services:
   postgres:
@@ -791,7 +790,7 @@ services:
       - app_uploads:/app/uploads
       - ./config:/app/config:ro
     ports:
-      - "8000:8000"
+      - '8000:8000'
     secrets:
       - jwt_secret
       - postgres_password

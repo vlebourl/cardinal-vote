@@ -1,15 +1,21 @@
 #!/bin/bash
 set -euo pipefail
 
-# Cardinal Vote Logo Voting Platform - Docker Entrypoint
-# Production-ready startup script with health checks and proper error handling
+# Cardinal Vote Generalized Voting Platform - Docker Entrypoint
+# Production-ready startup script with PostgreSQL support and health checks
 
 # Default values
-DATABASE_PATH="${DATABASE_PATH:-/app/data/votes.db}"
+DATABASE_URL="${DATABASE_URL:-}"
 HOST="${HOST:-0.0.0.0}"
 PORT="${PORT:-8000}"
 DEBUG="${DEBUG:-false}"
 CARDINAL_ENV="${CARDINAL_ENV:-production}"
+WORKERS="${WORKERS:-1}"
+
+# Required security environment variables
+SUPER_ADMIN_EMAIL="${SUPER_ADMIN_EMAIL:-}"
+SUPER_ADMIN_PASSWORD="${SUPER_ADMIN_PASSWORD:-}"
+JWT_SECRET_KEY="${JWT_SECRET_KEY:-}"
 
 # Logging function
 log() {
@@ -39,8 +45,8 @@ trap shutdown_handler SIGTERM SIGINT
 validate_environment() {
     log "Validating environment..."
 
-    # Check required directories
-    local required_dirs=("/app/logos" "/app/templates" "/app/static")
+    # Check required directories (templates and static are essential for web interface)
+    local required_dirs=("/app/templates" "/app/static")
     for dir in "${required_dirs[@]}"; do
         if [[ ! -d "$dir" ]]; then
             error_exit "Required directory not found: $dir"
@@ -54,17 +60,42 @@ validate_environment() {
         log "✓ Directory verified: $dir"
     done
 
-    # Check logo files
-    local logo_count
-    logo_count=$(find /app/logos -name "cardinal_vote*.png" 2>/dev/null | wc -l)
-    if [[ $logo_count -eq 0 ]]; then
-        error_exit "No logo files found in /app/logos"
+    # Validate uploads directory exists (created by Dockerfile)
+    local uploads_dir="/app/uploads"
+    if [[ ! -d "$uploads_dir" ]]; then
+        error_exit "Uploads directory missing: $uploads_dir (should be created by Dockerfile)"
     fi
-    log "✓ Found $logo_count logo files"
+    if [[ ! -w "$uploads_dir" ]]; then
+        error_exit "Uploads directory not writable: $uploads_dir"
+    fi
+    log "✓ Uploads directory validated: $uploads_dir"
+
+    log "✓ Generalized voting platform directory validation complete"
+
+    # Validate PostgreSQL DATABASE_URL
+    if [[ -z "$DATABASE_URL" ]]; then
+        error_exit "DATABASE_URL environment variable is required for PostgreSQL connection. Example: postgresql+asyncpg://user:pass@host:5432/db"
+    fi
+    if [[ ! "$DATABASE_URL" =~ ^postgresql(\+asyncpg)?:// ]]; then
+        error_exit "DATABASE_URL must start with 'postgresql://' or 'postgresql+asyncpg://'. Examples: postgresql://user:pass@host:5432/db or postgresql+asyncpg://user:pass@host:5432/db"
+    fi
+    log "✓ PostgreSQL DATABASE_URL validated"
+
+    # Validate required security settings
+    if [[ -z "$SUPER_ADMIN_EMAIL" ]]; then
+        error_exit "SUPER_ADMIN_EMAIL environment variable is required"
+    fi
+    if [[ -z "$SUPER_ADMIN_PASSWORD" ]]; then
+        error_exit "SUPER_ADMIN_PASSWORD environment variable is required"
+    fi
+    if [[ -z "$JWT_SECRET_KEY" ]] || [[ ${#JWT_SECRET_KEY} -lt 32 ]]; then
+        error_exit "JWT_SECRET_KEY must be at least 32 characters long for security"
+    fi
+    log "✓ Security configuration validated"
 
     # Validate port
-    if ! [[ "$PORT" =~ ^[0-9]+$ ]] || [[ $PORT -lt 1024 ]] || [[ $PORT -gt 65535 ]]; then
-        error_exit "Invalid port: $PORT (must be between 1024-65535)"
+    if ! [[ "$PORT" =~ ^[0-9]+$ ]] || [[ $PORT -lt 1 ]] || [[ $PORT -gt 65535 ]]; then
+        error_exit "Invalid port: $PORT (must be between 1-65535)"
     fi
     log "✓ Port validated: $PORT"
 
@@ -73,16 +104,20 @@ validate_environment() {
         error_exit "HOST environment variable is required"
     fi
     log "✓ Host validated: $HOST"
+
+    # Validate WORKERS
+    if ! [[ "$WORKERS" =~ ^[0-9]+$ ]] || [[ $WORKERS -lt 1 ]] || [[ $WORKERS -gt 32 ]]; then
+        error_exit "Invalid WORKERS value: $WORKERS (must be between 1-32)"
+    fi
+    log "✓ Workers validated: $WORKERS"
 }
 
-# Setup data directory and database
-setup_data_directory() {
-    log "Setting up data directory..."
+# Setup application directories
+setup_application_directories() {
+    log "Setting up application directories..."
 
-    local data_dir
-    data_dir=$(dirname "$DATABASE_PATH")
-
-    # Create data directory if it doesn't exist
+    # Create data directory for any temporary files or uploads
+    local data_dir="/app/data"
     if [[ ! -d "$data_dir" ]]; then
         mkdir -p "$data_dir" || error_exit "Failed to create data directory: $data_dir"
         log "✓ Created data directory: $data_dir"
@@ -92,18 +127,10 @@ setup_data_directory() {
     if [[ ! -w "$data_dir" ]]; then
         error_exit "Data directory not writable: $data_dir"
     fi
-    log "✓ Data directory writable: $data_dir"
+    log "✓ Data directory ready: $data_dir"
 
-    # Initialize database if it doesn't exist
-    if [[ ! -f "$DATABASE_PATH" ]]; then
-        log "Initializing new database: $DATABASE_PATH"
-        # The database will be created automatically when the app starts
-        # We just need to ensure the directory exists and is writable
-        touch "$DATABASE_PATH" || error_exit "Failed to create database file: $DATABASE_PATH"
-        log "✓ Database file created: $DATABASE_PATH"
-    else
-        log "✓ Using existing database: $DATABASE_PATH"
-    fi
+    # PostgreSQL database connection will be handled by the application
+    log "✓ PostgreSQL database connection configured via DATABASE_URL"
 }
 
 # Setup logs directory
@@ -159,6 +186,7 @@ health_check() {
     log "Waiting for application to start..."
 
     while [[ $attempt -lt $max_attempts ]]; do
+        # Use the dedicated health endpoint for proper health check
         if curl -f -s "http://localhost:$PORT/api/health" >/dev/null 2>&1; then
             log "✓ Application health check passed"
             return 0
@@ -172,14 +200,74 @@ health_check() {
     error_exit "Application failed to start within $(($max_attempts * 2)) seconds"
 }
 
+# Run database migrations
+run_database_migrations() {
+    log "Running database migrations..."
+
+    # Check if alembic is available and validate version
+    if ! command -v alembic >/dev/null 2>&1; then
+        error_exit "alembic command not found - required for database migrations"
+    fi
+
+    # Validate alembic version and functionality
+    local alembic_version
+    if alembic_version=$(alembic --version 2>/dev/null); then
+        log "✓ Alembic available: $alembic_version"
+    else
+        error_exit "alembic command found but not properly accessible. Check virtual environment configuration."
+    fi
+
+    # Test database connectivity before running migrations
+    log "Testing database connectivity..."
+    if timeout 10 python -c "
+import asyncio
+import sys
+sys.path.insert(0, '/app/src')
+from sqlalchemy.ext.asyncio import create_async_engine
+from cardinal_vote.config import settings
+
+async def test_connection():
+    try:
+        engine = create_async_engine(settings.DATABASE_URL, echo=False)
+        async with engine.begin() as conn:
+            await conn.execute('SELECT 1')
+        await engine.dispose()
+        print('✓ Database connection successful')
+        return True
+    except Exception as e:
+        print(f'✗ Database connection failed: {e}')
+        return False
+
+result = asyncio.run(test_connection())
+sys.exit(0 if result else 1)
+" 2>/dev/null; then
+        log "✓ Database connectivity verified"
+    else
+        log "⚠ Database connectivity test failed - migrations may fail. Proceeding anyway..."
+    fi
+
+    # Run migrations with timeout to prevent hanging
+    log "Starting database migrations (timeout: 60s)..."
+    if timeout 60 alembic upgrade head; then
+        log "✓ Database migrations completed successfully"
+    else
+        local exit_code=$?
+        if [[ $exit_code -eq 124 ]]; then
+            error_exit "Database migrations timed out after 60 seconds. Check database connectivity and migration complexity."
+        else
+            error_exit "Database migrations failed with exit code $exit_code. Check database configuration and migration scripts."
+        fi
+    fi
+}
+
 # Start application
 start_application() {
-    log "Starting Cardinal Vote Logo Voting Platform..."
+    log "Starting Cardinal Vote Generalized Voting Platform..."
     log "Environment: $CARDINAL_ENV"
     log "Host: $HOST"
     log "Port: $PORT"
     log "Debug: $DEBUG"
-    log "Database: $DATABASE_PATH"
+    log "Database: PostgreSQL (via DATABASE_URL)"
 
     # Build uvicorn command
     local uvicorn_args=(
@@ -199,8 +287,8 @@ start_application() {
 
     # Production-specific optimizations
     if [[ "$CARDINAL_ENV" == "production" ]]; then
-        uvicorn_args+=("--workers" "1")  # Single worker for SQLite
-        log "Production mode enabled"
+        uvicorn_args+=("--workers" "$WORKERS")
+        log "Production mode enabled with $WORKERS worker(s)"
     fi
 
     # Start the application in background for health checking
@@ -223,14 +311,33 @@ start_application() {
 
 # Main execution
 main() {
-    log "Starting Cardinal Vote Logo Voting Platform container"
-    log "Entrypoint version: 1.0.0"
+    # Record startup time for performance monitoring
+    local startup_start_time=$(date +%s.%N)
+    local startup_timestamp=$(date '+%Y-%m-%d %H:%M:%S')
+
+    log "Starting Cardinal Vote Generalized Voting Platform container"
+    log "Entrypoint version: 2.0.0 (PostgreSQL-only)"
+    log "Startup initiated at: $startup_timestamp"
 
     # Run all setup steps
+    local validation_start=$(date +%s.%N)
     validate_environment
-    setup_data_directory
+    local validation_duration=$(echo "$(date +%s.%N) - $validation_start" | bc -l)
+    log "⏱ Environment validation completed in ${validation_duration}s"
+
+    setup_application_directories
     setup_logs_directory
     preflight_checks
+
+    # Initialize database
+    local migration_start=$(date +%s.%N)
+    run_database_migrations
+    local migration_duration=$(echo "$(date +%s.%N) - $migration_start" | bc -l)
+    log "⏱ Database migrations completed in ${migration_duration}s"
+
+    # Calculate total startup time
+    local startup_duration=$(echo "$(date +%s.%N) - $startup_start_time" | bc -l)
+    log "⏱ Container startup completed in ${startup_duration}s"
 
     # Start the application
     start_application

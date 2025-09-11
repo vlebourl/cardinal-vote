@@ -1,4 +1,4 @@
-"""Database operations for the ToVéCo voting platform."""
+"""Database operations for the Cardinal Vote generalized voting platform."""
 
 import json
 import logging
@@ -217,38 +217,38 @@ class DatabaseManager:
         if not votes:
             return {"summary": {}, "total_voters": 0}
 
-        # Aggregate ratings per logo
-        logo_totals: dict[str, int] = {}
-        logo_counts: dict[str, int] = {}
+        # Aggregate ratings per option
+        option_totals: dict[str, int] = {}
+        option_counts: dict[str, int] = {}
 
         for vote in votes:
             ratings = vote["ratings"]
-            for logo, rating in ratings.items():
-                if logo not in logo_totals:
-                    logo_totals[logo] = 0
-                    logo_counts[logo] = 0
-                logo_totals[logo] += rating
-                logo_counts[logo] += 1
+            for option, rating in ratings.items():
+                if option not in option_totals:
+                    option_totals[option] = 0
+                    option_counts[option] = 0
+                option_totals[option] += rating
+                option_counts[option] += 1
 
         # Calculate averages and create summary
         summary = {}
-        for logo in logo_totals:
-            average = logo_totals[logo] / logo_counts[logo]
-            summary[logo] = {
+        for option in option_totals:
+            average = option_totals[option] / option_counts[option]
+            summary[option] = {
                 "average": round(average, 2),
-                "total_votes": logo_counts[logo],
-                "total_score": logo_totals[logo],
+                "total_votes": option_counts[option],
+                "total_score": option_totals[option],
             }
 
         # Sort by total score (descending) and add rankings
-        sorted_logos = sorted(
+        sorted_options = sorted(
             summary.items(), key=lambda x: x[1]["total_score"], reverse=True
         )
-        for rank, (_logo, stats) in enumerate(sorted_logos, 1):
+        for rank, (_option, stats) in enumerate(sorted_options, 1):
             stats["ranking"] = rank
 
         # Convert back to dict maintaining order
-        ranked_summary = dict(sorted_logos)
+        ranked_summary = dict(sorted_options)
 
         return {
             "summary": ranked_summary,

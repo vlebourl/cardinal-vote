@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ app_name }} - Generalized Voting Platform</title>
+    <meta name="description" content="Create and participate in votes using value voting methodology. Support for flexible content types and organizer-defined voting scenarios.">
+    <meta name="theme-color" content="#2D5820">
+    <link rel="stylesheet" href="/static/style.css">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🗳️</text></svg>">
+</head>
+<body>
+    <div class="container">
+        <header class="platform-header">
+            <h1>{{ app_name }}</h1>
+            <p class="platform-description">Generalized Voting Platform</p>
+        </header>
+
+        <main class="landing-content">
+            <section class="platform-info">
+                <h2>About This Platform</h2>
+                <p>
+                    This is a generalized voting platform that supports flexible content types
+                    and uses value voting methodology (-2 to +2 scale) for nuanced preference expression.
+                </p>
+
+                <div class="features">
+                    <div class="feature">
+                        <h3>🗳️ Vote Organizers</h3>
+                        <p>Create votes with custom content types - images, text, or any options you define.</p>
+                    </div>
+
+                    <div class="feature">
+                        <h3>📊 Value Voting</h3>
+                        <p>Express nuanced preferences with ratings from -2 (strongly reject) to +2 (strongly accept).</p>
+                    </div>
+
+                    <div class="feature">
+                        <h3>🔗 Shareable Links</h3>
+                        <p>Each vote gets a unique URL that organizers can share with participants.</p>
+                    </div>
+                </div>
+            </section>
+
+            <section class="getting-started">
+                <h2>How to Use</h2>
+                <div class="steps">
+                    <div class="step">
+                        <strong>For Organizers:</strong> Contact your platform administrator to create a new vote with your specific options.
+                    </div>
+                    <div class="step">
+                        <strong>For Voters:</strong> Use the specific vote URL provided by the organizer (e.g., <code>/vote/your-vote-slug</code>).
+                    </div>
+                </div>
+            </section>
+
+            <section class="platform-status">
+                <p>
+                    <strong>Platform Version:</strong> {{ app_version }}<br>
+                    <strong>Status:</strong> <span class="status-active">Active</span>
+                </p>
+            </section>
+        </main>
+
+        <footer class="platform-footer">
+            <p>&copy; 2025 {{ app_name }}. Generalized voting platform supporting flexible content types.</p>
+        </footer>
+    </div>
+
+    <style>
+        .platform-header {
+            text-align: center;
+            margin: 2rem 0;
+        }
+
+        .platform-header h1 {
+            color: #2D5820;
+            margin-bottom: 0.5rem;
+        }
+
+        .platform-description {
+            color: #666;
+            font-size: 1.2rem;
+        }
+
+        .landing-content {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 0 1rem;
+        }
+
+        .platform-info h2 {
+            color: #2D5820;
+            border-bottom: 2px solid #2D5820;
+            padding-bottom: 0.5rem;
+        }
+
+        .features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin: 2rem 0;
+        }
+
+        .feature {
+            background: #f9f9f9;
+            padding: 1.5rem;
+            border-radius: 8px;
+            border-left: 4px solid #2D5820;
+        }
+
+        .feature h3 {
+            margin-top: 0;
+            color: #2D5820;
+        }
+
+        .steps {
+            background: #f0f8ff;
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin: 1rem 0;
+        }
+
+        .step {
+            margin: 1rem 0;
+            padding: 0.5rem 0;
+        }
+
+        .step code {
+            background: #e9ecef;
+            padding: 0.2rem 0.4rem;
+            border-radius: 4px;
+            font-family: monospace;
+        }
+
+        .platform-status {
+            background: #e8f5e8;
+            padding: 1rem;
+            border-radius: 8px;
+            margin: 2rem 0;
+        }
+
+        .status-active {
+            color: #28a745;
+            font-weight: bold;
+        }
+
+        .platform-footer {
+            text-align: center;
+            margin-top: 3rem;
+            padding: 2rem 0 1rem;
+            border-top: 1px solid #ddd;
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        @media (max-width: 768px) {
+            .features {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</body>
+</html>

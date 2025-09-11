@@ -374,9 +374,9 @@ python tests/test_runner.py --docker
 
 ### Common Issues and Solutions
 
-1. **"Logos not available" test failures**
-   - Ensure `/logos/` directory contains all 11 logo files (cardinal_vote1.png - cardinal_vote11.png)
-   - Verify file permissions and accessibility
+1. **"Content not available" test failures**
+   - Ensure `/uploads/` directory exists and is writable
+   - Verify directory permissions for vote content uploads
 
 2. **Database test failures**
    - Check SQLite installation and availability

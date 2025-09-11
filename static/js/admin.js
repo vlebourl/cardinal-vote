@@ -105,21 +105,33 @@ window.AdminUtils = {
     modal.addEventListener('click', handleModalClick)
   },
 
-  // CSRF helper
-  getCsrfToken: function () {
-    return window.csrfToken || ''
+  // JWT helper
+  getJwtToken: function () {
+    return localStorage.getItem('jwt_token') || ''
   },
 
-  // Fetch wrapper with CSRF token
-  fetchWithCsrf: async function (url, options = {}) {
+  // Fetch wrapper with JWT token
+  fetchWithAuth: async function (url, options = {}) {
+    const token = this.getJwtToken()
     const defaultOptions = {
       headers: {
-        'X-CSRF-Token': this.getCsrfToken(),
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json',
         ...options.headers
       }
     }
 
-    return fetch(url, { ...options, ...defaultOptions })
+    const response = await fetch(url, { ...options, ...defaultOptions })
+
+    // Handle authentication errors
+    if (response.status === 401) {
+      localStorage.removeItem('jwt_token')
+      showMessage('Session expirée, redirection...', 'error')
+      setTimeout(() => window.location.href = '/login', 2000)
+      return null
+    }
+
+    return response
   },
 
   // Format file size
@@ -197,138 +209,30 @@ window.showLoading = window.AdminUtils.showLoading
 window.hideLoading = window.AdminUtils.hideLoading
 window.showConfirm = window.AdminUtils.showConfirm
 
-// Logo Management Functions
-window.LogoManager = {
-  // Upload logo
-  uploadLogo: async function (formData) {
-    try {
-      showLoading()
-
-      const response = await fetch('/admin/logos/upload', {
-        method: 'POST',
-        body: formData,
-        headers: {
-          'X-CSRF-Token': window.csrfToken
-        }
-      })
-
-      const result = await response.json()
-
-      if (result.success) {
-        showMessage(result.message, 'success')
-        // Refresh the page or update the logos list
-        setTimeout(() => {
-          window.location.reload()
-        }, 1000)
-      } else {
-        showMessage(result.message, 'error')
-      }
-
-      return result
-    } catch (error) {
-      console.error('Logo upload error:', error)
-      showMessage('Erreur lors de l\'upload', 'error')
-      return { success: false, error: error.message }
-    } finally {
-      hideLoading()
-    }
-  },
-
-  // Delete logos
-  deleteLogos: async function (logoNames) {
-    if (logoNames.length === 0) {
-      showMessage('Aucun logo sélectionné', 'error')
-      return
-    }
-
-    const confirmMessage =
-      logoNames.length === 1
-        ? `Êtes-vous sûr de vouloir supprimer le logo "${logoNames[0]}" ?`
-        : `Êtes-vous sûr de vouloir supprimer ${logoNames.length} logos ?`
-
-    showConfirm('Confirmer la suppression', confirmMessage, async () => {
-      try {
-        showLoading()
-
-        const formData = new FormData()
-        formData.append('operation', 'bulk_delete')
-        formData.append('logos', JSON.stringify(logoNames))
-        formData.append('csrf_token', window.csrfToken)
-
-        const response = await fetch('/admin/logos/manage', {
-          method: 'POST',
-          body: formData
-        })
-
-        const result = await response.json()
-
-        if (result.success) {
-          showMessage(result.message, 'success')
-          setTimeout(() => {
-            window.location.reload()
-          }, 1000)
-        } else {
-          showMessage(result.message, 'error')
-        }
-      } catch (error) {
-        console.error('Delete logos error:', error)
-        showMessage('Erreur lors de la suppression', 'error')
-      } finally {
-        hideLoading()
-      }
-    })
-  },
-
-  // Rename logo
-  renameLogo: async function (oldName, newName) {
-    if (!newName || newName === oldName) {
-      showMessage('Nouveau nom invalide', 'error')
-      return
-    }
-
-    try {
-      showLoading()
-
-      const formData = new FormData()
-      formData.append('operation', 'rename')
-      formData.append('logos', JSON.stringify([oldName]))
-      formData.append('new_name', newName)
-      formData.append('csrf_token', window.csrfToken)
-
-      const response = await fetch('/admin/logos/manage', {
-        method: 'POST',
-        body: formData
-      })
-
-      const result = await response.json()
-
-      if (result.success) {
-        showMessage(result.message, 'success')
-        setTimeout(() => {
-          window.location.reload()
-        }, 1000)
-      } else {
-        showMessage(result.message, 'error')
-      }
-    } catch (error) {
-      console.error('Rename logo error:', error)
-      showMessage('Erreur lors du renommage', 'error')
-    } finally {
-      hideLoading()
-    }
-  }
-}
 
 // Vote Management Functions
 window.VoteManager = {
-  // Export votes
-  exportVotes: async function (format = 'csv') {
+  // Export votes - Updated to use generalized voting platform API
+  exportVotes: async function (voteId, format = 'csv') {
+    if (!voteId) {
+      showMessage('Vote ID requis pour l\'export', 'error')
+      return
+    }
+
     try {
       showLoading()
 
-      const response = await fetch(`/admin/votes/export/${format}`, {
+      // Get JWT token for authentication
+      const token = localStorage.getItem('jwt_token')
+      if (!token) {
+        showMessage('Authentification requise', 'error')
+        return
+      }
+
+      const response = await fetch(`/api/votes/${voteId}/export?format=${format}`, {
         headers: {
-          'X-CSRF-Token': window.csrfToken
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
         }
       })
 
@@ -338,13 +242,17 @@ window.VoteManager = {
         const url = window.URL.createObjectURL(blob)
         const a = document.createElement('a')
         a.href = url
-        a.download = `votes_export_${new Date().toISOString().slice(0, 10)}.${format}`
+        a.download = `vote_${voteId}_export_${new Date().toISOString().slice(0, 10)}.${format}`
         document.body.appendChild(a)
         a.click()
         window.URL.revokeObjectURL(url)
         document.body.removeChild(a)
 
         showMessage('Export réussi', 'success')
+      } else if (response.status === 401) {
+        localStorage.removeItem('jwt_token')
+        showMessage('Session expirée, redirection...', 'error')
+        setTimeout(() => window.location.href = '/login', 2000)
       } else {
         const result = await response.json()
         showMessage(result.message || 'Erreur lors de l\'export', 'error')
@@ -357,37 +265,51 @@ window.VoteManager = {
     }
   },
 
-  // Reset all votes
-  resetAllVotes: async function () {
+  // Delete individual vote - Updated for generalized voting platform API
+  deleteVote: async function (voteId) {
+    if (!voteId) {
+      showMessage('Vote ID requis', 'error')
+      return
+    }
+
     showConfirm(
-      'ATTENTION - Suppression de tous les votes',
-      'Cette action supprimera définitivement TOUS les votes de la base de données. Cette action est irréversible. Êtes-vous absolument sûr ?',
+      'Confirmer la suppression',
+      'Cette action supprimera définitivement ce vote. Cette action est irréversible. Êtes-vous sûr ?',
       async () => {
         try {
           showLoading()
 
-          const formData = new FormData()
-          formData.append('operation', 'reset')
-          formData.append('csrf_token', window.csrfToken)
+          // Get JWT token for authentication
+          const token = localStorage.getItem('jwt_token')
+          if (!token) {
+            showMessage('Authentification requise', 'error')
+            return
+          }
 
-          const response = await fetch('/admin/votes/manage', {
-            method: 'POST',
-            body: formData
+          const response = await fetch(`/api/votes/${voteId}`, {
+            method: 'DELETE',
+            headers: {
+              'Authorization': `Bearer ${token}`,
+              'Content-Type': 'application/json'
+            }
           })
 
-          const result = await response.json()
-
-          if (result.success) {
-            showMessage(result.message, 'success')
+          if (response.ok) {
+            showMessage('Vote supprimé avec succès', 'success')
             setTimeout(() => {
               window.location.reload()
             }, 1500)
+          } else if (response.status === 401) {
+            localStorage.removeItem('jwt_token')
+            showMessage('Session expirée, redirection...', 'error')
+            setTimeout(() => window.location.href = '/login', 2000)
           } else {
-            showMessage(result.message, 'error')
+            const result = await response.json()
+            showMessage(result.message || 'Erreur lors de la suppression', 'error')
           }
         } catch (error) {
-          console.error('Reset votes error:', error)
-          showMessage('Erreur lors de la remise à zéro', 'error')
+          console.error('Delete vote error:', error)
+          showMessage('Erreur lors de la suppression', 'error')
         } finally {
           hideLoading()
         }
@@ -395,102 +317,89 @@ window.VoteManager = {
     )
   },
 
-  // Delete voter votes
-  deleteVoterVotes: async function (voterName) {
-    if (!voterName) {
-      showMessage('Nom du votant requis', 'error')
-      return
+  // Get vote results - Updated for generalized voting platform API
+  getVoteResults: async function (voteId) {
+    if (!voteId) {
+      showMessage('Vote ID requis', 'error')
+      return null
     }
 
-    showConfirm('Confirmer la suppression', `Supprimer tous les votes de "${voterName}" ?`, async () => {
-      try {
-        showLoading()
-
-        const formData = new FormData()
-        formData.append('operation', 'delete_voter')
-        formData.append('voter_name', voterName)
-        formData.append('csrf_token', window.csrfToken)
-
-        const response = await fetch('/admin/votes/manage', {
-          method: 'POST',
-          body: formData
-        })
-
-        const result = await response.json()
-
-        if (result.success) {
-          showMessage(result.message, 'success')
-          setTimeout(() => {
-            window.location.reload()
-          }, 1000)
-        } else {
-          showMessage(result.message, 'error')
-        }
-      } catch (error) {
-        console.error('Delete voter votes error:', error)
-        showMessage('Erreur lors de la suppression', 'error')
-      } finally {
-        hideLoading()
-      }
-    })
-  }
-}
-
-// System Management Functions
-window.SystemManager = {
-  // Create backup
-  createBackup: async function () {
-    showConfirm('Créer une sauvegarde', 'Créer une sauvegarde de la base de données ?', async () => {
-      try {
-        showLoading()
-
-        const formData = new FormData()
-        formData.append('csrf_token', window.csrfToken)
-
-        const response = await fetch('/admin/system/backup', {
-          method: 'POST',
-          body: formData
-        })
-
-        const result = await response.json()
-
-        if (result.success) {
-          showMessage(result.message, 'success')
-        } else {
-          showMessage(result.message, 'error')
-        }
-      } catch (error) {
-        console.error('Backup error:', error)
-        showMessage('Erreur lors de la sauvegarde', 'error')
-      } finally {
-        hideLoading()
-      }
-    })
-  },
-
-  // Clean up sessions
-  cleanupSessions: async function () {
     try {
       showLoading()
 
-      const formData = new FormData()
-      formData.append('csrf_token', window.csrfToken)
+      // Get JWT token for authentication
+      const token = localStorage.getItem('jwt_token')
+      if (!token) {
+        showMessage('Authentification requise', 'error')
+        return null
+      }
 
-      const response = await fetch('/admin/system/cleanup-sessions', {
-        method: 'POST',
-        body: formData
+      const response = await fetch(`/api/votes/${voteId}/results`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
       })
 
-      const result = await response.json()
-
-      if (result.success) {
-        showMessage(result.message, 'success')
+      if (response.ok) {
+        const results = await response.json()
+        return results
+      } else if (response.status === 401) {
+        localStorage.removeItem('jwt_token')
+        showMessage('Session expirée, redirection...', 'error')
+        setTimeout(() => window.location.href = '/login', 2000)
       } else {
-        showMessage(result.message, 'error')
+        const result = await response.json()
+        showMessage(result.message || 'Erreur lors de la récupération des résultats', 'error')
       }
+      return null
     } catch (error) {
-      console.error('Session cleanup error:', error)
-      showMessage('Erreur lors du nettoyage', 'error')
+      console.error('Get vote results error:', error)
+      showMessage('Erreur lors de la récupération des résultats', 'error')
+      return null
+    } finally {
+      hideLoading()
+    }
+  }
+}
+
+// System Management Functions - Updated for generalized voting platform
+window.SystemManager = {
+  // Get system stats - Using correct API endpoint
+  getSystemStats: async function () {
+    try {
+      showLoading()
+
+      // Get JWT token for authentication
+      const token = localStorage.getItem('jwt_token')
+      if (!token) {
+        showMessage('Authentification requise', 'error')
+        return null
+      }
+
+      const response = await fetch('/api/admin/stats', {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      })
+
+      if (response.ok) {
+        const stats = await response.json()
+        return stats
+      } else if (response.status === 401) {
+        localStorage.removeItem('jwt_token')
+        showMessage('Session expirée, redirection...', 'error')
+        setTimeout(() => window.location.href = '/login', 2000)
+      } else {
+        const result = await response.json()
+        showMessage(result.message || 'Erreur lors de la récupération des statistiques', 'error')
+      }
+      return null
+    } catch (error) {
+      console.error('System stats error:', error)
+      showMessage('Erreur lors de la récupération des statistiques', 'error')
+      return null
     } finally {
       hideLoading()
     }
@@ -542,22 +451,36 @@ document.addEventListener('DOMContentLoaded', function () {
     }, 5000)
   })
 
-  // Handle session timeout
+  // Handle session timeout - Updated for JWT authentication
   let sessionWarningShown = false
   const checkSession = async () => {
     try {
-      const response = await fetch('/admin/api/stats', {
-        headers: {
-          'X-CSRF-Token': window.csrfToken
-        }
-      })
-
-      if (response.status === 401) {
+      const token = localStorage.getItem('jwt_token')
+      if (!token) {
         if (!sessionWarningShown) {
           sessionWarningShown = true
           showMessage('Session expirée. Redirection vers la page de connexion...', 'error')
           setTimeout(() => {
-            window.location.href = '/admin/login'
+            window.location.href = '/login'
+          }, 2000)
+        }
+        return
+      }
+
+      const response = await fetch('/api/admin/stats', {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      })
+
+      if (response.status === 401) {
+        localStorage.removeItem('jwt_token')
+        if (!sessionWarningShown) {
+          sessionWarningShown = true
+          showMessage('Session expirée. Redirection vers la page de connexion...', 'error')
+          setTimeout(() => {
+            window.location.href = '/login'
           }, 2000)
         }
       }
