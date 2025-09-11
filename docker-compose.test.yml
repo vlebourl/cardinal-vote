@@ -1,0 +1,108 @@
+# Test environment with PostgreSQL container for CI/CD
+# Usage: docker-compose -f docker-compose.test.yml up -d postgres-test
+
+services:
+  # PostgreSQL test database
+  postgres-test:
+    image: postgres:16-alpine
+    environment:
+      - POSTGRES_DB=test_cardinal_vote
+      - POSTGRES_USER=test_user
+      - POSTGRES_PASSWORD=test_password
+      - POSTGRES_INITDB_ARGS=--auth-host=scram-sha-256
+    ports:
+      - '5433:5432' # Use different port to avoid conflicts
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U test_user -d test_cardinal_vote']
+      interval: 5s
+      timeout: 3s
+      retries: 5
+      start_period: 10s
+    volumes:
+      # Use tmpfs for fast test database (data doesn't persist)
+      - type: tmpfs
+        target: /var/lib/postgresql/data
+        tmpfs:
+          size: 100M
+    restart: 'no'
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 256M
+        reservations:
+          cpus: '0.1'
+          memory: 64M
+    labels:
+      - 'test.environment=true'
+      - 'test.service=postgresql'
+
+  # Test runner service
+  cardinal-vote-test:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: development # Use development stage if available
+    depends_on:
+      postgres-test:
+        condition: service_healthy
+    environment:
+      # Test database configuration
+      - TEST_DATABASE_URL=postgresql+asyncpg://test_user:test_password@postgres-test:5432/test_cardinal_vote
+      - DATABASE_URL=postgresql+asyncpg://test_user:test_password@postgres-test:5432/test_cardinal_vote
+      # Test admin credentials
+      - ADMIN_USERNAME=test_admin
+      - ADMIN_PASSWORD=test_password_for_integration_tests_only
+      - SESSION_SECRET_KEY=test_session_key_for_tests_only_not_production
+      # Super admin test credentials
+      - SUPER_ADMIN_EMAIL=test@admin.com
+      - SUPER_ADMIN_PASSWORD=test_super_admin_password
+      - JWT_SECRET_KEY=test_jwt_secret_key_for_tests_only_extremely_long_and_not_for_production_use
+      # Application configuration
+      - CARDINAL_ENV=test
+      - DEBUG=true
+      - HOST=0.0.0.0
+      - PORT=8000
+      # Disable rate limiting for tests
+      - ENABLE_RATE_LIMITING=false
+      - MAX_VOTES_PER_IP_PER_HOUR=1000
+      # Test logging
+      - LOG_LEVEL=debug
+    volumes:
+      - .:/app
+      - /tmp/test-uploads:/app/uploads
+    working_dir: /app
+    profiles:
+      - test
+    restart: 'no'
+    command: >
+      sh -c "
+        echo '🧪 Waiting for test database...' &&
+        python -c '
+        import asyncio
+        import asyncpg
+        async def wait_db():
+            for i in range(30):
+                try:
+                    conn = await asyncpg.connect(\"postgresql://test_user:test_password@postgres-test:5432/test_cardinal_vote\")
+                    await conn.close()
+                    print(\"✓ Test database ready\")
+                    return
+                except Exception as e:
+                    print(f\"⏳ Attempt {i+1}/30: {e}\")
+                    await asyncio.sleep(1)
+            raise Exception(\"Test database not available\")
+        asyncio.run(wait_db())
+        ' &&
+        echo '🚀 Running tests...' &&
+        uv run pytest tests/test_integration_postgresql.py -v --tb=short &&
+        uv run pytest tests/test_super_admin_integration.py -v --tb=short
+      "
+
+volumes:
+  # Test-specific volumes (temporary)
+  test_postgres_data:
+    driver: local
+    labels:
+      - 'test.volume=true'
+      - 'test.cleanup=true'

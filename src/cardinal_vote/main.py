@@ -19,10 +19,12 @@ from sqlalchemy import select
 from .auth_manager import GeneralizedAuthManager
 from .auth_routes import auth_router
 from .config import settings
-from .database import DatabaseError
+
+# DatabaseError now imported from models with other exceptions
 from .database_manager import GeneralizedDatabaseManager
 from .dependencies import AsyncDatabaseSession
 from .models import (
+    DatabaseError,
     ValidationError,
     Vote,
     VoteOption,

@@ -154,7 +154,9 @@ Thumbs.db
 
 # Project specific
 *.log
-*.db
+# PostgreSQL backup files
+*.sql
+*.dump
 uploads/
 static/uploads/
 
@@ -169,7 +171,7 @@ static/uploads/
 *.swo
 
 # Runtime files
-votes.db
+# Legacy SQLite patterns removed - now using PostgreSQL
 *.pid
 *.sock
 

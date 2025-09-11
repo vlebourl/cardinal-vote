@@ -1,5 +1,16 @@
-"""Integration tests for super admin functionality."""
+"""Integration tests for super admin functionality.
 
+These tests use PostgreSQL for consistency with production environment.
+For local testing, run:
+    docker-compose -f docker-compose.test.yml up -d postgres-test
+    export TEST_DATABASE_URL="postgresql+asyncpg://test_user:test_password@localhost:5433/test_cardinal_vote"
+    uv run pytest tests/test_super_admin_integration.py -v
+
+For CI testing, the database container is started automatically.
+"""
+
+# Test database setup - Use PostgreSQL for consistency with production
+import os
 from datetime import datetime, timedelta
 from unittest.mock import patch
 from uuid import uuid4
@@ -7,25 +18,25 @@ from uuid import uuid4
 import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
-from sqlalchemy.pool import StaticPool
 
 from cardinal_vote.dependencies import get_async_session
 from cardinal_vote.main import app
 from cardinal_vote.models import Base, User, Vote, VoterResponse
 from cardinal_vote.super_admin_manager import SuperAdminManager
 
-# Test database setup - Use SQLite for CI compatibility
-TEST_DATABASE_URL = "sqlite+aiosqlite:///test_admin.db"
+TEST_DATABASE_URL = os.getenv(
+    "TEST_DATABASE_URL",
+    "postgresql+asyncpg://test_user:test_password@localhost:5433/test_cardinal_vote",
+)
 
 
 @pytest.fixture
 async def async_engine():
-    """Create async test database engine."""
+    """Create async test database engine for PostgreSQL."""
     engine = create_async_engine(
         TEST_DATABASE_URL,
-        poolclass=StaticPool,
-        connect_args={"check_same_thread": False},
         echo=False,
+        pool_pre_ping=True,
     )
 
     # Create tables
