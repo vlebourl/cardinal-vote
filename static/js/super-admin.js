@@ -17,7 +17,7 @@ window.SuperAdminAPI = {
   },
 
   // Generic API call wrapper
-  async call (endpoint, options = {}) {
+  async call(endpoint, options = {}) {
     const url = `${this.baseURL}${endpoint}`
     const config = {
       headers: this.getAuthHeaders(),
@@ -41,26 +41,26 @@ window.SuperAdminAPI = {
   },
 
   // System statistics
-  async getStats () {
+  async getStats() {
     return this.call('/stats')
   },
 
-  async getComprehensiveStats () {
+  async getComprehensiveStats() {
     return this.call('/comprehensive-stats')
   },
 
   // User management
-  async getUsers (page = 1, limit = 20, search = '') {
+  async getUsers(page = 1, limit = 20, search = '') {
     const params = new URLSearchParams({ page: page.toString(), limit: limit.toString() })
     if (search) params.append('search', search)
     return this.call(`/users?${params}`)
   },
 
-  async getUserDetails (userId) {
+  async getUserDetails(userId) {
     return this.call(`/users/${userId}`)
   },
 
-  async updateUser (userId, data) {
+  async updateUser(userId, data) {
     return this.call('/users/manage', {
       method: 'POST',
       body: JSON.stringify({
@@ -71,7 +71,7 @@ window.SuperAdminAPI = {
     })
   },
 
-  async bulkUpdateUsers (userIds, operation, data = {}) {
+  async bulkUpdateUsers(userIds, operation, data = {}) {
     return this.call('/users/bulk-update', {
       method: 'POST',
       body: JSON.stringify({
@@ -83,29 +83,29 @@ window.SuperAdminAPI = {
   },
 
   // Activity and monitoring
-  async getRecentActivity (limit = 20) {
+  async getRecentActivity(limit = 20) {
     return this.call(`/recent-activity?limit=${limit}`)
   },
 
-  async getUserSummary () {
+  async getUserSummary() {
     return this.call('/user-summary')
   },
 
-  async getAuditLog (limit = 50) {
+  async getAuditLog(limit = 50) {
     return this.call(`/audit-log?limit=${limit}`)
   },
 
   // Content moderation
-  async getModerationStats () {
+  async getModerationStats() {
     return this.call('/moderation/dashboard')
   },
 
-  async getPendingFlags (limit = 50, offset = 0) {
+  async getPendingFlags(limit = 50, offset = 0) {
     const params = new URLSearchParams({ limit: limit.toString(), offset: offset.toString() })
     return this.call(`/moderation/flags?${params}`)
   },
 
-  async reviewFlag (flagId, status, reviewNotes) {
+  async reviewFlag(flagId, status, reviewNotes) {
     return this.call(`/moderation/flags/${flagId}/review`, {
       method: 'POST',
       body: JSON.stringify({
@@ -115,17 +115,17 @@ window.SuperAdminAPI = {
     })
   },
 
-  async getFlaggedVotes (limit = 20, offset = 0, flagStatus = null) {
+  async getFlaggedVotes(limit = 20, offset = 0, flagStatus = null) {
     const params = new URLSearchParams({ limit: limit.toString(), offset: offset.toString() })
     if (flagStatus) params.append('flag_status', flagStatus)
     return this.call(`/moderation/votes?${params}`)
   },
 
-  async getVoteModerationSummary (voteId) {
+  async getVoteModerationSummary(voteId) {
     return this.call(`/moderation/votes/${voteId}`)
   },
 
-  async takeModerationAction (voteId, actionType, reason, additionalData = {}) {
+  async takeModerationAction(voteId, actionType, reason, additionalData = {}) {
     return this.call(`/moderation/votes/${voteId}/action`, {
       method: 'POST',
       body: JSON.stringify({
@@ -136,7 +136,7 @@ window.SuperAdminAPI = {
     })
   },
 
-  async bulkModerationAction (voteIds, actionType, reason) {
+  async bulkModerationAction(voteIds, actionType, reason) {
     return this.call('/moderation/bulk-action', {
       method: 'POST',
       body: JSON.stringify({
@@ -153,7 +153,7 @@ window.SuperAdminUtils = {
   ...window.AdminUtils,
 
   // Enhanced user management functions
-  async verifyUsers (userIds) {
+  async verifyUsers(userIds) {
     try {
       showLoading()
       const result = await SuperAdminAPI.bulkUpdateUsers(userIds, 'verify_users')
@@ -173,7 +173,7 @@ window.SuperAdminUtils = {
     }
   },
 
-  async unverifyUsers (userIds) {
+  async unverifyUsers(userIds) {
     try {
       showLoading()
       const result = await SuperAdminAPI.bulkUpdateUsers(userIds, 'unverify_users')
@@ -316,7 +316,7 @@ window.SuperAdminUtils = {
   // Debounce function for search inputs
   debounce: function (func, wait) {
     let timeout
-    return function executedFunction (...args) {
+    return function executedFunction(...args) {
       const later = () => {
         clearTimeout(timeout)
         func(...args)
@@ -478,26 +478,26 @@ window.SuperAdminDashboard = {
             </div>
 
             ${
-  summary.most_active_users && summary.most_active_users.length > 0
-    ? `
+              summary.most_active_users && summary.most_active_users.length > 0
+                ? `
                 <div class="active-users">
                     <h4>Most Active Users</h4>
                     <div class="user-list">
                         ${summary.most_active_users
-    .map(
-      user => `
+                          .map(
+                            user => `
                             <div class="user-item">
                                 <span class="user-name">${user.first_name} ${user.last_name}</span>
                                 <span class="user-votes">${SuperAdminUtils.formatNumber(user.vote_count)} votes</span>
                             </div>
                         `
-    )
-    .join('')}
+                          )
+                          .join('')}
                     </div>
                 </div>
             `
-    : ''
-}
+                : ''
+            }
         `
   },
 
@@ -566,15 +566,15 @@ window.SuperAdminDashboard = {
 }
 
 // Global utility functions for templates
-function showLoading () {
+function showLoading() {
   SuperAdminUtils.showLoading()
 }
 
-function hideLoading () {
+function hideLoading() {
   SuperAdminUtils.hideLoading()
 }
 
-function showMessage (message, type, duration) {
+function showMessage(message, type, duration) {
   SuperAdminUtils.showMessage(message, type, duration)
 }
 
@@ -645,18 +645,18 @@ window.ModerationDashboard = {
   // Load data for current tab
   loadCurrentTabData: async function () {
     switch (this.currentTab) {
-    case 'pending-flags':
-      await this.loadPendingFlags()
-      break
-    case 'flagged-votes':
-      await this.loadFlaggedVotes()
-      break
-    case 'moderation-log':
-      await this.loadModerationLog()
-      break
-    case 'bulk-actions':
-      await this.loadBulkActions()
-      break
+      case 'pending-flags':
+        await this.loadPendingFlags()
+        break
+      case 'flagged-votes':
+        await this.loadFlaggedVotes()
+        break
+      case 'moderation-log':
+        await this.loadModerationLog()
+        break
+      case 'bulk-actions':
+        await this.loadBulkActions()
+        break
     }
   },
 
@@ -717,8 +717,8 @@ window.ModerationDashboard = {
     container.innerHTML = `
             <div class="flags-list">
                 ${flags
-    .map(
-      flag => `
+                  .map(
+                    flag => `
                     <div class="flag-item" data-flag-id="${flag.id}">
                         <div class="flag-header">
                             <div class="flag-info">
@@ -746,8 +746,8 @@ window.ModerationDashboard = {
                         </div>
                     </div>
                 `
-    )
-    .join('')}
+                  )
+                  .join('')}
             </div>
         `
   },
@@ -811,8 +811,8 @@ window.ModerationDashboard = {
     container.innerHTML = `
             <div class="votes-list">
                 ${votes
-    .map(
-      vote => `
+                  .map(
+                    vote => `
                     <div class="vote-item" data-vote-id="${vote.id}">
                         <div class="vote-header">
                             <div class="vote-info">
@@ -835,17 +835,17 @@ window.ModerationDashboard = {
                             <p><strong>Options:</strong> ${vote.total_options} | <strong>Responses:</strong> ${vote.total_responses}</p>
                             <div class="flag-summary">
                                 ${Object.entries(vote.flag_counts)
-    .map(
-      ([status, count]) =>
-        `<span class="flag-count flag-${status}">${status}: ${count}</span>`
-    )
-    .join('')}
+                                  .map(
+                                    ([status, count]) =>
+                                      `<span class="flag-count flag-${status}">${status}: ${count}</span>`
+                                  )
+                                  .join('')}
                             </div>
                         </div>
                     </div>
                 `
-    )
-    .join('')}
+                  )
+                  .join('')}
             </div>
         `
   },
@@ -1012,7 +1012,7 @@ window.ModerationDashboard = {
 }
 
 // Tab switching function (called by moderation template)
-function _switchTab (tabName) {
+function _switchTab(tabName) {
   // Update active tab button
   document.querySelectorAll('.tab-btn').forEach(btn => {
     btn.classList.remove('active')
@@ -1026,7 +1026,7 @@ function _switchTab (tabName) {
 }
 
 // Export system statistics (used by dashboard template)
-function _exportSystemStats () {
+function _exportSystemStats() {
   const data = window.dashboardData?.stats
   if (data) {
     SuperAdminUtils.exportData(data, 'system_stats', 'json')
@@ -1036,17 +1036,17 @@ function _exportSystemStats () {
 }
 
 // Open user management (used by dashboard template)
-function _openUserManagement () {
+function _openUserManagement() {
   window.location.href = '/api/admin/users'
 }
 
 // Bulk verify users (used by dashboard template)
-function _bulkVerifyUsers () {
+function _bulkVerifyUsers() {
   showMessage('Bulk verification feature coming soon', 'info')
 }
 
 // View audit log (used by dashboard template)
-function _viewAuditLog () {
+function _viewAuditLog() {
   showMessage('Audit log feature coming soon', 'info')
 }
 
