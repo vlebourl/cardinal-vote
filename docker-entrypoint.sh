@@ -217,6 +217,35 @@ run_database_migrations() {
         error_exit "alembic command found but not properly accessible. Check virtual environment configuration."
     fi
 
+    # Test database connectivity before running migrations
+    log "Testing database connectivity..."
+    if timeout 10 python -c "
+import asyncio
+import sys
+sys.path.insert(0, '/app/src')
+from sqlalchemy.ext.asyncio import create_async_engine
+from cardinal_vote.config import settings
+
+async def test_connection():
+    try:
+        engine = create_async_engine(settings.DATABASE_URL, echo=False)
+        async with engine.begin() as conn:
+            await conn.execute('SELECT 1')
+        await engine.dispose()
+        print('✓ Database connection successful')
+        return True
+    except Exception as e:
+        print(f'✗ Database connection failed: {e}')
+        return False
+
+result = asyncio.run(test_connection())
+sys.exit(0 if result else 1)
+" 2>/dev/null; then
+        log "✓ Database connectivity verified"
+    else
+        log "⚠ Database connectivity test failed - migrations may fail. Proceeding anyway..."
+    fi
+
     # Run migrations with timeout to prevent hanging
     log "Starting database migrations (timeout: 60s)..."
     if timeout 60 alembic upgrade head; then
@@ -282,17 +311,33 @@ start_application() {
 
 # Main execution
 main() {
+    # Record startup time for performance monitoring
+    local startup_start_time=$(date +%s.%N)
+    local startup_timestamp=$(date '+%Y-%m-%d %H:%M:%S')
+
     log "Starting Cardinal Vote Generalized Voting Platform container"
     log "Entrypoint version: 2.0.0 (PostgreSQL-only)"
+    log "Startup initiated at: $startup_timestamp"
 
     # Run all setup steps
+    local validation_start=$(date +%s.%N)
     validate_environment
+    local validation_duration=$(echo "$(date +%s.%N) - $validation_start" | bc -l)
+    log "⏱ Environment validation completed in ${validation_duration}s"
+
     setup_application_directories
     setup_logs_directory
     preflight_checks
 
     # Initialize database
+    local migration_start=$(date +%s.%N)
     run_database_migrations
+    local migration_duration=$(echo "$(date +%s.%N) - $migration_start" | bc -l)
+    log "⏱ Database migrations completed in ${migration_duration}s"
+
+    # Calculate total startup time
+    local startup_duration=$(echo "$(date +%s.%N) - $startup_start_time" | bc -l)
+    log "⏱ Container startup completed in ${startup_duration}s"
 
     # Start the application
     start_application
