@@ -1,3 +1,5 @@
+name: cardinal-vote
+
 services:
   # PostgreSQL Database for Generalized Platform
   postgres:
@@ -30,14 +32,16 @@ services:
         max-size: '10m'
         max-file: '3'
 
-  # Generalized Voting Platform Application
-  voting-platform:
+  # Cardinal Vote Generalized Voting Platform Application
+  cardinal-vote:
+    # Use pre-built image for production, build for development
+    image: ${CARDINAL_IMAGE:-}
     build:
       context: .
       dockerfile: Dockerfile
       target: production
     ports:
-      - '8000:8000'
+      - '${EXTERNAL_PORT:-8000}:8000'
     depends_on:
       postgres:
         condition: service_healthy
@@ -48,15 +52,15 @@ services:
       - HOST=${HOST:-0.0.0.0}
       - PORT=${PORT:-8000}
       - DEBUG=${DEBUG:-false}
-      - ENVIRONMENT=${ENVIRONMENT:-development}
-      # Security Configuration
+      - CARDINAL_ENV=${CARDINAL_ENV:-development}
+      # Security Configuration - Use environment variables or fallbacks
       - JWT_SECRET_KEY=${JWT_SECRET_KEY:-jwt_secret_key_change_in_production_extremely_long_and_secure}
       - JWT_ALGORITHM=${JWT_ALGORITHM:-HS256}
       - JWT_ACCESS_TOKEN_EXPIRE_MINUTES=${JWT_ACCESS_TOKEN_EXPIRE_MINUTES:-30}
       - JWT_REFRESH_TOKEN_EXPIRE_DAYS=${JWT_REFRESH_TOKEN_EXPIRE_DAYS:-7}
       # Session Configuration (legacy compatibility)
       - SESSION_SECRET_KEY=${SESSION_SECRET_KEY:-session_secret_key_change_in_production_123456789}
-      # Email Configuration (Mock for Development)
+      # Email Configuration
       - EMAIL_BACKEND=${EMAIL_BACKEND:-mock}
       - SMTP_HOST=${SMTP_HOST:-localhost}
       - SMTP_PORT=${SMTP_PORT:-587}
@@ -66,12 +70,14 @@ services:
       # File Storage Configuration
       - UPLOAD_PATH=${UPLOAD_PATH:-/app/uploads}
       - MAX_FILE_SIZE_MB=${MAX_FILE_SIZE_MB:-10}
-      # Super Admin Configuration (for platform management)
+      # Super Admin Configuration
       - SUPER_ADMIN_EMAIL=${SUPER_ADMIN_EMAIL:-admin@voting-platform.local}
       - SUPER_ADMIN_PASSWORD=${SUPER_ADMIN_PASSWORD:-super_admin_password_change_in_production}
       # Legacy Admin Configuration (backwards compatibility)
       - ADMIN_USERNAME=${ADMIN_USERNAME:-admin}
       - ADMIN_PASSWORD=${ADMIN_PASSWORD:-cardinal_admin_2025}
+      # CORS Configuration
+      - ALLOWED_ORIGINS=${ALLOWED_ORIGINS:-http://localhost:3000,http://localhost:8000,http://127.0.0.1:8000}
     volumes:
       # Persistent storage for uploaded files
       - voting_uploads:/app/uploads
@@ -79,9 +85,9 @@ services:
       - voting_logs:/app/logs
       # PostgreSQL uses separate container - no local data volume needed
       # Development mounts (uncomment for development)
-      # - ./src:/app/src:ro
-      # - ./templates:/app/templates:ro
-      # - ./static:/app/static:ro
+      - ./src:/app/src:ro
+      - ./templates:/app/templates:ro
+      - ./static:/app/static:ro
     healthcheck:
       test:
         [
