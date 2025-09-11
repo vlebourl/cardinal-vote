@@ -127,7 +127,9 @@ window.AdminUtils = {
     if (response.status === 401) {
       localStorage.removeItem('jwt_token')
       showMessage('Session expirée, redirection...', 'error')
-      setTimeout(() => { window.location.href = '/login' }, 2000)
+      setTimeout(() => {
+        window.location.href = '/login'
+      }, 2000)
       return null
     }
 
@@ -251,7 +253,9 @@ window.VoteManager = {
       } else if (response.status === 401) {
         localStorage.removeItem('jwt_token')
         showMessage('Session expirée, redirection...', 'error')
-        setTimeout(() => { window.location.href = '/login' }, 2000)
+        setTimeout(() => {
+          window.location.href = '/login'
+        }, 2000)
       } else {
         const result = await response.json()
         showMessage(result.message || 'Erreur lors de l\'export', 'error')
@@ -301,7 +305,9 @@ window.VoteManager = {
           } else if (response.status === 401) {
             localStorage.removeItem('jwt_token')
             showMessage('Session expirée, redirection...', 'error')
-            setTimeout(() => { window.location.href = '/login' }, 2000)
+            setTimeout(() => {
+              window.location.href = '/login'
+            }, 2000)
           } else {
             const result = await response.json()
             showMessage(result.message || 'Erreur lors de la suppression', 'error')
@@ -346,7 +352,9 @@ window.VoteManager = {
       } else if (response.status === 401) {
         localStorage.removeItem('jwt_token')
         showMessage('Session expirée, redirection...', 'error')
-        setTimeout(() => { window.location.href = '/login' }, 2000)
+        setTimeout(() => {
+          window.location.href = '/login'
+        }, 2000)
       } else {
         const result = await response.json()
         showMessage(result.message || 'Erreur lors de la récupération des résultats', 'error')
@@ -389,7 +397,9 @@ window.SystemManager = {
       } else if (response.status === 401) {
         localStorage.removeItem('jwt_token')
         showMessage('Session expirée, redirection...', 'error')
-        setTimeout(() => { window.location.href = '/login' }, 2000)
+        setTimeout(() => {
+          window.location.href = '/login'
+        }, 2000)
       } else {
         const result = await response.json()
         showMessage(result.message || 'Erreur lors de la récupération des statistiques', 'error')
