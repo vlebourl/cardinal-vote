@@ -160,7 +160,7 @@ window.AdminUtils = {
   // Debounce function
   debounce: function (func, wait) {
     let timeout
-    return function executedFunction(...args) {
+    return function executedFunction (...args) {
       const later = () => {
         clearTimeout(timeout)
         func(...args)
@@ -216,7 +216,7 @@ window.VoteManager = {
   // Export votes - Updated to use generalized voting platform API
   exportVotes: async function (voteId, format = 'csv') {
     if (!voteId) {
-      showMessage("Vote ID requis pour l'export", 'error')
+      showMessage('Vote ID requis pour l\'export', 'error')
       return
     }
 
@@ -258,11 +258,11 @@ window.VoteManager = {
         }, 2000)
       } else {
         const result = await response.json()
-        showMessage(result.message || "Erreur lors de l'export", 'error')
+        showMessage(result.message || 'Erreur lors de l\'export', 'error')
       }
     } catch (error) {
       console.error('Export error:', error)
-      showMessage("Erreur lors de l'export", 'error')
+      showMessage('Erreur lors de l\'export', 'error')
     } finally {
       hideLoading()
     }
