@@ -695,6 +695,9 @@ class VoterResponseCreate(BaseModel):
         ..., min_length=1, max_length=100, description="Voter last name"
     )
     responses: dict[str, int] = Field(..., description="Option ID to rating mapping")
+    captcha_response: str = Field(
+        ..., min_length=1, description="CAPTCHA verification response token"
+    )
 
     @validator("voter_first_name")
     def validate_voter_first_name(cls, v: str) -> str:

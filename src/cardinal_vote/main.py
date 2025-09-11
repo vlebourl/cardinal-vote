@@ -29,6 +29,7 @@ from .models import (
     Vote,
     VoteOption,
 )
+from .rate_limiting import RateLimitMiddleware, get_rate_limiter
 from .super_admin_routes import setup_super_admin_templates, super_admin_router
 from .vote_routes import vote_router
 
@@ -105,6 +106,9 @@ app.add_middleware(
     allow_methods=["GET", "POST"],
     allow_headers=["*"],
 )
+
+# Add rate limiting middleware
+app.add_middleware(RateLimitMiddleware, rate_limiter=get_rate_limiter())
 
 
 # Legacy admin middleware removed - generalized platform uses JWT auth instead

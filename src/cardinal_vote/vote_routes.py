@@ -6,16 +6,18 @@ import uuid
 from datetime import datetime
 from typing import Any
 
-from fastapi import APIRouter, HTTPException, Request, status
+from fastapi import APIRouter, Depends, File, HTTPException, Request, UploadFile, status
 from fastapi.responses import Response
 from sqlalchemy import func, select
 from sqlalchemy.engine import Result
 from sqlalchemy.exc import IntegrityError
 
+from .captcha_service import verify_captcha_response
 from .dependencies import (
     AsyncDatabaseSession,
     CurrentUser,
 )
+from .image_service import ImageService, get_image_service
 from .models import (
     GeneralizedVoteSubmissionResponse,
     Vote,
@@ -726,8 +728,11 @@ async def submit_anonymous_vote(
                 status_code=status.HTTP_400_BAD_REQUEST, detail="Voting has ended"
             )
 
-        # Get client IP for duplicate prevention
+        # Get client IP for duplicate prevention and CAPTCHA verification
         client_ip = request.client.host if request.client else "unknown"
+
+        # Verify CAPTCHA response
+        await verify_captcha_response(response_data.captcha_response, client_ip)
 
         # Check for existing IP response (IP-based duplicate prevention)
         existing_ip_response: Result[tuple[VoterResponse]] = await session.execute(
@@ -1207,4 +1212,134 @@ async def get_creator_dashboard_stats(
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to get dashboard statistics",
+        ) from e
+
+
+# Image upload endpoints
+@vote_router.post("/images/upload", tags=["Images"])
+async def upload_vote_image(
+    current_user: CurrentUser,
+    file: UploadFile = File(..., description="Image file to upload"),
+    image_service: ImageService = Depends(get_image_service),
+) -> dict[str, Any]:
+    """
+    Upload an image for use in vote options.
+
+    Accepts images in PNG, JPG, JPEG, GIF, and WebP formats.
+    Maximum file size: configured in settings (default 10MB).
+    Images are automatically optimized for web use.
+    """
+    try:
+        # Upload and process the image
+        filename = await image_service.upload_image(file)
+
+        # Get image info for response
+        image_info = image_service.get_image_info(filename)
+
+        return {
+            "success": True,
+            "message": "Image uploaded successfully",
+            "filename": filename,
+            "image_info": image_info,
+            "url": f"/uploads/{filename}",  # Relative URL for frontend use
+        }
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(
+            f"Unexpected error during image upload for user {current_user.id}: {e}"
+        )
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Internal server error during image upload",
+        ) from e
+
+
+@vote_router.delete("/images/{filename}", tags=["Images"])
+async def delete_vote_image(
+    filename: str,
+    current_user: CurrentUser,
+    session: AsyncDatabaseSession,
+    image_service: ImageService = Depends(get_image_service),
+) -> dict[str, Any]:
+    """
+    Delete an uploaded image.
+
+    Only allows deletion if:
+    1. User is authenticated
+    2. Image is not currently used in any active votes
+    3. User has permission to delete the image
+    """
+    try:
+        # Check if image is being used in any votes
+        # Note: This is a safety check to prevent deletion of images in use
+        vote_options_using_image = await session.execute(
+            select(VoteOption)
+            .join(Vote, VoteOption.vote_id == Vote.id)
+            .where(
+                VoteOption.option_type == "image",
+                VoteOption.content == filename,
+                Vote.status.in_(["active", "draft"]),
+            )
+        )
+
+        if vote_options_using_image.scalars().first():
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail="Cannot delete image: it is currently used in one or more votes",
+            )
+
+        # Delete the image file
+        success = image_service.delete_image(filename)
+
+        if not success:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND, detail="Image file not found"
+            )
+
+        return {"success": True, "message": f"Image {filename} deleted successfully"}
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error deleting image {filename} for user {current_user.id}: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to delete image",
+        ) from e
+
+
+@vote_router.get("/images/{filename}/info", tags=["Images"])
+async def get_image_info(
+    filename: str,
+    current_user: CurrentUser,
+    image_service: ImageService = Depends(get_image_service),
+) -> dict[str, Any]:
+    """
+    Get information about an uploaded image.
+
+    Returns image metadata including dimensions, format, and file size.
+    """
+    try:
+        image_info = image_service.get_image_info(filename)
+
+        if not image_info:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND, detail="Image not found"
+            )
+
+        return {
+            "success": True,
+            "image_info": image_info,
+            "url": f"/uploads/{filename}",
+        }
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error getting image info for {filename}: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to get image information",
         ) from e

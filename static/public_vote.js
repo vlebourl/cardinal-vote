@@ -12,6 +12,8 @@ class PublicVotingApp {
     this.voterFirstName = ''
     this.voterLastName = ''
     this.liveRegion = document.getElementById('live-region')
+    this.captchaConfig = null
+    this.captchaResponse = null
 
     this.screens = {
       welcome: document.getElementById('welcome-screen'),
@@ -21,6 +23,7 @@ class PublicVotingApp {
     }
 
     this.initializeVoteData()
+    this.initializeCaptcha()
     this.initializeEventListeners()
     this.initializeKeyboardNavigation()
     this.initializeAccessibility()
@@ -42,6 +45,119 @@ class PublicVotingApp {
       console.error('Failed to load vote data:', error)
       this.showError('Error loading vote data')
     }
+  }
+
+  /**
+   * Initialize CAPTCHA configuration and setup
+   */
+  initializeCaptcha() {
+    try {
+      const captchaConfigScript = document.getElementById('captcha-config')
+      if (captchaConfigScript) {
+        this.captchaConfig = JSON.parse(captchaConfigScript.textContent)
+        console.log('CAPTCHA config loaded:', this.captchaConfig)
+
+        // Initialize CAPTCHA widget based on backend type
+        if (this.captchaConfig.backend === 'recaptcha' && this.captchaConfig.site_key) {
+          this.initializeRecaptcha()
+        } else if (this.captchaConfig.backend === 'hcaptcha' && this.captchaConfig.site_key) {
+          this.initializeHcaptcha()
+        } else {
+          // Mock CAPTCHA for development
+          this.initializeMockCaptcha()
+        }
+      } else {
+        console.warn('CAPTCHA config not found, using mock CAPTCHA')
+        this.initializeMockCaptcha()
+      }
+    } catch (error) {
+      console.error('Failed to load CAPTCHA config:', error)
+      this.initializeMockCaptcha()
+    }
+  }
+
+  /**
+   * Initialize reCAPTCHA widget
+   */
+  initializeRecaptcha() {
+    console.log('Initializing reCAPTCHA...')
+    // reCAPTCHA initialization would go here
+    // For now, fall back to mock for development
+    this.initializeMockCaptcha()
+  }
+
+  /**
+   * Initialize hCaptcha widget
+   */
+  initializeHcaptcha() {
+    console.log('Initializing hCaptcha...')
+    // hCaptcha initialization would go here
+    // For now, fall back to mock for development
+    this.initializeMockCaptcha()
+  }
+
+  /**
+   * Initialize mock CAPTCHA for development
+   */
+  initializeMockCaptcha() {
+    const captchaWidget = document.getElementById('captcha-widget')
+    if (captchaWidget) {
+      captchaWidget.innerHTML = `
+        <div class="mock-captcha">
+          <label class="mock-captcha-label">
+            <input type="checkbox" id="mock-captcha-checkbox" class="mock-captcha-input">
+            <span class="mock-captcha-text">I'm not a robot (Development Mode)</span>
+          </label>
+        </div>
+      `
+
+      // Add event listener for mock CAPTCHA
+      const mockCheckbox = document.getElementById('mock-captcha-checkbox')
+      if (mockCheckbox) {
+        mockCheckbox.addEventListener('change', (e) => {
+          if (e.target.checked) {
+            this.captchaResponse = 'MOCK_SUCCESS_TOKEN'
+            this.onCaptchaSuccess()
+          } else {
+            this.captchaResponse = null
+            this.onCaptchaReset()
+          }
+        })
+      }
+    }
+  }
+
+  /**
+   * Handle CAPTCHA success
+   */
+  onCaptchaSuccess() {
+    const submitBtn = document.getElementById('submit-vote')
+    const captchaError = document.getElementById('captcha-error')
+
+    if (submitBtn) {
+      submitBtn.disabled = false
+      submitBtn.classList.remove('disabled')
+    }
+
+    if (captchaError) {
+      captchaError.style.display = 'none'
+    }
+
+    this.announceToScreenReader('CAPTCHA completed successfully')
+  }
+
+  /**
+   * Handle CAPTCHA reset/failure
+   */
+  onCaptchaReset() {
+    const submitBtn = document.getElementById('submit-vote')
+
+    if (submitBtn) {
+      submitBtn.disabled = true
+      submitBtn.classList.add('disabled')
+    }
+
+    this.captchaResponse = null
   }
 
   /**
@@ -551,10 +667,28 @@ class PublicVotingApp {
 
       this.announceToScreenReader('Submitting your vote...')
 
+      // Validate CAPTCHA response
+      if (!this.captchaResponse) {
+        const captchaError = document.getElementById('captcha-error')
+        if (captchaError) {
+          captchaError.textContent = 'Please complete the security check'
+          captchaError.style.display = 'block'
+        }
+
+        // Re-enable submit button
+        submitBtn.disabled = false
+        submitBtn.setAttribute('aria-busy', 'false')
+        submitBtn.textContent = originalText
+
+        this.announceToScreenReader('Error: Please complete the security check')
+        return
+      }
+
       const voteData = {
         voter_first_name: this.voterFirstName,
         voter_last_name: this.voterLastName,
-        responses: this.responses // Send responses by option ID
+        responses: this.responses, // Send responses by option ID
+        captcha_response: this.captchaResponse
       }
 
       console.log('Submitting vote:', voteData)

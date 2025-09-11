@@ -9,6 +9,14 @@
     <link rel="stylesheet" href="/static/style.css">
     <link rel="stylesheet" href="/static/public_vote.css">
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🗳️</text></svg>">
+
+    <!-- CAPTCHA Scripts (loaded conditionally based on backend configuration) -->
+    <script id="captcha-config" type="application/json">
+        {
+            "backend": "mock",
+            "site_key": ""
+        }
+    </script>
 </head>
 <body>
     <div class="container">
@@ -169,10 +177,17 @@
             <div id="review-grid" class="review-grid" role="grid" aria-label="Ratings review grid"></div>
 
             <div class="review-actions">
+                <!-- CAPTCHA Section -->
+                <div id="captcha-container" class="captcha-container">
+                    <div class="captcha-label">Security Check</div>
+                    <div id="captcha-widget" class="captcha-widget"></div>
+                    <div id="captcha-error" class="field-error" style="display: none;" role="alert"></div>
+                </div>
+
                 <button id="back-to-voting" class="btn btn-secondary">
                     Modify Ratings
                 </button>
-                <button id="submit-vote" class="btn btn-primary">
+                <button id="submit-vote" class="btn btn-primary" disabled>
                     Confirm and Submit
                 </button>
             </div>
