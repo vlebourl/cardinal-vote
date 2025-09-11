@@ -137,21 +137,16 @@ cmd_backup() {
         return 1
     fi
 
-    local backup_name="votes-backup-$(date +%Y%m%d-%H%M%S).db"
+    local backup_name="votes-backup-$(date +%Y%m%d-%H%M%S).sql"
 
-    if docker compose $COMPOSE_FILES exec -T cardinal-voting test -f /app/data/votes.db; then
-        docker compose $COMPOSE_FILES exec -T cardinal-voting \
-            cp /app/data/votes.db "/app/data/$backup_name"
+    # Create PostgreSQL backup
+    mkdir -p "$PROJECT_DIR/backups"
 
-        # Also copy to local backup directory
-        mkdir -p "$PROJECT_DIR/backups"
-        docker compose $COMPOSE_FILES cp "cardinal-voting:/app/data/$backup_name" "$PROJECT_DIR/backups/"
-
-        log_success "Database backed up to:"
-        log_info "  Container: /app/data/$backup_name"
+    if docker compose $COMPOSE_FILES exec -T postgres pg_dump -U cardinal_user -d cardinal_vote > "$PROJECT_DIR/backups/$backup_name"; then
+        log_success "PostgreSQL database backed up to:"
         log_info "  Local: $PROJECT_DIR/backups/$backup_name"
     else
-        log_error "Database file not found"
+        log_error "PostgreSQL backup failed"
         return 1
     fi
 }
@@ -179,18 +174,21 @@ cmd_restore() {
         return 0
     fi
 
-    log_info "Restoring database from $backup_file..."
+    log_info "Restoring PostgreSQL database from $backup_file..."
 
-    # Stop application
+    # Stop application to ensure clean restore
     docker compose $COMPOSE_FILES stop cardinal-voting
 
-    # Copy backup file to container
-    docker compose $COMPOSE_FILES cp "$backup_file" cardinal-voting:/app/data/votes.db
+    # Restore PostgreSQL database
+    if docker compose $COMPOSE_FILES exec -T postgres psql -U cardinal_user -d cardinal_vote < "$backup_file"; then
+        log_success "PostgreSQL database restored successfully"
 
-    # Start application
-    docker compose $COMPOSE_FILES start cardinal-voting
-
-    log_success "Database restored successfully"
+        # Start application
+        docker compose $COMPOSE_FILES start cardinal-voting
+    else
+        log_error "PostgreSQL restore failed"
+        return 1
+    fi
 }
 
 # Open shell

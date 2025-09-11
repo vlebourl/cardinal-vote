@@ -91,7 +91,7 @@ nano .env
 - `CARDINAL_VOTE_ENV=production`
 - `DEBUG=false`
 - `ALLOWED_ORIGINS=https://your-domain.com`
-- `DATABASE_PATH=/app/data/votes.db`
+- `DATABASE_URL=postgresql+asyncpg://username:password@postgres:5432/database_name`
 
 ### 2. Create Production Secrets
 
@@ -473,8 +473,8 @@ docker compose pull && docker compose up -d
 # Monthly: Clean unused resources
 docker system prune -af
 
-# As needed: Backup database
-docker compose exec cardinal-vote-voting cp /app/data/votes.db /app/data/backup-$(date +%Y%m%d).db
+# As needed: Backup PostgreSQL database
+docker compose exec postgres pg_dump -U cardinal_user -d cardinal_vote > backup-$(date +%Y%m%d).sql
 ```
 
 ### Performance Monitoring
@@ -624,10 +624,10 @@ check_health() {
     fi
 }
 
-# Check database size
+# Check PostgreSQL database size
 check_db_size() {
-    DB_SIZE=$(docker compose exec cardinal-vote-voting du -sh /app/data/votes.db 2>/dev/null | cut -f1)
-    log_message "📊 Database size: $DB_SIZE"
+    DB_SIZE=$(docker compose exec postgres psql -U cardinal_user -d cardinal_vote -c "SELECT pg_size_pretty(pg_database_size('cardinal_vote'));" 2>/dev/null | sed -n '3p' | xargs)
+    log_message "📊 PostgreSQL database size: $DB_SIZE"
 }
 
 # Check disk usage
@@ -855,7 +855,7 @@ find "$BACKUP_DIR" -name "config_*.tar.gz" -mtime +$RETENTION_DAYS -delete
 ```bash
 # Backup entire deployment
 tar -czf cardinal-vote-full-backup-$(date +%Y%m%d).tar.gz \
-    --exclude='data/votes.db-*' \
+    --exclude='postgres-data-backups' \
     /opt/cardinal-vote/
 ```
 

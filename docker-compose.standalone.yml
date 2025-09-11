@@ -1,20 +1,51 @@
-version: '3.8'
-
 # Standalone production deployment for Cardinal Vote platform
 # Usage: docker-compose -f docker-compose.standalone.yml up -d
 
 services:
+  # PostgreSQL Database for Cardinal Vote Standalone
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      - POSTGRES_DB=${POSTGRES_DB:-cardinal_vote}
+      - POSTGRES_USER=${POSTGRES_USER:-cardinal_user}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:?POSTGRES_PASSWORD environment variable is required for security}
+      - POSTGRES_INITDB_ARGS=--auth-host=scram-sha-256
+    volumes:
+      - cardinal_postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test:
+        [
+          'CMD-SHELL',
+          'pg_isready -U ${POSTGRES_USER:-cardinal_user} -d ${POSTGRES_DB:-cardinal_vote}'
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - cardinal-network
+    logging:
+      driver: 'json-file'
+      options:
+        max-size: '50m'
+        max-file: '5'
+        compress: 'true'
+
   cardinal-voting:
     image: cardinal-voting:latest
     ports:
       - '${PORT:-8000}:8000'
+    depends_on:
+      postgres:
+        condition: service_healthy
 
     # Environment variables from .env file
     environment:
+      # Database Configuration - PostgreSQL
+      - DATABASE_URL=postgresql+asyncpg://${POSTGRES_USER:-cardinal_user}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-cardinal_vote}
       - HOST=${HOST:-0.0.0.0}
       - PORT=${PORT:-8000}
       - DEBUG=${DEBUG:-false}
-      - DATABASE_PATH=${DATABASE_PATH:-/app/data/votes.db}
       - CARDINAL_ENV=${CARDINAL_ENV:-production}
       - APP_NAME=${APP_NAME:-Cardinal Vote Platform}
       - APP_VERSION=${APP_VERSION:-0.1.0}
@@ -25,7 +56,17 @@ services:
       - MAX_VOTES_PER_IP_PER_HOUR=${MAX_VOTES_PER_IP_PER_HOUR:-5}
       - ALLOWED_ORIGINS=${ALLOWED_ORIGINS:-http://localhost:8000}
 
-      # Admin credentials - MUST be set in .env file!
+      # Security Configuration
+      - JWT_SECRET_KEY=${JWT_SECRET_KEY:?JWT_SECRET_KEY environment variable is required for security}
+      - JWT_ALGORITHM=${JWT_ALGORITHM:-HS256}
+      - JWT_ACCESS_TOKEN_EXPIRE_MINUTES=${JWT_ACCESS_TOKEN_EXPIRE_MINUTES:-30}
+      - JWT_REFRESH_TOKEN_EXPIRE_DAYS=${JWT_REFRESH_TOKEN_EXPIRE_DAYS:-7}
+
+      # Super Admin Configuration - REQUIRED for security
+      - SUPER_ADMIN_EMAIL=${SUPER_ADMIN_EMAIL:?SUPER_ADMIN_EMAIL environment variable is required}
+      - SUPER_ADMIN_PASSWORD=${SUPER_ADMIN_PASSWORD:?SUPER_ADMIN_PASSWORD environment variable is required for security}
+
+      # Legacy Admin credentials (backwards compatibility)
       - ADMIN_USERNAME=${ADMIN_USERNAME}
       - ADMIN_PASSWORD=${ADMIN_PASSWORD}
       - SESSION_SECRET_KEY=${SESSION_SECRET_KEY}
@@ -42,8 +83,10 @@ services:
 
     # Persistent data storage
     volumes:
-      - cardinal_data:/app/data
+      - cardinal_uploads:/app/uploads
       - cardinal_logs:/app/logs
+    networks:
+      - cardinal-network
 
     # Resource limits
     deploy:
@@ -81,13 +124,26 @@ services:
 
 # Named volumes for data persistence
 volumes:
-  cardinal_data:
+  # PostgreSQL database persistent storage
+  cardinal_postgres_data:
     driver: local
     labels:
       - 'backup.enable=true'
-      - 'backup.path=/app/data'
+      - 'backup.path=/var/lib/postgresql/data'
 
+  # Application uploads persistent storage
+  cardinal_uploads:
+    driver: local
+    labels:
+      - 'backup.enable=true'
+      - 'backup.path=/app/uploads'
+
+  # Application logs persistent storage
   cardinal_logs:
     driver: local
     labels:
       - 'backup.enable=false'
+
+networks:
+  cardinal-network:
+    driver: bridge

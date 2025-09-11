@@ -234,8 +234,8 @@ CARDINAL_VOTE_ENV=development
 HOST=127.0.0.1
 PORT=8000
 
-# Development database (local file)
-DATABASE_PATH=votes_dev.db
+# Development database (PostgreSQL via Docker)
+DATABASE_URL=postgresql+asyncpg://voting_user:voting_password_change_in_production@localhost:5432/voting_platform
 
 # Relaxed CORS for local development
 ALLOWED_ORIGINS=http://localhost:3000,http://localhost:8000,http://127.0.0.1:8000
@@ -251,19 +251,21 @@ LOG_LEVEL=debug
 ### Database Development Setup
 
 ```bash
-# The application auto-creates the SQLite database
+# The application uses PostgreSQL database via Docker
 # For development, you might want to:
 
-# 1. Reset database (delete and recreate)
-rm votes_dev.db
-uv run python -c "from src.cardinal_vote.database import DatabaseManager; DatabaseManager('votes_dev.db')"
+# 1. Start the database container
+docker compose up postgres -d
 
-# 2. Inspect database contents
-sqlite3 votes_dev.db
-.tables
-.schema votes
-SELECT * FROM votes;
-.quit
+# 2. Run database migrations
+alembic upgrade head
+
+# 3. Inspect database contents
+docker compose exec postgres psql -U voting_user -d voting_platform
+\dt
+\d+ vote_records
+SELECT * FROM vote_records;
+\q
 
 # 3. Add sample data for testing
 uv run python scripts/add_sample_data.py
@@ -582,10 +584,10 @@ logger.error("Error occurred")
 import logging
 logging.getLogger('sqlalchemy.engine').setLevel(logging.INFO)
 
-# Or use database debugging
-from src.cardinal_vote.database import DatabaseManager
-db = DatabaseManager('votes_dev.db')
-db.debug = True  # If implemented
+# Or use PostgreSQL database debugging
+from src.cardinal_vote.database_manager import GeneralizedDatabaseManager
+db = GeneralizedDatabaseManager()
+# Database operations are logged via SQLAlchemy logging above
 ```
 
 #### Frontend Debugging
@@ -638,14 +640,14 @@ stats.sort_stats('cumulative').print_stats(20)
 #### Database Performance
 
 ```bash
-# Analyze slow queries
-sqlite3 votes_dev.db
-.timer on
-SELECT * FROM votes WHERE voter_name LIKE '%test%';
+# Analyze slow queries in PostgreSQL
+docker compose exec postgres psql -U voting_user -d voting_platform
+\timing on
+SELECT * FROM vote_records WHERE voter_first_name LIKE '%test%';
 
 # Check database size and optimization
-sqlite3 votes_dev.db "PRAGMA optimize;"
-sqlite3 votes_dev.db "VACUUM;"
+SELECT pg_size_pretty(pg_database_size('voting_platform')) as "Database Size";
+VACUUM ANALYZE vote_records;
 ```
 
 ## 📦 Building & Packaging
@@ -818,17 +820,20 @@ All contributions go through code review:
 For schema changes:
 
 ```python
-# Create migration script
-# scripts/migrate_v1_to_v2.py
+# Use Alembic for database migrations
+# Create new migration:
+alembic revision --autogenerate -m "Add created_by column"
 
-from src.cardinal_vote.database import DatabaseManager
+# Or create manual migration:
+alembic revision -m "Add created_by column"
 
-def migrate_database(db_path: str):
-    db = DatabaseManager(db_path)
-    # Perform schema changes
-    db.execute("ALTER TABLE votes ADD COLUMN created_by TEXT")
-    # Migrate existing data
-    db.execute("UPDATE votes SET created_by = 'legacy' WHERE created_by IS NULL")
+# Edit the generated migration file in alembic/versions/ to add:
+def upgrade():
+    op.add_column('vote_records', sa.Column('created_by', sa.String(50)))
+    op.execute("UPDATE vote_records SET created_by = 'legacy' WHERE created_by IS NULL")
+
+# Apply migration:
+alembic upgrade head
 ```
 
 ### Performance Optimization
@@ -836,14 +841,15 @@ def migrate_database(db_path: str):
 #### Database Optimization
 
 ```python
-# Add indexes for common queries
-CREATE INDEX idx_votes_timestamp ON votes(timestamp);
-CREATE INDEX idx_votes_voter_name ON votes(voter_name);
+# Add indexes for common queries in PostgreSQL
+CREATE INDEX idx_vote_records_timestamp ON vote_records(created_at);
+CREATE INDEX idx_vote_records_voter_name ON vote_records(voter_first_name, voter_last_name);
 
-# Use PRAGMA for SQLite optimization
-PRAGMA journal_mode=WAL;
-PRAGMA synchronous=NORMAL;
-PRAGMA cache_size=1000000;
+# PostgreSQL optimization settings (configured in postgres service)
+# shared_preload_libraries = 'pg_stat_statements'
+# max_connections = 100
+# PostgreSQL uses different configuration approaches
+# These settings are typically configured in postgresql.conf or via environment variables
 ```
 
 #### Application Optimization
