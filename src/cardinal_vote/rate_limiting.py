@@ -80,10 +80,15 @@ class InMemoryRateLimiter:
         is_limited = request_count >= max_requests
 
         # Calculate reset time (when oldest request in window expires)
-        reset_time = int(current_time + window_seconds)
         if requests_in_window:
+            # Find when the oldest request will expire (more precise)
             oldest_request = min(requests_in_window)
-            reset_time = int(oldest_request + window_seconds)
+            reset_time = int(
+                oldest_request + window_seconds + 0.5
+            )  # Round to nearest second
+        else:
+            # No requests in window, reset time is end of current window
+            reset_time = int(current_time + window_seconds + 0.5)
 
         rate_limit_info = {
             "limit": max_requests,

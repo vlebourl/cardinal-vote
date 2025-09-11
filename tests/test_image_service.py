@@ -1,6 +1,5 @@
 """Tests for the image service functionality."""
 
-import asyncio
 import tempfile
 from pathlib import Path
 from unittest.mock import Mock, patch
@@ -52,8 +51,12 @@ def mock_upload_file():
         mock_file = Mock(spec=UploadFile)
         mock_file.filename = filename
         mock_file.content_type = content_type
-        mock_file.read = Mock(return_value=asyncio.create_future())
-        mock_file.read.return_value.set_result(content)
+
+        # Mock the read method to return an awaitable
+        async def mock_read():
+            return content
+
+        mock_file.read = Mock(side_effect=mock_read)
         return mock_file
 
     return create_mock_file
@@ -305,6 +308,175 @@ class TestImageService:
         assert output_path.exists()
         with Image.open(output_path) as optimized:
             assert optimized.mode == "RGB"
+
+    def test_optimize_image_webp_conversion(self, image_service, tmp_path):
+        """Test WEBP format optimization."""
+        input_path = tmp_path / "test.webp"
+        output_path = tmp_path / "optimized.webp"
+
+        # Create test WEBP image
+        test_image = Image.new("RGB", (100, 100), color="red")
+        test_image.save(input_path, format="WEBP", quality=100)
+
+        image_service._optimize_image(input_path, output_path)
+
+        # Check that output exists and is optimized
+        assert output_path.exists()
+        with Image.open(output_path) as optimized:
+            assert optimized.format == "WEBP"
+            assert optimized.size == (100, 100)
+
+        # Check that optimization completed successfully
+        # (Small test images may not always get smaller due to overhead)
+        input_size = input_path.stat().st_size
+        output_size = output_path.stat().st_size
+        # Allow for small overhead in tiny test images
+        assert (
+            output_size <= input_size * 1.5
+        )  # Allow up to 50% increase for tiny images
+
+    def test_optimize_image_webp_large_resize(self, image_service, tmp_path):
+        """Test WEBP format with large image resizing."""
+        input_path = tmp_path / "large.webp"
+        output_path = tmp_path / "optimized.webp"
+
+        # Create large WEBP image that should be resized
+        large_image = Image.new("RGB", (3000, 3000), color="blue")
+        large_image.save(input_path, format="WEBP")
+
+        image_service._optimize_image(input_path, output_path)
+
+        assert output_path.exists()
+        with Image.open(output_path) as optimized:
+            assert optimized.format == "WEBP"
+            # Should be resized to max dimension
+            assert max(optimized.size) <= 2048
+
+    def test_optimize_image_gif_to_png(self, image_service, tmp_path):
+        """Test GIF format handling (converted to PNG for optimization)."""
+        input_path = tmp_path / "test.gif"
+        output_path = tmp_path / "optimized.png"
+
+        # Create test GIF image
+        test_image = Image.new("RGB", (100, 100), color="green")
+        test_image.save(input_path, format="GIF")
+
+        image_service._optimize_image(input_path, output_path)
+
+        # Check that output exists and is PNG
+        assert output_path.exists()
+        with Image.open(output_path) as optimized:
+            assert optimized.format == "PNG"
+            assert optimized.size == (100, 100)
+
+    def test_optimize_image_animated_gif_handling(self, image_service, tmp_path):
+        """Test handling of animated GIF (takes first frame)."""
+        input_path = tmp_path / "animated.gif"
+        output_path = tmp_path / "optimized.gif"
+
+        # Create simple animated GIF (2 frames)
+        frames = []
+        for color in ["red", "blue"]:
+            frame = Image.new("RGB", (50, 50), color=color)
+            frames.append(frame)
+
+        frames[0].save(
+            input_path,
+            format="GIF",
+            save_all=True,
+            append_images=frames[1:],
+            duration=500,
+            loop=0,
+        )
+
+        # Note: Our optimize function will handle this as a static image
+        image_service._optimize_image(input_path, output_path)
+
+        assert output_path.exists()
+        with Image.open(output_path) as optimized:
+            # Should be converted to static format based on extension
+            assert optimized.size == (50, 50)
+
+    def test_optimize_image_format_conversion_jpg_to_webp(
+        self, image_service, tmp_path
+    ):
+        """Test format conversion from JPG to WEBP."""
+        input_path = tmp_path / "test.jpg"
+        output_path = tmp_path / "converted.webp"
+
+        # Create JPG image
+        test_image = Image.new("RGB", (200, 200), color="yellow")
+        test_image.save(input_path, format="JPEG", quality=90)
+
+        image_service._optimize_image(input_path, output_path)
+
+        assert output_path.exists()
+        with Image.open(output_path) as optimized:
+            assert optimized.format == "WEBP"
+            assert optimized.size == (200, 200)
+
+    def test_optimize_image_png_to_jpg_alpha_handling(self, image_service, tmp_path):
+        """Test PNG with alpha channel converted to JPG."""
+        input_path = tmp_path / "transparent.png"
+        output_path = tmp_path / "converted.jpg"
+
+        # Create PNG with alpha channel
+        rgba_image = Image.new("RGBA", (100, 100), color=(255, 0, 0, 128))
+        rgba_image.save(input_path, format="PNG")
+
+        image_service._optimize_image(input_path, output_path)
+
+        assert output_path.exists()
+        with Image.open(output_path) as optimized:
+            assert optimized.format == "JPEG"
+            assert optimized.mode == "RGB"  # Alpha removed
+            assert optimized.size == (100, 100)
+
+    def test_optimize_image_preserve_aspect_ratio(self, image_service, tmp_path):
+        """Test that aspect ratio is preserved during resizing."""
+        input_path = tmp_path / "rectangle.jpg"
+        output_path = tmp_path / "resized.jpg"
+
+        # Create rectangular image larger than max dimension
+        wide_image = Image.new("RGB", (3000, 1500), color="purple")  # 2:1 ratio
+        wide_image.save(input_path, format="JPEG")
+
+        image_service._optimize_image(input_path, output_path)
+
+        assert output_path.exists()
+        with Image.open(output_path) as optimized:
+            # Should maintain 2:1 aspect ratio
+            width, height = optimized.size
+            aspect_ratio = width / height
+            assert abs(aspect_ratio - 2.0) < 0.01  # Allow small floating point errors
+            assert max(width, height) <= 2048
+
+    def test_optimize_image_quality_settings(self, image_service, tmp_path):
+        """Test different quality settings for different formats."""
+        formats_and_extensions = [("JPEG", ".jpg"), ("WEBP", ".webp")]
+
+        for format_name, ext in formats_and_extensions:
+            input_path = tmp_path / f"test{ext}"
+            output_path = tmp_path / f"optimized{ext}"
+
+            # Create high quality image
+            test_image = Image.new("RGB", (500, 500), color="orange")
+            if format_name == "JPEG":
+                test_image.save(input_path, format=format_name, quality=100)
+            else:  # WEBP
+                test_image.save(
+                    input_path, format=format_name, quality=100, lossless=False
+                )
+
+            image_service._optimize_image(input_path, output_path)
+
+            assert output_path.exists()
+            # Optimization completed successfully - size comparison can vary
+            # based on image content, format, and compression algorithms
+            input_size = input_path.stat().st_size
+            output_size = output_path.stat().st_size
+            # Ensure the file was processed (not empty or extremely large)
+            assert 50 < output_size < input_size * 2  # Reasonable size range
 
 
 class TestImageServiceGlobal:

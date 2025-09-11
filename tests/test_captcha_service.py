@@ -2,6 +2,7 @@
 
 from unittest.mock import AsyncMock, Mock, patch
 
+import httpx
 import pytest
 from fastapi import HTTPException
 
@@ -239,6 +240,117 @@ class TestHcaptchaService:
 
                 result = await service.verify_captcha("valid_token", "127.0.0.1")
                 assert result is True
+
+    @pytest.mark.asyncio
+    async def test_verify_captcha_timeout(self):
+        """Test hCaptcha verification timeout."""
+        with patch("cardinal_vote.captcha_service.settings") as mock_settings:
+            mock_settings.HCAPTCHA_SECRET_KEY = "test_secret"
+            mock_settings.HCAPTCHA_SITE_KEY = "test_site_key"
+
+            service = HcaptchaService()
+
+            with patch("httpx.AsyncClient") as mock_client:
+                mock_client.return_value.__aenter__.return_value.post = AsyncMock(
+                    side_effect=httpx.TimeoutException("Timeout")
+                )
+
+                result = await service.verify_captcha("valid_token", "127.0.0.1")
+                assert result is False
+
+    @pytest.mark.asyncio
+    async def test_verify_captcha_request_error(self):
+        """Test hCaptcha verification request error."""
+        with patch("cardinal_vote.captcha_service.settings") as mock_settings:
+            mock_settings.HCAPTCHA_SECRET_KEY = "test_secret"
+            mock_settings.HCAPTCHA_SITE_KEY = "test_site_key"
+
+            service = HcaptchaService()
+
+            with patch("httpx.AsyncClient") as mock_client:
+                mock_client.return_value.__aenter__.return_value.post = AsyncMock(
+                    side_effect=httpx.RequestError("Network error")
+                )
+
+                result = await service.verify_captcha("valid_token", "127.0.0.1")
+                assert result is False
+
+    @pytest.mark.asyncio
+    async def test_verify_captcha_http_error(self):
+        """Test hCaptcha verification HTTP error response."""
+        with patch("cardinal_vote.captcha_service.settings") as mock_settings:
+            mock_settings.HCAPTCHA_SECRET_KEY = "test_secret"
+            mock_settings.HCAPTCHA_SITE_KEY = "test_site_key"
+
+            service = HcaptchaService()
+
+            mock_response = Mock()
+            mock_response.status_code = 500
+
+            with patch("httpx.AsyncClient") as mock_client:
+                mock_client.return_value.__aenter__.return_value.post = AsyncMock(
+                    return_value=mock_response
+                )
+
+                result = await service.verify_captcha("valid_token", "127.0.0.1")
+                assert result is False
+
+    @pytest.mark.asyncio
+    async def test_verify_captcha_json_error(self):
+        """Test hCaptcha verification with invalid JSON response."""
+        with patch("cardinal_vote.captcha_service.settings") as mock_settings:
+            mock_settings.HCAPTCHA_SECRET_KEY = "test_secret"
+            mock_settings.HCAPTCHA_SITE_KEY = "test_site_key"
+
+            service = HcaptchaService()
+
+            mock_response = Mock()
+            mock_response.status_code = 200
+            mock_response.json.side_effect = ValueError("Invalid JSON")
+
+            with patch("httpx.AsyncClient") as mock_client:
+                mock_client.return_value.__aenter__.return_value.post = AsyncMock(
+                    return_value=mock_response
+                )
+
+                result = await service.verify_captcha("valid_token", "127.0.0.1")
+                assert result is False
+
+    @pytest.mark.asyncio
+    async def test_verify_captcha_empty_response(self):
+        """Test hCaptcha verification with empty response."""
+        with patch("cardinal_vote.captcha_service.settings") as mock_settings:
+            mock_settings.HCAPTCHA_SECRET_KEY = "test_secret"
+            mock_settings.HCAPTCHA_SITE_KEY = "test_site_key"
+
+            service = HcaptchaService()
+
+            result = await service.verify_captcha("", "127.0.0.1")
+            assert result is False
+
+    @pytest.mark.asyncio
+    async def test_verify_captcha_failure_with_error_codes(self):
+        """Test hCaptcha verification failure with error codes."""
+        with patch("cardinal_vote.captcha_service.settings") as mock_settings:
+            mock_settings.HCAPTCHA_SECRET_KEY = "test_secret"
+            mock_settings.HCAPTCHA_SITE_KEY = "test_site_key"
+
+            service = HcaptchaService()
+
+            mock_response = Mock()
+            mock_response.status_code = 200
+            mock_response.json.return_value = {
+                "success": False,
+                "error-codes": ["invalid-input-response", "timeout-or-duplicate"],
+            }
+
+            with patch("httpx.AsyncClient") as mock_client:
+                mock_client.return_value.__aenter__.return_value.post = AsyncMock(
+                    return_value=mock_response
+                )
+
+                result = await service.verify_captcha("invalid_token", "127.0.0.1")
+                assert result is False
 
 
 class TestGetCaptchaService:

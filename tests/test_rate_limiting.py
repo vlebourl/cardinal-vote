@@ -146,6 +146,54 @@ class TestInMemoryRateLimiter:
         assert "127.0.0.1" not in limiter._requests
         assert "192.168.1.1" in limiter._requests
 
+    def test_reset_time_calculation_precision(self):
+        """Test that reset time calculation is precise."""
+        limiter = InMemoryRateLimiter()
+
+        # Record a request at a specific time
+        precise_time = time.time()
+        limiter._requests["127.0.0.1"] = [(precise_time, "/api/test")]
+
+        is_limited, info = limiter.is_rate_limited(
+            "127.0.0.1", "/api/test", max_requests=5, window_seconds=300
+        )
+
+        # Reset time should be the request time + window, rounded to nearest second
+        expected_reset = int(precise_time + 300 + 0.5)
+        assert info["reset"] == expected_reset
+
+    def test_reset_time_no_previous_requests(self):
+        """Test reset time calculation when no previous requests exist."""
+        limiter = InMemoryRateLimiter()
+
+        current_time = time.time()
+        is_limited, info = limiter.is_rate_limited(
+            "127.0.0.1", "/api/test", max_requests=5, window_seconds=300
+        )
+
+        # Reset time should be current time + window, rounded
+        expected_reset = int(current_time + 300 + 0.5)
+        # Allow 1-2 second tolerance for test execution time
+        assert abs(info["reset"] - expected_reset) <= 2
+
+    def test_reset_time_multiple_requests(self):
+        """Test reset time calculation with multiple requests (uses oldest)."""
+        limiter = InMemoryRateLimiter()
+
+        # Add multiple requests at different times
+        base_time = time.time() - 100
+        times = [base_time, base_time + 10, base_time + 20]
+
+        limiter._requests["127.0.0.1"] = [(t, "/api/test") for t in times]
+
+        is_limited, info = limiter.is_rate_limited(
+            "127.0.0.1", "/api/test", max_requests=10, window_seconds=300
+        )
+
+        # Should use the oldest request time for reset calculation
+        expected_reset = int(base_time + 300 + 0.5)
+        assert info["reset"] == expected_reset
+
 
 class TestRateLimitMiddleware:
     """Test cases for RateLimitMiddleware class."""
