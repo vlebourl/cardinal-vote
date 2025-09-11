@@ -8,7 +8,7 @@ services:
     environment:
       - POSTGRES_DB=${POSTGRES_DB:-voting_platform}
       - POSTGRES_USER=${POSTGRES_USER:-voting_user}
-      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-voting_password_change_in_production}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:?POSTGRES_PASSWORD environment variable is required for security}
       - POSTGRES_INITDB_ARGS=--auth-host=scram-sha-256
     volumes:
       - postgres_data:/var/lib/postgresql/data
@@ -54,7 +54,7 @@ services:
       - DEBUG=${DEBUG:-false}
       - CARDINAL_ENV=${CARDINAL_ENV:-development}
       # Security Configuration - Use environment variables or fallbacks
-      - JWT_SECRET_KEY=${JWT_SECRET_KEY:-jwt_secret_key_change_in_production_extremely_long_and_secure}
+      - JWT_SECRET_KEY=${JWT_SECRET_KEY:?JWT_SECRET_KEY environment variable is required for security}
       - JWT_ALGORITHM=${JWT_ALGORITHM:-HS256}
       - JWT_ACCESS_TOKEN_EXPIRE_MINUTES=${JWT_ACCESS_TOKEN_EXPIRE_MINUTES:-30}
       - JWT_REFRESH_TOKEN_EXPIRE_DAYS=${JWT_REFRESH_TOKEN_EXPIRE_DAYS:-7}
@@ -72,10 +72,10 @@ services:
       - MAX_FILE_SIZE_MB=${MAX_FILE_SIZE_MB:-10}
       # Super Admin Configuration
       - SUPER_ADMIN_EMAIL=${SUPER_ADMIN_EMAIL:-admin@voting-platform.local}
-      - SUPER_ADMIN_PASSWORD=${SUPER_ADMIN_PASSWORD:-super_admin_password_change_in_production}
+      - SUPER_ADMIN_PASSWORD=${SUPER_ADMIN_PASSWORD:?SUPER_ADMIN_PASSWORD environment variable is required for security}
       # Legacy Admin Configuration (backwards compatibility)
       - ADMIN_USERNAME=${ADMIN_USERNAME:-admin}
-      - ADMIN_PASSWORD=${ADMIN_PASSWORD:-cardinal_admin_2025}
+      - ADMIN_PASSWORD=${ADMIN_PASSWORD:?ADMIN_PASSWORD environment variable is required for security}
       # CORS Configuration
       - ALLOWED_ORIGINS=${ALLOWED_ORIGINS:-http://localhost:3000,http://localhost:8000,http://127.0.0.1:8000}
     volumes:
