@@ -199,7 +199,7 @@ h2 {
 }
 
 /* Welcome Screen */
-.logo-header {
+.option-header {
   margin-bottom: var(--spacing-lg);
   text-align: center;
 }
@@ -455,7 +455,7 @@ input[type='text']::placeholder {
   flex: 1;
 }
 
-.logo-container {
+.option-container {
   width: 100%;
   max-width: 400px;
   aspect-ratio: 1;
@@ -472,7 +472,7 @@ input[type='text']::placeholder {
   border: 2px solid var(--border-color);
 }
 
-.logo-container::before {
+.option-container::before {
   content: '';
   position: absolute;
   top: 0;
@@ -484,7 +484,7 @@ input[type='text']::placeholder {
   pointer-events: none;
 }
 
-#current-logo {
+#current-option {
   max-width: 100%;
   max-height: 100%;
   width: auto;
@@ -827,7 +827,7 @@ input[type='text']::placeholder {
   box-shadow: 0 0 0 3px rgba(45, 88, 32, 0.1);
 }
 
-.review-logo {
+.review-option {
   width: 100%;
   max-height: 80px;
   object-fit: contain;
@@ -1283,7 +1283,7 @@ input[type='text']::placeholder {
   font-size: 1.5rem;
 }
 
-.result-logo {
+.result-option {
   width: 100%;
   max-height: 120px;
   object-fit: contain;
@@ -1511,7 +1511,7 @@ input[type='text']::placeholder {
     padding: var(--spacing-sm);
   }
 
-  .logo-container {
+  .option-container {
     padding: var(--spacing-sm);
   }
 
@@ -1677,7 +1677,7 @@ input[type='text']::placeholder {
     padding: 2px !important;
   }
 
-  .logo-header-img {
+  .option-header-img {
     width: 20px !important;
     height: 20px !important;
   }
@@ -1802,22 +1802,22 @@ input[type='text']::placeholder {
   box-shadow: 2px 0 4px rgba(45, 88, 32, 0.1);
 }
 
-/* Logo headers */
-.logo-header-content {
+/* Option headers */
+.option-header-content {
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: var(--spacing-xs);
 }
 
-.logo-header-img {
+.option-header-img {
   width: 32px;
   height: 32px;
   border-radius: var(--border-radius);
   box-shadow: var(--shadow-sm);
 }
 
-.logo-number {
+.option-number {
   font-size: 0.8rem;
   font-weight: bold;
 }
@@ -1952,7 +1952,7 @@ input[type='text']::placeholder {
     padding: var(--spacing-xs) var(--spacing-sm);
   }
 
-  .logo-header-img {
+  .option-header-img {
     width: 24px;
     height: 24px;
   }
@@ -1984,12 +1984,12 @@ input[type='text']::placeholder {
     max-width: 100px;
   }
 
-  .logo-header-img {
+  .option-header-img {
     width: 20px;
     height: 20px;
   }
 
-  .logo-number {
+  .option-number {
     font-size: 0.7rem;
   }
 

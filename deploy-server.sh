@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# ToV'éCo Deployment Script
+# Cardinal Vote Deployment Script
 # This script safely deploys a new version by:
 # 1. Stopping all containers
 # 2. Removing old images completely
@@ -88,7 +88,7 @@ wait_for_containers_stop() {
 
 # Function to remove all cardinal images
 cleanup_images() {
-    print_status "Cleaning up old ToV'éCo images..."
+    print_status "Cleaning up old Cardinal Vote images..."
 
     # Get all cardinal-voting images
     local images=$(docker images "${IMAGE_NAME}" --format "{{.Repository}}:{{.Tag}}" 2>/dev/null || true)
@@ -105,7 +105,7 @@ cleanup_images() {
             docker rmi "$image" -f 2>/dev/null || print_warning "Could not remove $image"
         done
     else
-        print_status "No existing ToV'éCo images found"
+        print_status "No existing Cardinal Vote images found"
     fi
 
     # Clean up dangling images
@@ -223,7 +223,7 @@ show_logs() {
 # Main deployment function
 main() {
     echo "=================================="
-    echo "  ToV'éCo Deployment Script v1.0  "
+    echo "  Cardinal Vote Deployment Script v1.0  "
     echo "=================================="
     echo
 

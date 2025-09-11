@@ -16,7 +16,7 @@ from cardinal_vote.models import (
 from cardinal_vote.vote_moderation_manager import VoteModerationManager
 
 # Test database setup
-TEST_DATABASE_URL = "sqlite+aiosqlite:///:memory:"
+TEST_DATABASE_URL = "postgresql+asyncpg://test:test@localhost:5432/test"
 
 
 @pytest.fixture

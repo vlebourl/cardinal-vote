@@ -197,6 +197,23 @@ health_check() {
     error_exit "Application failed to start within $(($max_attempts * 2)) seconds"
 }
 
+# Run database migrations
+run_database_migrations() {
+    log "Running database migrations..."
+
+    # Check if alembic is available
+    if ! command -v alembic >/dev/null 2>&1; then
+        error_exit "alembic command not found - required for database migrations"
+    fi
+
+    # Run migrations with timeout to prevent hanging
+    if timeout 60 alembic upgrade head; then
+        log "✓ Database migrations completed successfully"
+    else
+        error_exit "Database migrations failed or timed out"
+    fi
+}
+
 # Start application
 start_application() {
     log "Starting Cardinal Vote Generalized Voting Platform..."
@@ -256,6 +273,9 @@ main() {
     setup_application_directories
     setup_logs_directory
     preflight_checks
+
+    # Initialize database
+    run_database_migrations
 
     # Start the application
     start_application

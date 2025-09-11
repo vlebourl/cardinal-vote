@@ -1,6 +1,10 @@
-# 🐳 Cardinal Vote Logo Voting Platform - Complete Deployment Guide
+# 🐳 Cardinal Vote Generalized Voting Platform - Complete Deployment Guide
 
-**Professional deployment guide for Ubuntu servers** with Docker, SSL, monitoring, and production-ready configuration for the Cardinal Vote logo voting platform.
+**Professional deployment guide for Ubuntu servers** with Docker, SSL, monitoring, and production-ready configuration for the Cardinal Vote generalized voting platform.
+
+## ⚠️ **IMPORTANT: Single Docker Compose File Architecture**
+
+This platform uses a **single docker-compose.yml file** for all deployments (development and production). The configuration is controlled entirely through **environment variables**, not separate compose files. This ensures consistency and eliminates deployment confusion.
 
 ![Deployment Architecture](static/deployment-architecture.png)
 
@@ -48,17 +52,20 @@ Deploy the complete stack with a single command:
 ```bash
 # Clone repository
 git clone <repository-url>
-cd cardinal-vote
+cd cardinal-vote-voting
 
-# Make entrypoint script executable
-chmod +x docker-entrypoint.sh
-
-# Start the application
+# Single command deployment - complete stack
 docker compose up -d
+
+# That's it! The complete stack will start:
+# - PostgreSQL database with auto-initialization
+# - Application with automatic database migrations
+# - All required volumes and networking
+# - Health checks and proper orchestration
 
 # Check status
 docker compose ps
-docker compose logs cardinal-vote-voting
+docker compose logs voting-platform
 ```
 
 The application will be available at:
@@ -116,38 +123,46 @@ docker build -t cardinal-vote-voting:v1.0.0 .
 
 ```bash
 # Deploy with production configuration
-docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d
+# Set production environment variables first
+export ENVIRONMENT=production
+export DEBUG=false
+export JWT_SECRET_KEY=your-secure-jwt-secret-here
+export SUPER_ADMIN_EMAIL=admin@yourdomain.com
+export SUPER_ADMIN_PASSWORD=your-secure-password-here
+
+# Deploy the complete stack
+docker compose up -d
 
 # Check deployment status
-docker compose -f docker-compose.yml -f docker-compose.prod.yml ps
+docker compose ps
 ```
 
 ### 5. SSL/TLS Setup (with Traefik)
 
-Update `docker-compose.prod.yml` with your domain:
+The Traefik configuration is already included in docker-compose.yml. Set your domain via environment variables:
 
 ```yaml
 labels:
-  - "traefik.http.routers.cardinal-vote.rule=Host(`voting.yourdomain.com`)"
+  - 'traefik.http.routers.cardinal-vote.rule=Host(`voting.yourdomain.com`)'
 ```
 
 Then start with Traefik:
 
 ```bash
 # Start with reverse proxy and SSL
-docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d
+docker compose up -d
 ```
 
 ## 🔧 Configuration Options
 
 ### Core Configuration
 
-| Variable        | Default              | Description              |
-| --------------- | -------------------- | ------------------------ |
-| `HOST`          | `0.0.0.0`            | Server bind address      |
-| `PORT`          | `8000`               | Server port              |
-| `DATABASE_PATH` | `/app/data/votes.db` | SQLite database location |
-| `DEBUG`         | `false`              | Enable debug mode        |
+| Variable       | Default                    | Description                        |
+| -------------- | -------------------------- | ---------------------------------- |
+| `HOST`         | `0.0.0.0`                  | Server bind address                |
+| `PORT`         | `8000`                     | Server port                        |
+| `DATABASE_URL` | `postgresql+asyncpg://...` | PostgreSQL database connection URL |
+| `DEBUG`        | `false`                    | Enable debug mode                  |
 
 ### Security Settings
 
@@ -170,13 +185,13 @@ docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d
 ```
 cardinal-vote/
 ├── Dockerfile                 # Multi-stage production build
-├── docker-compose.yml         # Base Docker Compose configuration
-├── docker-compose.prod.yml    # Production overrides
+├── docker-compose.yml         # Complete stack configuration (dev + production)
+├── .env.example              # Environment variables for production configuration
 ├── docker-entrypoint.sh       # Production-ready startup script
 ├── .dockerignore             # Docker build context optimization
 ├── .env.example              # Environment configuration template
 ├── src/                      # Application source code
-├── logos/                    # Logo files (cardinal-vote*.png)
+├── uploads/                  # User-uploaded vote content (various formats)
 ├── templates/                # HTML templates
 ├── static/                   # CSS/JS static files
 ├── data/                     # Database storage (Docker volume)
@@ -204,7 +219,7 @@ Deploy with Prometheus, Grafana, and advanced monitoring:
 
 ```bash
 # Start with monitoring profile
-docker compose -f docker-compose.yml -f docker-compose.prod.yml --profile monitoring up -d
+docker compose --profile monitoring up -d
 
 # Access monitoring
 # - Grafana: https://grafana.yourdomain.com
@@ -241,21 +256,21 @@ docker compose down
 # Restart specific service
 docker compose restart cardinal-vote-voting
 
-# Scale application (not recommended with SQLite)
-docker compose up -d --scale cardinal-vote-voting=1
+# Scale application (PostgreSQL supports multiple connections)
+docker compose up -d --scale cardinal-vote-voting=3
 ```
 
 ### Database Management
 
 ```bash
 # Backup database
-docker compose exec cardinal-vote-voting cp /app/data/votes.db /app/data/backup-$(date +%Y%m%d).db
+docker compose exec postgres pg_dump -U cardinal_vote cardinal_vote > backup-$(date +%Y%m%d).sql
 
 # Access database directly
-docker compose exec cardinal-vote-voting sqlite3 /app/data/votes.db
+docker compose exec postgres psql -U cardinal_vote -d cardinal_vote
 
 # View database size
-docker compose exec cardinal-vote-voting ls -lh /app/data/votes.db
+docker compose exec postgres psql -U cardinal_vote -d cardinal_vote -c "SELECT pg_size_pretty(pg_database_size('cardinal_vote'));"
 ```
 
 ### Updates and Maintenance
@@ -307,10 +322,10 @@ Production deployment includes resource constraints:
 deploy:
   resources:
     limits:
-      cpus: "1.0"
+      cpus: '1.0'
       memory: 512M
     reservations:
-      cpus: "0.25"
+      cpus: '0.25'
       memory: 128M
 ```
 
@@ -320,7 +335,7 @@ For high-traffic deployments, consider PostgreSQL:
 
 ```bash
 # Deploy with PostgreSQL
-docker compose -f docker-compose.yml -f docker-compose.prod.yml --profile postgres up -d
+docker compose --profile postgres up -d
 ```
 
 ### Caching (Optional)
@@ -329,7 +344,7 @@ Enable Redis for session caching:
 
 ```bash
 # Deploy with Redis
-docker compose -f docker-compose.yml -f docker-compose.prod.yml --profile redis up -d
+docker compose --profile redis up -d
 ```
 
 ## 🛠️ Troubleshooting
@@ -368,11 +383,11 @@ docker compose up -d
 **4. Logo Files Missing**
 
 ```bash
-# Verify logo files
-docker compose exec cardinal-vote-voting ls -la /app/logos/
+# Verify uploads directory
+docker compose exec cardinal-vote-voting ls -la /app/uploads/
 
-# Check expected count
-docker compose exec cardinal-vote-voting find /app/logos -name "cardinal-vote*.png" | wc -l
+# Check directory permissions
+docker compose exec cardinal-vote-voting ls -ld /app/uploads/
 ```
 
 ### Debug Mode
@@ -480,33 +495,33 @@ docker volume ls
 1. **Update your domain configuration**:
 
 ```bash
-# Edit docker-compose.prod.yml
-nano docker-compose.prod.yml
+# Configure domain via environment variables
+export DOMAIN=voting.yourdomain.com
 ```
 
 Update the Traefik labels:
 
 ```yaml
 labels:
-  - "traefik.http.routers.cardinal-vote.rule=Host(`voting.yourdomain.com`)"
-  - "traefik.http.routers.cardinal-vote.tls=true"
-  - "traefik.http.routers.cardinal-vote.tls.certresolver=letsencrypt"
+  - 'traefik.http.routers.cardinal-vote.rule=Host(`voting.yourdomain.com`)'
+  - 'traefik.http.routers.cardinal-vote.tls=true'
+  - 'traefik.http.routers.cardinal-vote.tls.certresolver=letsencrypt'
 ```
 
 2. **Configure Let's Encrypt**:
 
 ```yaml
-# Add to traefik service in docker-compose.prod.yml
+# Traefik SSL configuration (already included in docker-compose.yml)
 command:
-  - "--certificatesresolvers.letsencrypt.acme.email=admin@yourdomain.com"
-  - "--certificatesresolvers.letsencrypt.acme.storage=/acme.json"
-  - "--certificatesresolvers.letsencrypt.acme.httpchallenge.entrypoint=web"
+  - '--certificatesresolvers.letsencrypt.acme.email=admin@yourdomain.com'
+  - '--certificatesresolvers.letsencrypt.acme.storage=/acme.json'
+  - '--certificatesresolvers.letsencrypt.acme.httpchallenge.entrypoint=web'
 ```
 
 3. **Deploy with SSL**:
 
 ```bash
-docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d
+docker compose up -d
 ```
 
 ### Manual SSL with Nginx
@@ -573,7 +588,7 @@ server {
 
 ```bash
 # Enable monitoring profile
-docker compose -f docker-compose.yml -f docker-compose.prod.yml --profile monitoring up -d
+docker compose --profile monitoring up -d
 ```
 
 2. **Access dashboards**:
@@ -664,7 +679,7 @@ Set up cron job:
 sudo apt install rsyslog
 
 # Configure Docker to use syslog driver
-# Add to docker-compose.prod.yml
+# Configure via environment variables (already included in docker-compose.yml)
 logging:
   driver: "syslog"
   options:
@@ -676,12 +691,12 @@ logging:
 
 ### Database Optimization
 
-1. **SQLite Performance Settings**:
+1. **PostgreSQL Performance Settings**:
 
-```python
-# In production, these are automatically applied
-PRAGMA journal_mode=WAL;
-PRAGMA synchronous=NORMAL;
+```sql
+-- In production, these are automatically optimized
+-- Connection pooling via SQLAlchemy
+-- Async queries with asyncpg driver
 PRAGMA cache_size=1000000;
 PRAGMA foreign_keys=true;
 PRAGMA temp_store=memory;
@@ -689,7 +704,7 @@ PRAGMA temp_store=memory;
 
 2. **Migration to PostgreSQL** (for high-traffic deployments):
 
-Update `docker-compose.prod.yml`:
+Update `docker-compose.yml (production configuration via environment variables)`:
 
 ```yaml
 services:
@@ -716,10 +731,9 @@ services:
 1. **Multiple Workers** (for high traffic):
 
 ```yaml
-# In docker-compose.prod.yml
-environment:
-  - WORKER_COUNT=4
-  - WORKER_TIMEOUT=60
+# Set via environment variables
+export WORKER_COUNT=4
+export WORKER_TIMEOUT=60
 ```
 
 2. **Load Balancing with Nginx**:
@@ -820,11 +834,11 @@ RETENTION_DAYS=30
 mkdir -p "$BACKUP_DIR"
 
 # Backup database
-docker compose exec cardinal-vote-voting sqlite3 /app/data/votes.db ".backup /app/data/backup_${DATE}.db"
+docker compose exec postgres pg_dump -U cardinal_vote cardinal_vote > "/backup/backup_${DATE}.sql"
 docker compose cp cardinal-vote-voting:/app/data/backup_${DATE}.db "${BACKUP_DIR}/"
 
 # Backup configuration
-tar -czf "${BACKUP_DIR}/config_${DATE}.tar.gz" .env docker-compose*.yml
+tar -czf "${BACKUP_DIR}/config_${DATE}.tar.gz" .env docker-compose.yml
 
 # Clean old backups
 find "$BACKUP_DIR" -name "*.db" -mtime +$RETENTION_DAYS -delete
@@ -917,7 +931,7 @@ spec:
 docker stats cardinal-vote-voting
 
 # Adjust memory limits
-# In docker-compose.prod.yml:
+# Resource limits configured in docker-compose.yml:
 deploy:
   resources:
     limits:
@@ -933,10 +947,10 @@ deploy:
 
 ```bash
 # Check for long-running transactions
-docker compose exec cardinal-vote-voting sqlite3 /app/data/votes.db ".timeout 30000"
+docker compose exec postgres psql -U cardinal_vote -d cardinal_vote -c "SELECT * FROM pg_stat_activity WHERE state != 'idle';"
 
-# Enable WAL mode (automatic in production)
-docker compose exec cardinal-vote-voting sqlite3 /app/data/votes.db "PRAGMA journal_mode=WAL;"
+# Check connection count
+docker compose exec postgres psql -U cardinal_vote -d cardinal_vote -c "SELECT count(*) FROM pg_stat_activity;"
 ```
 
 ### Issue: SSL Certificate Renewal Failures

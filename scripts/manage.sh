@@ -214,7 +214,7 @@ cmd_db() {
         return 1
     fi
 
-    docker compose $COMPOSE_FILES exec cardinal-voting sqlite3 /app/data/votes.db
+    docker compose $COMPOSE_FILES exec postgres psql -U cardinal_vote -d cardinal_vote
 }
 
 # Show statistics

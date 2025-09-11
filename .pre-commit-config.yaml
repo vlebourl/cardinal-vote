@@ -100,13 +100,6 @@ repos:
         language: system
         files: \.(py|yaml|yml|json|toml)$
 
-      # Check logo files are in correct format
-      - id: logo-format
-        name: Check logo file format
-        entry: bash -c 'shopt -s nullglob; for logo in logos/*.png; do [[ "$logo" =~ ^logos/cardinal_vote[0-9]+\.png$ ]] || { echo "Logo $logo should follow cardinal_vote{number}.png format"; exit 1; }; done'
-        language: system
-        files: ^logos/.*\.png$
-
 # Global configuration
 default_stages: [pre-commit, pre-push]
 fail_fast: false

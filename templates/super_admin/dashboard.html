@@ -223,10 +223,27 @@ async function initializeDashboard() {
 
 async function loadSystemStats() {
     try {
-        const response = await fetch('/api/admin/stats');
+        const token = localStorage.getItem('jwt_token');
+        if (!token) {
+            showMessage('Authentication required', 'error');
+            window.location.href = '/login';
+            return;
+        }
+
+        const response = await fetch('/api/admin/stats', {
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            }
+        });
 
         if (!response.ok) {
-            if (handleAuthError(response)) return;
+            if (response.status === 401) {
+                localStorage.removeItem('jwt_token');
+                showMessage('Session expired, redirecting...', 'error');
+                setTimeout(() => window.location.href = '/login', 2000);
+                return;
+            }
             throw new Error('Failed to load system statistics');
         }
 
@@ -242,11 +259,28 @@ async function loadSystemStats() {
 
 async function loadPlatformHealth() {
     try {
+        const token = localStorage.getItem('jwt_token');
+        if (!token) {
+            showMessage('Authentication required', 'error');
+            window.location.href = '/login';
+            return;
+        }
+
         // Platform health is included in comprehensive stats from super_admin_manager
-        const response = await fetch('/api/admin/comprehensive-stats');
+        const response = await fetch('/api/admin/comprehensive-stats', {
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            }
+        });
 
         if (!response.ok) {
-            if (handleAuthError(response)) return;
+            if (response.status === 401) {
+                localStorage.removeItem('jwt_token');
+                showMessage('Session expired, redirecting...', 'error');
+                setTimeout(() => window.location.href = '/login', 2000);
+                return;
+            }
             throw new Error('Failed to load platform health');
         }
 
@@ -262,10 +296,27 @@ async function loadPlatformHealth() {
 
 async function loadRecentActivity() {
     try {
-        const response = await fetch('/api/admin/recent-activity?limit=10');
+        const token = localStorage.getItem('jwt_token');
+        if (!token) {
+            showMessage('Authentication required', 'error');
+            window.location.href = '/login';
+            return;
+        }
+
+        const response = await fetch('/api/admin/recent-activity?limit=10', {
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            }
+        });
 
         if (!response.ok) {
-            if (handleAuthError(response)) return;
+            if (response.status === 401) {
+                localStorage.removeItem('jwt_token');
+                showMessage('Session expired, redirecting...', 'error');
+                setTimeout(() => window.location.href = '/login', 2000);
+                return;
+            }
             throw new Error('Failed to load recent activity');
         }
 
@@ -286,10 +337,27 @@ async function loadRecentActivity() {
 
 async function loadUserSummary() {
     try {
-        const response = await fetch('/api/admin/user-summary');
+        const token = localStorage.getItem('jwt_token');
+        if (!token) {
+            showMessage('Authentication required', 'error');
+            window.location.href = '/login';
+            return;
+        }
+
+        const response = await fetch('/api/admin/user-summary', {
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            }
+        });
 
         if (!response.ok) {
-            if (handleAuthError(response)) return;
+            if (response.status === 401) {
+                localStorage.removeItem('jwt_token');
+                showMessage('Session expired, redirecting...', 'error');
+                setTimeout(() => window.location.href = '/login', 2000);
+                return;
+            }
             throw new Error('Failed to load user summary');
         }
 

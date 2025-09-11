@@ -1,6 +1,6 @@
-# 👨‍💻 Cardinal Vote Logo Voting Platform - Development Guide
+# 👨‍💻 Cardinal Vote Generalized Voting Platform - Development Guide
 
-**Complete development setup and contribution guide** for the Cardinal Vote logo voting platform. Whether you're fixing bugs, adding features, or contributing improvements, this guide has you covered.
+**Complete development setup and contribution guide** for the Cardinal Vote generalized voting platform. Whether you're fixing bugs, adding features, or contributing improvements, this guide has you covered.
 
 ![Development Workflow](static/development-workflow.png)
 
@@ -69,7 +69,7 @@ cardinal-vote/
 ├── static/                      # Static assets
 │   ├── style.css               # CSS styles (mobile-first)
 │   └── app.js                  # Client-side JavaScript
-├── logos/                       # Logo PNG files (cardinal_vote1.png - cardinal_vote11.png)
+├── uploads/                     # User-uploaded vote content (images, documents, etc.)
 ├── tests/                       # Test suite
 │   ├── __init__.py
 │   ├── test_main.py            # API endpoint tests
@@ -114,7 +114,7 @@ class VoteSubmission(BaseModel):
     ratings: Dict[str, int] = Field(..., min_items=1)
 
 class VoteResults(BaseModel):
-    summary: Dict[str, LogoSummary]
+    summary: Dict[str, OptionSummary]
     total_voters: int
     votes: Optional[List[Vote]] = None
 ```
@@ -129,11 +129,11 @@ class VoteResults(BaseModel):
 #### 3. **Database Layer** (`src/cardinal_vote/database.py`)
 
 ```python
-# SQLAlchemy with SQLite:
-- Connection pooling with WAL mode
-- Transaction management
-- JSON storage for vote ratings
-- Aggregation queries for results
+# SQLAlchemy with PostgreSQL:
+- Async connection pooling with asyncpg
+- Transaction management with async context
+- Structured vote option storage
+- Complex aggregation queries for results
 ```
 
 **Key Operations:**
@@ -592,7 +592,7 @@ db.debug = True  # If implemented
 
 ```javascript
 // Enable verbose console logging
-console.log("Vote data:", voteData);
+console.log('Vote data:', voteData)
 
 // Use browser dev tools
 // - Network tab for API calls
@@ -600,9 +600,9 @@ console.log("Vote data:", voteData);
 // - Application tab for local storage
 
 // Debug mode in JavaScript
-const DEBUG = window.location.hostname === "localhost";
+const DEBUG = window.location.hostname === 'localhost'
 if (DEBUG) {
-  console.log("Debug mode enabled");
+  console.log('Debug mode enabled')
 }
 ```
 

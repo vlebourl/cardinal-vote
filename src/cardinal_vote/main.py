@@ -182,12 +182,22 @@ async def custom_validation_exception_handler(
     )
 
 
+@app.get("/api/health", tags=["Health"])
+async def health_check() -> dict[str, str]:
+    """Health check endpoint for monitoring and container orchestration."""
+    return {
+        "status": "healthy",
+        "service": "cardinal-vote-voting-platform",
+        "version": settings.APP_VERSION,
+    }
+
+
 @app.get("/", response_class=HTMLResponse, tags=["Frontend"])
 async def home(request: Request) -> HTMLResponse:
-    """Serve the main voting page."""
+    """Serve the platform landing page."""
     try:
         return templates.TemplateResponse(
-            "index.html",
+            "landing.html",
             {
                 "request": request,
                 "app_name": settings.APP_NAME,
@@ -195,30 +205,10 @@ async def home(request: Request) -> HTMLResponse:
             },
         )
     except Exception as e:
-        logger.error(f"Failed to serve home page: {e}")
+        logger.error(f"Failed to serve landing page: {e}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Failed to load voting page",
-        ) from e
-
-
-@app.get("/results", response_class=HTMLResponse, tags=["Frontend"])
-async def results_page(request: Request) -> HTMLResponse:
-    """Serve the results page."""
-    try:
-        return templates.TemplateResponse(
-            "results.html",
-            {
-                "request": request,
-                "app_name": settings.APP_NAME,
-                "app_version": settings.APP_VERSION,
-            },
-        )
-    except Exception as e:
-        logger.error(f"Failed to serve results page: {e}")
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Failed to load results page",
+            detail="Failed to load landing page",
         ) from e
 
 

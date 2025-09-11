@@ -23,12 +23,6 @@ class Settings:
         "postgresql+asyncpg://voting_user:voting_password_change_in_production@localhost:5432/voting_platform",
     )
 
-    # Legacy SQLite support (backward compatibility)
-    @property
-    def DATABASE_PATH(self) -> str:
-        """Get database path from environment or default (legacy support)."""
-        return os.getenv("DATABASE_PATH", "votes.db")
-
     # File paths
     BASE_DIR: Path = Path(__file__).resolve().parent.parent.parent
     UPLOADS_DIR: Path = BASE_DIR / "uploads"

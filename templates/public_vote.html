@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
-    <title>{{ vote.title }} - Vote Public</title>
-    <meta name="description" content="Participez au vote: {{ vote.title }}. Évaluez chaque option selon vos préférences.">
+    <title>{{ vote.title }} - Public Vote</title>
+    <meta name="description" content="Participate in the vote: {{ vote.title }}. Rate each option according to your preferences.">
     <meta name="theme-color" content="#2D5820">
     <link rel="stylesheet" href="/static/style.css">
     <link rel="stylesheet" href="/static/public_vote.css">
@@ -24,39 +24,39 @@
             <div class="welcome-content">
                 <div id="vote-info" class="vote-info">
                     <div class="info-item">
-                        <span class="info-label">Options à évaluer:</span>
+                        <span class="info-label">Options to rate:</span>
                         <span class="info-value" id="total-options">{{ vote.options|length }}</span>
                     </div>
                     {% if vote.ends_at %}
                     <div class="info-item">
-                        <span class="info-label">Fin du vote:</span>
+                        <span class="info-label">Vote ends:</span>
                         <span class="info-value">{{ vote.ends_at.strftime('%d/%m/%Y à %H:%M') }}</span>
                     </div>
                     {% endif %}
                 </div>
 
                 <div class="voting-instructions">
-                    <p>Évaluez chaque option sur une échelle de -2 à +2:</p>
+                    <p>Rate each option on a scale from -2 to +2:</p>
                     <div class="scale-explanation" role="table" aria-label="Échelle de notation">
                         <div class="scale-item" role="row">
                             <span class="scale-value negative-strong" role="cell">-2</span>
-                            <span class="scale-label" role="cell">Fortement rejeté</span>
+                            <span class="scale-label" role="cell">Strongly rejected</span>
                         </div>
                         <div class="scale-item" role="row">
                             <span class="scale-value negative" role="cell">-1</span>
-                            <span class="scale-label" role="cell">Rejeté</span>
+                            <span class="scale-label" role="cell">Rejected</span>
                         </div>
                         <div class="scale-item" role="row">
                             <span class="scale-value neutral" role="cell">0</span>
-                            <span class="scale-label" role="cell">Neutre</span>
+                            <span class="scale-label" role="cell">Neutral</span>
                         </div>
                         <div class="scale-item" role="row">
                             <span class="scale-value positive" role="cell">+1</span>
-                            <span class="scale-label" role="cell">Accepté</span>
+                            <span class="scale-label" role="cell">Accepted</span>
                         </div>
                         <div class="scale-item" role="row">
                             <span class="scale-value positive-strong" role="cell">+2</span>
-                            <span class="scale-label" role="cell">Fortement accepté</span>
+                            <span class="scale-label" role="cell">Strongly accepted</span>
                         </div>
                     </div>
                 </div>
@@ -64,32 +64,32 @@
                 <form id="voter-form" novalidate>
                     <div class="voter-fields">
                         <div class="field-group">
-                            <label for="voter-first-name" class="field-label">Prénom *</label>
+                            <label for="voter-first-name" class="field-label">First Name *</label>
                             <input type="text"
                                    id="voter-first-name"
                                    name="voter-first-name"
-                                   placeholder="Votre prénom"
+                                   placeholder="Your first name"
                                    required
                                    autocomplete="given-name"
                                    maxlength="50"
                                    aria-describedby="first-name-help">
-                            <div id="first-name-help" class="field-help">Votre prénom (obligatoire)</div>
+                            <div id="first-name-help" class="field-help">Your first name (required)</div>
                         </div>
                         <div class="field-group">
-                            <label for="voter-last-name" class="field-label">Nom *</label>
+                            <label for="voter-last-name" class="field-label">Last Name *</label>
                             <input type="text"
                                    id="voter-last-name"
                                    name="voter-last-name"
-                                   placeholder="Votre nom"
+                                   placeholder="Your last name"
                                    required
                                    autocomplete="family-name"
                                    maxlength="50"
                                    aria-describedby="last-name-help">
-                            <div id="last-name-help" class="field-help">Votre nom de famille (obligatoire)</div>
+                            <div id="last-name-help" class="field-help">Your last name (required)</div>
                         </div>
                     </div>
                     <button type="submit" class="btn btn-primary btn-large">
-                        Commencer le vote
+                        Start Voting
                     </button>
                 </form>
             </div>
@@ -101,11 +101,11 @@
                 <div class="progress-bar" role="progressbar" aria-valuenow="1" aria-valuemin="1" aria-valuemax="{{ vote.options|length }}" aria-labelledby="progress-text">
                     <div class="progress-fill" id="progress-fill"></div>
                 </div>
-                <span class="progress-text" id="progress-text">Option 1 sur {{ vote.options|length }}</span>
+                <span class="progress-text" id="progress-text">Option 1 of {{ vote.options|length }}</span>
             </div>
 
             <div class="voting-content">
-                <h2 id="voting-title" class="sr-only">Vote pour {{ vote.title }}</h2>
+                <h2 id="voting-title" class="sr-only">Vote for {{ vote.title }}</h2>
 
                 <!-- Current Option Display -->
                 <div class="option-container" id="option-container">
@@ -114,48 +114,48 @@
 
                 <!-- Rating Selection -->
                 <div class="rating-container" role="radiogroup" aria-labelledby="rating-prompt" aria-required="true">
-                    <p class="rating-prompt" id="rating-prompt">Votre évaluation:</p>
+                    <p class="rating-prompt" id="rating-prompt">Your rating:</p>
                     <div class="rating-options">
                         <label class="rating-option negative-strong">
                             <input type="radio" name="rating" value="-2" aria-describedby="rating-desc-neg2">
                             <span class="rating-button">-2</span>
-                            <span class="rating-label">Fortement rejeté</span>
-                            <span id="rating-desc-neg2" class="sr-only">Notation -2, fortement rejeté</span>
+                            <span class="rating-label">Strongly rejected</span>
+                            <span id="rating-desc-neg2" class="sr-only">Rating -2, strongly rejected</span>
                         </label>
                         <label class="rating-option negative">
                             <input type="radio" name="rating" value="-1" aria-describedby="rating-desc-neg1">
                             <span class="rating-button">-1</span>
-                            <span class="rating-label">Rejeté</span>
-                            <span id="rating-desc-neg1" class="sr-only">Notation -1, rejeté</span>
+                            <span class="rating-label">Rejected</span>
+                            <span id="rating-desc-neg1" class="sr-only">Rating -1, rejected</span>
                         </label>
                         <label class="rating-option neutral">
                             <input type="radio" name="rating" value="0" aria-describedby="rating-desc-neutral">
                             <span class="rating-button">0</span>
-                            <span class="rating-label">Neutre</span>
+                            <span class="rating-label">Neutral</span>
                             <span id="rating-desc-neutral" class="sr-only">Notation 0, neutre</span>
                         </label>
                         <label class="rating-option positive">
                             <input type="radio" name="rating" value="1" aria-describedby="rating-desc-pos1">
                             <span class="rating-button">+1</span>
-                            <span class="rating-label">Accepté</span>
-                            <span id="rating-desc-pos1" class="sr-only">Notation +1, accepté</span>
+                            <span class="rating-label">Accepted</span>
+                            <span id="rating-desc-pos1" class="sr-only">Rating +1, accepted</span>
                         </label>
                         <label class="rating-option positive-strong">
                             <input type="radio" name="rating" value="2" aria-describedby="rating-desc-pos2">
                             <span class="rating-button">+2</span>
-                            <span class="rating-label">Fortement accepté</span>
-                            <span id="rating-desc-pos2" class="sr-only">Notation +2, fortement accepté</span>
+                            <span class="rating-label">Strongly accepted</span>
+                            <span id="rating-desc-pos2" class="sr-only">Rating +2, strongly accepted</span>
                         </label>
                     </div>
                 </div>
 
                 <!-- Navigation -->
-                <nav class="navigation" aria-label="Navigation du vote">
+                <nav class="navigation" aria-label="Vote navigation">
                     <button id="prev-btn" class="btn btn-secondary" disabled>
-                        Précédent
+                        Previous
                     </button>
                     <button id="next-btn" class="btn btn-primary" disabled>
-                        Suivant
+                        Next
                     </button>
                 </nav>
             </div>
@@ -163,17 +163,17 @@
 
         <!-- Review Screen -->
         <div id="review-screen" class="screen" role="main" aria-labelledby="review-title">
-            <h2 id="review-title">Vérification de vos évaluations</h2>
-            <p class="review-instructions">Vérifiez vos évaluations ci-dessous. Cliquez sur une option pour modifier votre évaluation.</p>
+            <h2 id="review-title">Review Your Ratings</h2>
+            <p class="review-instructions">Review your ratings below. Click on an option to modify your rating.</p>
 
-            <div id="review-grid" class="review-grid" role="grid" aria-label="Grille de révision des votes"></div>
+            <div id="review-grid" class="review-grid" role="grid" aria-label="Ratings review grid"></div>
 
             <div class="review-actions">
                 <button id="back-to-voting" class="btn btn-secondary">
-                    Modifier les évaluations
+                    Modify Ratings
                 </button>
                 <button id="submit-vote" class="btn btn-primary">
-                    Confirmer et envoyer
+                    Confirm and Submit
                 </button>
             </div>
         </div>
@@ -182,11 +182,11 @@
         <div id="success-screen" class="screen" role="main" aria-labelledby="success-title">
             <div class="success-content">
                 <div class="success-icon" aria-hidden="true">✅</div>
-                <h2 id="success-title">Merci pour votre participation!</h2>
-                <p id="success-message">Votre vote a été enregistré avec succès.</p>
+                <h2 id="success-title">Thank you for your participation!</h2>
+                <p id="success-message">Your vote has been recorded successfully.</p>
                 <div class="success-actions">
                     <button id="new-vote-btn" class="btn btn-primary" onclick="window.location.reload()">
-                        Nouveau vote
+                        New Vote
                     </button>
                 </div>
             </div>
