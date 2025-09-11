@@ -70,8 +70,8 @@ ADMIN_USERNAME=admin
 ADMIN_PASSWORD=changeme_in_production_2025
 SESSION_SECRET_KEY=change_this_secret_key_in_production_$(openssl rand -hex 32)
 
-# Database
-DATABASE_PATH=/app/data/votes.db
+# Database - PostgreSQL
+DATABASE_URL=postgresql+asyncpg://cardinal_user:cardinal_password_change_in_production@postgres:5432/cardinal_vote
 
 # Security
 ALLOWED_ORIGINS=https://cardinal.tiarkaerell.com

@@ -182,13 +182,13 @@ docker compose -f docker-compose.production.yml logs --tail=100
 ### Backup Database
 
 ```bash
-# Create backup
-docker compose -f docker-compose.production.yml exec cardinal-vote-voting \
-    cp /app/data/votes.db /app/data/votes_backup_$(date +%Y%m%d).db
+# Create PostgreSQL backup
+docker compose -f docker-compose.production.yml exec postgres \
+    pg_dump -U cardinal_user -d cardinal_vote > votes_backup_$(date +%Y%m%d).sql
 
-# Export backup
-docker compose -f docker-compose.production.yml cp \
-    cardinal-vote-voting:/app/data/votes_backup_*.db ./backups/
+# Export backup (copy from host to backups directory)
+mkdir -p ./backups/
+mv votes_backup_*.sql ./backups/
 ```
 
 ## 🔄 Updating the Application

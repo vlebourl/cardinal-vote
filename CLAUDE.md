@@ -247,7 +247,7 @@ ADMIN_PASSWORD=your-secure-password
 SESSION_SECRET_KEY=your-session-secret
 
 # Optional configurations
-DATABASE_PATH=/app/data/votes.db
+DATABASE_URL=postgresql+asyncpg://username:password@postgres:5432/database_name
 HOST=0.0.0.0
 PORT=8000
 DEBUG=false

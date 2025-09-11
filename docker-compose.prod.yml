@@ -7,21 +7,33 @@ services:
   cardinal-voting:
     # Use pre-built image in production (build separately)
     image: cardinal-voting:latest
+    depends_on:
+      postgres:
+        condition: service_healthy
 
     # Production environment variables
     # These will use values from .env file, with fallbacks if not set
     environment:
+      # Database Configuration - PostgreSQL
+      - DATABASE_URL=postgresql+asyncpg://${POSTGRES_USER:-cardinal_user}:${POSTGRES_PASSWORD:-cardinal_password_change_in_production}@postgres:5432/${POSTGRES_DB:-cardinal_vote}
       - HOST=${HOST:-0.0.0.0}
       - PORT=${PORT:-8000}
       - DEBUG=${DEBUG:-false}
-      - DATABASE_PATH=${DATABASE_PATH:-/app/data/votes.db}
       - CARDINAL_ENV=${CARDINAL_ENV:-production}
       # Security headers
       - SECURE_HEADERS=${SECURE_HEADERS:-true}
       # Rate limiting
       - ENABLE_RATE_LIMITING=${ENABLE_RATE_LIMITING:-true}
       - MAX_VOTES_PER_IP_PER_HOUR=${MAX_VOTES_PER_IP_PER_HOUR:-5}
-      # Admin credentials - MUST be set in .env file!
+      # Security Configuration
+      - JWT_SECRET_KEY=${JWT_SECRET_KEY:-jwt_secret_key_change_in_production_extremely_long_and_secure}
+      - JWT_ALGORITHM=${JWT_ALGORITHM:-HS256}
+      - JWT_ACCESS_TOKEN_EXPIRE_MINUTES=${JWT_ACCESS_TOKEN_EXPIRE_MINUTES:-30}
+      - JWT_REFRESH_TOKEN_EXPIRE_DAYS=${JWT_REFRESH_TOKEN_EXPIRE_DAYS:-7}
+      # Super Admin Configuration
+      - SUPER_ADMIN_EMAIL=${SUPER_ADMIN_EMAIL:-admin@cardinal-vote.local}
+      - SUPER_ADMIN_PASSWORD=${SUPER_ADMIN_PASSWORD:-super_admin_password_change_in_production}
+      # Legacy Admin credentials (backwards compatibility)
       - ADMIN_USERNAME=${ADMIN_USERNAME}
       - ADMIN_PASSWORD=${ADMIN_PASSWORD}
       - SESSION_SECRET_KEY=${SESSION_SECRET_KEY}
@@ -138,13 +150,21 @@ services:
 
   # PostgreSQL database for production (required)
   postgres:
-    image: postgres:15-alpine
+    image: postgres:16-alpine
     environment:
-      - POSTGRES_DB=cardinal_vote
-      - POSTGRES_USER=cardinal_vote
-      - POSTGRES_PASSWORD_FILE=/run/secrets/db_password
-    secrets:
-      - db_password
+      - POSTGRES_DB=${POSTGRES_DB:-cardinal_vote}
+      - POSTGRES_USER=${POSTGRES_USER:-cardinal_user}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-cardinal_password_change_in_production}
+      - POSTGRES_INITDB_ARGS=--auth-host=scram-sha-256
+    healthcheck:
+      test:
+        [
+          'CMD-SHELL',
+          'pg_isready -U ${POSTGRES_USER:-cardinal_user} -d ${POSTGRES_DB:-cardinal_vote}'
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
     volumes:
       - postgres_data:/var/lib/postgresql/data
     restart: unless-stopped

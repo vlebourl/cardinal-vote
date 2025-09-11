@@ -1,31 +1,71 @@
-version: "3.8"
+version: '3.8'
 
 services:
+  # PostgreSQL Database for Cardinal Vote Production
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      - POSTGRES_DB=${POSTGRES_DB:-cardinal_vote}
+      - POSTGRES_USER=${POSTGRES_USER:-cardinal_user}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-cardinal_password_change_in_production}
+      - POSTGRES_INITDB_ARGS=--auth-host=scram-sha-256
+    volumes:
+      - cardinal_postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test:
+        [
+          'CMD-SHELL',
+          'pg_isready -U ${POSTGRES_USER:-cardinal_user} -d ${POSTGRES_DB:-cardinal_vote}'
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - cardinal-network
+    logging:
+      driver: 'json-file'
+      options:
+        max-size: '10m'
+        max-file: '3'
+
   cardinal-voting:
     # Use the pre-built image instead of building
     image: cardinal-voting:latest
     ports:
-      - "${EXTERNAL_PORT:-8000}:8000"
+      - '${EXTERNAL_PORT:-8000}:8000'
+    depends_on:
+      postgres:
+        condition: service_healthy
     environment:
+      # Database Configuration - PostgreSQL
+      - DATABASE_URL=postgresql+asyncpg://${POSTGRES_USER:-cardinal_user}:${POSTGRES_PASSWORD:-cardinal_password_change_in_production}@postgres:5432/${POSTGRES_DB:-cardinal_vote}
       # These will use values from .env file, with fallbacks if not set
       - HOST=${HOST:-0.0.0.0}
       - PORT=${PORT:-8000}
       - DEBUG=${DEBUG:-false}
-      - DATABASE_PATH=${DATABASE_PATH:-/app/data/votes.db}
       - CARDINAL_ENV=${CARDINAL_ENV:-production}
-      # Admin credentials - MUST be set in .env file!
+      # Security Configuration
+      - JWT_SECRET_KEY=${JWT_SECRET_KEY:-jwt_secret_key_change_in_production_extremely_long_and_secure}
+      - JWT_ALGORITHM=${JWT_ALGORITHM:-HS256}
+      - JWT_ACCESS_TOKEN_EXPIRE_MINUTES=${JWT_ACCESS_TOKEN_EXPIRE_MINUTES:-30}
+      - JWT_REFRESH_TOKEN_EXPIRE_DAYS=${JWT_REFRESH_TOKEN_EXPIRE_DAYS:-7}
+      # Super Admin Configuration
+      - SUPER_ADMIN_EMAIL=${SUPER_ADMIN_EMAIL:-admin@cardinal-vote.local}
+      - SUPER_ADMIN_PASSWORD=${SUPER_ADMIN_PASSWORD:-super_admin_password_change_in_production}
+      # Legacy Admin Configuration (backwards compatibility)
       - ADMIN_USERNAME=${ADMIN_USERNAME:-admin}
       - ADMIN_PASSWORD=${ADMIN_PASSWORD:-cardinal_admin_2025}
       - SESSION_SECRET_KEY=${SESSION_SECRET_KEY:-cardinal_secret_key_change_in_production_123456789}
       # CORS settings for production
       - ALLOWED_ORIGINS=${ALLOWED_ORIGINS:-https://cardinal.tiarkaerell.com}
     volumes:
-      # Persistent storage for database
-      - cardinal_data:/app/data
+      # Persistent storage for uploaded files
+      - cardinal_uploads:/app/uploads
       # Persistent storage for logs
       - cardinal_logs:/app/logs
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8000/api/health"]
+      test: ['CMD', 'curl', '-f', 'http://localhost:8000/api/health']
       interval: 30s
       timeout: 10s
       retries: 3
@@ -34,14 +74,19 @@ services:
     networks:
       - cardinal-network
     logging:
-      driver: "json-file"
+      driver: 'json-file'
       options:
-        max-size: "10m"
-        max-file: "3"
+        max-size: '10m'
+        max-file: '3'
 
 volumes:
-  cardinal_data:
+  # PostgreSQL database persistent storage
+  cardinal_postgres_data:
     driver: local
+  # Application uploads persistent storage
+  cardinal_uploads:
+    driver: local
+  # Application logs persistent storage
   cardinal_logs:
     driver: local
 

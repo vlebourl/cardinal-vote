@@ -197,19 +197,18 @@ backup_database() {
 
     log_info "Creating database backup..."
 
-    # Check if container is running
-    if docker compose $COMPOSE_FILES ps cardinal-voting | grep -q "Up"; then
-        local backup_name="votes-backup-$(date +%Y%m%d-%H%M%S).db"
+    # Check if PostgreSQL container is running
+    if docker compose $COMPOSE_FILES ps postgres | grep -q "Up"; then
+        local backup_name="votes-backup-$(date +%Y%m%d-%H%M%S).sql"
 
-        if docker compose $COMPOSE_FILES exec -T cardinal-voting test -f /app/data/votes.db; then
-            docker compose $COMPOSE_FILES exec -T cardinal-voting \
-                cp /app/data/votes.db "/app/data/$backup_name"
-            log_success "Database backed up to $backup_name"
+        # Create PostgreSQL backup
+        if docker compose $COMPOSE_FILES exec -T postgres pg_dump -U cardinal_user -d cardinal_vote > "$backup_name"; then
+            log_success "PostgreSQL database backed up to $backup_name"
         else
-            log_warning "No existing database found, skipping backup"
+            log_warning "Failed to create PostgreSQL backup"
         fi
     else
-        log_info "Application not running, skipping backup"
+        log_info "PostgreSQL not running, skipping backup"
     fi
 }
 
