@@ -186,8 +186,8 @@ health_check() {
     log "Waiting for application to start..."
 
     while [[ $attempt -lt $max_attempts ]]; do
-        # Use the root endpoint for health check (always available)
-        if curl -f -s "http://localhost:$PORT/" >/dev/null 2>&1; then
+        # Use the dedicated health endpoint for proper health check
+        if curl -f -s "http://localhost:$PORT/api/health" >/dev/null 2>&1; then
             log "✓ Application health check passed"
             return 0
         fi
@@ -204,16 +204,30 @@ health_check() {
 run_database_migrations() {
     log "Running database migrations..."
 
-    # Check if alembic is available
+    # Check if alembic is available and validate version
     if ! command -v alembic >/dev/null 2>&1; then
         error_exit "alembic command not found - required for database migrations"
     fi
 
+    # Validate alembic version and functionality
+    local alembic_version
+    if alembic_version=$(alembic --version 2>/dev/null); then
+        log "✓ Alembic available: $alembic_version"
+    else
+        error_exit "alembic command found but not properly accessible. Check virtual environment configuration."
+    fi
+
     # Run migrations with timeout to prevent hanging
+    log "Starting database migrations (timeout: 60s)..."
     if timeout 60 alembic upgrade head; then
         log "✓ Database migrations completed successfully"
     else
-        error_exit "Database migrations failed or timed out"
+        local exit_code=$?
+        if [[ $exit_code -eq 124 ]]; then
+            error_exit "Database migrations timed out after 60 seconds. Check database connectivity and migration complexity."
+        else
+            error_exit "Database migrations failed with exit code $exit_code. Check database configuration and migration scripts."
+        fi
     fi
 }
 
