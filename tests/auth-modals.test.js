@@ -3,8 +3,7 @@
  * Tests login/register forms, validation, API integration, and accessibility
  */
 
-import { screen, fireEvent, waitFor } from '@testing-library/dom';
-import userEvent from '@testing-library/user-event';
+const { screen, fireEvent, waitFor } = require('@testing-library/dom');
 
 // Import the functions from landing.js
 // Note: In a real setup, we'd import these as modules
@@ -33,37 +32,37 @@ describe('Authentication Modals', () => {
   describe('Modal Visibility and Navigation', () => {
     test('login modal opens and closes correctly', () => {
       const loginModal = document.getElementById('loginModal');
-      
+
       // Initial state - modal should be hidden
       expect(loginModal.getAttribute('aria-hidden')).toBe('true');
       expect(loginModal.classList.contains('show')).toBe(false);
-      
+
       // Simulate opening modal
       loginModal.classList.add('show');
       loginModal.setAttribute('aria-hidden', 'false');
-      
+
       expect(loginModal.classList.contains('show')).toBe(true);
       expect(loginModal.getAttribute('aria-hidden')).toBe('false');
-      
+
       // Simulate closing modal
       loginModal.classList.remove('show');
       loginModal.setAttribute('aria-hidden', 'true');
-      
+
       expect(loginModal.classList.contains('show')).toBe(false);
       expect(loginModal.getAttribute('aria-hidden')).toBe('true');
     });
 
     test('register modal opens and closes correctly', () => {
       const registerModal = document.getElementById('registerModal');
-      
+
       // Initial state - modal should be hidden
       expect(registerModal.getAttribute('aria-hidden')).toBe('true');
       expect(registerModal.classList.contains('show')).toBe(false);
-      
+
       // Simulate opening modal
       registerModal.classList.add('show');
       registerModal.setAttribute('aria-hidden', 'false');
-      
+
       expect(registerModal.classList.contains('show')).toBe(true);
       expect(registerModal.getAttribute('aria-hidden')).toBe('false');
     });
@@ -71,18 +70,18 @@ describe('Authentication Modals', () => {
     test('modal close button functionality', () => {
       const loginModal = document.getElementById('loginModal');
       const closeButton = loginModal.querySelector('.modal-close');
-      
+
       // Open modal first
       loginModal.classList.add('show');
       loginModal.setAttribute('aria-hidden', 'false');
-      
+
       // Click close button
       fireEvent.click(closeButton);
-      
+
       // Simulate the close functionality
       loginModal.classList.remove('show');
       loginModal.setAttribute('aria-hidden', 'true');
-      
+
       expect(loginModal.classList.contains('show')).toBe(false);
       expect(loginModal.getAttribute('aria-hidden')).toBe('true');
     });
@@ -90,50 +89,48 @@ describe('Authentication Modals', () => {
     test('modal backdrop click closes modal', () => {
       const loginModal = document.getElementById('loginModal');
       const backdrop = loginModal.querySelector('.modal-backdrop');
-      
+
       // Open modal first
       loginModal.classList.add('show');
-      
+
       // Click backdrop
       fireEvent.click(backdrop);
-      
+
       // Simulate the close functionality
       loginModal.classList.remove('show');
-      
+
       expect(loginModal.classList.contains('show')).toBe(false);
     });
   });
 
   describe('Form Validation', () => {
     test('login form validates required fields', async () => {
-      const user = userEvent.setup();
       const loginForm = document.getElementById('loginForm');
       const submitButton = loginForm.querySelector('button[type="submit"]');
-      
+
       // Try to submit empty form
-      await user.click(submitButton);
-      
+      fireEvent.click(submitButton);
+
       const emailInput = document.getElementById('loginEmail');
       const passwordInput = document.getElementById('loginPassword');
-      
+
       // HTML5 validation should prevent submission
       expect(emailInput.validity.valid).toBe(false);
       expect(passwordInput.validity.valid).toBe(false);
     });
 
     test('register form validates required fields', async () => {
-      const user = userEvent.setup();
       const registerForm = document.getElementById('registerForm');
       const submitButton = registerForm.querySelector('button[type="submit"]');
-      
+
       // Try to submit empty form
-      await user.click(submitButton);
-      
+      fireEvent.click(submitButton);
+
       const firstNameInput = document.getElementById('registerFirstName');
       const lastNameInput = document.getElementById('registerLastName');
       const emailInput = document.getElementById('registerEmail');
       const passwordInput = document.getElementById('registerPassword');
-      
+
       // HTML5 validation should prevent submission
       expect(firstNameInput.validity.valid).toBe(false);
       expect(lastNameInput.validity.valid).toBe(false);
@@ -142,31 +139,29 @@ describe('Authentication Modals', () => {
     });
 
     test('email validation works correctly', async () => {
-      const user = userEvent.setup();
       const emailInput = document.getElementById('loginEmail');
-      
+
       // Invalid email
-      await user.type(emailInput, 'invalid-email');
+      fireEvent.change(emailInput, { target: { value: 'invalid-email' } });
       expect(emailInput.validity.valid).toBe(false);
       expect(emailInput.validity.typeMismatch).toBe(true);
-      
+
       // Valid email
-      await user.clear(emailInput);
-      await user.type(emailInput, 'test@example.com');
+      fireEvent.change(emailInput, { target: { value: '' } });
+      fireEvent.change(emailInput, { target: { value: 'test@example.com' } });
       expect(emailInput.validity.valid).toBe(true);
     });
 
     test('password length validation', async () => {
-      const user = userEvent.setup();
       const passwordInput = document.getElementById('registerPassword');
-      
+
       // Short password
-      await user.type(passwordInput, '123');
+      fireEvent.change(passwordInput, { target: { value: '123' } });
       expect(passwordInput.value.length).toBeLessThan(8);
-      
+
       // Valid password
-      await user.clear(passwordInput);
-      await user.type(passwordInput, 'validpassword123');
+      fireEvent.change(passwordInput, { target: { value: '' } });
+      fireEvent.change(passwordInput, { target: { value: 'validpassword123' } });
       expect(passwordInput.value.length).toBeGreaterThanOrEqual(8);
     });
   });
@@ -189,14 +184,13 @@ describe('Authentication Modals', () => {
         json: async () => mockResponse
       });
 
-      const user = userEvent.setup();
       const loginForm = document.getElementById('loginForm');
       const emailInput = document.getElementById('loginEmail');
       const passwordInput = document.getElementById('loginPassword');
 
       // Fill in form
-      await user.type(emailInput, 'test@example.com');
-      await user.type(passwordInput, 'testpassword123');
+      fireEvent.change(emailInput, { target: { value: 'test@example.com' } });
+      fireEvent.change(passwordInput, { target: { value: 'testpassword123' } });
 
       // Submit form
       fireEvent.submit(loginForm);
@@ -227,14 +221,13 @@ describe('Authentication Modals', () => {
         json: async () => mockErrorResponse
       });
 
-      const user = userEvent.setup();
       const loginForm = document.getElementById('loginForm');
       const emailInput = document.getElementById('loginEmail');
       const passwordInput = document.getElementById('loginPassword');
 
       // Fill in form with invalid credentials
-      await user.type(emailInput, 'wrong@example.com');
-      await user.type(passwordInput, 'wrongpassword');
+      fireEvent.change(emailInput, { target: { value: 'wrong@example.com' } });
+      fireEvent.change(passwordInput, { target: { value: 'wrongpassword' } });
 
       // Submit form
       fireEvent.submit(loginForm);
@@ -263,7 +256,6 @@ describe('Authentication Modals', () => {
         json: async () => mockResponse
       });
 
-      const user = userEvent.setup();
       const registerForm = document.getElementById('registerForm');
       const firstNameInput = document.getElementById('registerFirstName');
       const lastNameInput = document.getElementById('registerLastName');
@@ -271,10 +263,10 @@ describe('Authentication Modals', () => {
       const passwordInput = document.getElementById('registerPassword');
 
       // Fill in registration form
-      await user.type(firstNameInput, 'New');
-      await user.type(lastNameInput, 'User');
-      await user.type(emailInput, 'newuser@example.com');
-      await user.type(passwordInput, 'newuserpassword123');
+      fireEvent.change(firstNameInput, { target: { value: 'New' } });
+      fireEvent.change(lastNameInput, { target: { value: 'User' } });
+      fireEvent.change(emailInput, { target: { value: 'newuser@example.com' } });
+      fireEvent.change(passwordInput, { target: { value: 'newuserpassword123' } });
 
       // Submit form
       fireEvent.submit(registerForm);
@@ -298,14 +290,13 @@ describe('Authentication Modals', () => {
     test('network error handling', async () => {
       fetch.mockRejectedValueOnce(new Error('Network error'));
 
-      const user = userEvent.setup();
       const loginForm = document.getElementById('loginForm');
       const emailInput = document.getElementById('loginEmail');
       const passwordInput = document.getElementById('loginPassword');
 
       // Fill in form
-      await user.type(emailInput, 'test@example.com');
-      await user.type(passwordInput, 'testpassword123');
+      fireEvent.change(emailInput, { target: { value: 'test@example.com' } });
+      fireEvent.change(passwordInput, { target: { value: 'testpassword123' } });
 
       // Submit form
       fireEvent.submit(loginForm);
@@ -361,7 +352,7 @@ describe('Authentication Modals', () => {
 
       // Click close button
       fireEvent.click(closeButton);
-      
+
       // Simulate close functionality
       successToast.classList.remove('show');
       expect(successToast.classList.contains('show')).toBe(false);
@@ -393,7 +384,6 @@ describe('Authentication Modals', () => {
     });
 
     test('form is disabled during submission', async () => {
-      const user = userEvent.setup();
       const loginForm = document.getElementById('loginForm');
       const submitButton = loginForm.querySelector('button[type="submit"]');
       const emailInput = document.getElementById('loginEmail');
@@ -408,8 +398,8 @@ describe('Authentication Modals', () => {
       );
 
       // Fill in form
-      await user.type(emailInput, 'test@example.com');
-      await user.type(passwordInput, 'testpassword123');
+      fireEvent.change(emailInput, { target: { value: 'test@example.com' } });
+      fireEvent.change(passwordInput, { target: { value: 'testpassword123' } });
 
       // Submit form
       fireEvent.submit(loginForm);
@@ -492,27 +482,27 @@ describe('Authentication Modals', () => {
   describe('Local Storage Integration', () => {
     test('auth token is stored on successful login', () => {
       const mockToken = 'mock-jwt-token-123';
-      
+
       // Simulate successful login token storage
       localStorage.setItem('authToken', mockToken);
-      
+
       expect(localStorage.setItem).toHaveBeenCalledWith('authToken', mockToken);
     });
 
     test('auth token is removed on logout', () => {
       // Simulate logout
       localStorage.removeItem('authToken');
-      
+
       expect(localStorage.removeItem).toHaveBeenCalledWith('authToken');
     });
 
     test('invalid token is removed from storage', () => {
       // Mock invalid token scenario
       localStorage.getItem.mockReturnValue('invalid-token');
-      
+
       // Simulate token validation failure
       localStorage.removeItem('authToken');
-      
+
       expect(localStorage.removeItem).toHaveBeenCalledWith('authToken');
     });
   });

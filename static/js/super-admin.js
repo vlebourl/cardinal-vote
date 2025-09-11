@@ -1012,7 +1012,7 @@ window.ModerationDashboard = {
 }
 
 // Tab switching function (called by moderation template)
-function switchTab (tabName) {
+function _switchTab (tabName) {
   // Update active tab button
   document.querySelectorAll('.tab-btn').forEach(btn => {
     btn.classList.remove('active')
@@ -1026,7 +1026,7 @@ function switchTab (tabName) {
 }
 
 // Export system statistics (used by dashboard template)
-function exportSystemStats () {
+function _exportSystemStats () {
   const data = window.dashboardData?.stats
   if (data) {
     SuperAdminUtils.exportData(data, 'system_stats', 'json')
@@ -1036,17 +1036,17 @@ function exportSystemStats () {
 }
 
 // Open user management (used by dashboard template)
-function openUserManagement () {
+function _openUserManagement () {
   window.location.href = '/api/admin/users'
 }
 
 // Bulk verify users (used by dashboard template)
-function bulkVerifyUsers () {
+function _bulkVerifyUsers () {
   showMessage('Bulk verification feature coming soon', 'info')
 }
 
 // View audit log (used by dashboard template)
-function viewAuditLog () {
+function _viewAuditLog () {
   showMessage('Audit log feature coming soon', 'info')
 }
 
@@ -1067,3 +1067,10 @@ document.addEventListener('DOMContentLoaded', function () {
 window.SuperAdminAPI = SuperAdminAPI
 window.SuperAdminUtils = SuperAdminUtils
 window.SuperAdminDashboard = SuperAdminDashboard
+
+// Export standalone functions for template usage
+window.switchTab = _switchTab
+window.exportSystemStats = _exportSystemStats
+window.openUserManagement = _openUserManagement
+window.bulkVerifyUsers = _bulkVerifyUsers
+window.viewAuditLog = _viewAuditLog

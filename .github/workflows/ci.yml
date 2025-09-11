@@ -8,7 +8,7 @@ on:
     types: [opened, synchronize, reopened, ready_for_review]
 
 env:
-  PYTHON_VERSION: "3.11"
+  PYTHON_VERSION: '3.11'
 
 jobs:
   code-quality:
@@ -302,11 +302,11 @@ jobs:
           export HOST=127.0.0.1
           export PORT=8000
           export DEBUG=false
-          
+
           # Start application in background
           uv run python -m cardinal_vote.main &
           APP_PID=$!
-          
+
           # Wait for application to start
           for i in {1..30}; do
             if curl -f -s http://127.0.0.1:8000/api/health >/dev/null 2>&1; then
@@ -315,25 +315,25 @@ jobs:
             fi
             sleep 2
           done
-          
+
           echo "APP_PID=$APP_PID" >> $GITHUB_ENV
 
       - name: Run WCAG 2.1 AA compliance tests
         run: |
           echo "🔍 Testing landing page accessibility..."
-          
+
           # Test landing page with pa11y (WCAG 2.1 AA standard)
           pa11y --standard WCAG2AA --reporter json http://127.0.0.1:8000/ > pa11y-report.json || true
-          
+
           # Check if there are any failures
           if [ -s pa11y-report.json ]; then
             echo "📋 Pa11y accessibility report:"
             cat pa11y-report.json
-            
+
             # Count issues (will fail CI if critical issues found)
             ISSUES_COUNT=$(jq length pa11y-report.json)
             echo "Found $ISSUES_COUNT accessibility issues"
-            
+
             if [ "$ISSUES_COUNT" -gt 10 ]; then
               echo "❌ Too many accessibility issues found ($ISSUES_COUNT). Maximum allowed: 10"
               echo "Please review and fix accessibility issues before merging."
@@ -350,18 +350,18 @@ jobs:
       - name: Run axe-core automated testing
         run: |
           echo "🔍 Running axe-core accessibility tests..."
-          
+
           # Run axe-core tests
           npx axe-core-cli http://127.0.0.1:8000/ --reporter=json --output-dir=. --output-file=axe-report.json || true
-          
+
           if [ -f axe-report.json ]; then
             echo "📋 Axe-core accessibility report:"
             cat axe-report.json
-            
+
             # Check for violations
             VIOLATIONS=$(jq '.violations | length' axe-report.json)
             echo "Found $VIOLATIONS axe-core violations"
-            
+
             if [ "$VIOLATIONS" -gt 0 ]; then
               echo "⚠️  Found $VIOLATIONS accessibility violations"
               jq '.violations[] | "\(.impact): \(.help)"' axe-report.json
@@ -375,49 +375,49 @@ jobs:
       - name: Test keyboard navigation
         run: |
           echo "⌨️  Testing keyboard navigation accessibility..."
-          
+
           # Use headless browser to test keyboard navigation
           cat > test-keyboard-nav.js << 'EOF'
           const puppeteer = require('puppeteer');
-          
+
           (async () => {
             const browser = await puppeteer.launch({ headless: true });
             const page = await browser.newPage();
-            
+
             try {
               await page.goto('http://127.0.0.1:8000/');
               await page.waitForSelector('body');
-              
+
               console.log('🔍 Testing tab navigation...');
-              
+
               // Test tab navigation through interactive elements
               const focusableElements = await page.$$eval(
                 'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])',
                 elements => elements.length
               );
-              
+
               console.log(`Found ${focusableElements} focusable elements`);
-              
+
               // Test that login modal opens with keyboard
               await page.keyboard.press('Tab');
               await page.keyboard.press('Tab');
               await page.keyboard.press('Enter');
-              
+
               // Wait for modal
               await page.waitForTimeout(500);
-              
-              const modalVisible = await page.$eval('#loginModal', el => 
+
+              const modalVisible = await page.$eval('#loginModal', el =>
                 window.getComputedStyle(el).display !== 'none'
               );
-              
+
               if (modalVisible) {
                 console.log('✅ Keyboard navigation working - modal opened');
               } else {
                 console.log('⚠️  Modal did not open with keyboard navigation');
               }
-              
+
               console.log('✅ Keyboard navigation test completed');
-              
+
             } catch (error) {
               console.log('⚠️  Keyboard navigation test failed:', error.message);
             } finally {
@@ -425,7 +425,7 @@ jobs:
             }
           })();
           EOF
-          
+
           # Install puppeteer and run test
           npm install puppeteer
           node test-keyboard-nav.js

@@ -3,7 +3,7 @@
  * Configures testing environment and global utilities
  */
 
-import '@testing-library/jest-dom';
+require('@testing-library/jest-dom');
 
 // Mock fetch API for authentication tests
 global.fetch = jest.fn();
@@ -126,17 +126,17 @@ beforeEach(() => {
   jest.clearAllMocks();
   fetch.mockReset();
   mockLocalStorage.getItem.mockReturnValue(null);
-  
+
   // Reset DOM classes and attributes
   document.querySelectorAll('.modal').forEach(modal => {
     modal.classList.remove('show');
     modal.setAttribute('aria-hidden', 'true');
   });
-  
+
   document.querySelectorAll('.toast').forEach(toast => {
     toast.classList.remove('show');
   });
-  
+
   // Reset forms
   document.querySelectorAll('form').forEach(form => {
     form.reset();

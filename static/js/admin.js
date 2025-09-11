@@ -115,7 +115,7 @@ window.AdminUtils = {
     const token = this.getJwtToken()
     const defaultOptions = {
       headers: {
-        'Authorization': `Bearer ${token}`,
+        Authorization: `Bearer ${token}`,
         'Content-Type': 'application/json',
         ...options.headers
       }
@@ -127,7 +127,7 @@ window.AdminUtils = {
     if (response.status === 401) {
       localStorage.removeItem('jwt_token')
       showMessage('Session expirée, redirection...', 'error')
-      setTimeout(() => window.location.href = '/login', 2000)
+      setTimeout(() => { window.location.href = '/login' }, 2000)
       return null
     }
 
@@ -209,7 +209,6 @@ window.showLoading = window.AdminUtils.showLoading
 window.hideLoading = window.AdminUtils.hideLoading
 window.showConfirm = window.AdminUtils.showConfirm
 
-
 // Vote Management Functions
 window.VoteManager = {
   // Export votes - Updated to use generalized voting platform API
@@ -231,7 +230,7 @@ window.VoteManager = {
 
       const response = await fetch(`/api/votes/${voteId}/export?format=${format}`, {
         headers: {
-          'Authorization': `Bearer ${token}`,
+          Authorization: `Bearer ${token}`,
           'Content-Type': 'application/json'
         }
       })
@@ -252,7 +251,7 @@ window.VoteManager = {
       } else if (response.status === 401) {
         localStorage.removeItem('jwt_token')
         showMessage('Session expirée, redirection...', 'error')
-        setTimeout(() => window.location.href = '/login', 2000)
+        setTimeout(() => { window.location.href = '/login' }, 2000)
       } else {
         const result = await response.json()
         showMessage(result.message || 'Erreur lors de l\'export', 'error')
@@ -289,7 +288,7 @@ window.VoteManager = {
           const response = await fetch(`/api/votes/${voteId}`, {
             method: 'DELETE',
             headers: {
-              'Authorization': `Bearer ${token}`,
+              Authorization: `Bearer ${token}`,
               'Content-Type': 'application/json'
             }
           })
@@ -302,7 +301,7 @@ window.VoteManager = {
           } else if (response.status === 401) {
             localStorage.removeItem('jwt_token')
             showMessage('Session expirée, redirection...', 'error')
-            setTimeout(() => window.location.href = '/login', 2000)
+            setTimeout(() => { window.location.href = '/login' }, 2000)
           } else {
             const result = await response.json()
             showMessage(result.message || 'Erreur lors de la suppression', 'error')
@@ -336,7 +335,7 @@ window.VoteManager = {
 
       const response = await fetch(`/api/votes/${voteId}/results`, {
         headers: {
-          'Authorization': `Bearer ${token}`,
+          Authorization: `Bearer ${token}`,
           'Content-Type': 'application/json'
         }
       })
@@ -347,7 +346,7 @@ window.VoteManager = {
       } else if (response.status === 401) {
         localStorage.removeItem('jwt_token')
         showMessage('Session expirée, redirection...', 'error')
-        setTimeout(() => window.location.href = '/login', 2000)
+        setTimeout(() => { window.location.href = '/login' }, 2000)
       } else {
         const result = await response.json()
         showMessage(result.message || 'Erreur lors de la récupération des résultats', 'error')
@@ -379,7 +378,7 @@ window.SystemManager = {
 
       const response = await fetch('/api/admin/stats', {
         headers: {
-          'Authorization': `Bearer ${token}`,
+          Authorization: `Bearer ${token}`,
           'Content-Type': 'application/json'
         }
       })
@@ -390,7 +389,7 @@ window.SystemManager = {
       } else if (response.status === 401) {
         localStorage.removeItem('jwt_token')
         showMessage('Session expirée, redirection...', 'error')
-        setTimeout(() => window.location.href = '/login', 2000)
+        setTimeout(() => { window.location.href = '/login' }, 2000)
       } else {
         const result = await response.json()
         showMessage(result.message || 'Erreur lors de la récupération des statistiques', 'error')
@@ -469,7 +468,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
       const response = await fetch('/api/admin/stats', {
         headers: {
-          'Authorization': `Bearer ${token}`,
+          Authorization: `Bearer ${token}`,
           'Content-Type': 'application/json'
         }
       })
