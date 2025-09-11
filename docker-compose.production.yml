@@ -8,7 +8,7 @@ services:
     environment:
       - POSTGRES_DB=${POSTGRES_DB:-cardinal_vote}
       - POSTGRES_USER=${POSTGRES_USER:-cardinal_user}
-      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-cardinal_password_change_in_production}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:?POSTGRES_PASSWORD environment variable is required for security}
       - POSTGRES_INITDB_ARGS=--auth-host=scram-sha-256
     volumes:
       - cardinal_postgres_data:/var/lib/postgresql/data
@@ -39,20 +39,20 @@ services:
         condition: service_healthy
     environment:
       # Database Configuration - PostgreSQL
-      - DATABASE_URL=postgresql+asyncpg://${POSTGRES_USER:-cardinal_user}:${POSTGRES_PASSWORD:-cardinal_password_change_in_production}@postgres:5432/${POSTGRES_DB:-cardinal_vote}
+      - DATABASE_URL=postgresql+asyncpg://${POSTGRES_USER:-cardinal_user}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-cardinal_vote}
       # These will use values from .env file, with fallbacks if not set
       - HOST=${HOST:-0.0.0.0}
       - PORT=${PORT:-8000}
       - DEBUG=${DEBUG:-false}
       - CARDINAL_ENV=${CARDINAL_ENV:-production}
       # Security Configuration
-      - JWT_SECRET_KEY=${JWT_SECRET_KEY:-jwt_secret_key_change_in_production_extremely_long_and_secure}
+      - JWT_SECRET_KEY=${JWT_SECRET_KEY:?JWT_SECRET_KEY environment variable is required for security}
       - JWT_ALGORITHM=${JWT_ALGORITHM:-HS256}
       - JWT_ACCESS_TOKEN_EXPIRE_MINUTES=${JWT_ACCESS_TOKEN_EXPIRE_MINUTES:-30}
       - JWT_REFRESH_TOKEN_EXPIRE_DAYS=${JWT_REFRESH_TOKEN_EXPIRE_DAYS:-7}
-      # Super Admin Configuration
-      - SUPER_ADMIN_EMAIL=${SUPER_ADMIN_EMAIL:-admin@cardinal-vote.local}
-      - SUPER_ADMIN_PASSWORD=${SUPER_ADMIN_PASSWORD:-super_admin_password_change_in_production}
+      # Super Admin Configuration - REQUIRED for security
+      - SUPER_ADMIN_EMAIL=${SUPER_ADMIN_EMAIL:?SUPER_ADMIN_EMAIL environment variable is required}
+      - SUPER_ADMIN_PASSWORD=${SUPER_ADMIN_PASSWORD:?SUPER_ADMIN_PASSWORD environment variable is required for security}
       # Legacy Admin Configuration (backwards compatibility)
       - ADMIN_USERNAME=${ADMIN_USERNAME:-admin}
       - ADMIN_PASSWORD=${ADMIN_PASSWORD:-cardinal_admin_2025}

@@ -15,7 +15,7 @@ services:
     # These will use values from .env file, with fallbacks if not set
     environment:
       # Database Configuration - PostgreSQL
-      - DATABASE_URL=postgresql+asyncpg://${POSTGRES_USER:-cardinal_user}:${POSTGRES_PASSWORD:-cardinal_password_change_in_production}@postgres:5432/${POSTGRES_DB:-cardinal_vote}
+      - DATABASE_URL=postgresql+asyncpg://${POSTGRES_USER:-cardinal_user}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-cardinal_vote}
       - HOST=${HOST:-0.0.0.0}
       - PORT=${PORT:-8000}
       - DEBUG=${DEBUG:-false}
@@ -154,7 +154,7 @@ services:
     environment:
       - POSTGRES_DB=${POSTGRES_DB:-cardinal_vote}
       - POSTGRES_USER=${POSTGRES_USER:-cardinal_user}
-      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-cardinal_password_change_in_production}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:?POSTGRES_PASSWORD environment variable is required for security}
       - POSTGRES_INITDB_ARGS=--auth-host=scram-sha-256
     healthcheck:
       test:

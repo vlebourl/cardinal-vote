@@ -217,9 +217,16 @@ run_database_migrations() {
         error_exit "alembic command found but not properly accessible. Check virtual environment configuration."
     fi
 
-    # Test database connectivity before running migrations
-    log "Testing database connectivity..."
-    if timeout 10 python -c "
+    # Test database connectivity with retry logic before running migrations
+    log "Testing database connectivity with retry logic..."
+    local max_attempts=30
+    local attempt=0
+    local connection_success=false
+
+    while [[ $attempt -lt $max_attempts ]]; do
+        ((attempt++))
+
+        if timeout 10 python -c "
 import asyncio
 import sys
 sys.path.insert(0, '/app/src')
@@ -241,9 +248,17 @@ async def test_connection():
 result = asyncio.run(test_connection())
 sys.exit(0 if result else 1)
 " 2>/dev/null; then
-        log "✓ Database connectivity verified"
-    else
-        log "⚠ Database connectivity test failed - migrations may fail. Proceeding anyway..."
+            log "✓ Database connectivity verified on attempt $attempt"
+            connection_success=true
+            break
+        else
+            log "Database connectivity test $attempt/$max_attempts failed, retrying in 2s..."
+            sleep 2
+        fi
+    done
+
+    if [[ $connection_success == false ]]; then
+        error_exit "Database connectivity failed after $max_attempts attempts. Check DATABASE_URL and PostgreSQL service."
     fi
 
     # Run migrations with timeout to prevent hanging
