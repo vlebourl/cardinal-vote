@@ -236,6 +236,7 @@ jobs:
           # Test basic database connectivity (simpler test without pytest dependency)
           docker run --rm \
             --network container:$(docker compose -f docker-compose.test.yml ps -q postgres-test) \
+            -e PGPASSWORD=test_password \
             postgres:16-alpine \
             psql -h localhost -p 5432 -U test_user -d test_cardinal_vote -c "SELECT 1 as migration_validation_test;"
 
