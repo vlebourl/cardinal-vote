@@ -83,6 +83,15 @@ class Settings:
     # Security settings
     MAX_VOTES_PER_IP_PER_HOUR: int = 5  # Rate limiting
 
+    # CAPTCHA configuration
+    CAPTCHA_BACKEND: str = os.getenv(
+        "CAPTCHA_BACKEND", "mock"
+    )  # 'mock', 'recaptcha', or 'hcaptcha'
+    RECAPTCHA_SITE_KEY: str = os.getenv("RECAPTCHA_SITE_KEY", "")
+    RECAPTCHA_SECRET_KEY: str = os.getenv("RECAPTCHA_SECRET_KEY", "")
+    HCAPTCHA_SITE_KEY: str = os.getenv("HCAPTCHA_SITE_KEY", "")
+    HCAPTCHA_SECRET_KEY: str = os.getenv("HCAPTCHA_SECRET_KEY", "")
+
     # Content moderation rate limiting
     FLAG_RATE_LIMIT: int = int(os.getenv("FLAG_RATE_LIMIT", "5"))  # flags per minute
     FLAG_RATE_WINDOW_MINUTES: int = int(

@@ -647,3 +647,76 @@
     padding: 0;
   }
 }
+
+/* CAPTCHA Styles */
+.captcha-container {
+  margin-bottom: 1.5rem;
+  padding: 1rem;
+  border: 2px solid var(--border-color);
+  border-radius: var(--border-radius);
+  background: var(--bg-secondary);
+}
+
+.captcha-label {
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 0.75rem;
+  display: block;
+}
+
+.captcha-widget {
+  min-height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Mock CAPTCHA for development */
+.mock-captcha {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  background: #f9f9f9;
+}
+
+.mock-captcha-label {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+}
+
+.mock-captcha-input {
+  margin-right: 0.5rem;
+  transform: scale(1.2);
+}
+
+.mock-captcha-text {
+  user-select: none;
+}
+
+/* CAPTCHA error states */
+.captcha-container.error {
+  border-color: var(--error-color);
+  background: var(--error-bg);
+}
+
+/* Responsive CAPTCHA */
+@media (max-width: 640px) {
+  .captcha-container {
+    margin-bottom: 1rem;
+    padding: 0.75rem;
+  }
+
+  .mock-captcha {
+    padding: 0.75rem;
+  }
+
+  .mock-captcha-label {
+    font-size: 0.8rem;
+  }
+}

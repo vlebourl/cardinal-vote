@@ -50,6 +50,7 @@ repos:
           - fastapi
           - uvicorn
           - aiosmtplib
+          - httpx
         args: [--config-file=mypy.ini]
 
   # Security checks (STRICT MODE - NO IGNORING ALLOWED)
