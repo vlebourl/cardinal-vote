@@ -79,7 +79,7 @@ jobs:
       - name: Validate Docker Compose file syntax
         run: |
           echo "🔍 Validating ${{ matrix.config.file }} syntax..."
-          docker-compose -f ${{ matrix.config.file }} config --quiet
+          docker compose -f ${{ matrix.config.file }} config --quiet
           echo "✅ Docker Compose file syntax is valid"
 
       - name: Test Docker Compose service definition
@@ -87,7 +87,7 @@ jobs:
           echo "🔍 Testing ${{ matrix.config.name }} service definitions..."
 
           # Check if the main service is properly defined
-          if docker-compose -f ${{ matrix.config.file }} config | grep -q "${{ matrix.config.service }}:"; then
+          if docker compose -f ${{ matrix.config.file }} config | grep -q "${{ matrix.config.service }}:"; then
             echo "✅ Service '${{ matrix.config.service }}' is properly defined"
           else
             echo "❌ Service '${{ matrix.config.service }}' not found in configuration"
@@ -100,7 +100,7 @@ jobs:
           echo "🚀 Testing ${{ matrix.config.name }} database startup..."
 
           # Start database service only
-          docker-compose -f ${{ matrix.config.file }} up -d ${{ matrix.config.service }}
+          docker compose -f ${{ matrix.config.file }} up -d ${{ matrix.config.service }}
 
           # Wait for health check with timeout
           echo "⏳ Waiting for database health check (max 60s)..."
@@ -108,12 +108,12 @@ jobs:
           elapsed=0
 
           while [ $elapsed -lt $timeout ]; do
-            if docker-compose -f ${{ matrix.config.file }} ps | grep -q "healthy"; then
+            if docker compose -f ${{ matrix.config.file }} ps | grep -q "healthy"; then
               echo "✅ Database service is healthy after ${elapsed}s"
               break
             elif [ $elapsed -ge $timeout ]; then
               echo "❌ Database health check timed out after ${timeout}s"
-              docker-compose -f ${{ matrix.config.file }} logs ${{ matrix.config.service }}
+              docker compose -f ${{ matrix.config.file }} logs ${{ matrix.config.service }}
               exit 1
             fi
 
@@ -140,7 +140,7 @@ jobs:
           EOF
 
             # This should fail due to missing required environment variables
-            if docker-compose -f ${{ matrix.config.file }} config 2>/dev/null; then
+            if docker compose -f ${{ matrix.config.file }} config 2>/dev/null; then
               echo "⚠️  Configuration validation should have failed with missing required variables"
               # Don't fail CI, but warn - some compose versions handle this differently
             else
@@ -159,11 +159,11 @@ jobs:
           # Test database connection
           if [[ "${{ matrix.config.file }}" == *"test"* ]]; then
             # Test environment uses different port and credentials
-            docker run --rm --network container:$(docker-compose -f ${{ matrix.config.file }} ps -q ${{ matrix.config.service }}) \
+            docker run --rm --network container:$(docker compose -f ${{ matrix.config.file }} ps -q ${{ matrix.config.service }}) \
               postgres:16-alpine pg_isready -h localhost -p 5432 -U test_user -d test_cardinal_vote
           else
             # Other environments use standard credentials
-            docker run --rm --network container:$(docker-compose -f ${{ matrix.config.file }} ps -q ${{ matrix.config.service }}) \
+            docker run --rm --network container:$(docker compose -f ${{ matrix.config.file }} ps -q ${{ matrix.config.service }}) \
               postgres:16-alpine pg_isready -h localhost -p 5432 -U cardinal_user -d cardinal_vote
           fi
 
@@ -173,18 +173,18 @@ jobs:
         if: always()
         run: |
           echo "🧹 Cleaning up test containers..."
-          docker-compose -f ${{ matrix.config.file }} down --volumes --remove-orphans || true
+          docker compose -f ${{ matrix.config.file }} down --volumes --remove-orphans || true
           docker system prune -f || true
 
       - name: Display logs on failure
         if: failure()
         run: |
           echo "📋 Container logs for debugging:"
-          docker-compose -f ${{ matrix.config.file }} logs || true
+          docker compose -f ${{ matrix.config.file }} logs || true
           echo ""
           echo "📋 System information:"
           docker version
-          docker-compose version
+          docker compose version
           df -h
 
   test-migration-validation:
@@ -228,14 +228,14 @@ jobs:
           echo "🗃️  Testing migration validation logic..."
 
           # Start PostgreSQL
-          docker-compose -f docker-compose.test.yml up -d postgres-test
+          docker compose -f docker-compose.test.yml up -d postgres-test
 
           # Wait for PostgreSQL to be ready
-          timeout 30s bash -c 'until docker run --rm --network container:$(docker-compose -f docker-compose.test.yml ps -q postgres-test) postgres:16-alpine pg_isready -h localhost -p 5432 -U test_user -d test_cardinal_vote; do sleep 1; done'
+          timeout 30s bash -c 'until docker run --rm --network container:$(docker compose -f docker-compose.test.yml ps -q postgres-test) postgres:16-alpine pg_isready -h localhost -p 5432 -U test_user -d test_cardinal_vote; do sleep 1; done'
 
           # Test entrypoint migration validation (using test database)
           docker run --rm \
-            --network container:$(docker-compose -f docker-compose.test.yml ps -q postgres-test) \
+            --network container:$(docker compose -f docker-compose.test.yml ps -q postgres-test) \
             -e DATABASE_URL="postgresql+asyncpg://test_user:test_password@localhost:5432/test_cardinal_vote" \
             -e CARDINAL_ENV=test \
             -e ROLLBACK_ON_MIGRATION_FAILURE=true \
@@ -252,7 +252,7 @@ jobs:
       - name: Clean up
         if: always()
         run: |
-          docker-compose -f docker-compose.test.yml down --volumes --remove-orphans || true
+          docker compose -f docker-compose.test.yml down --volumes --remove-orphans || true
           docker system prune -f || true
 
   security-validation:
