@@ -217,11 +217,13 @@ run_database_migrations() {
         error_exit "alembic command found but not properly accessible. Check virtual environment configuration."
     fi
 
-    # Test database connectivity with retry logic before running migrations
-    log "Testing database connectivity with retry logic..."
+    # Test database connectivity with exponential backoff retry logic
+    log "Testing database connectivity with exponential backoff retry logic..."
     local max_attempts=30
     local attempt=0
     local connection_success=false
+    local base_delay=1
+    local max_delay=30
 
     while [[ $attempt -lt $max_attempts ]]; do
         ((attempt++))
@@ -235,7 +237,7 @@ from cardinal_vote.config import settings
 
 async def test_connection():
     try:
-        engine = create_async_engine(settings.DATABASE_URL, echo=False)
+        engine = create_async_engine(settings.DATABASE_URL, echo=False, pool_pre_ping=True)
         async with engine.begin() as conn:
             await conn.execute('SELECT 1')
         await engine.dispose()
@@ -252,8 +254,18 @@ sys.exit(0 if result else 1)
             connection_success=true
             break
         else
-            log "Database connectivity test $attempt/$max_attempts failed, retrying in 2s..."
-            sleep 2
+            # Calculate exponential backoff with jitter
+            local delay=$((base_delay * (2 ** (attempt - 1))))
+            if [[ $delay -gt $max_delay ]]; then
+                delay=$max_delay
+            fi
+
+            # Add jitter (random 0-25% of delay) to prevent thundering herd
+            local jitter=$((RANDOM % (delay / 4 + 1)))
+            local total_delay=$((delay + jitter))
+
+            log "Database connectivity test $attempt/$max_attempts failed, retrying in ${total_delay}s (exponential backoff)..."
+            sleep $total_delay
         fi
     done
 
@@ -261,18 +273,109 @@ sys.exit(0 if result else 1)
         error_exit "Database connectivity failed after $max_attempts attempts. Check DATABASE_URL and PostgreSQL service."
     fi
 
-    # Run migrations with timeout to prevent hanging
+    # Get current migration state for rollback capability
+    log "Getting current database migration state for rollback capability..."
+    local current_revision
+    current_revision=$(alembic current 2>/dev/null | head -n1 | awk '{print $1}' || echo "empty")
+    log "Current migration revision: $current_revision"
+
+    # Run migrations with timeout and validation
     log "Starting database migrations (timeout: 60s)..."
+    local migration_success=false
+
     if timeout 60 alembic upgrade head; then
-        log "✓ Database migrations completed successfully"
+        log "✓ Database migrations executed successfully"
+
+        # Validate migration success by checking current revision
+        log "Validating migration completion..."
+        local new_revision
+        new_revision=$(alembic current 2>/dev/null | head -n1 | awk '{print $1}' || echo "error")
+
+        if [[ "$new_revision" != "error" && "$new_revision" != "$current_revision" ]]; then
+            log "✓ Migration validation successful - revision changed from $current_revision to $new_revision"
+            migration_success=true
+        elif [[ "$new_revision" == "$current_revision" && "$current_revision" != "empty" ]]; then
+            log "✓ Migration validation successful - database already up to date at revision $current_revision"
+            migration_success=true
+        else
+            log "⚠️ Migration validation failed - revision check inconclusive"
+
+            # Perform basic table existence check as secondary validation
+            if timeout 10 python -c "
+import asyncio
+import sys
+sys.path.insert(0, '/app/src')
+from sqlalchemy.ext.asyncio import create_async_engine
+from cardinal_vote.config import settings
+
+async def validate_schema():
+    try:
+        engine = create_async_engine(settings.DATABASE_URL, echo=False)
+        async with engine.begin() as conn:
+            # Check if key tables exist
+            result = await conn.execute('SELECT COUNT(*) FROM information_schema.tables WHERE table_name IN (\'users\', \'votes\', \'vote_records\', \'alembic_version\')')
+            count = (await result.fetchone())[0]
+            await engine.dispose()
+
+            if count >= 3:  # At least 3 core tables should exist
+                print('✓ Core database tables validated')
+                sys.exit(0)
+            else:
+                print(f'✗ Schema validation failed - only {count} core tables found')
+                sys.exit(1)
+    except Exception as e:
+        print(f'✗ Schema validation failed: {e}')
+        sys.exit(1)
+
+asyncio.run(validate_schema())
+" 2>/dev/null; then
+                log "✓ Secondary schema validation successful"
+                migration_success=true
+            else
+                log "✗ Secondary schema validation failed"
+                migration_success=false
+            fi
+        fi
     else
         local exit_code=$?
         if [[ $exit_code -eq 124 ]]; then
-            error_exit "Database migrations timed out after 60 seconds. Check database connectivity and migration complexity."
+            log "✗ Database migrations timed out after 60 seconds"
         else
-            error_exit "Database migrations failed with exit code $exit_code. Check database configuration and migration scripts."
+            log "✗ Database migrations failed with exit code $exit_code"
         fi
+        migration_success=false
     fi
+
+    # Handle migration failure with rollback option
+    if [[ $migration_success == false ]]; then
+        log "Migration failed. Checking rollback options..."
+
+        if [[ "$current_revision" != "empty" && "$current_revision" != "error" ]]; then
+            log "Previous revision ($current_revision) available for rollback"
+
+            # Check if ROLLBACK_ON_MIGRATION_FAILURE is set
+            if [[ "${ROLLBACK_ON_MIGRATION_FAILURE:-false}" == "true" ]]; then
+                log "ROLLBACK_ON_MIGRATION_FAILURE=true - Attempting automatic rollback..."
+
+                if timeout 30 alembic downgrade "$current_revision"; then
+                    log "✓ Automatic rollback to revision $current_revision successful"
+                    error_exit "Migration failed but rollback completed. Check migration scripts and DATABASE_URL. Container stopped safely."
+                else
+                    log "✗ Automatic rollback failed"
+                    error_exit "Migration failed AND rollback failed. Database may be in inconsistent state. Manual intervention required."
+                fi
+            else
+                log "To enable automatic rollback on migration failure, set: ROLLBACK_ON_MIGRATION_FAILURE=true"
+                log "Manual rollback command: alembic downgrade $current_revision"
+            fi
+        else
+            log "No previous revision available for rollback (fresh database)"
+        fi
+
+        error_exit "Database migrations failed. Check database connectivity, configuration, and migration scripts."
+    fi
+
+    log "✅ Database migrations completed and validated successfully"
 }
 
 # Start application

@@ -26,17 +26,17 @@ services:
       - ENABLE_RATE_LIMITING=${ENABLE_RATE_LIMITING:-true}
       - MAX_VOTES_PER_IP_PER_HOUR=${MAX_VOTES_PER_IP_PER_HOUR:-5}
       # Security Configuration
-      - JWT_SECRET_KEY=${JWT_SECRET_KEY:-jwt_secret_key_change_in_production_extremely_long_and_secure}
+      - JWT_SECRET_KEY=${JWT_SECRET_KEY:?JWT_SECRET_KEY environment variable is required for security}
       - JWT_ALGORITHM=${JWT_ALGORITHM:-HS256}
       - JWT_ACCESS_TOKEN_EXPIRE_MINUTES=${JWT_ACCESS_TOKEN_EXPIRE_MINUTES:-30}
       - JWT_REFRESH_TOKEN_EXPIRE_DAYS=${JWT_REFRESH_TOKEN_EXPIRE_DAYS:-7}
       # Super Admin Configuration
-      - SUPER_ADMIN_EMAIL=${SUPER_ADMIN_EMAIL:-admin@cardinal-vote.local}
-      - SUPER_ADMIN_PASSWORD=${SUPER_ADMIN_PASSWORD:-super_admin_password_change_in_production}
-      # Legacy Admin credentials (backwards compatibility)
-      - ADMIN_USERNAME=${ADMIN_USERNAME}
-      - ADMIN_PASSWORD=${ADMIN_PASSWORD}
-      - SESSION_SECRET_KEY=${SESSION_SECRET_KEY}
+      - SUPER_ADMIN_EMAIL=${SUPER_ADMIN_EMAIL:?SUPER_ADMIN_EMAIL environment variable is required for security}
+      - SUPER_ADMIN_PASSWORD=${SUPER_ADMIN_PASSWORD:?SUPER_ADMIN_PASSWORD environment variable is required for security}
+      # Legacy Admin credentials (backwards compatibility - optional)
+      - ADMIN_USERNAME=${ADMIN_USERNAME:-admin}
+      - ADMIN_PASSWORD=${ADMIN_PASSWORD:?ADMIN_PASSWORD environment variable is required for security}
+      - SESSION_SECRET_KEY=${SESSION_SECRET_KEY:?SESSION_SECRET_KEY environment variable is required for security}
 
     # Production resource limits
     deploy:

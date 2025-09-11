@@ -124,8 +124,8 @@ services:
 ```bash
 # deploy-from-tar.sh
 # Add password generation
-POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-$(openssl rand -hex 24)}
-SUPER_ADMIN_PASSWORD=${SUPER_ADMIN_PASSWORD:-$(openssl rand -hex 24)}
+POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-$(openssl rand -hex 32)}
+SUPER_ADMIN_PASSWORD=${SUPER_ADMIN_PASSWORD:-$(openssl rand -hex 32)}
 JWT_SECRET_KEY=${JWT_SECRET_KEY:-$(openssl rand -hex 64)}
 
 # Log warning about generated passwords

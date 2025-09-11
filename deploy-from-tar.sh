@@ -67,11 +67,11 @@ PORT=8000
 
 # Admin credentials (CHANGE THESE!)
 ADMIN_USERNAME=admin
-ADMIN_PASSWORD=${ADMIN_PASSWORD:-$(openssl rand -hex 16)}
+ADMIN_PASSWORD=${ADMIN_PASSWORD:-$(openssl rand -hex 32)}
 SESSION_SECRET_KEY=change_this_secret_key_in_production_$(openssl rand -hex 32)
 
 # Database - PostgreSQL (with secure random password)
-POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-$(openssl rand -hex 24)}
+POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-$(openssl rand -hex 32)}
 DATABASE_URL=postgresql+asyncpg://cardinal_user:${POSTGRES_PASSWORD}@postgres:5432/cardinal_vote
 
 # Security
