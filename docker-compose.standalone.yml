@@ -1,5 +1,3 @@
-version: '3.8'
-
 # Standalone production deployment for Cardinal Vote platform
 # Usage: docker-compose -f docker-compose.standalone.yml up -d
 
