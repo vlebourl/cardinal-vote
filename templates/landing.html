@@ -19,7 +19,7 @@
 
     <!-- Lazy load fonts with critical subset first -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;700&display=swap" rel="stylesheet" media="print" data-onload="font-load">
     <noscript><link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;700&display=swap" rel="stylesheet"></noscript>
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🗳️</text></svg>">
 </head>
@@ -33,10 +33,10 @@
             </div>
 
             <div class="nav-actions" id="authButtons">
-                <button class="btn-text" onclick="showLoginModal()" aria-describedby="login-help">
+                <button class="btn-text" data-action="show-login" aria-describedby="login-help">
                     Sign In
                 </button>
-                <button class="btn-primary" onclick="showRegisterModal()" aria-describedby="register-help">
+                <button class="btn-primary" data-action="show-register" aria-describedby="register-help">
                     Get Started
                 </button>
             </div>
@@ -53,11 +53,11 @@
                     Support custom content types, get detailed analytics, and make better collective decisions.
                 </p>
                 <div class="hero-actions">
-                    <button class="btn-hero-primary" onclick="showRegisterModal()" aria-describedby="start-help">
+                    <button class="btn-hero-primary" data-action="show-register" aria-describedby="start-help">
                         Start Creating Votes
                         <span class="btn-icon" aria-hidden="true">→</span>
                     </button>
-                    <button class="btn-hero-secondary" onclick="scrollToFeatures()" aria-describedby="learn-help">
+                    <button class="btn-hero-secondary" data-action="scroll-to-features" aria-describedby="learn-help">
                         Learn More
                         <span class="btn-icon" aria-hidden="true">↓</span>
                     </button>
@@ -179,7 +179,7 @@
                 <h2 id="cta-title" class="cta-title">Ready to Transform Your Decision Making?</h2>
                 <p class="cta-subtitle">Join thousands of teams already using {{ app_name }} for better collective decisions</p>
                 <div class="cta-actions">
-                    <button class="btn-cta-primary" onclick="showRegisterModal()">
+                    <button class="btn-cta-primary" data-action="show-register">
                         Create Your First Vote
                         <span class="btn-icon" aria-hidden="true">🚀</span>
                     </button>
@@ -212,11 +212,11 @@
 
     <!-- Login Modal -->
     <div id="loginModal" class="modal" role="dialog" aria-labelledby="login-modal-title" aria-hidden="true">
-        <div class="modal-backdrop" onclick="closeModal('loginModal')"></div>
+        <div class="modal-backdrop" data-action="close-modal" data-modal="loginModal"></div>
         <div class="modal-content">
             <div class="modal-header">
                 <h3 id="login-modal-title">Welcome Back</h3>
-                <button class="modal-close" onclick="closeModal('loginModal')" aria-label="Close login form">
+                <button class="modal-close" data-action="close-modal" data-modal="loginModal" aria-label="Close login form">
                     <span aria-hidden="true">×</span>
                 </button>
             </div>
@@ -239,14 +239,14 @@
                             Sign In
                             <div class="btn-loading" aria-hidden="true"></div>
                         </button>
-                        <button type="button" class="btn-form-text" onclick="showForgotPassword()">
+                        <button type="button" class="btn-form-text" data-action="show-forgot-password">
                             Forgot Password?
                         </button>
                     </div>
                 </form>
                 <div class="auth-divider">
                     <span>Don't have an account?</span>
-                    <button class="btn-link" onclick="switchToRegister()">Sign up here</button>
+                    <button class="btn-link" data-action="switch-to-register">Sign up here</button>
                 </div>
             </div>
         </div>
@@ -254,11 +254,11 @@
 
     <!-- Register Modal -->
     <div id="registerModal" class="modal" role="dialog" aria-labelledby="register-modal-title" aria-hidden="true">
-        <div class="modal-backdrop" onclick="closeModal('registerModal')"></div>
+        <div class="modal-backdrop" data-action="close-modal" data-modal="registerModal"></div>
         <div class="modal-content">
             <div class="modal-header">
                 <h3 id="register-modal-title">Create Your Account</h3>
-                <button class="modal-close" onclick="closeModal('registerModal')" aria-label="Close registration form">
+                <button class="modal-close" data-action="close-modal" data-modal="registerModal" aria-label="Close registration form">
                     <span aria-hidden="true">×</span>
                 </button>
             </div>
@@ -299,7 +299,7 @@
                 </form>
                 <div class="auth-divider">
                     <span>Already have an account?</span>
-                    <button class="btn-link" onclick="switchToLogin()">Sign in here</button>
+                    <button class="btn-link" data-action="switch-to-login">Sign in here</button>
                 </div>
             </div>
         </div>
@@ -312,7 +312,7 @@
             <div class="toast-title">Success!</div>
             <div class="toast-message"></div>
         </div>
-        <button class="toast-close" onclick="hideToast('successToast')" aria-label="Close notification">×</button>
+        <button class="toast-close" data-action="hide-toast" data-toast="successToast" aria-label="Close notification">×</button>
     </div>
 
     <!-- Error Toast -->
@@ -322,9 +322,10 @@
             <div class="toast-title">Error</div>
             <div class="toast-message"></div>
         </div>
-        <button class="toast-close" onclick="hideToast('errorToast')" aria-label="Close error">×</button>
+        <button class="toast-close" data-action="hide-toast" data-toast="errorToast" aria-label="Close error">×</button>
     </div>
 
+    <script src="/static/js/event-handlers.js" defer></script>
     <script src="/static/landing.js" defer></script>
 </body>
 </html>

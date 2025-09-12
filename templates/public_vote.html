@@ -200,7 +200,7 @@
                 <h2 id="success-title">Thank you for your participation!</h2>
                 <p id="success-message">Your vote has been recorded successfully.</p>
                 <div class="success-actions">
-                    <button id="new-vote-btn" class="btn btn-primary" onclick="window.location.reload()">
+                    <button id="new-vote-btn" class="btn btn-primary" data-action="new-vote">
                         New Vote
                     </button>
                 </div>
@@ -214,6 +214,7 @@
     <!-- Vote data (passed from backend) -->
     <script type="application/json" id="vote-data">{{ vote_json|safe }}</script>
 
+    <script src="/static/js/event-handlers.js" defer></script>
     <script src="/static/public_vote.js"></script>
 </body>
 </html>

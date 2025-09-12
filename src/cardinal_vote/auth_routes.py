@@ -15,6 +15,7 @@ from .dependencies import (
     get_auth_manager,
 )
 from .models import DatabaseError
+from .input_sanitizer import InputSanitizer
 
 logger = logging.getLogger(__name__)
 
@@ -112,12 +113,28 @@ async def register_user(
         # Get client IP for rate limiting
         client_ip = request.client.host if request.client else "unknown"
 
-        # Create the user
+        # Sanitize input data
+        sanitized_email = InputSanitizer.sanitize_email(user_data.email)
+        sanitized_first_name = InputSanitizer.sanitize_text(
+            user_data.first_name, field_name="first_name"
+        )
+        sanitized_last_name = InputSanitizer.sanitize_text(
+            user_data.last_name, field_name="last_name"
+        )
+
+        # Validate sanitized data
+        if not sanitized_email:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Invalid email format"
+            )
+
+        # Create the user (password is validated but not sanitized)
         user = await auth_manager.create_user(
-            email=user_data.email,
-            password=user_data.password,
-            first_name=user_data.first_name,
-            last_name=user_data.last_name,
+            email=sanitized_email,
+            password=user_data.password,  # Password will be hashed
+            first_name=sanitized_first_name,
+            last_name=sanitized_last_name,
             session=session,
         )
 
@@ -174,9 +191,17 @@ async def login_user(
         # Get client IP for rate limiting
         client_ip = request.client.host if request.client else "unknown"
 
+        # Sanitize email input
+        sanitized_email = InputSanitizer.sanitize_email(form_data.username)
+        if not sanitized_email:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Invalid credentials"
+            )
+
         # Authenticate user
         user = await auth_manager.authenticate_user(
-            email=form_data.username,  # OAuth2 uses 'username' field for email
+            email=sanitized_email,  # OAuth2 uses 'username' field for email
             password=form_data.password,
             ip_address=client_ip,
             session=session,
@@ -232,9 +257,17 @@ async def login_user_json(
         # Get client IP for rate limiting
         client_ip = request.client.host if request.client else "unknown"
 
+        # Sanitize email input
+        sanitized_email = InputSanitizer.sanitize_email(user_data.email)
+        if not sanitized_email:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Invalid credentials"
+            )
+
         # Authenticate user
         user = await auth_manager.authenticate_user(
-            email=user_data.email,
+            email=sanitized_email,
             password=user_data.password,
             ip_address=client_ip,
             session=session,

@@ -20,6 +20,7 @@ from starlette.middleware.base import BaseHTTPMiddleware
 from .auth_manager import GeneralizedAuthManager
 from .auth_routes import auth_router
 from .config import settings
+from .env_validator import validate_environment
 
 # DatabaseError now imported from models with other exceptions
 from .database_manager import GeneralizedDatabaseManager
@@ -50,6 +51,12 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
 
     # Startup
     logger.info(f"Starting {settings.APP_NAME} v{settings.APP_VERSION}")
+
+    # Run comprehensive environment validation
+    logger.info("Running environment validation...")
+    if not validate_environment(exit_on_critical=True):
+        logger.critical("Environment validation failed. Check configuration.")
+        raise RuntimeError("Environment validation failed")
 
     try:
         # Validate PostgreSQL configuration
@@ -101,7 +108,7 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
         # Content Security Policy - tailored for our modern UI
         csp_directives = [
             "default-src 'self'",
-            "script-src 'self' 'unsafe-inline'",  # Allow inline scripts for our auth modals
+            "script-src 'self'",  # No inline scripts - using data attributes and event delegation
             "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",  # Inter font + our styles
             "font-src 'self' https://fonts.gstatic.com",  # Inter font from Google Fonts
             "img-src 'self' data: blob:",  # Allow images and data URLs for uploads
