@@ -2,18 +2,19 @@
 
 import json
 import logging
-from collections.abc import AsyncGenerator
+from collections.abc import AsyncGenerator, Awaitable, Callable
 from contextlib import asynccontextmanager
 from datetime import datetime
 
 import uvicorn
-from fastapi import FastAPI, HTTPException, Request, status
+from fastapi import FastAPI, HTTPException, Request, Response, status
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from sqlalchemy import select
+from starlette.middleware.base import BaseHTTPMiddleware
 
 # Generalized platform imports
 from .auth_manager import GeneralizedAuthManager
@@ -87,6 +88,56 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     logger.info("Application shutting down")
 
 
+# Security Headers Middleware
+class SecurityHeadersMiddleware(BaseHTTPMiddleware):
+    """Middleware to add security headers to all responses."""
+
+    async def dispatch(
+        self, request: Request, call_next: Callable[[Request], Awaitable[Response]]
+    ) -> Response:
+        """Add security headers to response."""
+        response = await call_next(request)
+
+        # Content Security Policy - tailored for our modern UI
+        csp_directives = [
+            "default-src 'self'",
+            "script-src 'self' 'unsafe-inline'",  # Allow inline scripts for our auth modals
+            "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",  # Inter font + our styles
+            "font-src 'self' https://fonts.gstatic.com",  # Inter font from Google Fonts
+            "img-src 'self' data: blob:",  # Allow images and data URLs for uploads
+            "connect-src 'self'",  # API calls to same origin
+            "frame-ancestors 'none'",  # Prevent embedding in frames
+            "form-action 'self'",  # Only allow form submissions to same origin
+            "base-uri 'self'",  # Restrict base element
+            "object-src 'none'",  # Disable plugins
+            "upgrade-insecure-requests",  # Force HTTPS in production
+        ]
+
+        response.headers["Content-Security-Policy"] = "; ".join(csp_directives)
+
+        # Security headers
+        response.headers["X-Content-Type-Options"] = "nosniff"
+        response.headers["X-Frame-Options"] = "DENY"
+        response.headers["X-XSS-Protection"] = "1; mode=block"
+        response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
+        response.headers["Permissions-Policy"] = (
+            "geolocation=(), microphone=(), camera=(), payment=(), usb=(), magnetometer=(), gyroscope=(), speaker=()"
+        )
+
+        # HSTS header (only in production)
+        if not settings.DEBUG:
+            response.headers["Strict-Transport-Security"] = (
+                "max-age=31536000; includeSubDomains; preload"
+            )
+
+        # Additional security headers for modern browsers
+        response.headers["Cross-Origin-Embedder-Policy"] = "require-corp"
+        response.headers["Cross-Origin-Opener-Policy"] = "same-origin"
+        response.headers["Cross-Origin-Resource-Policy"] = "same-origin"
+
+        return response
+
+
 # Legacy database manager dependency removed - use generalized platform APIs instead
 
 
@@ -97,6 +148,9 @@ app = FastAPI(
     description="A generalized voting platform supporting flexible content types and value voting methodology (-2 to +2 scale)",
     lifespan=lifespan,
 )
+
+# Add security headers middleware (first to apply to all responses)
+app.add_middleware(SecurityHeadersMiddleware)
 
 # Add CORS middleware
 app.add_middleware(

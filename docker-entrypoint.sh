@@ -180,24 +180,24 @@ preflight_checks() {
 
 # Health check function
 health_check() {
-    local max_attempts=30
-    local attempt=0
-
     log "Waiting for application to start..."
 
-    while [[ $attempt -lt $max_attempts ]]; do
+    for attempt in 1 2 3 4 5 6 7 8 9 10; do
+        log "Health check attempt $attempt/10..."
+
         # Use the dedicated health endpoint for proper health check
         if curl -f -s "http://localhost:$PORT/api/health" >/dev/null 2>&1; then
-            log "✓ Application health check passed"
+            log "✓ Application health check passed on attempt $attempt"
             return 0
         fi
 
-        ((attempt++))
-        log "Health check attempt $attempt/$max_attempts failed, retrying in 2s..."
+        if [[ $attempt -eq 10 ]]; then
+            error_exit "Application failed to start within 20 seconds"
+        fi
+
+        log "Health check failed, retrying in 2s..."
         sleep 2
     done
-
-    error_exit "Application failed to start within $(($max_attempts * 2)) seconds"
 }
 
 # Run database migrations
@@ -217,61 +217,47 @@ run_database_migrations() {
         error_exit "alembic command found but not properly accessible. Check virtual environment configuration."
     fi
 
-    # Test database connectivity with exponential backoff retry logic
-    log "Testing database connectivity with exponential backoff retry logic..."
-    local max_attempts=30
-    local attempt=0
-    local connection_success=false
-    local base_delay=1
-    local max_delay=30
+    # Test database connectivity using simple approach
+    log "Testing database connectivity..."
 
-    while [[ $attempt -lt $max_attempts ]]; do
-        ((attempt++))
+    # Use environment variables directly (Docker Compose sets these)
+    # These match the .env file and docker-compose.yml configuration
+    local db_host="postgres"
+    local db_port="5432"
+    local db_user="${POSTGRES_USER:-voting_user}"
+    local db_name="${POSTGRES_DB:-voting_platform}"
+    local db_password="${POSTGRES_PASSWORD:-voting_password_change_in_production}"
 
-        if timeout 10 python -c "
-import asyncio
-import sys
-sys.path.insert(0, '/app/src')
-from sqlalchemy.ext.asyncio import create_async_engine
-from cardinal_vote.config import settings
+    log "Using database connection: $db_user@$db_host:$db_port/$db_name"
 
-async def test_connection():
-    try:
-        engine = create_async_engine(settings.DATABASE_URL, echo=False, pool_pre_ping=True)
-        async with engine.begin() as conn:
-            await conn.execute('SELECT 1')
-        await engine.dispose()
-        print('✓ Database connection successful')
-        return True
-    except Exception as e:
-        print(f'✗ Database connection failed: {e}')
-        return False
+    # Simple connectivity test with timeout
+    log "Starting database connectivity tests (max 10 attempts)..."
 
-result = asyncio.run(test_connection())
-sys.exit(0 if result else 1)
-" 2>/dev/null; then
+    for attempt in 1 2 3 4 5 6 7 8 9 10; do
+        log "Attempt $attempt/10: Testing database connectivity..."
+
+        # Test with basic psql command directly
+        log "Testing PostgreSQL connection to $db_host:$db_port..."
+
+        # Set password and test connection
+        export PGPASSWORD="$db_password"
+
+        if timeout 10 psql -h "$db_host" -p "$db_port" -U "$db_user" -d "$db_name" -c "SELECT 1;" >/dev/null 2>&1; then
             log "✓ Database connectivity verified on attempt $attempt"
-            connection_success=true
+            unset PGPASSWORD
             break
         else
-            # Calculate exponential backoff with jitter
-            local delay=$((base_delay * (2 ** (attempt - 1))))
-            if [[ $delay -gt $max_delay ]]; then
-                delay=$max_delay
+            local psql_exit_code=$?
+            log "⚠️ PostgreSQL connection failed (exit code: $psql_exit_code)"
+            unset PGPASSWORD
+
+            if [[ $attempt -eq 10 ]]; then
+                error_exit "Database connectivity failed after 10 attempts. Check DATABASE_URL, credentials, and PostgreSQL service status."
             fi
-
-            # Add jitter (random 0-25% of delay) to prevent thundering herd
-            local jitter=$((RANDOM % (delay / 4 + 1)))
-            local total_delay=$((delay + jitter))
-
-            log "Database connectivity test $attempt/$max_attempts failed, retrying in ${total_delay}s (exponential backoff)..."
-            sleep $total_delay
+            log "Database not ready yet, waiting 2 seconds before retry..."
+            sleep 2
         fi
     done
-
-    if [[ $connection_success == false ]]; then
-        error_exit "Database connectivity failed after $max_attempts attempts. Check DATABASE_URL and PostgreSQL service."
-    fi
 
     # Get current migration state for rollback capability
     log "Getting current database migration state for rollback capability..."
@@ -440,8 +426,12 @@ main() {
     # Run all setup steps
     local validation_start=$(date +%s.%N)
     validate_environment
-    local validation_duration=$(echo "$(date +%s.%N) - $validation_start" | bc -l)
-    log "⏱ Environment validation completed in ${validation_duration}s"
+    if command -v bc >/dev/null 2>&1; then
+        local validation_duration=$(echo "$(date +%s.%N) - $validation_start" | bc -l)
+        log "⏱ Environment validation completed in ${validation_duration}s"
+    else
+        log "⏱ Environment validation completed"
+    fi
 
     setup_application_directories
     setup_logs_directory
@@ -450,12 +440,17 @@ main() {
     # Initialize database
     local migration_start=$(date +%s.%N)
     run_database_migrations
-    local migration_duration=$(echo "$(date +%s.%N) - $migration_start" | bc -l)
-    log "⏱ Database migrations completed in ${migration_duration}s"
+    if command -v bc >/dev/null 2>&1; then
+        local migration_duration=$(echo "$(date +%s.%N) - $migration_start" | bc -l)
+        log "⏱ Database migrations completed in ${migration_duration}s"
 
-    # Calculate total startup time
-    local startup_duration=$(echo "$(date +%s.%N) - $startup_start_time" | bc -l)
-    log "⏱ Container startup completed in ${startup_duration}s"
+        # Calculate total startup time
+        local startup_duration=$(echo "$(date +%s.%N) - $startup_start_time" | bc -l)
+        log "⏱ Container startup completed in ${startup_duration}s"
+    else
+        log "⏱ Database migrations completed"
+        log "⏱ Container startup completed"
+    fi
 
     # Start the application
     start_application

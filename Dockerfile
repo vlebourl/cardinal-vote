@@ -47,6 +47,9 @@ ENV CARDINAL_ENV=production
 RUN apt-get update && apt-get install -y --no-install-recommends \
     tini \
     curl \
+    bc \
+    netcat-openbsd \
+    postgresql-client \
     && rm -rf /var/lib/apt/lists/* \
     && apt-get autoremove -y \
     && apt-get clean

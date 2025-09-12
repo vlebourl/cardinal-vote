@@ -1,3 +1,5 @@
+name: cardinal-vote
+
 services:
   # PostgreSQL Database for Generalized Platform
   postgres:
@@ -6,19 +8,17 @@ services:
     environment:
       - POSTGRES_DB=${POSTGRES_DB:-voting_platform}
       - POSTGRES_USER=${POSTGRES_USER:-voting_user}
-      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-voting_password_change_in_production}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:?POSTGRES_PASSWORD environment variable is required for security}
       - POSTGRES_INITDB_ARGS=--auth-host=scram-sha-256
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - ./scripts/init_db.sql:/docker-entrypoint-initdb.d/01_init.sql:ro
-    ports:
-      - '5432:5432'
+    # Database port NOT exposed by default for security
+    # The app connects internally via Docker network (postgres:5432)
+    # To access database from host (pgAdmin, psql, etc), use docker-compose.override.yml
+    # See README.md "Docker Database Configuration" section for details
     healthcheck:
-      test:
-        [
-          'CMD-SHELL',
-          'pg_isready -U ${POSTGRES_USER:-voting_user} -d ${POSTGRES_DB:-voting_platform}'
-        ]
+      test: ['CMD-SHELL', 'pg_isready -U ${POSTGRES_USER:-voting_user} -d ${POSTGRES_DB:-voting_platform}']
       interval: 10s
       timeout: 5s
       retries: 5
@@ -30,33 +30,35 @@ services:
         max-size: '10m'
         max-file: '3'
 
-  # Generalized Voting Platform Application
-  voting-platform:
+  # Cardinal Vote Generalized Voting Platform Application
+  cardinal-vote:
+    # Use pre-built image for production, build for development
+    image: ${CARDINAL_IMAGE:-}
     build:
       context: .
       dockerfile: Dockerfile
       target: production
     ports:
-      - '8000:8000'
+      - '${EXTERNAL_PORT:-8000}:8000'
     depends_on:
       postgres:
         condition: service_healthy
     environment:
       # Database Configuration
-      - DATABASE_URL=postgresql+asyncpg://${POSTGRES_USER:-voting_user}:${POSTGRES_PASSWORD:-voting_password_change_in_production}@postgres:5432/${POSTGRES_DB:-voting_platform}
+      - DATABASE_URL=postgresql+asyncpg://${POSTGRES_USER:-voting_user}:${POSTGRES_PASSWORD:?POSTGRES_PASSWORD environment variable is required}@postgres:5432/${POSTGRES_DB:-voting_platform}
       # Application Configuration
       - HOST=${HOST:-0.0.0.0}
       - PORT=${PORT:-8000}
       - DEBUG=${DEBUG:-false}
-      - ENVIRONMENT=${ENVIRONMENT:-development}
-      # Security Configuration
-      - JWT_SECRET_KEY=${JWT_SECRET_KEY:-jwt_secret_key_change_in_production_extremely_long_and_secure}
+      - CARDINAL_ENV=${CARDINAL_ENV:-development}
+      # Security Configuration - Use environment variables or fallbacks
+      - JWT_SECRET_KEY=${JWT_SECRET_KEY:?JWT_SECRET_KEY environment variable is required for security}
       - JWT_ALGORITHM=${JWT_ALGORITHM:-HS256}
       - JWT_ACCESS_TOKEN_EXPIRE_MINUTES=${JWT_ACCESS_TOKEN_EXPIRE_MINUTES:-30}
       - JWT_REFRESH_TOKEN_EXPIRE_DAYS=${JWT_REFRESH_TOKEN_EXPIRE_DAYS:-7}
       # Session Configuration (legacy compatibility)
-      - SESSION_SECRET_KEY=${SESSION_SECRET_KEY:-session_secret_key_change_in_production_123456789}
-      # Email Configuration (Mock for Development)
+      - SESSION_SECRET_KEY=${SESSION_SECRET_KEY:?SESSION_SECRET_KEY environment variable is required for security}
+      # Email Configuration
       - EMAIL_BACKEND=${EMAIL_BACKEND:-mock}
       - SMTP_HOST=${SMTP_HOST:-localhost}
       - SMTP_PORT=${SMTP_PORT:-587}
@@ -66,12 +68,14 @@ services:
       # File Storage Configuration
       - UPLOAD_PATH=${UPLOAD_PATH:-/app/uploads}
       - MAX_FILE_SIZE_MB=${MAX_FILE_SIZE_MB:-10}
-      # Super Admin Configuration (for platform management)
+      # Super Admin Configuration
       - SUPER_ADMIN_EMAIL=${SUPER_ADMIN_EMAIL:-admin@voting-platform.local}
-      - SUPER_ADMIN_PASSWORD=${SUPER_ADMIN_PASSWORD:-super_admin_password_change_in_production}
+      - SUPER_ADMIN_PASSWORD=${SUPER_ADMIN_PASSWORD:?SUPER_ADMIN_PASSWORD environment variable is required for security}
       # Legacy Admin Configuration (backwards compatibility)
-      - ADMIN_USERNAME=${ADMIN_USERNAME:-admin}
-      - ADMIN_PASSWORD=${ADMIN_PASSWORD:-cardinal_admin_2025}
+      - ADMIN_USERNAME=${ADMIN_USERNAME:?ADMIN_USERNAME environment variable is required for security}
+      - ADMIN_PASSWORD=${ADMIN_PASSWORD:?ADMIN_PASSWORD environment variable is required for security}
+      # CORS Configuration
+      - ALLOWED_ORIGINS=${ALLOWED_ORIGINS:-http://localhost:3000,http://localhost:8000,http://127.0.0.1:8000}
     volumes:
       # Persistent storage for uploaded files
       - voting_uploads:/app/uploads
@@ -83,13 +87,7 @@ services:
       # - ./templates:/app/templates:ro
       # - ./static:/app/static:ro
     healthcheck:
-      test:
-        [
-          'CMD',
-          'python',
-          '-c',
-          "import requests; requests.get('http://localhost:8000/api/health', timeout=5)"
-        ]
+      test: ['CMD', 'python', '-c', "import requests; requests.get('http://localhost:8000/api/health', timeout=5)"]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -107,10 +105,13 @@ services:
         max-size: '10m'
         max-file: '3'
 
-  # Optional: Traefik reverse proxy for production-like setup
+  # Optional: Traefik reverse proxy - ONLY FOR DEVELOPMENT
+  # Requires explicit activation with: docker compose --profile traefik up
   traefik:
     image: traefik:v3.0
     command:
+      # SECURITY WARNING: --api.insecure=true exposes admin dashboard without auth
+      # NEVER use this configuration in production!
       - '--api.insecure=true'
       - '--providers.docker=true'
       - '--providers.docker.exposedbydefault=false'

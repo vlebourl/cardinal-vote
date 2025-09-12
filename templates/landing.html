@@ -3,162 +3,328 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ app_name }} - Generalized Voting Platform</title>
-    <meta name="description" content="Create and participate in votes using value voting methodology. Support for flexible content types and organizer-defined voting scenarios.">
+    <title>{{ app_name }} - Modern Voting Platform</title>
+    <meta name="description" content="Professional voting platform for organizations. Create sophisticated votes with value-based ratings and custom content types. Trusted by teams worldwide.">
     <meta name="theme-color" content="#2D5820">
+    <!-- Preload critical assets -->
+    <link rel="preload" href="/static/style.css" as="style">
+    <link rel="preload" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" as="style">
+
+    <!-- Critical CSS -->
     <link rel="stylesheet" href="/static/style.css">
+
+    <!-- Font optimization -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+    <!-- Lazy load fonts with critical subset first -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+    <noscript><link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;700&display=swap" rel="stylesheet"></noscript>
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🗳️</text></svg>">
 </head>
-<body>
-    <div class="container">
-        <header class="platform-header">
-            <h1>{{ app_name }}</h1>
-            <p class="platform-description">Generalized Voting Platform</p>
-        </header>
+<body class="modern-landing">
+    <!-- Navigation Header -->
+    <nav class="navigation-header" role="navigation" aria-label="Main navigation">
+        <div class="nav-container">
+            <div class="nav-brand">
+                <div class="brand-icon" aria-hidden="true">🗳️</div>
+                <h1 class="brand-name">{{ app_name }}</h1>
+            </div>
 
-        <main class="landing-content">
-            <section class="platform-info">
-                <h2>About This Platform</h2>
-                <p>
-                    This is a generalized voting platform that supports flexible content types
-                    and uses value voting methodology (-2 to +2 scale) for nuanced preference expression.
+            <div class="nav-actions" id="authButtons">
+                <button class="btn-text" onclick="showLoginModal()" aria-describedby="login-help">
+                    Sign In
+                </button>
+                <button class="btn-primary" onclick="showRegisterModal()" aria-describedby="register-help">
+                    Get Started
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero-section" role="banner">
+        <div class="hero-container">
+            <div class="hero-content">
+                <h2 class="hero-title">Professional Voting Platform for Modern Organizations</h2>
+                <p class="hero-subtitle">
+                    Create sophisticated voting experiences with our value-based rating system (-2 to +2).
+                    Support custom content types, get detailed analytics, and make better collective decisions.
                 </p>
-
-                <div class="features">
-                    <div class="feature">
-                        <h3>🗳️ Vote Organizers</h3>
-                        <p>Create votes with custom content types - images, text, or any options you define.</p>
-                    </div>
-
-                    <div class="feature">
-                        <h3>📊 Value Voting</h3>
-                        <p>Express nuanced preferences with ratings from -2 (strongly reject) to +2 (strongly accept).</p>
-                    </div>
-
-                    <div class="feature">
-                        <h3>🔗 Shareable Links</h3>
-                        <p>Each vote gets a unique URL that organizers can share with participants.</p>
+                <div class="hero-actions">
+                    <button class="btn-hero-primary" onclick="showRegisterModal()" aria-describedby="start-help">
+                        Start Creating Votes
+                        <span class="btn-icon" aria-hidden="true">→</span>
+                    </button>
+                    <button class="btn-hero-secondary" onclick="scrollToFeatures()" aria-describedby="learn-help">
+                        Learn More
+                        <span class="btn-icon" aria-hidden="true">↓</span>
+                    </button>
+                </div>
+                <div class="trust-indicators">
+                    <span class="trust-item">🔒 Enterprise Security</span>
+                    <span class="trust-item">⚡ Real-time Results</span>
+                    <span class="trust-item">📱 Mobile Optimized</span>
+                </div>
+            </div>
+            <div class="hero-visual" aria-hidden="true">
+                <div class="hero-card demo-card">
+                    <div class="demo-vote">
+                        <h3>Sample Vote: Choose Our Next Product Feature</h3>
+                        <div class="demo-options">
+                            <div class="demo-option">
+                                <img src="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100' fill='%234a7c59'><rect width='100' height='100' rx='12'/><text x='50' y='55' text-anchor='middle' fill='white' font-size='30'>AI</text></svg>" alt="AI Feature">
+                                <div class="demo-rating positive">+2</div>
+                            </div>
+                            <div class="demo-option">
+                                <img src="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100' fill='%23666'><rect width='100' height='100' rx='12'/><text x='50' y='55' text-anchor='middle' fill='white' font-size='24'>API</text></svg>" alt="API Feature">
+                                <div class="demo-rating neutral">0</div>
+                            </div>
+                        </div>
+                        <div class="demo-progress">
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: 67%"></div>
+                            </div>
+                            <span class="progress-text">8 of 12 votes collected</span>
+                        </div>
                     </div>
                 </div>
-            </section>
+            </div>
+        </div>
+    </section>
 
-            <section class="getting-started">
-                <h2>How to Use</h2>
-                <div class="steps">
-                    <div class="step">
-                        <strong>For Organizers:</strong> Contact your platform administrator to create a new vote with your specific options.
+    <!-- Features Section -->
+    <section class="features-section" id="features" role="main">
+        <div class="section-container">
+            <div class="section-header">
+                <h2 class="section-title">Why Organizations Choose {{ app_name }}</h2>
+                <p class="section-subtitle">Powerful features designed for professional voting scenarios</p>
+            </div>
+
+            <div class="features-grid">
+                <div class="feature-card" tabindex="0">
+                    <div class="feature-icon" aria-hidden="true">
+                        <div class="icon-bg primary">📊</div>
                     </div>
-                    <div class="step">
-                        <strong>For Voters:</strong> Use the specific vote URL provided by the organizer (e.g., <code>/vote/your-vote-slug</code>).
-                    </div>
+                    <h3 class="feature-title">Value-Based Voting</h3>
+                    <p class="feature-description">
+                        Express nuanced preferences with our -2 to +2 rating system.
+                        Capture "strongly oppose" to "strongly support" opinions for better decision-making.
+                    </p>
                 </div>
-            </section>
 
-            <section class="platform-status">
-                <p>
-                    <strong>Platform Version:</strong> {{ app_version }}<br>
-                    <strong>Status:</strong> <span class="status-active">Active</span>
-                </p>
-            </section>
-        </main>
+                <div class="feature-card" tabindex="0">
+                    <div class="feature-icon" aria-hidden="true">
+                        <div class="icon-bg secondary">🎨</div>
+                    </div>
+                    <h3 class="feature-title">Custom Content Types</h3>
+                    <p class="feature-description">
+                        Create votes with images, text, documents, or any content type.
+                        Perfect for design reviews, product decisions, or strategic planning.
+                    </p>
+                </div>
 
-        <footer class="platform-footer">
-            <p>&copy; 2025 {{ app_name }}. Generalized voting platform supporting flexible content types.</p>
-        </footer>
+                <div class="feature-card" tabindex="0">
+                    <div class="feature-icon" aria-hidden="true">
+                        <div class="icon-bg accent">⚡</div>
+                    </div>
+                    <h3 class="feature-title">Real-Time Analytics</h3>
+                    <p class="feature-description">
+                        Watch results update live as votes come in.
+                        Get detailed breakdowns, export data, and track participation rates.
+                    </p>
+                </div>
+
+                <div class="feature-card" tabindex="0">
+                    <div class="feature-icon" aria-hidden="true">
+                        <div class="icon-bg primary">🔗</div>
+                    </div>
+                    <h3 class="feature-title">Easy Sharing</h3>
+                    <p class="feature-description">
+                        Generate unique, shareable links for each vote.
+                        Control access, set voting periods, and manage participant lists effortlessly.
+                    </p>
+                </div>
+
+                <div class="feature-card" tabindex="0">
+                    <div class="feature-icon" aria-hidden="true">
+                        <div class="icon-bg secondary">🔒</div>
+                    </div>
+                    <h3 class="feature-title">Enterprise Security</h3>
+                    <p class="feature-description">
+                        Bank-level security with JWT authentication, rate limiting,
+                        and comprehensive audit trails for compliance and governance.
+                    </p>
+                </div>
+
+                <div class="feature-card" tabindex="0">
+                    <div class="feature-icon" aria-hidden="true">
+                        <div class="icon-bg accent">📱</div>
+                    </div>
+                    <h3 class="feature-title">Mobile First</h3>
+                    <p class="feature-description">
+                        Optimized for all devices with touch-friendly interfaces,
+                        offline support, and accessibility compliance (WCAG 2.1 AA).
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="cta-section" role="region" aria-labelledby="cta-title">
+        <div class="section-container">
+            <div class="cta-content">
+                <h2 id="cta-title" class="cta-title">Ready to Transform Your Decision Making?</h2>
+                <p class="cta-subtitle">Join thousands of teams already using {{ app_name }} for better collective decisions</p>
+                <div class="cta-actions">
+                    <button class="btn-cta-primary" onclick="showRegisterModal()">
+                        Create Your First Vote
+                        <span class="btn-icon" aria-hidden="true">🚀</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="modern-footer" role="contentinfo">
+        <div class="footer-container">
+            <div class="footer-content">
+                <div class="footer-brand">
+                    <div class="brand-icon" aria-hidden="true">🗳️</div>
+                    <span class="brand-name">{{ app_name }}</span>
+                </div>
+                <div class="footer-info">
+                    <span class="app-version" aria-label="Version {{ app_version }}">v{{ app_version }}</span>
+                    <span class="footer-separator" aria-hidden="true">•</span>
+                    <span class="footer-text">Professional Voting Platform</span>
+                    <span class="footer-separator" aria-hidden="true">•</span>
+                    <span class="status-badge active" aria-label="System status: operational">🟢 Operational</span>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2025 {{ app_name }}. Empowering better decisions through intelligent voting.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Login Modal -->
+    <div id="loginModal" class="modal" role="dialog" aria-labelledby="login-modal-title" aria-hidden="true">
+        <div class="modal-backdrop" onclick="closeModal('loginModal')"></div>
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="login-modal-title">Welcome Back</h3>
+                <button class="modal-close" onclick="closeModal('loginModal')" aria-label="Close login form">
+                    <span aria-hidden="true">×</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="loginForm" class="auth-form">
+                    <div class="form-group">
+                        <label for="loginEmail" class="form-label">Email Address</label>
+                        <input type="email" id="loginEmail" class="form-input" required
+                               aria-describedby="login-email-help" autocomplete="email">
+                        <div id="login-email-help" class="form-help">Enter your registered email address</div>
+                    </div>
+                    <div class="form-group">
+                        <label for="loginPassword" class="form-label">Password</label>
+                        <input type="password" id="loginPassword" class="form-input" required
+                               aria-describedby="login-password-help" autocomplete="current-password">
+                        <div id="login-password-help" class="form-help">Enter your account password</div>
+                    </div>
+                    <div class="form-actions">
+                        <button type="submit" class="btn-form-primary">
+                            Sign In
+                            <div class="btn-loading" aria-hidden="true"></div>
+                        </button>
+                        <button type="button" class="btn-form-text" onclick="showForgotPassword()">
+                            Forgot Password?
+                        </button>
+                    </div>
+                </form>
+                <div class="auth-divider">
+                    <span>Don't have an account?</span>
+                    <button class="btn-link" onclick="switchToRegister()">Sign up here</button>
+                </div>
+            </div>
+        </div>
     </div>
 
-    <style>
-        .platform-header {
-            text-align: center;
-            margin: 2rem 0;
-        }
+    <!-- Register Modal -->
+    <div id="registerModal" class="modal" role="dialog" aria-labelledby="register-modal-title" aria-hidden="true">
+        <div class="modal-backdrop" onclick="closeModal('registerModal')"></div>
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="register-modal-title">Create Your Account</h3>
+                <button class="modal-close" onclick="closeModal('registerModal')" aria-label="Close registration form">
+                    <span aria-hidden="true">×</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="registerForm" class="auth-form">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="registerFirstName" class="form-label">First Name</label>
+                            <input type="text" id="registerFirstName" class="form-input" required
+                                   aria-describedby="register-firstname-help" autocomplete="given-name">
+                            <div id="register-firstname-help" class="form-help">Your first name</div>
+                        </div>
+                        <div class="form-group">
+                            <label for="registerLastName" class="form-label">Last Name</label>
+                            <input type="text" id="registerLastName" class="form-input" required
+                                   aria-describedby="register-lastname-help" autocomplete="family-name">
+                            <div id="register-lastname-help" class="form-help">Your last name</div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="registerEmail" class="form-label">Email Address</label>
+                        <input type="email" id="registerEmail" class="form-input" required
+                               aria-describedby="register-email-help" autocomplete="email">
+                        <div id="register-email-help" class="form-help">We'll use this for account notifications</div>
+                    </div>
+                    <div class="form-group">
+                        <label for="registerPassword" class="form-label">Password</label>
+                        <input type="password" id="registerPassword" class="form-input" required
+                               aria-describedby="register-password-help" autocomplete="new-password">
+                        <div id="register-password-help" class="form-help">At least 8 characters with mixed case and numbers</div>
+                    </div>
+                    <div class="form-actions">
+                        <button type="submit" class="btn-form-primary">
+                            Create Account
+                            <div class="btn-loading" aria-hidden="true"></div>
+                        </button>
+                    </div>
+                </form>
+                <div class="auth-divider">
+                    <span>Already have an account?</span>
+                    <button class="btn-link" onclick="switchToLogin()">Sign in here</button>
+                </div>
+            </div>
+        </div>
+    </div>
 
-        .platform-header h1 {
-            color: #2D5820;
-            margin-bottom: 0.5rem;
-        }
+    <!-- Success Toast -->
+    <div id="successToast" class="toast success" role="alert" aria-live="polite">
+        <div class="toast-icon" aria-hidden="true">✅</div>
+        <div class="toast-content">
+            <div class="toast-title">Success!</div>
+            <div class="toast-message"></div>
+        </div>
+        <button class="toast-close" onclick="hideToast('successToast')" aria-label="Close notification">×</button>
+    </div>
 
-        .platform-description {
-            color: #666;
-            font-size: 1.2rem;
-        }
+    <!-- Error Toast -->
+    <div id="errorToast" class="toast error" role="alert" aria-live="assertive">
+        <div class="toast-icon" aria-hidden="true">❌</div>
+        <div class="toast-content">
+            <div class="toast-title">Error</div>
+            <div class="toast-message"></div>
+        </div>
+        <button class="toast-close" onclick="hideToast('errorToast')" aria-label="Close error">×</button>
+    </div>
 
-        .landing-content {
-            max-width: 800px;
-            margin: 0 auto;
-            padding: 0 1rem;
-        }
-
-        .platform-info h2 {
-            color: #2D5820;
-            border-bottom: 2px solid #2D5820;
-            padding-bottom: 0.5rem;
-        }
-
-        .features {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 1.5rem;
-            margin: 2rem 0;
-        }
-
-        .feature {
-            background: #f9f9f9;
-            padding: 1.5rem;
-            border-radius: 8px;
-            border-left: 4px solid #2D5820;
-        }
-
-        .feature h3 {
-            margin-top: 0;
-            color: #2D5820;
-        }
-
-        .steps {
-            background: #f0f8ff;
-            padding: 1.5rem;
-            border-radius: 8px;
-            margin: 1rem 0;
-        }
-
-        .step {
-            margin: 1rem 0;
-            padding: 0.5rem 0;
-        }
-
-        .step code {
-            background: #e9ecef;
-            padding: 0.2rem 0.4rem;
-            border-radius: 4px;
-            font-family: monospace;
-        }
-
-        .platform-status {
-            background: #e8f5e8;
-            padding: 1rem;
-            border-radius: 8px;
-            margin: 2rem 0;
-        }
-
-        .status-active {
-            color: #28a745;
-            font-weight: bold;
-        }
-
-        .platform-footer {
-            text-align: center;
-            margin-top: 3rem;
-            padding: 2rem 0 1rem;
-            border-top: 1px solid #ddd;
-            color: #666;
-            font-size: 0.9rem;
-        }
-
-        @media (max-width: 768px) {
-            .features {
-                grid-template-columns: 1fr;
-            }
-        }
-    </style>
+    <script src="/static/landing.js" defer></script>
 </body>
 </html>

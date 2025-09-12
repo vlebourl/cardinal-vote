@@ -114,7 +114,7 @@ class PublicVotingApp {
       // Add event listener for mock CAPTCHA
       const mockCheckbox = document.getElementById('mock-captcha-checkbox')
       if (mockCheckbox) {
-        mockCheckbox.addEventListener('change', (e) => {
+        mockCheckbox.addEventListener('change', e => {
           if (e.target.checked) {
             this.captchaResponse = 'MOCK_SUCCESS_TOKEN'
             this.onCaptchaSuccess()
@@ -720,7 +720,7 @@ class PublicVotingApp {
       if (result.success) {
         this.showSuccessScreen(result.message)
       } else {
-        throw new Error(result.message || "Error submitting vote")
+        throw new Error(result.message || 'Error submitting vote')
       }
     } catch (error) {
       console.error('Error submitting vote:', error)
@@ -731,9 +731,9 @@ class PublicVotingApp {
       } else if (error.message.includes('Failed to fetch') || error.message.includes('NetworkError')) {
         errorMessage = 'Connection error. Check your internet connection and try again.'
       } else if (error.message.includes('already voted') || error.message.includes('already been submitted')) {
-        errorMessage = "You have already voted. Each person can only vote once."
+        errorMessage = 'You have already voted. Each person can only vote once.'
       } else {
-        errorMessage = error.message || "Error submitting vote"
+        errorMessage = error.message || 'Error submitting vote'
       }
 
       this.showError(errorMessage)
