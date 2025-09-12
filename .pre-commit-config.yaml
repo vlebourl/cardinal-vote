@@ -20,38 +20,32 @@ repos:
       - id: check-executables-have-shebangs
       - id: check-shebang-scripts-are-executable
 
-  # Ruff for fast Python linting and formatting
-  - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.12.12
+  # Python quality checks (match CI pipeline exactly)
+  - repo: local
     hooks:
-      # Run the linter
-      - id: ruff
-        args: [--fix, --exit-non-zero-on-fix]
-        types_or: [python, pyi, jupyter]
-      # Run the formatter
-      - id: ruff-format
-        types_or: [python, pyi, jupyter]
+      # Python linting (matches CI: uv run ruff check src/)
+      - id: ruff-check
+        name: Run Python linting (ruff)
+        entry: uv run ruff check src/
+        language: system
+        files: ^src/.*\.py$
+        pass_filenames: false
 
-  # MyPy for type checking (STRICT MODE - NO IGNORING ALLOWED)
-  - repo: https://github.com/pre-commit/mirrors-mypy
-    rev: v1.17.1
-    hooks:
-      - id: mypy
-        files: ^src/
-        additional_dependencies:
-          - types-requests
-          - types-Pillow
-          - types-aiofiles
-          - types-psutil
-          - types-python-jose
-          - types-passlib
-          - sqlalchemy[mypy]
-          - pydantic
-          - fastapi
-          - uvicorn
-          - aiosmtplib
-          - httpx
-        args: [--config-file=mypy.ini]
+      # Python formatting check (matches CI: uv run ruff format --check src/)
+      - id: ruff-format-check
+        name: Run Python formatting check (ruff format)
+        entry: uv run ruff format --check src/
+        language: system
+        files: ^src/.*\.py$
+        pass_filenames: false
+
+      # Type checking (matches CI: uv run mypy src/)
+      - id: mypy-check
+        name: Run type checking (mypy)
+        entry: uv run mypy src/
+        language: system
+        files: ^src/.*\.py$
+        pass_filenames: false
 
   # Security checks (STRICT MODE - NO IGNORING ALLOWED)
   - repo: https://github.com/PyCQA/bandit
@@ -78,29 +72,32 @@ repos:
   # JavaScript quality checks (match CI pipeline exactly)
   - repo: local
     hooks:
-      # ESLint for JavaScript linting (matches CI: npm run lint)
+      # JavaScript linting (matches CI: npm run lint)
       - id: eslint
         name: Run JavaScript linting (ESLint)
         entry: npm run lint
         language: system
         files: \.(js|jsx)$
+        pass_filenames: false
         require_serial: false
 
-      # Prettier for JavaScript formatting (fixes formatting automatically)
-      - id: prettier-js
-        name: Run JavaScript formatting (Prettier)
-        entry: npm run format
+      # JavaScript formatting check (matches CI: npm run format:check)
+      - id: prettier-check
+        name: Run JavaScript formatting check (Prettier)
+        entry: npm run format:check
         language: system
         files: \.(js|jsx|css)$
+        pass_filenames: false
         require_serial: false
 
-      # Jest for JavaScript unit tests (temporarily skip in pre-commit, runs in CI)
-      # - id: jest
-      #   name: Run JavaScript unit tests (Jest)
-      #   entry: bash -c 'npm test -- --coverage --verbose'
-      #   language: system
-      #   files: \.(js|jsx)$
-      #   require_serial: true
+      # JavaScript unit tests (matches CI: npm test -- --coverage --verbose)
+      - id: jest
+        name: Run JavaScript unit tests (Jest)
+        entry: npm test -- --coverage --verbose
+        language: system
+        files: \.(js|jsx)$
+        pass_filenames: false
+        require_serial: true
 
   # YAML formatting
   - repo: https://github.com/pre-commit/mirrors-prettier
