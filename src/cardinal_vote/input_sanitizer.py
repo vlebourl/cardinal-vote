@@ -38,7 +38,9 @@ class InputSanitizer:
 
     # Pre-compiled dangerous patterns for better performance
     DANGEROUS_PATTERNS = [
-        re.compile(r"<script[^>]*>.*?</script>", re.IGNORECASE | re.DOTALL),  # Script tags
+        re.compile(
+            r"<script[^>]*>.*?</script>", re.IGNORECASE | re.DOTALL
+        ),  # Script tags
         re.compile(r"javascript:", re.IGNORECASE),  # JavaScript protocol
         re.compile(r"on\w+\s*=", re.IGNORECASE),  # Event handlers
         re.compile(r"data:text/html", re.IGNORECASE),  # Data URLs with HTML
@@ -97,7 +99,9 @@ class InputSanitizer:
         # Check for dangerous patterns (now pre-compiled)
         for pattern in cls.DANGEROUS_PATTERNS:
             if pattern.search(text):
-                logger.warning(f"Dangerous pattern detected in {field_name}: {pattern.pattern}")
+                logger.warning(
+                    f"Dangerous pattern detected in {field_name}: {pattern.pattern}"
+                )
                 text = pattern.sub("", text)
 
         # Escape HTML if not allowed
@@ -136,8 +140,7 @@ class InputSanitizer:
         # Remove null bytes and control characters only (not full text sanitization)
         email = email.replace("\x00", "")
         email = "".join(
-            char for char in email
-            if not unicodedata.category(char).startswith("C")
+            char for char in email if not unicodedata.category(char).startswith("C")
         )
 
         # Basic email validation (now using pre-compiled pattern)
