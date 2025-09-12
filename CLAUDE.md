@@ -78,6 +78,7 @@ git checkout -b feature/database  # ❌ Wrong naming convention
 
 ### Core Principles
 
+0. **SOLID design principles** - read the docs/context/SOLID.md file and make sure you always follow the guidelines
 1. **Main branch is always deployable**
 2. **ZERO EXCEPTIONS: NO direct pushes to main** - ALL changes via PRs
 3. **Feature branches for EVERY change** - including documentation, README, typos
