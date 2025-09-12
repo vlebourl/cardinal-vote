@@ -1,0 +1,56 @@
+// JWT token management for API calls
+window.apiConfig = {
+    baseURL: '/api/admin',
+    headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${localStorage.getItem('jwt_token') || ''}`
+    }
+};
+
+// Add authorization header to all fetch requests
+const originalFetch = window.fetch;
+window.fetch = function(url, options = {}) {
+    const token = localStorage.getItem('jwt_token');
+    if (token && !options.headers?.Authorization) {
+        options.headers = {
+            ...options.headers,
+            'Authorization': `Bearer ${token}`
+        };
+    }
+    return originalFetch(url, options);
+};
+
+// Handle authentication errors
+function handleAuthError(response) {
+    if (response.status === 401) {
+        localStorage.removeItem('jwt_token');
+        window.location.href = '/login';
+        return true;
+    }
+    return false;
+}
+
+// Logout functionality
+function initializeLogoutHandler() {
+    const logoutBtn = document.getElementById('logoutBtn');
+    if (logoutBtn) {
+        logoutBtn.addEventListener('click', async function() {
+            if (confirm('Are you sure you want to logout?')) {
+                try {
+                    // Clear JWT token
+                    localStorage.removeItem('jwt_token');
+
+                    // Redirect to login
+                    window.location.href = '/login';
+
+                } catch (error) {
+                    console.error('Logout error:', error);
+                    showMessage('Error during logout', 'error');
+                }
+            }
+        });
+    }
+}
+
+// Initialize when DOM is loaded
+document.addEventListener('DOMContentLoaded', initializeLogoutHandler);

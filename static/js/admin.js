@@ -17,10 +17,15 @@ window.AdminUtils = {
     if (type === 'success') icon = 'fa-check-circle'
     else if (type === 'error') icon = 'fa-exclamation-circle'
 
-    messageDiv.innerHTML = `
-            <i class="fas ${icon}"></i>
-            <span>${message}</span>
-        `
+    // Create elements safely to avoid XSS
+    const iconElement = document.createElement('i');
+    iconElement.className = `fas ${icon}`;
+
+    const spanElement = document.createElement('span');
+    spanElement.textContent = message; // Use textContent to prevent XSS
+
+    messageDiv.appendChild(iconElement);
+    messageDiv.appendChild(spanElement);
 
     messageContainer.appendChild(messageDiv)
 
