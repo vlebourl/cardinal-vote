@@ -3,6 +3,14 @@
  * Replaces inline onclick handlers to remove 'unsafe-inline' from CSP
  */
 
+/* global showLoginModal, showRegisterModal, scrollToFeatures, closeModal */
+/* global showForgotPassword, switchToRegister, switchToLogin, hideToast */
+/* global openUserManagement, bulkVerifyUsers, exportSystemStats, viewAuditLog */
+/* global switchTab, refreshPendingFlags, executeBulkAction, clearBulkForm */
+/* global closeFlagReviewModal, submitFlagReview, closeVoteActionModal */
+/* global submitModerationAction, reviewFlag, viewVoteDetails, takeVoteAction */
+/* global viewVoteModeration, filterFlaggedVotes */
+
 document.addEventListener('DOMContentLoaded', function () {
   // Landing page event handlers
   initializeLandingHandlers()
@@ -41,10 +49,11 @@ function initializeLandingHandlers() {
         break
 
       // Modal controls
-      case 'close-modal':
+      case 'close-modal': {
         const modalId = e.target.getAttribute('data-modal')
         if (modalId && typeof closeModal === 'function') closeModal(modalId)
         break
+      }
 
       // Form actions
       case 'show-forgot-password':
@@ -58,10 +67,11 @@ function initializeLandingHandlers() {
         break
 
       // Toast controls
-      case 'hide-toast':
+      case 'hide-toast': {
         const toastId = e.target.getAttribute('data-toast')
         if (toastId && typeof hideToast === 'function') hideToast(toastId)
         break
+      }
     }
   })
 }
@@ -93,10 +103,11 @@ function initializeSuperAdminHandlers() {
         break
 
       // Tab switching
-      case 'switch-tab':
+      case 'switch-tab': {
         const tabName = e.target.getAttribute('data-tab')
         if (tabName && typeof switchTab === 'function') switchTab(tabName)
         break
+      }
 
       // Moderation actions
       case 'refresh-pending-flags':
@@ -124,22 +135,26 @@ function initializeSuperAdminHandlers() {
         break
 
       // Dynamic content actions
-      case 'review-flag':
+      case 'review-flag': {
         const flagId = e.target.getAttribute('data-flag-id')
         if (flagId && typeof reviewFlag === 'function') reviewFlag(flagId)
         break
-      case 'view-vote-details':
+      }
+      case 'view-vote-details': {
         const voteId = e.target.getAttribute('data-vote-id')
         if (voteId && typeof viewVoteDetails === 'function') viewVoteDetails(voteId)
         break
-      case 'take-vote-action':
+      }
+      case 'take-vote-action': {
         const actionVoteId = e.target.getAttribute('data-vote-id')
         if (actionVoteId && typeof takeVoteAction === 'function') takeVoteAction(actionVoteId)
         break
-      case 'view-vote-moderation':
+      }
+      case 'view-vote-moderation': {
         const modVoteId = e.target.getAttribute('data-vote-id')
         if (modVoteId && typeof viewVoteModeration === 'function') viewVoteModeration(modVoteId)
         break
+      }
     }
   })
 
@@ -189,7 +204,7 @@ function refreshEventHandlers(container) {
 
   // Find all elements with data-action attributes in the new content
   const actionElements = container.querySelectorAll('[data-action]')
-  actionElements.forEach(element => {
+  actionElements.forEach(() => {
     // The global click handler will handle these automatically
     // But we can add specific initialization here if needed
   })
