@@ -18,6 +18,7 @@ from .dependencies import (
     CurrentUser,
 )
 from .image_service import ImageService, get_image_service
+from .input_sanitizer import InputSanitizer
 from .models import (
     GeneralizedVoteSubmissionResponse,
     Vote,
@@ -108,11 +109,28 @@ async def create_vote(
                     detail="A vote with this slug already exists",
                 )
 
+        # Sanitize vote data inputs
+        sanitized_title = InputSanitizer.sanitize_text(
+            vote_data.title, field_name="vote_title"
+        )
+        sanitized_description = None
+        if vote_data.description:
+            sanitized_description = InputSanitizer.sanitize_text(
+                vote_data.description, field_name="vote_description"
+            )
+
+        # Validate sanitized inputs
+        if not sanitized_title:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Invalid title format provided",
+            )
+
         # Create the vote
         vote = Vote(
             creator_id=current_user.id,
-            title=vote_data.title,
-            description=vote_data.description,
+            title=sanitized_title,
+            description=sanitized_description,
             slug=slug,
             starts_at=vote_data.starts_at,
             ends_at=vote_data.ends_at,
@@ -657,12 +675,27 @@ async def submit_authenticated_vote(
                 detail="Invalid option IDs provided",
             )
 
+        # Sanitize voter name inputs to prevent XSS and injection attacks
+        sanitized_first_name = InputSanitizer.sanitize_text(
+            response_data.voter_first_name, field_name="first_name"
+        )
+        sanitized_last_name = InputSanitizer.sanitize_text(
+            response_data.voter_last_name, field_name="last_name"
+        )
+
+        # Validate sanitized inputs
+        if not sanitized_first_name or not sanitized_last_name:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Invalid name format provided",
+            )
+
         # Create authenticated voter response
         voter_response = VoterResponse(
             vote_id=vote_uuid,  # type: ignore[arg-type]
             user_id=current_user.id,  # Link to authenticated user
-            voter_first_name=response_data.voter_first_name,
-            voter_last_name=response_data.voter_last_name,
+            voter_first_name=sanitized_first_name,
+            voter_last_name=sanitized_last_name,
             voter_ip=None,  # Not needed for authenticated users
             responses=response_data.responses,  # JSONB field
         )
@@ -762,12 +795,27 @@ async def submit_anonymous_vote(
                 detail="Invalid option IDs provided",
             )
 
+        # Sanitize voter name inputs to prevent XSS and injection attacks
+        sanitized_first_name = InputSanitizer.sanitize_text(
+            response_data.voter_first_name, field_name="first_name"
+        )
+        sanitized_last_name = InputSanitizer.sanitize_text(
+            response_data.voter_last_name, field_name="last_name"
+        )
+
+        # Validate sanitized inputs
+        if not sanitized_first_name or not sanitized_last_name:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Invalid name format provided",
+            )
+
         # Create anonymous voter response with IP tracking
         voter_response = VoterResponse(
             vote_id=vote.id,
             user_id=None,  # Anonymous user
-            voter_first_name=response_data.voter_first_name,
-            voter_last_name=response_data.voter_last_name,
+            voter_first_name=sanitized_first_name,
+            voter_last_name=sanitized_last_name,
             voter_ip=client_ip,  # Store IP for duplicate prevention
             responses=response_data.responses,  # JSONB field
         )

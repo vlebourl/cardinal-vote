@@ -69,16 +69,16 @@
 
     <!-- Navigation Tabs -->
     <div class="moderation-tabs">
-        <button class="tab-btn active" onclick="switchTab('pending-flags')">
+        <button class="tab-btn active" data-action="switch-tab" data-tab="pending-flags">
             <i class="fas fa-flag"></i> Pending Flags
         </button>
-        <button class="tab-btn" onclick="switchTab('flagged-votes')">
+        <button class="tab-btn" data-action="switch-tab" data-tab="flagged-votes">
             <i class="fas fa-exclamation-triangle"></i> Flagged Votes
         </button>
-        <button class="tab-btn" onclick="switchTab('moderation-log')">
+        <button class="tab-btn" data-action="switch-tab" data-tab="moderation-log">
             <i class="fas fa-history"></i> Moderation Log
         </button>
-        <button class="tab-btn" onclick="switchTab('bulk-actions')">
+        <button class="tab-btn" data-action="switch-tab" data-tab="bulk-actions">
             <i class="fas fa-tasks"></i> Bulk Actions
         </button>
     </div>
@@ -92,7 +92,7 @@
                     Pending Flags
                 </h2>
                 <div class="card-actions">
-                    <button class="btn-secondary" onclick="refreshPendingFlags()">
+                    <button class="btn-secondary" data-action="refresh-pending-flags">
                         <i class="fas fa-sync-alt"></i> Refresh
                     </button>
                 </div>
@@ -117,7 +117,7 @@
                     Flagged Votes
                 </h2>
                 <div class="card-filters">
-                    <select id="flagStatusFilter" onchange="filterFlaggedVotes()">
+                    <select id="flagStatusFilter" data-action="filter-flagged-votes">
                         <option value="">All Flags</option>
                         <option value="pending">Pending Only</option>
                         <option value="approved">Approved</option>
@@ -195,10 +195,10 @@
                     </div>
 
                     <div class="form-actions">
-                        <button class="btn-primary" onclick="executeBulkAction()" id="bulkActionBtn">
+                        <button class="btn-primary" data-action="execute-bulk-action" id="bulkActionBtn">
                             <i class="fas fa-bolt"></i> Execute Bulk Action
                         </button>
-                        <button class="btn-secondary" onclick="clearBulkForm()">
+                        <button class="btn-secondary" data-action="clear-bulk-form">
                             Clear Form
                         </button>
                     </div>
@@ -213,7 +213,7 @@
     <div class="modal-content">
         <div class="modal-header">
             <h3>Review Flag</h3>
-            <span class="close" onclick="closeFlagReviewModal()">&times;</span>
+            <span class="close" data-action="close-flag-review-modal">&times;</span>
         </div>
         <div class="modal-body">
             <div id="flagDetails" class="flag-details"></div>
@@ -236,8 +236,8 @@
             </div>
         </div>
         <div class="modal-footer">
-            <button class="btn-primary" onclick="submitFlagReview()">Submit Review</button>
-            <button class="btn-secondary" onclick="closeFlagReviewModal()">Cancel</button>
+            <button class="btn-primary" data-action="submit-flag-review">Submit Review</button>
+            <button class="btn-secondary" data-action="close-flag-review-modal">Cancel</button>
         </div>
     </div>
 </div>
@@ -247,7 +247,7 @@
     <div class="modal-content">
         <div class="modal-header">
             <h3>Take Moderation Action</h3>
-            <span class="close" onclick="closeVoteActionModal()">&times;</span>
+            <span class="close" data-action="close-vote-action-modal">&times;</span>
         </div>
         <div class="modal-body">
             <div id="voteDetails" class="vote-details"></div>
@@ -272,8 +272,8 @@
             </div>
         </div>
         <div class="modal-footer">
-            <button class="btn-primary" onclick="submitModerationAction()">Take Action</button>
-            <button class="btn-secondary" onclick="closeVoteActionModal()">Cancel</button>
+            <button class="btn-primary" data-action="submit-moderation-action">Take Action</button>
+            <button class="btn-secondary" data-action="close-vote-action-modal">Cancel</button>
         </div>
     </div>
 </div>

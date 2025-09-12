@@ -3370,3 +3370,12 @@ input[type='text']::placeholder {
     display: none;
   }
 }
+
+/* Utility classes to replace inline styles */
+.hidden {
+  display: none !important;
+}
+
+.progress-fill-67 {
+  width: 67%;
+}

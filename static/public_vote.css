@@ -720,3 +720,12 @@
     font-size: 0.8rem;
   }
 }
+
+/* Utility classes to replace inline styles */
+.hidden {
+  display: none !important;
+}
+
+.progress-fill-67 {
+  width: 67%;
+}

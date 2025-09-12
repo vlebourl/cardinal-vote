@@ -24,6 +24,7 @@ from .config import settings
 # DatabaseError now imported from models with other exceptions
 from .database_manager import GeneralizedDatabaseManager
 from .dependencies import AsyncDatabaseSession
+from .env_validator import validate_environment
 from .models import (
     DatabaseError,
     ValidationError,
@@ -50,6 +51,12 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
 
     # Startup
     logger.info(f"Starting {settings.APP_NAME} v{settings.APP_VERSION}")
+
+    # Run comprehensive environment validation
+    logger.info("Running environment validation...")
+    if not validate_environment(exit_on_critical=True):
+        logger.critical("Environment validation failed. Check configuration.")
+        raise RuntimeError("Environment validation failed")
 
     try:
         # Validate PostgreSQL configuration
@@ -101,8 +108,8 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
         # Content Security Policy - tailored for our modern UI
         csp_directives = [
             "default-src 'self'",
-            "script-src 'self' 'unsafe-inline'",  # Allow inline scripts for our auth modals
-            "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",  # Inter font + our styles
+            "script-src 'self'",  # No inline scripts - using data attributes and event delegation
+            "style-src 'self' https://fonts.googleapis.com",  # Inter font + our styles
             "font-src 'self' https://fonts.gstatic.com",  # Inter font from Google Fonts
             "img-src 'self' data: blob:",  # Allow images and data URLs for uploads
             "connect-src 'self'",  # API calls to same origin
