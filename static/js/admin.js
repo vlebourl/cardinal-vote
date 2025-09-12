@@ -17,10 +17,15 @@ window.AdminUtils = {
     if (type === 'success') icon = 'fa-check-circle'
     else if (type === 'error') icon = 'fa-exclamation-circle'
 
-    messageDiv.innerHTML = `
-            <i class="fas ${icon}"></i>
-            <span>${message}</span>
-        `
+    // Create elements safely without innerHTML
+    const iconElement = document.createElement('i')
+    iconElement.className = `fas ${icon}`
+
+    const messageSpan = document.createElement('span')
+    messageSpan.textContent = message // Safe text content, not innerHTML
+
+    messageDiv.appendChild(iconElement)
+    messageDiv.appendChild(messageSpan)
 
     messageContainer.appendChild(messageDiv)
 
