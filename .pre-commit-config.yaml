@@ -75,11 +75,39 @@ repos:
       - id: hadolint-docker
         args: [--ignore, DL3008, --ignore, DL3009] # Allow apt without version pins for base images
 
+  # JavaScript quality checks (match CI pipeline exactly)
+  - repo: local
+    hooks:
+      # ESLint for JavaScript linting (matches CI: npm run lint)
+      - id: eslint
+        name: Run JavaScript linting (ESLint)
+        entry: npm run lint
+        language: system
+        files: \.(js|jsx)$
+        require_serial: false
+
+      # Prettier for JavaScript formatting (matches CI: npm run format:check)
+      - id: prettier-js
+        name: Run JavaScript formatting check (Prettier)
+        entry: npm run format:check
+        language: system
+        files: \.(js|jsx|css)$
+        require_serial: false
+
+      # Jest for JavaScript unit tests (matches CI: npm test)
+      - id: jest
+        name: Run JavaScript unit tests (Jest)
+        entry: bash -c 'npm test -- --coverage --verbose'
+        language: system
+        files: \.(js|jsx)$
+        require_serial: true
+
   # YAML formatting
   - repo: https://github.com/pre-commit/mirrors-prettier
     rev: v4.0.0-alpha.8
     hooks:
       - id: prettier
+        name: Format YAML/JSON/MD files
         files: \.(yaml|yml|json|md)$
         args: [--tab-width=2, --print-width=100]
 
