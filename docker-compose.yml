@@ -13,9 +13,10 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - ./scripts/init_db.sql:/docker-entrypoint-initdb.d/01_init.sql:ro
-    # Port exposure commented out for security - uncomment only for local development
-    # ports:
-    #   - '5432:5432'
+    # Database port NOT exposed by default for security
+    # The app connects internally via Docker network (postgres:5432)
+    # To access database from host (pgAdmin, psql, etc), use docker-compose.override.yml
+    # See README.md "Docker Database Configuration" section for details
     healthcheck:
       test: ['CMD-SHELL', 'pg_isready -U ${POSTGRES_USER:-voting_user} -d ${POSTGRES_DB:-voting_platform}']
       interval: 10s

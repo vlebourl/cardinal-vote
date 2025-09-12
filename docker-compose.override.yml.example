@@ -21,7 +21,7 @@ services:
       dockerfile: Dockerfile
       target: production
 
-  # For development, you might want to expose postgres port
+  # For development, expose postgres port for database tools (pgAdmin, psql, etc.)
   postgres:
     ports:
-      - '5432:5432'
+      - '5432:5432'  # Allows connecting from host machine

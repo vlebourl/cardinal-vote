@@ -175,6 +175,35 @@ uv run pre-commit run ruff --all-files
 - 👑 **Super Admin**: http://localhost:8000/super-admin
 - 🔍 **API Documentation**: http://localhost:8000/docs
 
+### Docker Database Configuration
+
+By default, the PostgreSQL database is **not exposed** to the host for security reasons. The application connects internally through Docker's network.
+
+**For production:** No changes needed - database remains isolated.
+
+**For development** (if you need database access with pgAdmin, psql, etc.):
+
+```bash
+# Copy the development override configuration
+cp docker-compose.override.yml.example docker-compose.override.yml
+
+# Now start with database port exposed on localhost:5432
+docker compose up -d
+
+# Connect with your database tool to:
+# Host: localhost
+# Port: 5432
+# Database: voting_platform
+# User: voting_user
+```
+
+The override file also enables:
+- Live code reload with volume mounts
+- Debug mode
+- PostgreSQL port exposure for database tools
+
+**Security Note:** Never commit `docker-compose.override.yml` to version control as it may contain development-specific settings.
+
 ## 🏗️ Architecture Overview
 
 ```
