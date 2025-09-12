@@ -20,6 +20,21 @@ const mockLocalStorage = {
   })
 }
 
+// Make localStorage mock work properly
+Object.defineProperty(mockLocalStorage, 'getItem', {
+  value: jest.fn(key => mockLocalStorage.storage[key] || null)
+})
+Object.defineProperty(mockLocalStorage, 'setItem', {
+  value: jest.fn((key, value) => {
+    mockLocalStorage.storage[key] = value
+  })
+})
+Object.defineProperty(mockLocalStorage, 'removeItem', {
+  value: jest.fn(key => {
+    delete mockLocalStorage.storage[key]
+  })
+})
+
 // Mock fetch
 const mockFetch = jest.fn()
 
@@ -38,20 +53,20 @@ Object.defineProperty(global, 'location', {
 
 // Mock admin auth functions (simulating the actual implementation)
 function authenticatedFetch(url, options = {}) {
-  const token = localStorage.getItem('jwt_token')
+  const token = mockLocalStorage.getItem('jwt_token')
   if (token && !options.headers?.Authorization) {
     options.headers = {
       ...options.headers,
       Authorization: `Bearer ${token}`
     }
   }
-  return fetch(url, options)
+  return mockFetch(url, options)
 }
 
 function handleAuthError(response) {
   if (response.status === 401) {
-    localStorage.removeItem('jwt_token')
-    window.location.href = '/login'
+    mockLocalStorage.removeItem('jwt_token')
+    mockLocation.href = '/login'
     return true
   }
   return false
@@ -165,23 +180,23 @@ describe('Admin Authentication', () => {
 
   describe('JWT Token Management', () => {
     test('should store and retrieve JWT tokens', () => {
-      // This tests the localStorage integration
-      localStorage.setItem('jwt_token', 'new-token')
+      // This tests the mockLocalStorage integration
+      mockLocalStorage.setItem('jwt_token', 'new-token')
 
-      expect(localStorage.getItem('jwt_token')).toBe('new-token')
+      expect(mockLocalStorage.getItem('jwt_token')).toBe('new-token')
       expect(mockLocalStorage.storage.jwt_token).toBe('new-token')
     })
 
     test('should remove JWT tokens', () => {
-      localStorage.setItem('jwt_token', 'token-to-remove')
-      localStorage.removeItem('jwt_token')
+      mockLocalStorage.setItem('jwt_token', 'token-to-remove')
+      mockLocalStorage.removeItem('jwt_token')
 
-      expect(localStorage.getItem('jwt_token')).toBe(null)
+      expect(mockLocalStorage.getItem('jwt_token')).toBe(null)
       expect(mockLocalStorage.storage.jwt_token).toBeUndefined()
     })
 
     test('should handle missing JWT tokens', () => {
-      expect(localStorage.getItem('jwt_token')).toBe(null)
+      expect(mockLocalStorage.getItem('jwt_token')).toBe(null)
     })
   })
 })
