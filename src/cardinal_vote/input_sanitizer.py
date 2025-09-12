@@ -18,9 +18,9 @@ class InputSanitizer:
 
     # Maximum lengths for different input types
     MAX_LENGTHS = {
-        "email": 254,           # RFC 5321
+        "email": 254,  # RFC 5321
         "username": 50,
-        "password": 128,        # Should be hashed anyway
+        "password": 128,  # Should be hashed anyway
         "first_name": 100,
         "last_name": 100,
         "vote_title": 200,
@@ -35,22 +35,27 @@ class InputSanitizer:
     # Dangerous patterns to block
     DANGEROUS_PATTERNS = [
         r"<script[^>]*>.*?</script>",  # Script tags
-        r"javascript:",                 # JavaScript protocol
-        r"on\w+\s*=",                  # Event handlers
-        r"data:text/html",             # Data URLs with HTML
-        r"vbscript:",                  # VBScript protocol
-        r"<iframe[^>]*>",              # Iframes
-        r"<object[^>]*>",              # Object tags
-        r"<embed[^>]*>",               # Embed tags
-        r"<applet[^>]*>",              # Applet tags
-        r"<link[^>]*>",                # Link tags (can load CSS)
-        r"<meta[^>]*>",                # Meta tags
-        r"<base[^>]*>",                # Base tags
+        r"javascript:",  # JavaScript protocol
+        r"on\w+\s*=",  # Event handlers
+        r"data:text/html",  # Data URLs with HTML
+        r"vbscript:",  # VBScript protocol
+        r"<iframe[^>]*>",  # Iframes
+        r"<object[^>]*>",  # Object tags
+        r"<embed[^>]*>",  # Embed tags
+        r"<applet[^>]*>",  # Applet tags
+        r"<link[^>]*>",  # Link tags (can load CSS)
+        r"<meta[^>]*>",  # Meta tags
+        r"<base[^>]*>",  # Base tags
     ]
 
     @classmethod
-    def sanitize_text(cls, text: str, max_length: int | None = None,
-                     allow_html: bool = False, field_name: str = "text") -> str:
+    def sanitize_text(
+        cls,
+        text: str,
+        max_length: int | None = None,
+        allow_html: bool = False,
+        field_name: str = "text",
+    ) -> str:
         """
         Sanitize general text input
 
@@ -77,7 +82,8 @@ class InputSanitizer:
 
         # Strip control characters except newlines and tabs
         text = "".join(
-            char for char in text
+            char
+            for char in text
             if char in "\n\r\t" or not unicodedata.category(char).startswith("C")
         )
 
@@ -124,7 +130,7 @@ class InputSanitizer:
         email = cls.sanitize_text(email, field_name="email", allow_html=False)
 
         # Basic email validation
-        email_pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
+        email_pattern = r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$"
         if not re.match(email_pattern, email):
             logger.warning(f"Invalid email format: {email[:50]}")
             return ""
@@ -168,7 +174,7 @@ class InputSanitizer:
 
         # Apply max length
         if len(username) > cls.MAX_LENGTHS["username"]:
-            username = username[:cls.MAX_LENGTHS["username"]]
+            username = username[: cls.MAX_LENGTHS["username"]]
 
         return username
 
@@ -270,13 +276,14 @@ class InputSanitizer:
 
         # Apply max length
         if len(slug) > cls.MAX_LENGTHS["session_slug"]:
-            slug = slug[:cls.MAX_LENGTHS["session_slug"]]
+            slug = slug[: cls.MAX_LENGTHS["session_slug"]]
 
         return slug
 
     @classmethod
-    def sanitize_integer(cls, value: Any, min_val: int = None,
-                        max_val: int = None, default: int = 0) -> int:
+    def sanitize_integer(
+        cls, value: Any, min_val: int = None, max_val: int = None, default: int = 0
+    ) -> int:
         """
         Sanitize integer input
 
@@ -303,8 +310,13 @@ class InputSanitizer:
         return result
 
     @classmethod
-    def sanitize_float(cls, value: Any, min_val: float = None,
-                      max_val: float = None, default: float = 0.0) -> float:
+    def sanitize_float(
+        cls,
+        value: Any,
+        min_val: float = None,
+        max_val: float = None,
+        default: float = 0.0,
+    ) -> float:
         """
         Sanitize float input
 
@@ -416,8 +428,7 @@ class InputSanitizer:
             elif isinstance(value, list):
                 # Recursively sanitize list items
                 sanitized[key] = [
-                    cls.sanitize_text(str(item), max_length=500)
-                    for item in value
+                    cls.sanitize_text(str(item), max_length=500) for item in value
                 ]
             elif isinstance(value, dict):
                 # Recursively sanitize nested dictionaries

@@ -12,15 +12,17 @@ from enum import Enum
 
 class ValidationLevel(Enum):
     """Validation severity levels"""
+
     CRITICAL = "critical"  # Application cannot start
-    ERROR = "error"        # Feature will not work
-    WARNING = "warning"    # Suboptimal but functional
-    INFO = "info"          # Informational
+    ERROR = "error"  # Feature will not work
+    WARNING = "warning"  # Suboptimal but functional
+    INFO = "info"  # Informational
 
 
 @dataclass
 class ValidationRule:
     """Validation rule for an environment variable"""
+
     name: str
     required: bool
     level: ValidationLevel
@@ -53,18 +55,22 @@ class EnvValidator:
         db_url = os.getenv("DATABASE_URL")
 
         if not db_url:
-            self.errors.append((
-                ValidationLevel.CRITICAL,
-                "DATABASE_URL is not set. Application cannot start without database configuration."
-            ))
+            self.errors.append(
+                (
+                    ValidationLevel.CRITICAL,
+                    "DATABASE_URL is not set. Application cannot start without database configuration.",
+                )
+            )
             return
 
         # Validate PostgreSQL URL format
         if not db_url.startswith(("postgresql://", "postgresql+asyncpg://")):
-            self.errors.append((
-                ValidationLevel.CRITICAL,
-                f"DATABASE_URL must be a PostgreSQL URL (got: {db_url[:30]}...)"
-            ))
+            self.errors.append(
+                (
+                    ValidationLevel.CRITICAL,
+                    f"DATABASE_URL must be a PostgreSQL URL (got: {db_url[:30]}...)",
+                )
+            )
             return
 
         # Check for common mistakes
@@ -78,28 +84,29 @@ class EnvValidator:
         # Parse and validate components
         try:
             from urllib.parse import urlparse
+
             parsed = urlparse(db_url)
 
             if not parsed.hostname:
-                self.errors.append((
-                    ValidationLevel.ERROR,
-                    "DATABASE_URL missing hostname"
-                ))
+                self.errors.append(
+                    (ValidationLevel.ERROR, "DATABASE_URL missing hostname")
+                )
 
             if not parsed.username:
                 self.warnings.append("DATABASE_URL missing username")
 
             if not parsed.password:
-                self.errors.append((
-                    ValidationLevel.ERROR,
-                    "DATABASE_URL missing password - database authentication will fail"
-                ))
+                self.errors.append(
+                    (
+                        ValidationLevel.ERROR,
+                        "DATABASE_URL missing password - database authentication will fail",
+                    )
+                )
 
         except Exception as e:
-            self.errors.append((
-                ValidationLevel.CRITICAL,
-                f"Invalid DATABASE_URL format: {e}"
-            ))
+            self.errors.append(
+                (ValidationLevel.CRITICAL, f"Invalid DATABASE_URL format: {e}")
+            )
 
     def _validate_security(self):
         """Validate security-critical environment variables"""
@@ -107,21 +114,27 @@ class EnvValidator:
         # JWT Secret Key
         jwt_secret = os.getenv("JWT_SECRET_KEY")
         if not jwt_secret:
-            self.errors.append((
-                ValidationLevel.CRITICAL,
-                "JWT_SECRET_KEY is not set. Required for authentication."
-            ))
+            self.errors.append(
+                (
+                    ValidationLevel.CRITICAL,
+                    "JWT_SECRET_KEY is not set. Required for authentication.",
+                )
+            )
         elif len(jwt_secret) < 32:
-            self.errors.append((
-                ValidationLevel.ERROR,
-                f"JWT_SECRET_KEY too short ({len(jwt_secret)} chars). Minimum 32 characters required for security."
-            ))
+            self.errors.append(
+                (
+                    ValidationLevel.ERROR,
+                    f"JWT_SECRET_KEY too short ({len(jwt_secret)} chars). Minimum 32 characters required for security.",
+                )
+            )
         elif jwt_secret == "test-jwt-secret-key" or "test" in jwt_secret.lower():
             if os.getenv("CARDINAL_ENV") == "production":
-                self.errors.append((
-                    ValidationLevel.CRITICAL,
-                    "JWT_SECRET_KEY contains 'test' in production. This is a security risk!"
-                ))
+                self.errors.append(
+                    (
+                        ValidationLevel.CRITICAL,
+                        "JWT_SECRET_KEY contains 'test' in production. This is a security risk!",
+                    )
+                )
 
         # Session Secret Key (legacy compatibility)
         session_secret = os.getenv("SESSION_SECRET_KEY")
@@ -133,10 +146,12 @@ class EnvValidator:
         # Super Admin Password
         super_admin_pass = os.getenv("SUPER_ADMIN_PASSWORD")
         if not super_admin_pass:
-            self.errors.append((
-                ValidationLevel.ERROR,
-                "SUPER_ADMIN_PASSWORD not set. Cannot create super admin account."
-            ))
+            self.errors.append(
+                (
+                    ValidationLevel.ERROR,
+                    "SUPER_ADMIN_PASSWORD not set. Cannot create super admin account.",
+                )
+            )
         else:
             self._validate_password_strength(super_admin_pass, "SUPER_ADMIN_PASSWORD")
 
@@ -156,10 +171,12 @@ class EnvValidator:
         weak_passwords = ["password", "admin", "123456", "test", "demo"]
         if any(weak in password.lower() for weak in weak_passwords):
             if os.getenv("CARDINAL_ENV") == "production":
-                self.errors.append((
-                    ValidationLevel.ERROR,
-                    f"{var_name} contains common weak pattern. High security risk in production!"
-                ))
+                self.errors.append(
+                    (
+                        ValidationLevel.ERROR,
+                        f"{var_name} contains common weak pattern. High security risk in production!",
+                    )
+                )
             else:
                 self.warnings.append(f"{var_name} contains weak pattern.")
 
@@ -186,10 +203,12 @@ class EnvValidator:
             smtp_password = os.getenv("SMTP_PASSWORD")
 
             if not smtp_host:
-                self.errors.append((
-                    ValidationLevel.ERROR,
-                    "EMAIL_BACKEND is 'smtp' but SMTP_HOST is not set"
-                ))
+                self.errors.append(
+                    (
+                        ValidationLevel.ERROR,
+                        "EMAIL_BACKEND is 'smtp' but SMTP_HOST is not set",
+                    )
+                )
 
             if not smtp_user or not smtp_password:
                 self.warnings.append(
@@ -204,14 +223,16 @@ class EnvValidator:
         # Super admin email
         super_admin_email = os.getenv("SUPER_ADMIN_EMAIL", "")
         if super_admin_email and not self._is_valid_email(super_admin_email):
-            self.errors.append((
-                ValidationLevel.ERROR,
-                f"SUPER_ADMIN_EMAIL has invalid format: {super_admin_email}"
-            ))
+            self.errors.append(
+                (
+                    ValidationLevel.ERROR,
+                    f"SUPER_ADMIN_EMAIL has invalid format: {super_admin_email}",
+                )
+            )
 
     def _is_valid_email(self, email: str) -> bool:
         """Basic email validation"""
-        pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
+        pattern = r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$"
         return bool(re.match(pattern, email))
 
     def _validate_application(self):
@@ -228,22 +249,25 @@ class EnvValidator:
         # Debug mode
         debug = os.getenv("DEBUG", "false").lower()
         if debug == "true" and env_mode == "production":
-            self.errors.append((
-                ValidationLevel.ERROR,
-                "DEBUG is enabled in production! This exposes sensitive information."
-            ))
+            self.errors.append(
+                (
+                    ValidationLevel.ERROR,
+                    "DEBUG is enabled in production! This exposes sensitive information.",
+                )
+            )
 
         # Port configuration
         port = os.getenv("PORT", "8000")
         try:
             port_num = int(port)
             if port_num < 1 or port_num > 65535:
-                self.warnings.append(f"PORT {port_num} is outside valid range (1-65535)")
+                self.warnings.append(
+                    f"PORT {port_num} is outside valid range (1-65535)"
+                )
         except ValueError:
-            self.errors.append((
-                ValidationLevel.ERROR,
-                f"PORT must be a number, got: {port}"
-            ))
+            self.errors.append(
+                (ValidationLevel.ERROR, f"PORT must be a number, got: {port}")
+            )
 
         # CORS configuration
         allowed_origins = os.getenv("ALLOWED_ORIGINS", "")
@@ -260,8 +284,7 @@ class EnvValidator:
         if os.getenv("ENABLE_RATE_LIMITING", "true").lower() == "false":
             if os.getenv("CARDINAL_ENV") == "production":
                 self.warnings.append(
-                    "Rate limiting is disabled in production. "
-                    "This may allow abuse."
+                    "Rate limiting is disabled in production. This may allow abuse."
                 )
 
         # File upload limits
@@ -274,23 +297,29 @@ class EnvValidator:
                     "This may cause memory issues."
                 )
         except ValueError:
-            self.warnings.append(f"MAX_FILE_SIZE_MB must be a number, got: {max_file_size}")
+            self.warnings.append(
+                f"MAX_FILE_SIZE_MB must be a number, got: {max_file_size}"
+            )
 
     def print_report(self):
         """Print validation report"""
-        print("\n" + "="*60)
+        print("\n" + "=" * 60)
         print("🔍 ENVIRONMENT VALIDATION REPORT")
-        print("="*60)
+        print("=" * 60)
 
         # Critical errors
-        critical_errors = [msg for level, msg in self.errors if level == ValidationLevel.CRITICAL]
+        critical_errors = [
+            msg for level, msg in self.errors if level == ValidationLevel.CRITICAL
+        ]
         if critical_errors:
             print("\n❌ CRITICAL ERRORS (Application cannot start):")
             for msg in critical_errors:
                 print(f"   • {msg}")
 
         # Regular errors
-        regular_errors = [msg for level, msg in self.errors if level == ValidationLevel.ERROR]
+        regular_errors = [
+            msg for level, msg in self.errors if level == ValidationLevel.ERROR
+        ]
         if regular_errors:
             print("\n❌ ERRORS (Features will not work):")
             for msg in regular_errors:
@@ -309,22 +338,22 @@ class EnvValidator:
                 print(f"   • {msg}")
 
         # Summary
-        print("\n" + "-"*60)
+        print("\n" + "-" * 60)
         if critical_errors:
             print("🚨 VALIDATION FAILED - Fix critical errors before starting")
-            print("-"*60 + "\n")
+            print("-" * 60 + "\n")
             return False
         elif regular_errors:
             print("⚠️  VALIDATION PASSED WITH ERRORS - Some features may not work")
-            print("-"*60 + "\n")
+            print("-" * 60 + "\n")
             return True
         elif self.warnings:
             print("✅ VALIDATION PASSED WITH WARNINGS")
-            print("-"*60 + "\n")
+            print("-" * 60 + "\n")
             return True
         else:
             print("✅ VALIDATION PASSED - All configurations are optimal")
-            print("-"*60 + "\n")
+            print("-" * 60 + "\n")
             return True
 
 

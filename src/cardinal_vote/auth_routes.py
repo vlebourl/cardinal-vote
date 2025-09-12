@@ -125,8 +125,7 @@ async def register_user(
         # Validate sanitized data
         if not sanitized_email:
             raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Invalid email format"
+                status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid email format"
             )
 
         # Create the user (password is validated but not sanitized)
@@ -195,8 +194,7 @@ async def login_user(
         sanitized_email = InputSanitizer.sanitize_email(form_data.username)
         if not sanitized_email:
             raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Invalid credentials"
+                status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid credentials"
             )
 
         # Authenticate user
@@ -261,8 +259,7 @@ async def login_user_json(
         sanitized_email = InputSanitizer.sanitize_email(user_data.email)
         if not sanitized_email:
             raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Invalid credentials"
+                status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid credentials"
             )
 
         # Authenticate user
