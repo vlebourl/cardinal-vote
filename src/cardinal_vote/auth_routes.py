@@ -128,10 +128,18 @@ async def register_user(
                 status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid email format"
             )
 
-        # Create the user (password is validated but not sanitized)
+        # Validate password length and security (prevent DoS via extremely long passwords)
+        sanitized_password = InputSanitizer.sanitize_password(user_data.password)
+        if not sanitized_password:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Password does not meet security requirements",
+            )
+
+        # Create the user (password will be hashed)
         user = await auth_manager.create_user(
             email=sanitized_email,
-            password=user_data.password,  # Password will be hashed
+            password=sanitized_password,  # Password validated and will be hashed
             first_name=sanitized_first_name,
             last_name=sanitized_last_name,
             session=session,
@@ -197,6 +205,12 @@ async def login_user(
                 status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid credentials"
             )
 
+        # Basic password validation to prevent DoS via extremely long passwords
+        if len(form_data.password) > InputSanitizer.MAX_LENGTHS["password"]:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid credentials"
+            )
+
         # Authenticate user
         user = await auth_manager.authenticate_user(
             email=sanitized_email,  # OAuth2 uses 'username' field for email
@@ -258,6 +272,12 @@ async def login_user_json(
         # Sanitize email input
         sanitized_email = InputSanitizer.sanitize_email(user_data.email)
         if not sanitized_email:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid credentials"
+            )
+
+        # Basic password validation to prevent DoS via extremely long passwords
+        if len(user_data.password) > InputSanitizer.MAX_LENGTHS["password"]:
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid credentials"
             )

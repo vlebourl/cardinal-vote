@@ -57,6 +57,11 @@ class InputSanitizer:
     # Pre-compiled email validation pattern
     EMAIL_PATTERN = re.compile(r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$")
 
+    # Pre-compiled patterns for username and slug sanitization
+    USERNAME_ALLOWED_PATTERN = re.compile(r"[^a-zA-Z0-9_-]")
+    SLUG_NON_ALPHANUMERIC_PATTERN = re.compile(r"[^a-z0-9]+")
+    SLUG_MULTIPLE_DASHES_PATTERN = re.compile(r"-+")
+
     @classmethod
     def sanitize_text(
         cls,
@@ -64,15 +69,17 @@ class InputSanitizer:
         max_length: int | None = None,
         allow_html: bool = False,
         field_name: str = "text",
+        max_length_in_bytes: bool = False,
     ) -> str:
         """
         Sanitize general text input
 
         Args:
             text: Input text to sanitize
-            max_length: Maximum allowed length
+            max_length: Maximum allowed length (characters by default, bytes if max_length_in_bytes=True)
             allow_html: Whether to allow HTML (will be escaped if False)
             field_name: Name of field for max length lookup
+            max_length_in_bytes: If True, max_length is interpreted as bytes, otherwise as characters
 
         Returns:
             Sanitized text
@@ -115,9 +122,24 @@ class InputSanitizer:
         if max_length is None:
             max_length = cls.MAX_LENGTHS.get(field_name, 1000)
 
-        if len(text) > max_length:
-            text = text[:max_length]
-            logger.info(f"Text truncated for {field_name}: was {len(text)} chars")
+        # Apply length limit consistently
+        if max_length_in_bytes:
+            # Byte-based truncation with UTF-8 safety
+            encoded = text.encode("utf-8")
+            if len(encoded) > max_length:
+                truncated_bytes = encoded[:max_length]
+                # Decode with 'ignore' to handle partial characters at the end
+                text = truncated_bytes.decode("utf-8", "ignore")
+                logger.info(
+                    f"Text truncated for {field_name}: was {len(encoded)} bytes, now {len(text.encode('utf-8'))} bytes"
+                )
+        else:
+            # Character-based truncation (default behavior)
+            if len(text) > max_length:
+                text = text[:max_length]
+                logger.info(
+                    f"Text truncated for {field_name}: was {len(text)} chars, now {max_length} chars"
+                )
 
         return text
 
@@ -179,7 +201,7 @@ class InputSanitizer:
         username = cls.sanitize_text(username, field_name="username", allow_html=False)
 
         # Allow only alphanumeric, underscore, dash
-        username = re.sub(r"[^a-zA-Z0-9_-]", "", username)
+        username = cls.USERNAME_ALLOWED_PATTERN.sub("", username)
 
         # Ensure minimum length
         if len(username) < 3:
@@ -278,11 +300,11 @@ class InputSanitizer:
 
         slug = str(slug).strip().lower()
 
-        # Allow only alphanumeric and dash
-        slug = re.sub(r"[^a-z0-9-]", "", slug)
+        # Replace spaces and special characters with dashes
+        slug = cls.SLUG_NON_ALPHANUMERIC_PATTERN.sub("-", slug)
 
         # Remove multiple dashes
-        slug = re.sub(r"-+", "-", slug)
+        slug = cls.SLUG_MULTIPLE_DASHES_PATTERN.sub("-", slug)
 
         # Remove leading/trailing dashes
         slug = slug.strip("-")

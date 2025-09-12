@@ -109,7 +109,7 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
         csp_directives = [
             "default-src 'self'",
             "script-src 'self'",  # No inline scripts - using data attributes and event delegation
-            "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",  # Inter font + our styles
+            "style-src 'self' https://fonts.googleapis.com",  # Inter font + our styles
             "font-src 'self' https://fonts.gstatic.com",  # Inter font from Google Fonts
             "img-src 'self' data: blob:",  # Allow images and data URLs for uploads
             "connect-src 'self'",  # API calls to same origin
