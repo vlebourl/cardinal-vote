@@ -1,33 +1,27 @@
-# docker-compose.override.yml.example
-# Copy this to docker-compose.override.yml for local development customizations
-# This file is automatically loaded by docker-compose
+# Development override configuration for docker-compose
+# Copy this file to docker-compose.override.yml for local development
+# DO NOT commit docker-compose.override.yml to version control
 
-version: '3.8'
+name: cardinal-vote-dev
 
 services:
-  cardinal-voting:
-    # Development-specific settings
+  cardinal-vote:
     environment:
+      # Development settings
       - DEBUG=true
-      - LOG_LEVEL=debug
-      - AUTO_RELOAD=true
-
-    # Mount source code for development (hot reload)
+      - CARDINAL_ENV=development
     volumes:
+      # Development mounts for live reload
       - ./src:/app/src:ro
       - ./templates:/app/templates:ro
       - ./static:/app/static:ro
+    # Use build for development instead of pre-built image
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: production
 
-    # Expose additional ports for debugging
+  # For development, you might want to expose postgres port
+  postgres:
     ports:
-      - "8001:8000"  # Alternative port mapping
-
-    # Override command for development
-    command: ["uvicorn", "cardinal_vote.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
-
-    # Development resource limits (more relaxed)
-    deploy:
-      resources:
-        limits:
-          cpus: '2.0'
-          memory: 1G
+      - '5432:5432'
