@@ -126,7 +126,9 @@ window.AdminUtils = {
       }
     }
 
-    const response = await fetch(url, { ...options, ...defaultOptions })
+    // Use authenticatedFetch if available, fallback to fetch with manual headers
+    const fetchFn = window.authenticatedFetch || fetch
+    const response = await fetchFn(url, { ...options, ...defaultOptions })
 
     // Handle authentication errors
     if (response.status === 401) {

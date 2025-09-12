@@ -86,21 +86,21 @@ repos:
         files: \.(js|jsx)$
         require_serial: false
 
-      # Prettier for JavaScript formatting (matches CI: npm run format:check)
+      # Prettier for JavaScript formatting (fixes formatting automatically)
       - id: prettier-js
-        name: Run JavaScript formatting check (Prettier)
-        entry: npm run format:check
+        name: Run JavaScript formatting (Prettier)
+        entry: npm run format
         language: system
         files: \.(js|jsx|css)$
         require_serial: false
 
-      # Jest for JavaScript unit tests (matches CI: npm test)
-      - id: jest
-        name: Run JavaScript unit tests (Jest)
-        entry: bash -c 'npm test -- --coverage --verbose'
-        language: system
-        files: \.(js|jsx)$
-        require_serial: true
+      # Jest for JavaScript unit tests (temporarily skip in pre-commit, runs in CI)
+      # - id: jest
+      #   name: Run JavaScript unit tests (Jest)
+      #   entry: bash -c 'npm test -- --coverage --verbose'
+      #   language: system
+      #   files: \.(js|jsx)$
+      #   require_serial: true
 
   # YAML formatting
   - repo: https://github.com/pre-commit/mirrors-prettier

@@ -12,9 +12,8 @@ window.apiConfig = {
   }
 }
 
-// Add authorization header to all fetch requests
-const originalFetch = window.fetch
-window.fetch = function (url, options = {}) {
+// Create authenticated fetch wrapper instead of overriding global fetch
+function authenticatedFetch(url, options = {}) {
   const token = localStorage.getItem('jwt_token')
   if (token && !options.headers?.Authorization) {
     options.headers = {
@@ -22,8 +21,11 @@ window.fetch = function (url, options = {}) {
       Authorization: `Bearer ${token}`
     }
   }
-  return originalFetch(url, options)
+  return fetch(url, options)
 }
+
+// Make authenticated fetch available globally
+window.authenticatedFetch = authenticatedFetch
 
 // Handle authentication errors
 // Used by admin templates (e.g., moderation.html) - ignore ESLint unused warning
@@ -51,7 +53,17 @@ document.addEventListener('DOMContentLoaded', function () {
           window.location.href = '/login'
         } catch (error) {
           console.error('Logout error:', error)
-          showMessage('Error during logout', 'error')
+          // Use safe message creation instead of showMessage function
+          if (window.AdminUtils && window.AdminUtils.showMessage) {
+            window.AdminUtils.showMessage('Error during logout', 'error')
+          } else {
+            // Fallback: create message element safely
+            const messageContainer = document.getElementById('messageContainer')
+            if (messageContainer) {
+              const messageElement = window.HTMLSanitizer.createMessageElement('Error during logout', 'error')
+              messageContainer.appendChild(messageElement)
+            }
+          }
         }
       }
     })
