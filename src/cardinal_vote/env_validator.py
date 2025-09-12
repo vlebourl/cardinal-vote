@@ -6,7 +6,6 @@ Validates all environment variables at startup to ensure proper configuration
 import os
 import re
 import sys
-from typing import Dict, List, Optional, Tuple
 from dataclasses import dataclass
 from enum import Enum
 
@@ -26,18 +25,18 @@ class ValidationRule:
     required: bool
     level: ValidationLevel
     description: str
-    validator: Optional[callable] = None
-    default: Optional[str] = None
-    example: Optional[str] = None
+    validator: callable | None = None
+    default: str | None = None
+    example: str | None = None
 
 
 class EnvValidator:
     """Comprehensive environment validator"""
 
     def __init__(self):
-        self.errors: List[Tuple[ValidationLevel, str]] = []
-        self.warnings: List[str] = []
-        self.info: List[str] = []
+        self.errors: list[tuple[ValidationLevel, str]] = []
+        self.warnings: list[str] = []
+        self.info: list[str] = []
 
     def validate_all(self) -> bool:
         """Run all validations and return True if system can start"""

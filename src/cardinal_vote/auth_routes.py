@@ -14,8 +14,8 @@ from .dependencies import (
     CurrentUser,
     get_auth_manager,
 )
-from .models import DatabaseError
 from .input_sanitizer import InputSanitizer
+from .models import DatabaseError
 
 logger = logging.getLogger(__name__)
 

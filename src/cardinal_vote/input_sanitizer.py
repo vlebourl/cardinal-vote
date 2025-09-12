@@ -3,12 +3,12 @@ Input Sanitization Module
 Provides comprehensive input validation and sanitization for all user inputs
 """
 
-import re
 import html
-import unicodedata
-from typing import Any, Dict, List, Optional, Union
-from urllib.parse import urlparse
 import logging
+import re
+import unicodedata
+from typing import Any
+from urllib.parse import urlparse
 
 logger = logging.getLogger(__name__)
 
@@ -49,7 +49,7 @@ class InputSanitizer:
     ]
 
     @classmethod
-    def sanitize_text(cls, text: str, max_length: Optional[int] = None,
+    def sanitize_text(cls, text: str, max_length: int | None = None,
                      allow_html: bool = False, field_name: str = "text") -> str:
         """
         Sanitize general text input
@@ -200,7 +200,7 @@ class InputSanitizer:
         return password
 
     @classmethod
-    def sanitize_url(cls, url: str, allowed_schemes: List[str] = None) -> str:
+    def sanitize_url(cls, url: str, allowed_schemes: list[str] = None) -> str:
         """
         Sanitize and validate URL
 
@@ -335,7 +335,7 @@ class InputSanitizer:
         return result
 
     @classmethod
-    def sanitize_vote_data(cls, vote_data: Dict[str, Any]) -> Dict[str, Any]:
+    def sanitize_vote_data(cls, vote_data: dict[str, Any]) -> dict[str, Any]:
         """
         Sanitize complete vote submission data
 
@@ -378,7 +378,7 @@ class InputSanitizer:
         return sanitized
 
     @classmethod
-    def sanitize_form_data(cls, form_data: Dict[str, Any]) -> Dict[str, Any]:
+    def sanitize_form_data(cls, form_data: dict[str, Any]) -> dict[str, Any]:
         """
         Sanitize general form submission data
 
@@ -409,7 +409,7 @@ class InputSanitizer:
                 sanitized[key] = cls.sanitize_slug(value)
             elif key in ["first_name", "last_name", "title", "description", "comment"]:
                 sanitized[key] = cls.sanitize_text(value, field_name=key)
-            elif isinstance(value, (int, float)):
+            elif isinstance(value, int | float):
                 sanitized[key] = value  # Numbers are generally safe
             elif isinstance(value, bool):
                 sanitized[key] = value  # Booleans are safe
@@ -440,6 +440,6 @@ def sanitize_email(email: str) -> str:
     return InputSanitizer.sanitize_email(email)
 
 
-def sanitize_form(form_data: Dict[str, Any]) -> Dict[str, Any]:
+def sanitize_form(form_data: dict[str, Any]) -> dict[str, Any]:
     """Quick form data sanitization"""
     return InputSanitizer.sanitize_form_data(form_data)

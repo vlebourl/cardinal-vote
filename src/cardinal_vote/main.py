@@ -20,11 +20,11 @@ from starlette.middleware.base import BaseHTTPMiddleware
 from .auth_manager import GeneralizedAuthManager
 from .auth_routes import auth_router
 from .config import settings
-from .env_validator import validate_environment
 
 # DatabaseError now imported from models with other exceptions
 from .database_manager import GeneralizedDatabaseManager
 from .dependencies import AsyncDatabaseSession
+from .env_validator import validate_environment
 from .models import (
     DatabaseError,
     ValidationError,
