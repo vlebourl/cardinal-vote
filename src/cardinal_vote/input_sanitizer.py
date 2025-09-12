@@ -16,6 +16,10 @@ logger = logging.getLogger(__name__)
 class InputSanitizer:
     """Comprehensive input sanitizer for security"""
 
+    # Rating bounds for cardinal voting
+    MIN_RATING = -2
+    MAX_RATING = 2
+
     # Maximum lengths for different input types
     MAX_LENGTHS = {
         "email": 254,  # RFC 5321
@@ -32,21 +36,24 @@ class InputSanitizer:
         "flag_reason": 500,
     }
 
-    # Dangerous patterns to block
+    # Pre-compiled dangerous patterns for better performance
     DANGEROUS_PATTERNS = [
-        r"<script[^>]*>.*?</script>",  # Script tags
-        r"javascript:",  # JavaScript protocol
-        r"on\w+\s*=",  # Event handlers
-        r"data:text/html",  # Data URLs with HTML
-        r"vbscript:",  # VBScript protocol
-        r"<iframe[^>]*>",  # Iframes
-        r"<object[^>]*>",  # Object tags
-        r"<embed[^>]*>",  # Embed tags
-        r"<applet[^>]*>",  # Applet tags
-        r"<link[^>]*>",  # Link tags (can load CSS)
-        r"<meta[^>]*>",  # Meta tags
-        r"<base[^>]*>",  # Base tags
+        re.compile(r"<script[^>]*>.*?</script>", re.IGNORECASE | re.DOTALL),  # Script tags
+        re.compile(r"javascript:", re.IGNORECASE),  # JavaScript protocol
+        re.compile(r"on\w+\s*=", re.IGNORECASE),  # Event handlers
+        re.compile(r"data:text/html", re.IGNORECASE),  # Data URLs with HTML
+        re.compile(r"vbscript:", re.IGNORECASE),  # VBScript protocol
+        re.compile(r"<iframe[^>]*>", re.IGNORECASE),  # Iframes
+        re.compile(r"<object[^>]*>", re.IGNORECASE),  # Object tags
+        re.compile(r"<embed[^>]*>", re.IGNORECASE),  # Embed tags
+        re.compile(r"<applet[^>]*>", re.IGNORECASE),  # Applet tags
+        re.compile(r"<link[^>]*>", re.IGNORECASE),  # Link tags (can load CSS)
+        re.compile(r"<meta[^>]*>", re.IGNORECASE),  # Meta tags
+        re.compile(r"<base[^>]*>", re.IGNORECASE),  # Base tags
     ]
+
+    # Pre-compiled email validation pattern
+    EMAIL_PATTERN = re.compile(r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$")
 
     @classmethod
     def sanitize_text(
@@ -87,11 +94,11 @@ class InputSanitizer:
             if char in "\n\r\t" or not unicodedata.category(char).startswith("C")
         )
 
-        # Check for dangerous patterns
+        # Check for dangerous patterns (now pre-compiled)
         for pattern in cls.DANGEROUS_PATTERNS:
-            if re.search(pattern, text, re.IGNORECASE | re.DOTALL):
-                logger.warning(f"Dangerous pattern detected in {field_name}: {pattern}")
-                text = re.sub(pattern, "", text, flags=re.IGNORECASE | re.DOTALL)
+            if pattern.search(text):
+                logger.warning(f"Dangerous pattern detected in {field_name}: {pattern.pattern}")
+                text = pattern.sub("", text)
 
         # Escape HTML if not allowed
         if not allow_html:
@@ -126,12 +133,15 @@ class InputSanitizer:
 
         email = str(email).strip().lower()
 
-        # Remove any HTML/script attempts
-        email = cls.sanitize_text(email, field_name="email", allow_html=False)
+        # Remove null bytes and control characters only (not full text sanitization)
+        email = email.replace("\x00", "")
+        email = "".join(
+            char for char in email
+            if not unicodedata.category(char).startswith("C")
+        )
 
-        # Basic email validation
-        email_pattern = r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$"
-        if not re.match(email_pattern, email):
+        # Basic email validation (now using pre-compiled pattern)
+        if not cls.EMAIL_PATTERN.match(email):
             logger.warning(f"Invalid email format: {email[:50]}")
             return ""
 
@@ -376,7 +386,7 @@ class InputSanitizer:
         # Rating (for cardinal voting)
         if "rating" in vote_data:
             sanitized["rating"] = cls.sanitize_integer(
-                vote_data["rating"], min_val=-2, max_val=2
+                vote_data["rating"], min_val=cls.MIN_RATING, max_val=cls.MAX_RATING
             )
 
         # Comment
