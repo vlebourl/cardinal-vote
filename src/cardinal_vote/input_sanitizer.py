@@ -206,7 +206,7 @@ class InputSanitizer:
         return password
 
     @classmethod
-    def sanitize_url(cls, url: str, allowed_schemes: list[str] = None) -> str:
+    def sanitize_url(cls, url: str, allowed_schemes: list[str] | None = None) -> str:
         """
         Sanitize and validate URL
 
@@ -282,7 +282,11 @@ class InputSanitizer:
 
     @classmethod
     def sanitize_integer(
-        cls, value: Any, min_val: int = None, max_val: int = None, default: int = 0
+        cls,
+        value: Any,
+        min_val: int | None = None,
+        max_val: int | None = None,
+        default: int = 0,
     ) -> int:
         """
         Sanitize integer input
@@ -313,8 +317,8 @@ class InputSanitizer:
     def sanitize_float(
         cls,
         value: Any,
-        min_val: float = None,
-        max_val: float = None,
+        min_val: float | None = None,
+        max_val: float | None = None,
         default: float = 0.0,
     ) -> float:
         """
@@ -357,7 +361,7 @@ class InputSanitizer:
         Returns:
             Sanitized vote data
         """
-        sanitized = {}
+        sanitized: dict[str, Any] = {}
 
         # Session slug
         if "session_slug" in vote_data:
@@ -400,7 +404,7 @@ class InputSanitizer:
         Returns:
             Sanitized form data
         """
-        sanitized = {}
+        sanitized: dict[str, Any] = {}
 
         for key, value in form_data.items():
             # Skip empty values

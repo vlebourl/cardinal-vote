@@ -6,6 +6,7 @@ Validates all environment variables at startup to ensure proper configuration
 import os
 import re
 import sys
+from collections.abc import Callable
 from dataclasses import dataclass
 from enum import Enum
 
@@ -27,7 +28,7 @@ class ValidationRule:
     required: bool
     level: ValidationLevel
     description: str
-    validator: callable | None = None
+    validator: Callable[..., bool] | None = None
     default: str | None = None
     example: str | None = None
 
@@ -35,7 +36,7 @@ class ValidationRule:
 class EnvValidator:
     """Comprehensive environment validator"""
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.errors: list[tuple[ValidationLevel, str]] = []
         self.warnings: list[str] = []
         self.info: list[str] = []
@@ -50,7 +51,7 @@ class EnvValidator:
 
         return not any(level == ValidationLevel.CRITICAL for level, _ in self.errors)
 
-    def _validate_database(self):
+    def _validate_database(self) -> None:
         """Validate database configuration"""
         db_url = os.getenv("DATABASE_URL")
 
@@ -108,7 +109,7 @@ class EnvValidator:
                 (ValidationLevel.CRITICAL, f"Invalid DATABASE_URL format: {e}")
             )
 
-    def _validate_security(self):
+    def _validate_security(self) -> None:
         """Validate security-critical environment variables"""
 
         # JWT Secret Key
@@ -160,7 +161,7 @@ class EnvValidator:
         if admin_pass:
             self._validate_password_strength(admin_pass, "ADMIN_PASSWORD")
 
-    def _validate_password_strength(self, password: str, var_name: str):
+    def _validate_password_strength(self, password: str, var_name: str) -> None:
         """Validate password strength"""
         if len(password) < 12:
             self.warnings.append(
@@ -193,7 +194,7 @@ class EnvValidator:
                 "Consider using uppercase, lowercase, numbers, and special characters."
             )
 
-    def _validate_email(self):
+    def _validate_email(self) -> None:
         """Validate email configuration"""
         email_backend = os.getenv("EMAIL_BACKEND", "mock")
 
@@ -235,7 +236,7 @@ class EnvValidator:
         pattern = r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$"
         return bool(re.match(pattern, email))
 
-    def _validate_application(self):
+    def _validate_application(self) -> None:
         """Validate application configuration"""
 
         # Environment mode
@@ -277,7 +278,7 @@ class EnvValidator:
                 "Specify exact allowed domains."
             )
 
-    def _validate_optional_features(self):
+    def _validate_optional_features(self) -> None:
         """Validate optional feature configuration"""
 
         # Rate limiting
@@ -301,7 +302,7 @@ class EnvValidator:
                 f"MAX_FILE_SIZE_MB must be a number, got: {max_file_size}"
             )
 
-    def print_report(self):
+    def print_report(self) -> bool:
         """Print validation report"""
         print("\n" + "=" * 60)
         print("🔍 ENVIRONMENT VALIDATION REPORT")
