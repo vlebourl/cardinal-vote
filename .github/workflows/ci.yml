@@ -143,7 +143,20 @@ jobs:
 
       - name: Create database schema
         run: |
-          echo "Schema creation handled automatically by Base.metadata.create_all() in tests"
+          export JWT_SECRET_KEY=test-jwt-secret-for-ci
+          export SUPER_ADMIN_PASSWORD=test-super-admin-password
+          export DATABASE_URL=postgresql+asyncpg://voting_user:test_password@localhost:5432/voting_platform_test
+
+          # Initialize database schema
+          uv run python -c "
+          import asyncio
+          from src.cardinal_vote.database_manager import GeneralizedDatabaseManager
+          async def init():
+              db = GeneralizedDatabaseManager()
+              await db.init_db()
+              print('✅ Database schema initialized')
+          asyncio.run(init())
+          "
         env:
           JWT_SECRET_KEY: test-jwt-secret-for-ci
           SUPER_ADMIN_PASSWORD: test-super-admin-password
@@ -285,7 +298,20 @@ jobs:
 
       - name: Create database schema
         run: |
-          echo "Schema creation handled automatically by Base.metadata.create_all() in tests"
+          export JWT_SECRET_KEY=test-jwt-secret-for-ci-extremely-long-key-64-chars-minimum
+          export SUPER_ADMIN_PASSWORD=test-super-admin-password-32-chars-minimum
+          export DATABASE_URL=postgresql+asyncpg://voting_user:test_password@localhost:5432/voting_platform_test
+
+          # Initialize database schema
+          uv run python -c "
+          import asyncio
+          from src.cardinal_vote.database_manager import GeneralizedDatabaseManager
+          async def init():
+              db = GeneralizedDatabaseManager()
+              await db.init_db()
+              print('✅ Database schema initialized')
+          asyncio.run(init())
+          "
         env:
           JWT_SECRET_KEY: test-jwt-secret-for-ci-extremely-long-key-64-chars-minimum
           SUPER_ADMIN_PASSWORD: test-super-admin-password-32-chars-minimum
