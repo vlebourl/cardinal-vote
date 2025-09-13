@@ -22,11 +22,6 @@
     <link rel="stylesheet" href="/static/css/landing-material.css">
 </head>
 <body>
-    <!-- Version Debug Info -->
-    <div class="debug-version-header">
-        Material Design v2.1.0 | CSS: material-design.css | Template: landing_material.html
-    </div>
-
     <!-- Top App Bar -->
     <header class="md-top-app-bar md-top-app-bar-elevated">
         <button class="md-top-app-bar-navigation-icon" aria-label="Open navigation menu">
@@ -45,7 +40,7 @@
     <nav class="md-navigation-drawer" id="navigationDrawer">
         <div class="md-navigation-drawer-header">
             <h3 class="md-headline-small">{{ app_name }}</h3>
-            <p class="md-body-medium md-on-surface-variant">Professional Voting Platform</p>
+            <p class="md-body-medium md-on-surface-variant">Free Voting Platform</p>
         </div>
         <div class="md-navigation-drawer-content">
             <a href="#features" class="md-navigation-drawer-item">
@@ -55,10 +50,6 @@
             <a href="#how-it-works" class="md-navigation-drawer-item">
                 <span class="material-icons md-navigation-drawer-item-icon">help_outline</span>
                 <span class="md-navigation-drawer-item-label">How It Works</span>
-            </a>
-            <a href="#pricing" class="md-navigation-drawer-item">
-                <span class="material-icons md-navigation-drawer-item-icon">payments</span>
-                <span class="md-navigation-drawer-item-label">Pricing</span>
             </a>
             <a href="/super-admin/login" class="md-navigation-drawer-item">
                 <span class="material-icons md-navigation-drawer-item-icon">admin_panel_settings</span>
@@ -80,11 +71,7 @@
                 <div class="hero-actions">
                     <button class="md-button md-button-filled">
                         <span class="material-icons">rocket_launch</span>
-                        Start Free Trial
-                    </button>
-                    <button class="md-button md-button-outlined">
-                        <span class="material-icons">play_circle</span>
-                        Watch Demo
+                        Get Started
                     </button>
                 </div>
             </div>
@@ -163,30 +150,6 @@
         </div>
     </section>
 
-    <!-- Stats Section -->
-    <section class="stats-section">
-        <div class="md-container">
-            <div class="stats-grid">
-                <div class="stat-item">
-                    <div class="stat-number">10K+</div>
-                    <div class="md-body-large stat-label">Active Organizations</div>
-                </div>
-                <div class="stat-item">
-                    <div class="stat-number">1M+</div>
-                    <div class="md-body-large stat-label">Votes Created</div>
-                </div>
-                <div class="stat-item">
-                    <div class="stat-number">99.9%</div>
-                    <div class="md-body-large stat-label">Uptime</div>
-                </div>
-                <div class="stat-item">
-                    <div class="stat-number">4.9</div>
-                    <div class="md-body-large stat-label">User Rating</div>
-                </div>
-            </div>
-        </div>
-    </section>
-
     <!-- How It Works Section -->
     <section class="how-it-works md-container" id="how-it-works">
         <div class="text-center">
@@ -233,62 +196,16 @@
         <div class="md-container cta-content">
             <h2 class="md-display-medium cta-title">Ready to Transform Your Decision Making?</h2>
             <p class="md-body-large cta-description">
-                Join thousands of organizations already using {{ app_name }} for better collective decisions.
-                Start your free trial today - no credit card required.
+                Start making better collective decisions with our free voting platform.
+                Simple, powerful, and ready to use.
             </p>
             <button class="md-button md-button-filled cta-button-white">
                 <span class="material-icons">rocket_launch</span>
-                Start Your Free Trial
+                Get Started Now
             </button>
         </div>
     </section>
 
-    <!-- Footer -->
-    <footer class="footer">
-        <div class="md-container">
-            <div class="footer-content">
-                <div class="footer-section">
-                    <h4 class="md-title-large">Product</h4>
-                    <ul class="footer-links">
-                        <li><a href="#features">Features</a></li>
-                        <li><a href="#pricing">Pricing</a></li>
-                        <li><a href="#security">Security</a></li>
-                        <li><a href="#roadmap">Roadmap</a></li>
-                    </ul>
-                </div>
-                <div class="footer-section">
-                    <h4 class="md-title-large">Company</h4>
-                    <ul class="footer-links">
-                        <li><a href="#about">About Us</a></li>
-                        <li><a href="#blog">Blog</a></li>
-                        <li><a href="#careers">Careers</a></li>
-                        <li><a href="#contact">Contact</a></li>
-                    </ul>
-                </div>
-                <div class="footer-section">
-                    <h4 class="md-title-large">Resources</h4>
-                    <ul class="footer-links">
-                        <li><a href="#docs">Documentation</a></li>
-                        <li><a href="#api">API Reference</a></li>
-                        <li><a href="#guides">Guides</a></li>
-                        <li><a href="#support">Support</a></li>
-                    </ul>
-                </div>
-                <div class="footer-section">
-                    <h4 class="md-title-large">Legal</h4>
-                    <ul class="footer-links">
-                        <li><a href="#privacy">Privacy Policy</a></li>
-                        <li><a href="#terms">Terms of Service</a></li>
-                        <li><a href="#cookies">Cookie Policy</a></li>
-                        <li><a href="#gdpr">GDPR</a></li>
-                    </ul>
-                </div>
-            </div>
-            <div class="footer-bottom">
-                <p class="md-body-medium">© 2025 {{ app_name }}. All rights reserved.</p>
-            </div>
-        </div>
-    </footer>
 
     <!-- Scroll to Top FAB -->
     <button class="scroll-to-top" id="scrollToTop" aria-label="Scroll to top">
@@ -297,7 +214,7 @@
 
     <!-- Snackbar for notifications -->
     <div class="md-snackbar" id="snackbar">
-        <span id="snackbar-message">Welcome to {{ app_name }}!</span>
+        <span id="snackbar-message">Welcome! Ready to create your first vote?</span>
         <button class="md-snackbar-action" id="snackbar-action">DISMISS</button>
     </div>
 
