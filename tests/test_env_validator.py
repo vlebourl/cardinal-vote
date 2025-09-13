@@ -28,9 +28,6 @@ class TestEnvValidator:
         os.environ,
         {
             "DATABASE_URL": "postgresql+asyncpg://user:pass@localhost:5432/dbname",
-            "ADMIN_USERNAME": "admin_user",
-            "ADMIN_PASSWORD": "VerySecurePassword123!",
-            "SESSION_SECRET_KEY": "a_very_long_session_secret_key_for_security_testing_12345678901234567890",
             "JWT_SECRET_KEY": "jwt_secret_key_for_authentication_testing_12345678901234567890",
             "SUPER_ADMIN_PASSWORD": "VerySecureSuperAdminPassword123!",
         },
@@ -113,9 +110,6 @@ class TestEnvValidator:
     @patch.dict(
         os.environ,
         {
-            "ADMIN_USERNAME": "admin_user",
-            "ADMIN_PASSWORD": "VerySecurePassword123!",
-            "SESSION_SECRET_KEY": "long_secure_session_key_12345678901234567890123456789012345678901234567890",
             "JWT_SECRET_KEY": "jwt_secret_key_for_authentication_testing_12345678901234567890",
             "SUPER_ADMIN_PASSWORD": "VerySecureSuperAdminPassword123!",
         },
@@ -135,7 +129,7 @@ class TestEnvValidator:
 
     @patch.dict(
         os.environ,
-        {"ADMIN_USERNAME": "", "ADMIN_PASSWORD": "", "SESSION_SECRET_KEY": ""},
+        {},
         clear=True,
     )
     def test_validate_security_missing(self):
@@ -150,7 +144,7 @@ class TestEnvValidator:
         ]
         assert len(critical_errors) > 0
 
-    @patch.dict(os.environ, {"ADMIN_PASSWORD": "weak"}, clear=True)
+    @patch.dict(os.environ, {"SUPER_ADMIN_PASSWORD": "weak"}, clear=True)
     def test_validate_security_weak_password(self):
         """Test security validation with weak password"""
         self.validator._validate_security()
@@ -164,7 +158,7 @@ class TestEnvValidator:
         ]
         assert len(password_errors) > 0
 
-    @patch.dict(os.environ, {"SESSION_SECRET_KEY": "short"}, clear=True)
+    @patch.dict(os.environ, {"JWT_SECRET_KEY": "short"}, clear=True)
     def test_validate_security_weak_session_key(self):
         """Test security validation with weak session key"""
         self.validator._validate_security()
@@ -313,9 +307,6 @@ class TestEnvValidator:
         """Test comprehensive validation with realistic configuration"""
         realistic_config = {
             "DATABASE_URL": "postgresql+asyncpg://user:securepass@localhost:5432/cardinal_vote",
-            "ADMIN_USERNAME": "secure_admin_user",
-            "ADMIN_PASSWORD": "VerySecureAdminPassword123!",
-            "SESSION_SECRET_KEY": "a_very_long_session_secret_key_for_security_"
             + "x" * 40,
             "JWT_SECRET_KEY": "jwt_secret_key_for_authentication_testing_" + "x" * 40,
             "SUPER_ADMIN_PASSWORD": "VerySecureSuperAdminPassword123!",
@@ -343,9 +334,6 @@ class TestEnvValidator:
         """Test detection of security anti-patterns"""
         insecure_config = {
             "DATABASE_URL": "postgresql+asyncpg://user:pass@localhost:5432/db",
-            "ADMIN_USERNAME": "admin",  # Common username
-            "ADMIN_PASSWORD": "password123",  # Weak password
-            "SESSION_SECRET_KEY": "secret",  # Short secret
             "JWT_SECRET_KEY": "jwt_secret",  # Short JWT secret
             "SUPER_ADMIN_PASSWORD": "admin123",  # Weak super admin password
             "DEBUG": "true",  # Debug enabled
