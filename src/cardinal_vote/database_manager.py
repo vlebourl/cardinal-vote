@@ -71,7 +71,7 @@ class GeneralizedDatabaseManager:
                 await conn.execute(text("CREATE EXTENSION IF NOT EXISTS citext"))
                 await conn.execute(text("CREATE EXTENSION IF NOT EXISTS \"uuid-ossp\""))
                 logger.info("PostgreSQL extensions enabled (citext, uuid-ossp)")
-                
+
                 # Now create all tables
                 await conn.run_sync(Base.metadata.create_all)
             logger.info("Database initialized with generalized platform tables")
