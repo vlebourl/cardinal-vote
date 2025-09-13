@@ -50,6 +50,10 @@ services:
     environment:
       # Database Configuration
       - DATABASE_URL=postgresql+asyncpg://${POSTGRES_USER:-voting_user}:${POSTGRES_PASSWORD:?POSTGRES_PASSWORD environment variable is required}@postgres:5432/${POSTGRES_DB:-voting_platform}
+      # Individual database variables for entrypoint script
+      - POSTGRES_USER=${POSTGRES_USER:-voting_user}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:?POSTGRES_PASSWORD environment variable is required for security}
+      - POSTGRES_DB=${POSTGRES_DB:-voting_platform}
       # Application Configuration
       - HOST=${HOST:-0.0.0.0}
       - PORT=${PORT:-8000}

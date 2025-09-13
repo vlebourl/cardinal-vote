@@ -296,8 +296,8 @@ async def validate_schema():
         db = GeneralizedDatabaseManager()
         async with db.get_session() as session:
             # Check if key tables exist
-            result = await session.execute(text('SELECT COUNT(*) FROM information_schema.tables WHERE table_name IN (\'users\', \'votes\', \'vote_records\')'))
-            count = (await result.fetchone())[0]
+            result = await session.execute(text('SELECT COUNT(*) FROM information_schema.tables WHERE table_name IN (\'users\', \'votes\', \'generalized_votes\')'))
+            count = result.fetchone()[0]
 
             if count >= 3:  # At least 3 core tables should exist
                 print('✓ Core database tables validated')
