@@ -121,24 +121,14 @@ class SecurityValidator:
         super_admin_password = self.validate_required_env(
             "SUPER_ADMIN_PASSWORD", "Super admin password"
         )
-        admin_password = self.validate_required_env(
-            "ADMIN_PASSWORD", "Legacy admin password"
-        )
 
         valid_super = True
-        valid_admin = True
-
         if super_admin_password:
             valid_super = self.validate_password_strength(
                 super_admin_password, "SUPER_ADMIN_PASSWORD", min_length=16
             )
 
-        if admin_password:
-            valid_admin = self.validate_password_strength(
-                admin_password, "ADMIN_PASSWORD", min_length=12
-            )
-
-        return valid_super and valid_admin
+        return valid_super
 
     def validate_jwt_config(self) -> bool:
         """Validate JWT configuration"""
@@ -164,27 +154,6 @@ class SecurityValidator:
 
         self.passed.append(f"✅ CARDINAL_ENV: Set to '{env_type}'")
 
-    def validate_session_config(self) -> bool:
-        """Validate session configuration (legacy compatibility)"""
-        session_secret = os.getenv("SESSION_SECRET_KEY")
-
-        if session_secret:
-            if len(session_secret) < 32:
-                self.warnings.append(
-                    "⚠️  SESSION_SECRET_KEY: Should be at least 32 characters for security"
-                )
-                return False
-            elif "session_secret_key_change_in_production" in session_secret:
-                self.errors.append("❌ SESSION_SECRET_KEY: Using default/example value")
-                return False
-            else:
-                self.passed.append("✅ SESSION_SECRET_KEY: Appears secure")
-        else:
-            self.warnings.append(
-                "⚠️  SESSION_SECRET_KEY: Not set (legacy compatibility)"
-            )
-
-        return True
 
     def generate_secure_examples(self) -> None:
         """Generate example secure values for missing variables"""
@@ -207,8 +176,6 @@ class SecurityValidator:
                 f"SUPER_ADMIN_PASSWORD='{secrets.choice(words)}{numbers}{symbol}{secrets.token_urlsafe(8)}'"
             )
 
-        if not os.getenv("ADMIN_PASSWORD"):
-            print(f"ADMIN_PASSWORD='{secrets.token_urlsafe(16)}'")
 
     def run_validation(self) -> bool:
         """Run complete security validation"""
@@ -220,7 +187,6 @@ class SecurityValidator:
         self.validate_database_config()
         self.validate_jwt_config()
         self.validate_admin_config()
-        self.validate_session_config()
 
         # Additional security checks
         if os.getenv("CARDINAL_ENV") == "production":

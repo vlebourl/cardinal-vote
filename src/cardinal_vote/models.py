@@ -47,40 +47,6 @@ class VoteRecord(Base):
         return f"{self.voter_first_name} {self.voter_last_name}"
 
 
-class AdminUser(Base):
-    """SQLAlchemy model for admin users."""
-
-    __tablename__ = "admin_users"
-
-    id = Column(Integer, primary_key=True, autoincrement=True)
-    username = Column(String(50), unique=True, nullable=False)
-    password_hash = Column(String(255), nullable=False)
-    is_active = Column(Boolean, default=True, nullable=False)
-    created_at = Column(DateTime, nullable=False, default=datetime.utcnow)
-    last_login = Column(DateTime)
-
-    def __repr__(self) -> str:
-        return f"<AdminUser(id={self.id}, username='{self.username}')>"
-
-
-class AdminSession(Base):
-    """SQLAlchemy model for admin sessions."""
-
-    __tablename__ = "admin_sessions"
-
-    id = Column(String(64), primary_key=True)  # Session token
-    user_id = Column(Integer, nullable=False)  # Reference to admin user
-    created_at = Column(DateTime, nullable=False, default=datetime.utcnow)
-    expires_at = Column(DateTime, nullable=False)
-    is_active = Column(Boolean, default=True, nullable=False)
-    ip_address = Column(String(45))  # IPv4/IPv6 address
-    user_agent = Column(Text)
-
-    def __repr__(self) -> str:
-        session_id = self.id[:8] if self.id else "unknown"
-        return f"<AdminSession(id='{session_id}...', user_id={self.user_id})>"
-
-
 # Generalized Platform Models (PostgreSQL)
 
 
@@ -377,19 +343,6 @@ class AdminLogin(BaseModel):
                 "Username can only contain letters, numbers, hyphens, and underscores"
             )
         return v
-
-
-class AdminUserData(BaseModel):
-    """Pydantic model for admin user data."""
-
-    id: int
-    username: str
-    is_active: bool
-    created_at: datetime
-    last_login: datetime | None = None
-
-    class Config:
-        from_attributes = True
 
 
 class VoteManagement(BaseModel):

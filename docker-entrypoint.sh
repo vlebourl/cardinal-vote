@@ -200,22 +200,9 @@ health_check() {
     done
 }
 
-# Run database migrations
-run_database_migrations() {
-    log "Running database migrations..."
-
-    # Check if alembic is available and validate version
-    if ! command -v alembic >/dev/null 2>&1; then
-        error_exit "alembic command not found - required for database migrations"
-    fi
-
-    # Validate alembic version and functionality
-    local alembic_version
-    if alembic_version=$(alembic --version 2>/dev/null); then
-        log "✓ Alembic available: $alembic_version"
-    else
-        error_exit "alembic command found but not properly accessible. Check virtual environment configuration."
-    fi
+# Create database schema directly from models (development approach - no migrations)
+create_database_schema() {
+    log "Creating database schema directly from models (development mode)..."
 
     # Test database connectivity using simple approach
     log "Testing database connectivity..."
@@ -259,49 +246,58 @@ run_database_migrations() {
         fi
     done
 
-    # Get current migration state for rollback capability
-    log "Getting current database migration state for rollback capability..."
-    local current_revision
-    current_revision=$(alembic current 2>/dev/null | head -n1 | awk '{print $1}' || echo "empty")
-    log "Current migration revision: $current_revision"
+    # Create database schema using SQLAlchemy models
+    log "Creating database schema using Base.metadata.create_all()..."
+    local schema_success=false
 
-    # Run migrations with timeout and validation
-    log "Starting database migrations (timeout: 60s)..."
-    local migration_success=false
-
-    if timeout 60 alembic upgrade head; then
-        log "✓ Database migrations executed successfully"
-
-        # Validate migration success by checking current revision
-        log "Validating migration completion..."
-        local new_revision
-        new_revision=$(alembic current 2>/dev/null | head -n1 | awk '{print $1}' || echo "error")
-
-        if [[ "$new_revision" != "error" && "$new_revision" != "$current_revision" ]]; then
-            log "✓ Migration validation successful - revision changed from $current_revision to $new_revision"
-            migration_success=true
-        elif [[ "$new_revision" == "$current_revision" && "$current_revision" != "empty" ]]; then
-            log "✓ Migration validation successful - database already up to date at revision $current_revision"
-            migration_success=true
-        else
-            log "⚠️ Migration validation failed - revision check inconclusive"
-
-            # Perform basic table existence check as secondary validation
-            if timeout 10 python -c "
+    if timeout 60 python -c "
 import asyncio
 import sys
 sys.path.insert(0, '/app/src')
-from sqlalchemy.ext.asyncio import create_async_engine
-from cardinal_vote.config import settings
+from cardinal_vote.database_manager import GeneralizedDatabaseManager
+
+async def create_schema():
+    try:
+        db = GeneralizedDatabaseManager()
+        await db.init_db()
+        print('✓ Database schema created successfully')
+        await db.close()
+        sys.exit(0)
+    except Exception as e:
+        print(f'✗ Schema creation failed: {e}')
+        sys.exit(1)
+
+asyncio.run(create_schema())
+"; then
+        log "✓ Database schema created successfully"
+        schema_success=true
+    else
+        local exit_code=$?
+        if [[ $exit_code -eq 124 ]]; then
+            log "✗ Database schema creation timed out after 60 seconds"
+        else
+            log "✗ Database schema creation failed with exit code $exit_code"
+        fi
+        schema_success=false
+    fi
+
+    # Validate schema creation by checking table existence
+    if [[ $schema_success == true ]]; then
+        log "Validating schema creation..."
+        if timeout 10 python -c "
+import asyncio
+import sys
+sys.path.insert(0, '/app/src')
+from cardinal_vote.database_manager import GeneralizedDatabaseManager
+from sqlalchemy import text
 
 async def validate_schema():
     try:
-        engine = create_async_engine(settings.DATABASE_URL, echo=False)
-        async with engine.begin() as conn:
+        db = GeneralizedDatabaseManager()
+        async with db.get_session() as session:
             # Check if key tables exist
-            result = await conn.execute('SELECT COUNT(*) FROM information_schema.tables WHERE table_name IN (\'users\', \'votes\', \'vote_records\', \'alembic_version\')')
-            count = (await result.fetchone())[0]
-            await engine.dispose()
+            result = await session.execute(text('SELECT COUNT(*) FROM information_schema.tables WHERE table_name IN (\'users\', \'votes\', \'generalized_votes\')'))
+            count = result.fetchone()[0]
 
             if count >= 3:  # At least 3 core tables should exist
                 print('✓ Core database tables validated')
@@ -315,53 +311,16 @@ async def validate_schema():
 
 asyncio.run(validate_schema())
 " 2>/dev/null; then
-                log "✓ Secondary schema validation successful"
-                migration_success=true
-            else
-                log "✗ Secondary schema validation failed"
-                migration_success=false
-            fi
+            log "✓ Schema validation successful"
+        else
+            log "✗ Schema validation failed"
+            error_exit "Database schema creation failed validation. Check database models and connectivity."
         fi
     else
-        local exit_code=$?
-        if [[ $exit_code -eq 124 ]]; then
-            log "✗ Database migrations timed out after 60 seconds"
-        else
-            log "✗ Database migrations failed with exit code $exit_code"
-        fi
-        migration_success=false
+        error_exit "Database schema creation failed. Check database connectivity and models."
     fi
 
-    # Handle migration failure with rollback option
-    if [[ $migration_success == false ]]; then
-        log "Migration failed. Checking rollback options..."
-
-        if [[ "$current_revision" != "empty" && "$current_revision" != "error" ]]; then
-            log "Previous revision ($current_revision) available for rollback"
-
-            # Check if ROLLBACK_ON_MIGRATION_FAILURE is set
-            if [[ "${ROLLBACK_ON_MIGRATION_FAILURE:-false}" == "true" ]]; then
-                log "ROLLBACK_ON_MIGRATION_FAILURE=true - Attempting automatic rollback..."
-
-                if timeout 30 alembic downgrade "$current_revision"; then
-                    log "✓ Automatic rollback to revision $current_revision successful"
-                    error_exit "Migration failed but rollback completed. Check migration scripts and DATABASE_URL. Container stopped safely."
-                else
-                    log "✗ Automatic rollback failed"
-                    error_exit "Migration failed AND rollback failed. Database may be in inconsistent state. Manual intervention required."
-                fi
-            else
-                log "To enable automatic rollback on migration failure, set: ROLLBACK_ON_MIGRATION_FAILURE=true"
-                log "Manual rollback command: alembic downgrade $current_revision"
-            fi
-        else
-            log "No previous revision available for rollback (fresh database)"
-        fi
-
-        error_exit "Database migrations failed. Check database connectivity, configuration, and migration scripts."
-    fi
-
-    log "✅ Database migrations completed and validated successfully"
+    log "✅ Database schema creation completed and validated successfully"
 }
 
 # Start application
@@ -438,17 +397,17 @@ main() {
     preflight_checks
 
     # Initialize database
-    local migration_start=$(date +%s.%N)
-    run_database_migrations
+    local schema_start=$(date +%s.%N)
+    create_database_schema
     if command -v bc >/dev/null 2>&1; then
-        local migration_duration=$(echo "$(date +%s.%N) - $migration_start" | bc -l)
-        log "⏱ Database migrations completed in ${migration_duration}s"
+        local schema_duration=$(echo "$(date +%s.%N) - $schema_start" | bc -l)
+        log "⏱ Database schema creation completed in ${schema_duration}s"
 
         # Calculate total startup time
         local startup_duration=$(echo "$(date +%s.%N) - $startup_start_time" | bc -l)
         log "⏱ Container startup completed in ${startup_duration}s"
     else
-        log "⏱ Database migrations completed"
+        log "⏱ Database schema creation completed"
         log "⏱ Container startup completed"
     fi
 

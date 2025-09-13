@@ -67,6 +67,12 @@ class GeneralizedDatabaseManager:
         """Initialize the database with required tables (creates all tables)."""
         try:
             async with self.engine.begin() as conn:
+                # Create required PostgreSQL extensions first
+                await conn.execute(text("CREATE EXTENSION IF NOT EXISTS citext"))
+                await conn.execute(text('CREATE EXTENSION IF NOT EXISTS "uuid-ossp"'))
+                logger.info("PostgreSQL extensions enabled (citext, uuid-ossp)")
+
+                # Now create all tables
                 await conn.run_sync(Base.metadata.create_all)
             logger.info("Database initialized with generalized platform tables")
         except SQLAlchemyError as e:
