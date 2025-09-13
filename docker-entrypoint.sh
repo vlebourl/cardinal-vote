@@ -200,22 +200,9 @@ health_check() {
     done
 }
 
-# Run database migrations
+# Create database schema (development approach - no migrations)
 run_database_migrations() {
-    log "Running database migrations..."
-
-    # Check if alembic is available and validate version
-    if ! command -v alembic >/dev/null 2>&1; then
-        error_exit "alembic command not found - required for database migrations"
-    fi
-
-    # Validate alembic version and functionality
-    local alembic_version
-    if alembic_version=$(alembic --version 2>/dev/null); then
-        log "✓ Alembic available: $alembic_version"
-    else
-        error_exit "alembic command found but not properly accessible. Check virtual environment configuration."
-    fi
+    log "Creating database schema directly from models (development mode)..."
 
     # Test database connectivity using simple approach
     log "Testing database connectivity..."
