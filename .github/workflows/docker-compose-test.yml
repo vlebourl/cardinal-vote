@@ -49,9 +49,6 @@ jobs:
           SUPER_ADMIN_EMAIL=ci-test@example.com
           SUPER_ADMIN_PASSWORD=ci_test_super_admin_password_32_chars_minimum_length_requirement
           JWT_SECRET_KEY=ci_test_jwt_secret_key_extremely_long_for_testing_64_chars_minimum_abcdef
-          ADMIN_PASSWORD=ci_test_admin_password_32_chars_minimum_length_requirement
-          ADMIN_USERNAME=ci_test_admin_username
-          SESSION_SECRET_KEY=ci_test_session_secret_key_32_chars_minimum_length_requirement
 
           # Application configuration
           CARDINAL_ENV=test
@@ -209,9 +206,6 @@ jobs:
           SUPER_ADMIN_EMAIL=test@admin.com
           SUPER_ADMIN_PASSWORD=test_super_admin_password_32_characters_minimum_length_security
           JWT_SECRET_KEY=test_jwt_secret_key_extremely_long_for_testing_64_characters_minimum_length_abcdef
-          ADMIN_PASSWORD=test_admin_password_32_characters_minimum_length_requirement
-          ADMIN_USERNAME=test_admin_username
-          SESSION_SECRET_KEY=test_session_secret_key_32_characters_minimum_length_requirement
 
           CARDINAL_ENV=test
           DEBUG=true
