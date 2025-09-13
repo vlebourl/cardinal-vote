@@ -78,8 +78,6 @@ WORKDIR /app
 # Copy application files
 COPY --chown=app:app templates/ ./templates/
 COPY --chown=app:app static/ ./static/
-COPY --chown=app:app alembic/ ./alembic/
-COPY --chown=app:app alembic.ini ./alembic.ini
 COPY --chown=app:app docker-entrypoint.sh ./docker-entrypoint.sh
 
 # Make entrypoint executable

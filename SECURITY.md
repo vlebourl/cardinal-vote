@@ -29,16 +29,6 @@ JWT_SECRET_KEY="your-jwt-secret-key-here"
 SUPER_ADMIN_EMAIL="admin@your-domain.com"
 SUPER_ADMIN_PASSWORD="your-super-admin-password-here"
 
-# Legacy Admin Account (minimum 12 characters)
-ADMIN_USERNAME="admin"
-ADMIN_PASSWORD="your-admin-password-here"
-```
-
-#### Session Security (Legacy Compatibility)
-
-```bash
-# Session Secret Key (minimum 32 characters)
-SESSION_SECRET_KEY="your-session-secret-key-here"
 ```
 
 ### 🛡️ Password Security Requirements
@@ -46,7 +36,7 @@ SESSION_SECRET_KEY="your-session-secret-key-here"
 #### Strength Requirements
 
 - **Database passwords**: Minimum 16 characters
-- **Admin passwords**: Minimum 16 characters for super admin, 12 for legacy admin
+- **Admin passwords**: Minimum 16 characters for super admin
 - **JWT/Session secrets**: Minimum 32 characters
 - **Complexity**: Use uppercase, lowercase, numbers, and special characters
 - **Uniqueness**: Never reuse passwords across different services
@@ -123,8 +113,6 @@ DEBUG=false
 POSTGRES_PASSWORD="your-secure-production-password"
 JWT_SECRET_KEY="your-secure-jwt-secret"
 SUPER_ADMIN_PASSWORD="your-secure-admin-password"
-ADMIN_PASSWORD="your-secure-legacy-password"
-SESSION_SECRET_KEY="your-secure-session-secret"
 
 # Production-specific configurations
 SUPER_ADMIN_EMAIL="admin@yourcompany.com"
@@ -168,7 +156,6 @@ docker-compose --env-file .env.production config
    ✅ JWT_SECRET_KEY: Set
    ✅ JWT_SECRET_KEY: Appears to be secure
    ✅ SUPER_ADMIN_PASSWORD: Set
-   ✅ ADMIN_PASSWORD: Set
 
 📊 VALIDATION SUMMARY:
    ✅ Passed: 8

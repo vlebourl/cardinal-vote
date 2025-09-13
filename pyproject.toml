@@ -34,7 +34,6 @@ dependencies = [
     "httpx>=0.25.0",
     # PostgreSQL and database dependencies
     "asyncpg>=0.29.0",
-    "alembic>=1.13.0",
     # JWT authentication dependencies
     "python-jose[cryptography]>=3.3.0",
     "passlib[bcrypt]>=1.7.4",

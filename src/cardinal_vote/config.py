@@ -98,16 +98,6 @@ class Settings:
         os.getenv("FLAG_RATE_WINDOW_MINUTES", "1")
     )  # window in minutes
 
-    # Legacy Admin settings (backward compatibility)
-    ADMIN_USERNAME: str = os.getenv("ADMIN_USERNAME", "")
-    ADMIN_PASSWORD: str = os.getenv("ADMIN_PASSWORD", "")
-    SESSION_SECRET_KEY: str = os.getenv("SESSION_SECRET_KEY", "")
-    SESSION_LIFETIME_HOURS: int = int(os.getenv("SESSION_LIFETIME_HOURS", "8"))
-    MAX_LOGIN_ATTEMPTS: int = int(os.getenv("MAX_LOGIN_ATTEMPTS", "5"))
-    LOGIN_ATTEMPT_WINDOW_MINUTES: int = int(
-        os.getenv("LOGIN_ATTEMPT_WINDOW_MINUTES", "15")
-    )
-
     # File upload settings (updated for generalized platform)
     ALLOWED_UPLOAD_EXTENSIONS: set[str] = {".png", ".jpg", ".jpeg", ".gif", ".webp"}
     UPLOAD_TEMP_DIR: Path = BASE_DIR / "temp_uploads"
@@ -156,20 +146,6 @@ class Settings:
         if not cls.SUPER_ADMIN_PASSWORD or cls.SUPER_ADMIN_PASSWORD == admin_default:
             missing_settings.append(
                 "SUPER_ADMIN_PASSWORD (must be changed from default)"
-            )
-
-        # Legacy admin settings (if using legacy mode)
-        if cls.ADMIN_USERNAME and not cls.ADMIN_PASSWORD:
-            missing_settings.append(
-                "ADMIN_PASSWORD (required when ADMIN_USERNAME is set)"
-            )
-        if cls.ADMIN_PASSWORD and not cls.ADMIN_USERNAME:
-            missing_settings.append(
-                "ADMIN_USERNAME (required when ADMIN_PASSWORD is set)"
-            )
-        if (cls.ADMIN_USERNAME or cls.ADMIN_PASSWORD) and not cls.SESSION_SECRET_KEY:
-            missing_settings.append(
-                "SESSION_SECRET_KEY (required for legacy admin sessions)"
             )
 
         if missing_settings:
