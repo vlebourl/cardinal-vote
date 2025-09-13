@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ app_name }} - Modern Voting Platform</title>
+    <meta name="description" content="Professional voting platform with Material Design. Create sophisticated votes with value-based ratings.">
+    <meta name="theme-color" content="#0061a4">
+
+    <!-- Material Design 3 CSS -->
+    <link rel="stylesheet" href="/static/css/material-design.css">
+
+    <!-- Google Fonts - Roboto -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+
+    <!-- Material Icons -->
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+
+    <!-- Landing Page Styles -->
+    <link rel="stylesheet" href="/static/css/landing-material.css">
+</head>
+<body>
+    <!-- Version Debug Info -->
+    <div class="debug-version-header">
+        Material Design v2.1.0 | CSS: material-design.css | Template: landing_material.html
+    </div>
+
+    <!-- Top App Bar -->
+    <header class="md-top-app-bar md-top-app-bar-elevated">
+        <button class="md-top-app-bar-navigation-icon" aria-label="Open navigation menu">
+            <span class="material-icons">menu</span>
+        </button>
+        <div class="md-top-app-bar-title">{{ app_name }}</div>
+        <button class="md-top-app-bar-action" aria-label="Search">
+            <span class="material-icons">search</span>
+        </button>
+        <button class="md-top-app-bar-action" aria-label="More options">
+            <span class="material-icons">more_vert</span>
+        </button>
+    </header>
+
+    <!-- Navigation Drawer -->
+    <nav class="md-navigation-drawer" id="navigationDrawer">
+        <div class="md-navigation-drawer-header">
+            <h3 class="md-headline-small">{{ app_name }}</h3>
+            <p class="md-body-medium md-on-surface-variant">Professional Voting Platform</p>
+        </div>
+        <div class="md-navigation-drawer-content">
+            <a href="#features" class="md-navigation-drawer-item">
+                <span class="material-icons md-navigation-drawer-item-icon">dashboard</span>
+                <span class="md-navigation-drawer-item-label">Features</span>
+            </a>
+            <a href="#how-it-works" class="md-navigation-drawer-item">
+                <span class="material-icons md-navigation-drawer-item-icon">help_outline</span>
+                <span class="md-navigation-drawer-item-label">How It Works</span>
+            </a>
+            <a href="#pricing" class="md-navigation-drawer-item">
+                <span class="material-icons md-navigation-drawer-item-icon">payments</span>
+                <span class="md-navigation-drawer-item-label">Pricing</span>
+            </a>
+            <a href="/super-admin/login" class="md-navigation-drawer-item">
+                <span class="material-icons md-navigation-drawer-item-icon">admin_panel_settings</span>
+                <span class="md-navigation-drawer-item-label">Admin</span>
+            </a>
+        </div>
+    </nav>
+    <div class="md-navigation-drawer-scrim" id="navigationScrim"></div>
+
+    <!-- Hero Section -->
+    <section class="hero-section">
+        <div class="md-container">
+            <div class="hero-content animate-fade-in-up">
+                <h1 class="md-display-large hero-title">Transform Your Decision Making</h1>
+                <p class="md-headline-small md-on-surface-variant">
+                    Create sophisticated voting experiences with our value-based rating system.
+                    Perfect for teams, organizations, and communities.
+                </p>
+                <div class="hero-actions">
+                    <button class="md-button md-button-filled">
+                        <span class="material-icons">rocket_launch</span>
+                        Start Free Trial
+                    </button>
+                    <button class="md-button md-button-outlined">
+                        <span class="material-icons">play_circle</span>
+                        Watch Demo
+                    </button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section class="md-container" id="features">
+        <div class="text-center">
+            <h2 class="md-display-small">Why Choose {{ app_name }}?</h2>
+            <p class="md-body-large md-on-surface-variant">
+                Powerful features designed for modern organizations
+            </p>
+        </div>
+
+        <div class="features-grid">
+            <div class="md-card md-card-elevated feature-card">
+                <div class="feature-icon">
+                    <span class="material-icons">analytics</span>
+                </div>
+                <h3 class="md-headline-small">Value-Based Voting</h3>
+                <p class="md-body-medium md-on-surface-variant">
+                    Express nuanced preferences with our -2 to +2 rating system for better collective decisions.
+                </p>
+            </div>
+
+            <div class="md-card md-card-elevated feature-card">
+                <div class="feature-icon">
+                    <span class="material-icons">palette</span>
+                </div>
+                <h3 class="md-headline-small">Custom Content</h3>
+                <p class="md-body-medium md-on-surface-variant">
+                    Support for images, documents, and any content type. Perfect for design reviews and planning.
+                </p>
+            </div>
+
+            <div class="md-card md-card-elevated feature-card">
+                <div class="feature-icon">
+                    <span class="material-icons">speed</span>
+                </div>
+                <h3 class="md-headline-small">Real-Time Results</h3>
+                <p class="md-body-medium md-on-surface-variant">
+                    Watch votes update live with detailed analytics and exportable data for deeper insights.
+                </p>
+            </div>
+
+            <div class="md-card md-card-elevated feature-card">
+                <div class="feature-icon">
+                    <span class="material-icons">security</span>
+                </div>
+                <h3 class="md-headline-small">Enterprise Security</h3>
+                <p class="md-body-medium md-on-surface-variant">
+                    Bank-level security with JWT authentication, rate limiting, and comprehensive audit trails.
+                </p>
+            </div>
+
+            <div class="md-card md-card-elevated feature-card">
+                <div class="feature-icon">
+                    <span class="material-icons">devices</span>
+                </div>
+                <h3 class="md-headline-small">Mobile First</h3>
+                <p class="md-body-medium md-on-surface-variant">
+                    Optimized for all devices with touch-friendly interfaces and offline support.
+                </p>
+            </div>
+
+            <div class="md-card md-card-elevated feature-card">
+                <div class="feature-icon">
+                    <span class="material-icons">share</span>
+                </div>
+                <h3 class="md-headline-small">Easy Sharing</h3>
+                <p class="md-body-medium md-on-surface-variant">
+                    Generate unique links, control access, and manage participant lists effortlessly.
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Stats Section -->
+    <section class="stats-section">
+        <div class="md-container">
+            <div class="stats-grid">
+                <div class="stat-item">
+                    <div class="stat-number">10K+</div>
+                    <div class="md-body-large stat-label">Active Organizations</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">1M+</div>
+                    <div class="md-body-large stat-label">Votes Created</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">99.9%</div>
+                    <div class="md-body-large stat-label">Uptime</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">4.9</div>
+                    <div class="md-body-large stat-label">User Rating</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- How It Works Section -->
+    <section class="how-it-works md-container" id="how-it-works">
+        <div class="text-center">
+            <h2 class="md-display-small">How It Works</h2>
+            <p class="md-body-large md-on-surface-variant">
+                Get started in minutes with our simple process
+            </p>
+        </div>
+
+        <div class="steps-container">
+            <div class="step-item">
+                <div class="step-number">1</div>
+                <h3 class="md-title-large">Create Your Vote</h3>
+                <p class="md-body-medium md-on-surface-variant">
+                    Set up your voting parameters and add content options
+                </p>
+            </div>
+            <div class="step-item">
+                <div class="step-number">2</div>
+                <h3 class="md-title-large">Share With Participants</h3>
+                <p class="md-body-medium md-on-surface-variant">
+                    Send unique links to your team or community members
+                </p>
+            </div>
+            <div class="step-item">
+                <div class="step-number">3</div>
+                <h3 class="md-title-large">Collect Votes</h3>
+                <p class="md-body-medium md-on-surface-variant">
+                    Participants rate options on the -2 to +2 scale
+                </p>
+            </div>
+            <div class="step-item">
+                <div class="step-number">4</div>
+                <h3 class="md-title-large">Analyze Results</h3>
+                <p class="md-body-medium md-on-surface-variant">
+                    View real-time analytics and make informed decisions
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="cta-section">
+        <div class="md-container cta-content">
+            <h2 class="md-display-medium cta-title">Ready to Transform Your Decision Making?</h2>
+            <p class="md-body-large cta-description">
+                Join thousands of organizations already using {{ app_name }} for better collective decisions.
+                Start your free trial today - no credit card required.
+            </p>
+            <button class="md-button md-button-filled cta-button-white">
+                <span class="material-icons">rocket_launch</span>
+                Start Your Free Trial
+            </button>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="md-container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h4 class="md-title-large">Product</h4>
+                    <ul class="footer-links">
+                        <li><a href="#features">Features</a></li>
+                        <li><a href="#pricing">Pricing</a></li>
+                        <li><a href="#security">Security</a></li>
+                        <li><a href="#roadmap">Roadmap</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4 class="md-title-large">Company</h4>
+                    <ul class="footer-links">
+                        <li><a href="#about">About Us</a></li>
+                        <li><a href="#blog">Blog</a></li>
+                        <li><a href="#careers">Careers</a></li>
+                        <li><a href="#contact">Contact</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4 class="md-title-large">Resources</h4>
+                    <ul class="footer-links">
+                        <li><a href="#docs">Documentation</a></li>
+                        <li><a href="#api">API Reference</a></li>
+                        <li><a href="#guides">Guides</a></li>
+                        <li><a href="#support">Support</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4 class="md-title-large">Legal</h4>
+                    <ul class="footer-links">
+                        <li><a href="#privacy">Privacy Policy</a></li>
+                        <li><a href="#terms">Terms of Service</a></li>
+                        <li><a href="#cookies">Cookie Policy</a></li>
+                        <li><a href="#gdpr">GDPR</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p class="md-body-medium">© 2025 {{ app_name }}. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scroll to Top FAB -->
+    <button class="scroll-to-top" id="scrollToTop" aria-label="Scroll to top">
+        <span class="material-icons">arrow_upward</span>
+    </button>
+
+    <!-- Snackbar for notifications -->
+    <div class="md-snackbar" id="snackbar">
+        <span id="snackbar-message">Welcome to {{ app_name }}!</span>
+        <button class="md-snackbar-action" id="snackbar-action">DISMISS</button>
+    </div>
+
+    <!-- Landing Page JavaScript -->
+    <script src="/static/js/landing-material.js"></script>
+</body>
+</html>

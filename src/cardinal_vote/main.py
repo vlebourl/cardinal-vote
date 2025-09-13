@@ -264,7 +264,7 @@ async def home(request: Request) -> HTMLResponse:
     """Serve the platform landing page."""
     try:
         return templates.TemplateResponse(
-            "landing.html",
+            "landing_material.html",
             {
                 "request": request,
                 "app_name": settings.APP_NAME,
