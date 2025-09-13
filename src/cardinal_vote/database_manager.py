@@ -69,7 +69,7 @@ class GeneralizedDatabaseManager:
             async with self.engine.begin() as conn:
                 # Create required PostgreSQL extensions first
                 await conn.execute(text("CREATE EXTENSION IF NOT EXISTS citext"))
-                await conn.execute(text("CREATE EXTENSION IF NOT EXISTS \"uuid-ossp\""))
+                await conn.execute(text('CREATE EXTENSION IF NOT EXISTS "uuid-ossp"'))
                 logger.info("PostgreSQL extensions enabled (citext, uuid-ossp)")
 
                 # Now create all tables
