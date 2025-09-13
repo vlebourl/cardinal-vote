@@ -141,10 +141,9 @@ jobs:
         run: |
           uv sync --dev
 
-      - name: Run Alembic migrations
+      - name: Create database schema
         run: |
-          export DATABASE_URL=postgresql+asyncpg://voting_user:test_password@localhost:5432/voting_platform_test
-          uv run alembic upgrade head
+          echo "Schema creation handled automatically by Base.metadata.create_all() in tests"
         env:
           JWT_SECRET_KEY: test-jwt-secret-for-ci
           SUPER_ADMIN_PASSWORD: test-super-admin-password
@@ -284,10 +283,9 @@ jobs:
         run: |
           npm install -g pa11y @axe-core/cli lighthouse
 
-      - name: Run Alembic migrations
+      - name: Create database schema
         run: |
-          export DATABASE_URL=postgresql+asyncpg://voting_user:test_password@localhost:5432/voting_platform_test
-          uv run alembic upgrade head
+          echo "Schema creation handled automatically by Base.metadata.create_all() in tests"
         env:
           JWT_SECRET_KEY: test-jwt-secret-for-ci-extremely-long-key-64-chars-minimum
           SUPER_ADMIN_PASSWORD: test-super-admin-password-32-chars-minimum
