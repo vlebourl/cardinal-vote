@@ -279,6 +279,26 @@ async def home(request: Request) -> HTMLResponse:
         ) from e
 
 
+@app.get("/dashboard", response_class=HTMLResponse, tags=["Frontend"])
+async def dashboard(request: Request) -> HTMLResponse:
+    """Serve the user dashboard page."""
+    try:
+        return templates.TemplateResponse(
+            "user_dashboard.html",
+            {
+                "request": request,
+                "app_name": settings.APP_NAME,
+                "app_version": settings.APP_VERSION,
+            },
+        )
+    except Exception as e:
+        logger.error(f"Failed to serve dashboard page: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to load dashboard page",
+        ) from e
+
+
 @app.get("/vote/{slug}", response_class=HTMLResponse, tags=["Frontend"])
 async def public_vote_page(
     request: Request,

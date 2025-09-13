@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - {{ app_name }}</title>
+    <meta name="description" content="Your voting dashboard - create, manage, and analyze votes.">
+    <meta name="theme-color" content="#0061a4">
+
+    <!-- Material Design 3 CSS -->
+    <link rel="stylesheet" href="/static/css/material-design.css">
+
+    <!-- Google Fonts - Roboto -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+
+    <!-- Material Icons -->
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+
+    <!-- Dashboard Styles -->
+    <link rel="stylesheet" href="/static/css/dashboard.css">
+</head>
+<body>
+    <!-- Top App Bar -->
+    <header class="md-top-app-bar md-top-app-bar-elevated">
+        <button class="md-top-app-bar-navigation-icon" aria-label="Open navigation menu">
+            <span class="material-icons">menu</span>
+        </button>
+        <div class="md-top-app-bar-title">{{ app_name }} Dashboard</div>
+        <button class="md-top-app-bar-action" aria-label="Create new vote" data-action="create-vote">
+            <span class="material-icons">add</span>
+        </button>
+        <button class="md-top-app-bar-action" aria-label="User menu" data-action="user-menu">
+            <span class="material-icons">account_circle</span>
+        </button>
+    </header>
+
+    <!-- Navigation Drawer -->
+    <nav class="md-navigation-drawer" id="navigationDrawer">
+        <div class="md-navigation-drawer-header">
+            <h3 class="md-headline-small">Welcome back!</h3>
+            <p class="md-body-medium md-on-surface-variant" id="userDisplayName">User</p>
+        </div>
+        <div class="md-navigation-drawer-content">
+            <a href="#dashboard" class="md-navigation-drawer-item md-navigation-drawer-item-selected">
+                <span class="material-icons md-navigation-drawer-item-icon">dashboard</span>
+                <span class="md-navigation-drawer-item-label">Dashboard</span>
+            </a>
+            <a href="#votes" class="md-navigation-drawer-item">
+                <span class="material-icons md-navigation-drawer-item-icon">how_to_vote</span>
+                <span class="md-navigation-drawer-item-label">My Votes</span>
+            </a>
+            <a href="#analytics" class="md-navigation-drawer-item">
+                <span class="material-icons md-navigation-drawer-item-icon">analytics</span>
+                <span class="md-navigation-drawer-item-label">Analytics</span>
+            </a>
+            <a href="#settings" class="md-navigation-drawer-item">
+                <span class="material-icons md-navigation-drawer-item-icon">settings</span>
+                <span class="md-navigation-drawer-item-label">Settings</span>
+            </a>
+            <hr class="md-divider">
+            <button type="button" class="md-navigation-drawer-item" data-action="logout">
+                <span class="material-icons md-navigation-drawer-item-icon">logout</span>
+                <span class="md-navigation-drawer-item-label">Sign Out</span>
+            </button>
+        </div>
+    </nav>
+    <div class="md-navigation-drawer-scrim" id="navigationScrim"></div>
+
+    <!-- Main Content -->
+    <main class="dashboard-content">
+        <!-- Welcome Section -->
+        <section class="welcome-section">
+            <div class="md-container">
+                <div class="welcome-card md-card md-card-elevated">
+                    <div class="welcome-content">
+                        <h1 class="md-display-small">Welcome to Your Dashboard</h1>
+                        <p class="md-body-large md-on-surface-variant">
+                            Start creating engaging votes and gathering valuable insights from your community.
+                        </p>
+                        <div class="welcome-actions">
+                            <button class="md-button md-button-filled" data-action="create-vote">
+                                <span class="material-icons">add</span>
+                                Create Your First Vote
+                            </button>
+                            <button class="md-button md-button-outlined">
+                                <span class="material-icons">help_outline</span>
+                                View Tutorial
+                            </button>
+                        </div>
+                    </div>
+                    <div class="welcome-illustration">
+                        <span class="material-icons">poll</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Quick Stats -->
+        <section class="stats-section">
+            <div class="md-container">
+                <h2 class="md-headline-medium section-title">Quick Overview</h2>
+                <div class="stats-grid">
+                    <div class="stat-card md-card md-card-elevated">
+                        <div class="stat-icon">
+                            <span class="material-icons">how_to_vote</span>
+                        </div>
+                        <div class="stat-content">
+                            <h3 class="md-title-large" id="totalVotes">0</h3>
+                            <p class="md-body-medium md-on-surface-variant">Total Votes</p>
+                        </div>
+                    </div>
+
+                    <div class="stat-card md-card md-card-elevated">
+                        <div class="stat-icon">
+                            <span class="material-icons">trending_up</span>
+                        </div>
+                        <div class="stat-content">
+                            <h3 class="md-title-large" id="activeVotes">0</h3>
+                            <p class="md-body-medium md-on-surface-variant">Active Votes</p>
+                        </div>
+                    </div>
+
+                    <div class="stat-card md-card md-card-elevated">
+                        <div class="stat-icon">
+                            <span class="material-icons">people</span>
+                        </div>
+                        <div class="stat-content">
+                            <h3 class="md-title-large" id="totalResponses">0</h3>
+                            <p class="md-body-medium md-on-surface-variant">Total Responses</p>
+                        </div>
+                    </div>
+
+                    <div class="stat-card md-card md-card-elevated">
+                        <div class="stat-icon">
+                            <span class="material-icons">schedule</span>
+                        </div>
+                        <div class="stat-content">
+                            <h3 class="md-title-large" id="recentActivity">0</h3>
+                            <p class="md-body-medium md-on-surface-variant">This Week</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Recent Votes -->
+        <section class="recent-votes-section">
+            <div class="md-container">
+                <div class="section-header">
+                    <h2 class="md-headline-medium">Recent Votes</h2>
+                    <button class="md-button md-button-text" data-action="view-all-votes">
+                        View All
+                        <span class="material-icons">arrow_forward</span>
+                    </button>
+                </div>
+
+                <div class="votes-list" id="recentVotesList">
+                    <!-- Recent votes will be loaded here -->
+                    <div class="empty-state">
+                        <div class="empty-state-icon">
+                            <span class="material-icons">inbox</span>
+                        </div>
+                        <h3 class="md-headline-small">No votes yet</h3>
+                        <p class="md-body-medium md-on-surface-variant">
+                            Create your first vote to start gathering insights from your community.
+                        </p>
+                        <button class="md-button md-button-filled" data-action="create-vote">
+                            <span class="material-icons">add</span>
+                            Create Vote
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- User Menu -->
+    <div class="md-menu" id="userMenu" style="display: none;">
+        <div class="md-menu-item" data-action="profile">
+            <span class="material-icons">person</span>
+            <span>Profile</span>
+        </div>
+        <div class="md-menu-item" data-action="settings">
+            <span class="material-icons">settings</span>
+            <span>Settings</span>
+        </div>
+        <hr class="md-divider">
+        <div class="md-menu-item" data-action="logout">
+            <span class="material-icons">logout</span>
+            <span>Sign Out</span>
+        </div>
+    </div>
+
+    <!-- Snackbar for notifications -->
+    <div class="md-snackbar" id="snackbar">
+        <span id="snackbar-message">Ready to create amazing votes!</span>
+        <button class="md-snackbar-action" id="snackbar-action">DISMISS</button>
+    </div>
+
+    <!-- Dashboard JavaScript -->
+    <script src="/static/js/dashboard.js"></script>
+</body>
+</html>
