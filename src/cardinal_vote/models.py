@@ -47,22 +47,6 @@ class VoteRecord(Base):
         return f"{self.voter_first_name} {self.voter_last_name}"
 
 
-class AdminUser(Base):
-    """SQLAlchemy model for admin users."""
-
-    __tablename__ = "admin_users"
-
-    id = Column(Integer, primary_key=True, autoincrement=True)
-    username = Column(String(50), unique=True, nullable=False)
-    password_hash = Column(String(255), nullable=False)
-    is_active = Column(Boolean, default=True, nullable=False)
-    created_at = Column(DateTime, nullable=False, default=datetime.utcnow)
-    last_login = Column(DateTime)
-
-    def __repr__(self) -> str:
-        return f"<AdminUser(id={self.id}, username='{self.username}')>"
-
-
 # Generalized Platform Models (PostgreSQL)
 
 
@@ -359,19 +343,6 @@ class AdminLogin(BaseModel):
                 "Username can only contain letters, numbers, hyphens, and underscores"
             )
         return v
-
-
-class AdminUserData(BaseModel):
-    """Pydantic model for admin user data."""
-
-    id: int
-    username: str
-    is_active: bool
-    created_at: datetime
-    last_login: datetime | None = None
-
-    class Config:
-        from_attributes = True
 
 
 class VoteManagement(BaseModel):
