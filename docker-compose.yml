@@ -18,7 +18,11 @@ services:
     # To access database from host (pgAdmin, psql, etc), use docker-compose.override.yml
     # See README.md "Docker Database Configuration" section for details
     healthcheck:
-      test: ['CMD-SHELL', 'pg_isready -U ${POSTGRES_USER:-voting_user} -d ${POSTGRES_DB:-voting_platform}']
+      test:
+        [
+          'CMD-SHELL',
+          'pg_isready -U ${POSTGRES_USER:-voting_user} -d ${POSTGRES_DB:-voting_platform}'
+        ]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -56,8 +60,6 @@ services:
       - JWT_ALGORITHM=${JWT_ALGORITHM:-HS256}
       - JWT_ACCESS_TOKEN_EXPIRE_MINUTES=${JWT_ACCESS_TOKEN_EXPIRE_MINUTES:-30}
       - JWT_REFRESH_TOKEN_EXPIRE_DAYS=${JWT_REFRESH_TOKEN_EXPIRE_DAYS:-7}
-      # Session Configuration (legacy compatibility)
-      - SESSION_SECRET_KEY=${SESSION_SECRET_KEY:?SESSION_SECRET_KEY environment variable is required for security}
       # Email Configuration
       - EMAIL_BACKEND=${EMAIL_BACKEND:-mock}
       - SMTP_HOST=${SMTP_HOST:-localhost}
@@ -71,9 +73,6 @@ services:
       # Super Admin Configuration
       - SUPER_ADMIN_EMAIL=${SUPER_ADMIN_EMAIL:-admin@voting-platform.local}
       - SUPER_ADMIN_PASSWORD=${SUPER_ADMIN_PASSWORD:?SUPER_ADMIN_PASSWORD environment variable is required for security}
-      # Legacy Admin Configuration (backwards compatibility)
-      - ADMIN_USERNAME=${ADMIN_USERNAME:?ADMIN_USERNAME environment variable is required for security}
-      - ADMIN_PASSWORD=${ADMIN_PASSWORD:?ADMIN_PASSWORD environment variable is required for security}
       # CORS Configuration
       - ALLOWED_ORIGINS=${ALLOWED_ORIGINS:-http://localhost:3000,http://localhost:8000,http://127.0.0.1:8000}
     volumes:
@@ -87,7 +86,13 @@ services:
       # - ./templates:/app/templates:ro
       # - ./static:/app/static:ro
     healthcheck:
-      test: ['CMD', 'python', '-c', "import requests; requests.get('http://localhost:8000/api/health', timeout=5)"]
+      test:
+        [
+          'CMD',
+          'python',
+          '-c',
+          "import requests; requests.get('http://localhost:8000/api/health', timeout=5)"
+        ]
       interval: 30s
       timeout: 10s
       retries: 3

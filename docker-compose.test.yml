@@ -50,10 +50,6 @@ services:
       # Test database configuration
       - TEST_DATABASE_URL=postgresql+asyncpg://test_user:test_password@postgres-test:5432/test_cardinal_vote
       - DATABASE_URL=postgresql+asyncpg://test_user:test_password@postgres-test:5432/test_cardinal_vote
-      # Test admin credentials
-      - ADMIN_USERNAME=test_admin
-      - ADMIN_PASSWORD=test_password_for_integration_tests_only
-      - SESSION_SECRET_KEY=test_session_key_for_tests_only_not_production
       # Super admin test credentials
       - SUPER_ADMIN_EMAIL=test@admin.com
       - SUPER_ADMIN_PASSWORD=test_super_admin_password

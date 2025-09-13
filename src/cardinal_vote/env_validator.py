@@ -128,7 +128,7 @@ class EnvValidator:
                     f"JWT_SECRET_KEY too short ({len(jwt_secret)} chars). Minimum 32 characters required for security.",
                 )
             )
-        elif jwt_secret == "test-jwt-secret-key" or "test" in jwt_secret.lower():
+        elif "test" in jwt_secret.lower():
             if os.getenv("CARDINAL_ENV") == "production":
                 self.errors.append(
                     (
@@ -136,13 +136,6 @@ class EnvValidator:
                         "JWT_SECRET_KEY contains 'test' in production. This is a security risk!",
                     )
                 )
-
-        # Session Secret Key (legacy compatibility)
-        session_secret = os.getenv("SESSION_SECRET_KEY")
-        if session_secret and len(session_secret) < 32:
-            self.warnings.append(
-                f"SESSION_SECRET_KEY too short ({len(session_secret)} chars). Consider using 32+ characters."
-            )
 
         # Super Admin Password
         super_admin_pass = os.getenv("SUPER_ADMIN_PASSWORD")
@@ -155,11 +148,6 @@ class EnvValidator:
             )
         else:
             self._validate_password_strength(super_admin_pass, "SUPER_ADMIN_PASSWORD")
-
-        # Admin Password (legacy)
-        admin_pass = os.getenv("ADMIN_PASSWORD")
-        if admin_pass:
-            self._validate_password_strength(admin_pass, "ADMIN_PASSWORD")
 
     def _validate_password_strength(self, password: str, var_name: str) -> None:
         """Validate password strength"""
