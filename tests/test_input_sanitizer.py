@@ -153,9 +153,9 @@ class TestInputSanitizer:
         result = InputSanitizer.sanitize_email("user\x00@example.com")
         assert "\x00" not in result
 
-        # Test case normalization
+        # Test case normalization: preserves local part, normalizes domain
         result = InputSanitizer.sanitize_email("USER@EXAMPLE.COM")
-        assert result == "user@example.com"
+        assert result == "USER@example.com"
 
     def test_sanitize_username_valid(self):
         """Test valid username sanitization"""
@@ -328,7 +328,7 @@ class TestInputSanitizer:
 
         result = InputSanitizer.sanitize_form_data(form_data)
 
-        assert result["email"] == "user@example.com"
+        assert result["email"] == "USER@example.com"
         assert result["username"] == "test_user"
         assert result["password"] == "validpassword123"
         assert result["first_name"] == "John"
@@ -411,7 +411,7 @@ class TestConvenienceFunctions:
         from cardinal_vote.input_sanitizer import sanitize_email
 
         result = sanitize_email("USER@EXAMPLE.COM")
-        assert result == "user@example.com"
+        assert result == "USER@example.com"
 
         result = sanitize_email("invalid-email")
         assert result == ""
@@ -423,5 +423,5 @@ class TestConvenienceFunctions:
         form_data = {"email": "USER@EXAMPLE.COM", "text": "Hello"}
         result = sanitize_form(form_data)
 
-        assert result["email"] == "user@example.com"
+        assert result["email"] == "USER@example.com"
         assert result["text"] == "Hello"

@@ -6,7 +6,6 @@
     <title>{% block title %}Super Admin{% endblock %} - {{ app_name or 'Cardinal Vote' }}</title>
 
     <!-- Security Headers -->
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline';">
     <meta http-equiv="X-Frame-Options" content="DENY">
     <meta http-equiv="X-Content-Type-Options" content="nosniff">
 
@@ -127,65 +126,11 @@
     </div>
 
     <!-- Base JavaScript -->
+    <script src="{{ url_for('static', path='/js/html-sanitizer.js') }}"></script>
     <script src="{{ url_for('static', path='/js/event-handlers.js') }}" defer></script>
     <script src="{{ url_for('static', path='/js/super-admin.js') }}"></script>
-
-    <!-- JWT Token management -->
-    <script>
-        // JWT token management for API calls
-        window.apiConfig = {
-            baseURL: '/api/admin',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${localStorage.getItem('jwt_token') || ''}`
-            }
-        };
-
-        // Add authorization header to all fetch requests
-        const originalFetch = window.fetch;
-        window.fetch = function(url, options = {}) {
-            const token = localStorage.getItem('jwt_token');
-            if (token && !options.headers?.Authorization) {
-                options.headers = {
-                    ...options.headers,
-                    'Authorization': `Bearer ${token}`
-                };
-            }
-            return originalFetch(url, options);
-        };
-
-        // Handle authentication errors
-        function handleAuthError(response) {
-            if (response.status === 401) {
-                localStorage.removeItem('jwt_token');
-                window.location.href = '/login';
-                return true;
-            }
-            return false;
-        }
-    </script>
+    <script src="{{ url_for('static', path='/js/admin-auth.js') }}"></script>
 
     {% block extra_js %}{% endblock %}
-
-    <!-- Logout functionality -->
-    {% if user %}
-    <script>
-    document.getElementById('logoutBtn').addEventListener('click', async function() {
-        if (confirm('Are you sure you want to logout?')) {
-            try {
-                // Clear JWT token
-                localStorage.removeItem('jwt_token');
-
-                // Redirect to login
-                window.location.href = '/login';
-
-            } catch (error) {
-                console.error('Logout error:', error);
-                showMessage('Error during logout', 'error');
-            }
-        }
-    });
-    </script>
-    {% endif %}
 </body>
 </html>

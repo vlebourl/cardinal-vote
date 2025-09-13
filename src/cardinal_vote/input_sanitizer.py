@@ -157,13 +157,21 @@ class InputSanitizer:
         if not email:
             return ""
 
-        email = str(email).strip().lower()
+        email = str(email).strip()
 
         # Remove null bytes and control characters only (not full text sanitization)
         email = email.replace("\x00", "")
         email = "".join(
             char for char in email if not unicodedata.category(char).startswith("C")
         )
+
+        # Normalize email case: preserve local part, normalize domain part
+        if "@" in email:
+            local_part, domain_part = email.rsplit("@", 1)
+            email = f"{local_part}@{domain_part.lower()}"
+        else:
+            # No @ symbol, convert to lowercase for validation
+            email = email.lower()
 
         # Basic email validation (now using pre-compiled pattern)
         if not cls.EMAIL_PATTERN.match(email):
@@ -233,8 +241,15 @@ class InputSanitizer:
         if len(password) < 8 or len(password) > cls.MAX_LENGTHS["password"]:
             return ""
 
-        # Don't allow null bytes
-        if "\x00" in password:
+        # Don't allow control characters (0x00-0x1F and 0x7F-0x9F)
+        if any(ord(c) < 32 or (127 <= ord(c) <= 159) for c in password):
+            logger.warning("Password rejected: contains control characters")
+            return ""
+
+        # Don't allow common dangerous patterns
+        dangerous_patterns = ["\x00", "\r\n", "\n", "\r", "\t"]
+        if any(pattern in password for pattern in dangerous_patterns):
+            logger.warning("Password rejected: contains dangerous patterns")
             return ""
 
         # Password should be hashed anyway, so return as-is if valid
