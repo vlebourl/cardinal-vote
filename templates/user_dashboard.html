@@ -175,6 +175,78 @@
                 </div>
             </div>
         </section>
+
+        <!-- Vote Management -->
+        <section class="vote-management-section">
+            <div class="md-container">
+                <div class="section-header">
+                    <h2 class="md-headline-medium">Manage Votes</h2>
+                    <div class="filter-actions">
+                        <div class="filter-buttons">
+                            <button class="md-button md-button-filled filter-btn active" data-filter="all" data-action="filter-votes">
+                                All
+                            </button>
+                            <button class="md-button md-button-outlined filter-btn" data-filter="draft" data-action="filter-votes">
+                                <span class="material-icons">edit</span>
+                                Draft
+                            </button>
+                            <button class="md-button md-button-outlined filter-btn" data-filter="active" data-action="filter-votes">
+                                <span class="material-icons">trending_up</span>
+                                Active
+                            </button>
+                            <button class="md-button md-button-outlined filter-btn" data-filter="closed" data-action="filter-votes">
+                                <span class="material-icons">archive</span>
+                                Closed
+                            </button>
+                        </div>
+                        <div class="sort-dropdown">
+                            <select class="md-select" id="sortSelect" data-action="sort-votes">
+                                <option value="created_at">Date Created</option>
+                                <option value="title">Title</option>
+                                <option value="response_count">Responses</option>
+                                <option value="status">Status</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="vote-management-container">
+                    <div class="vote-list" id="voteList">
+                        <!-- Vote cards will be populated by JavaScript -->
+                        <div class="loading-state" id="voteListLoading">
+                            <div class="loading-skeleton">
+                                <div class="skeleton-card"></div>
+                                <div class="skeleton-card"></div>
+                                <div class="skeleton-card"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Load More Button -->
+                    <div class="load-more-container" id="loadMoreContainer" style="display: none;">
+                        <button class="md-button md-button-outlined" id="loadMoreBtn" data-action="load-more-votes">
+                            <span class="btn-text">Load More</span>
+                            <span class="material-icons btn-loading" style="display: none;">refresh</span>
+                        </button>
+                    </div>
+
+                    <!-- Empty State -->
+                    <div class="empty-state" id="voteListEmpty" style="display: none;">
+                        <div class="empty-state-icon">
+                            <span class="material-icons">ballot</span>
+                        </div>
+                        <h3 class="md-headline-small">No votes found</h3>
+                        <p class="md-body-medium md-on-surface-variant">
+                            Create your first vote or adjust your filters to see results.
+                        </p>
+                        <button class="md-button md-button-filled" data-action="create-vote">
+                            <span class="material-icons">add</span>
+                            Create Vote
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
     </main>
 
     <!-- User Menu -->
@@ -279,14 +351,240 @@
         </div>
     </div>
 
+    <!-- Edit Vote Modal -->
+    <div class="md-dialog-scrim" id="editVoteModalScrim" role="dialog" aria-labelledby="edit-vote-modal-title" aria-hidden="true">
+        <div class="md-dialog edit-vote-dialog" id="editVoteModal">
+            <div class="md-dialog-icon">
+                <span class="material-icons">edit</span>
+            </div>
+            <h2 class="md-dialog-headline" id="edit-vote-modal-title">Edit Vote</h2>
+            <div class="md-dialog-supporting-text">
+                <form id="editVoteForm" class="vote-form">
+                    <!-- Title Field -->
+                    <div class="md-text-field md-text-field-outlined">
+                        <input type="text" id="editVoteTitle" class="md-text-field-input" placeholder=" " required
+                               maxlength="200" aria-describedby="edit-vote-title-help">
+                        <label for="editVoteTitle" class="md-text-field-label">Vote Title</label>
+                    </div>
+                    <div id="edit-vote-title-help" class="md-text-field-helper">Enter a clear, descriptive title for your vote</div>
+
+                    <!-- Description Field -->
+                    <div class="md-text-field md-text-field-outlined">
+                        <textarea id="editVoteDescription" class="md-text-field-input" placeholder=" " rows="3"
+                                  maxlength="1000" aria-describedby="edit-vote-description-help"></textarea>
+                        <label for="editVoteDescription" class="md-text-field-label">Description (Optional)</label>
+                    </div>
+                    <div id="edit-vote-description-help" class="md-text-field-helper">Provide context or instructions for voters</div>
+
+                    <!-- Status Warning -->
+                    <div class="status-warning" id="editStatusWarning" style="display: none;">
+                        <div class="warning-content">
+                            <span class="material-icons">warning</span>
+                            <div class="warning-text">
+                                <h4>Limited Editing</h4>
+                                <p id="warningMessage">This vote is active. You can only edit the title and description.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Dynamic Options Container (conditionally disabled) -->
+                    <div class="vote-options-container" id="editOptionsContainer">
+                        <h3 class="md-title-medium">Vote Options</h3>
+                        <div id="editVoteOptionsContainer" class="options-list">
+                            <!-- Dynamic option fields will be inserted here -->
+                        </div>
+                        <div class="option-controls">
+                            <button type="button" class="md-button md-button-outlined" id="editAddOptionBtn" data-action="add-edit-option">
+                                <span class="material-icons">add</span>
+                                Add Option
+                            </button>
+                            <span class="option-counter" id="editOptionCounter">0 of 20 options</span>
+                        </div>
+                    </div>
+
+                    <!-- Access Settings (conditionally disabled) -->
+                    <div class="access-settings" id="editAccessSettings">
+                        <h3 class="md-title-medium">Access Settings</h3>
+                        <div class="setting-row">
+                            <label class="md-switch">
+                                <input type="checkbox" id="editRequireAuth" class="md-switch-input" />
+                                <div class="md-switch-track">
+                                    <div class="md-switch-thumb"></div>
+                                </div>
+                            </label>
+                            <span>Require user account to vote</span>
+                        </div>
+                        <div class="setting-row">
+                            <label class="md-switch">
+                                <input type="checkbox" id="editUseAccessCode" class="md-switch-input" />
+                                <div class="md-switch-track">
+                                    <div class="md-switch-thumb"></div>
+                                </div>
+                            </label>
+                            <span>Protect with access code</span>
+                        </div>
+                        <div class="md-text-field md-text-field-outlined access-code-field" id="editAccessCodeField" style="display: none;">
+                            <input type="text" id="editAccessCode" class="md-text-field-input" placeholder=" " maxlength="50">
+                            <label for="editAccessCode" class="md-text-field-label">Access Code</label>
+                        </div>
+                    </div>
+
+                    <div class="vote-error" id="editVoteError" style="display: none;">
+                        <span class="material-icons">error</span>
+                        <span id="editVoteErrorMessage"></span>
+                    </div>
+
+                    <!-- Hidden field to track vote ID -->
+                    <input type="hidden" id="editVoteId" />
+                </form>
+            </div>
+            <div class="md-dialog-actions">
+                <button type="button" class="md-button md-button-text" data-action="close-modal" data-modal="edit-vote">
+                    Cancel
+                </button>
+                <button type="submit" form="editVoteForm" class="md-button md-button-filled" id="saveVoteBtn">
+                    <span class="btn-text">Save Changes</span>
+                    <span class="material-icons btn-loading" style="display: none;">refresh</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Delete Confirmation Modal -->
+    <div class="md-dialog-scrim" id="deleteVoteModalScrim" role="dialog" aria-labelledby="delete-vote-modal-title" aria-hidden="true">
+        <div class="md-dialog delete-vote-dialog" id="deleteVoteModal">
+            <div class="md-dialog-icon danger">
+                <span class="material-icons">delete</span>
+            </div>
+            <h2 class="md-dialog-headline" id="delete-vote-modal-title">Delete Vote</h2>
+            <div class="md-dialog-supporting-text">
+                <p>Are you sure you want to delete this vote?</p>
+                <div class="delete-warning">
+                    <p><strong id="deleteVoteTitle">Vote Title</strong></p>
+                    <p class="warning-text" id="deleteWarningText">
+                        This action cannot be undone. All responses will be preserved but the vote will be permanently deleted.
+                    </p>
+                </div>
+
+                <!-- Hidden field to track vote ID -->
+                <input type="hidden" id="deleteVoteId" />
+            </div>
+            <div class="md-dialog-actions">
+                <button type="button" class="md-button md-button-text" data-action="close-modal" data-modal="delete-vote">
+                    Cancel
+                </button>
+                <button type="button" class="md-button md-button-filled danger" id="confirmDeleteBtn" data-action="confirm-delete-vote">
+                    <span class="btn-text">Delete Vote</span>
+                    <span class="material-icons btn-loading" style="display: none;">refresh</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Results Visualization Modal -->
+    <div class="md-dialog-scrim results-modal-scrim" id="resultsModalScrim" role="dialog" aria-labelledby="results-modal-title" aria-hidden="true">
+        <div class="md-dialog results-dialog" id="resultsModal">
+            <div class="md-dialog-icon">
+                <span class="material-icons">analytics</span>
+            </div>
+            <h2 class="md-dialog-headline" id="results-modal-title">Vote Results</h2>
+            <div class="md-dialog-supporting-text">
+                <div class="results-container">
+                    <!-- Results Header -->
+                    <div class="results-header">
+                        <div class="results-meta">
+                            <h3 id="resultsVoteTitle" class="md-title-large">Vote Title</h3>
+                            <div class="results-stats">
+                                <div class="stat-item">
+                                    <span class="stat-value" id="totalVoteResponses">0</span>
+                                    <span class="stat-label">Total Votes</span>
+                                </div>
+                                <div class="stat-item">
+                                    <span class="stat-value" id="averageRating">0.0</span>
+                                    <span class="stat-label">Average Rating</span>
+                                </div>
+                                <div class="stat-item">
+                                    <span class="stat-value" id="participationRate">0%</span>
+                                    <span class="stat-label">Participation</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="results-actions">
+                            <button class="md-button md-button-outlined" data-action="export-csv" id="exportCsvBtn">
+                                <span class="material-icons">download</span>
+                                CSV
+                            </button>
+                            <button class="md-button md-button-outlined" data-action="export-json" id="exportJsonBtn">
+                                <span class="material-icons">download</span>
+                                JSON
+                            </button>
+                            <button class="md-button md-button-text" data-action="refresh-results" id="refreshResultsBtn">
+                                <span class="material-icons">refresh</span>
+                                Refresh
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Charts Container -->
+                    <div class="charts-container">
+                        <div class="chart-section">
+                            <h4 class="md-title-medium">Vote Distribution</h4>
+                            <div class="chart-wrapper">
+                                <canvas id="resultsBarChart" width="400" height="200"></canvas>
+                            </div>
+                        </div>
+                        <div class="chart-section">
+                            <h4 class="md-title-medium">Rating Overview</h4>
+                            <div class="chart-wrapper">
+                                <canvas id="resultsPieChart" width="300" height="200"></canvas>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Detailed Results Table -->
+                    <div class="results-table-container">
+                        <h4 class="md-title-medium">Detailed Results</h4>
+                        <div class="results-table">
+                            <table class="md-table">
+                                <thead>
+                                    <tr>
+                                        <th>Option</th>
+                                        <th>Average Rating</th>
+                                        <th>Total Votes</th>
+                                        <th>Distribution</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="resultsTableBody">
+                                    <!-- Populated by JavaScript -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Hidden field to track vote ID -->
+                <input type="hidden" id="resultsVoteId" />
+            </div>
+            <div class="md-dialog-actions">
+                <button type="button" class="md-button md-button-text" data-action="close-modal" data-modal="results">
+                    Close
+                </button>
+            </div>
+        </div>
+    </div>
+
     <!-- Snackbar for notifications -->
     <div class="md-snackbar" id="snackbar">
         <span id="snackbar-message">Ready to create amazing votes!</span>
         <button class="md-snackbar-action" id="snackbar-action">DISMISS</button>
     </div>
 
+    <!-- Chart.js for results visualization -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
     <!-- Dashboard JavaScript -->
     <script src="/static/js/dashboard.js"></script>
     <script src="/static/js/vote-creation-manager.js"></script>
+    <script src="/static/js/vote-management-manager.js"></script>
 </body>
 </html>

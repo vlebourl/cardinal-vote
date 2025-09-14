@@ -71,7 +71,10 @@ class DashboardManager {
     }
   }
 
-  handleAction(action, _element) {
+  handleAction(action, element) {
+    const voteId = element.dataset.voteId
+    const modalType = element.dataset.modal
+
     switch (action) {
       case 'create-vote':
         this.createVote()
@@ -91,6 +94,85 @@ class DashboardManager {
       case 'view-all-votes':
         this.viewAllVotes()
         break
+
+      // Vote Management Actions
+      case 'filter-votes':
+        if (window.voteManager) {
+          const filter = element.dataset.filter
+          window.voteManager.filterVotes(filter)
+        }
+        break
+      case 'sort-votes':
+        if (window.voteManager) {
+          window.voteManager.resetAndReload()
+        }
+        break
+      case 'load-more-votes':
+        if (window.voteManager) {
+          window.voteManager.loadMoreVotes()
+        }
+        break
+      case 'edit-vote':
+        if (window.voteManager && voteId) {
+          window.voteManager.openEditModal(voteId)
+        }
+        break
+      case 'delete-vote':
+        if (window.voteManager && voteId) {
+          window.voteManager.openDeleteModal(voteId)
+        }
+        break
+      case 'view-results':
+        if (window.voteManager && voteId) {
+          window.voteManager.openResultsModal(voteId)
+        }
+        break
+      case 'confirm-delete-vote':
+        if (window.voteManager) {
+          window.voteManager.confirmDeleteVote()
+        }
+        break
+      case 'export-csv':
+        if (window.voteManager) {
+          const resultsVoteId = document.getElementById('resultsVoteId')?.value
+          if (resultsVoteId) {
+            window.voteManager.exportVoteData(resultsVoteId, 'csv')
+          }
+        }
+        break
+      case 'export-json':
+        if (window.voteManager) {
+          const resultsVoteId = document.getElementById('resultsVoteId')?.value
+          if (resultsVoteId) {
+            window.voteManager.exportVoteData(resultsVoteId, 'json')
+          }
+        }
+        break
+      case 'refresh-results':
+        if (window.voteManager) {
+          const resultsVoteId = document.getElementById('resultsVoteId')?.value
+          if (resultsVoteId) {
+            window.voteManager.loadAndDisplayResults(resultsVoteId)
+          }
+        }
+        break
+      case 'close-modal':
+        if (window.voteManager && modalType) {
+          window.voteManager.closeModal(modalType)
+        }
+        break
+      case 'view-vote':
+        if (voteId) {
+          // Open vote in new tab/window
+          window.open(`/vote/${voteId}`, '_blank')
+        }
+        break
+      case 'copy-link':
+        if (voteId) {
+          this.copyVoteLink(voteId)
+        }
+        break
+
       default:
         console.log('Unhandled action:', action)
     }
@@ -374,8 +456,35 @@ class DashboardManager {
   }
 
   viewAllVotes() {
-    // For now, show a placeholder message
-    this.showSnackbar('Vote management feature coming soon!')
+    // Scroll to vote management section
+    const voteManagementSection = document.querySelector('.vote-management-section')
+    if (voteManagementSection) {
+      voteManagementSection.scrollIntoView({ behavior: 'smooth' })
+    }
+  }
+
+  copyVoteLink(voteId) {
+    const vote = window.voteManager?.votes.find(v => v.id === parseInt(voteId))
+    if (vote && vote.slug) {
+      const link = `${window.location.origin}/vote/${vote.slug}`
+      navigator.clipboard
+        .writeText(link)
+        .then(() => {
+          this.showSnackbar('Vote link copied to clipboard!')
+        })
+        .catch(() => {
+          // Fallback for older browsers
+          const textArea = document.createElement('textarea')
+          textArea.value = link
+          document.body.appendChild(textArea)
+          textArea.select()
+          document.execCommand('copy')
+          document.body.removeChild(textArea)
+          this.showSnackbar('Vote link copied to clipboard!')
+        })
+    } else {
+      this.showSnackbar('Unable to copy vote link')
+    }
   }
 
   showProfile() {

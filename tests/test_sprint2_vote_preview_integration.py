@@ -569,7 +569,7 @@ class TestSharingFunctionality:
                     assert "email" in social_links
 
                     # Each social link should contain the public URL
-                    for platform, link in social_links.items():
+                    for _platform, link in social_links.items():
                         assert isinstance(link, str)
                         assert len(link) > 0
 

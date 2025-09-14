@@ -1,0 +1,92 @@
+# Page snapshot
+
+```yaml
+- generic [active] [ref=e1]:
+    - banner [ref=e2]:
+        - button "Open navigation menu" [ref=e3] [cursor=pointer]:
+            - generic [ref=e4] [cursor=pointer]: menu
+        - generic [ref=e5]: Generalized Voting Platform
+        - button "Search" [ref=e6] [cursor=pointer]:
+            - generic [ref=e7] [cursor=pointer]: search
+        - button "More options" [ref=e8] [cursor=pointer]:
+            - generic [ref=e9] [cursor=pointer]: more_vert
+    - navigation [ref=e10]:
+        - generic [ref=e11]:
+            - heading "Generalized Voting Platform" [level=3] [ref=e12]
+            - paragraph [ref=e13]: Free Voting Platform
+        - generic [ref=e14]:
+            - link "dashboard Features" [ref=e15] [cursor=pointer]:
+                - /url: '#features'
+                - generic [ref=e16] [cursor=pointer]: dashboard
+                - generic [ref=e17] [cursor=pointer]: Features
+            - link "help_outline How It Works" [ref=e18] [cursor=pointer]:
+                - /url: '#how-it-works'
+                - generic [ref=e19] [cursor=pointer]: help_outline
+                - generic [ref=e20] [cursor=pointer]: How It Works
+            - button "admin_panel_settings Sign In" [ref=e21] [cursor=pointer]:
+                - generic [ref=e22] [cursor=pointer]: admin_panel_settings
+                - generic [ref=e23] [cursor=pointer]: Sign In
+    - generic [ref=e26]:
+        - heading "Transform Your Decision Making" [level=1] [ref=e27]
+        - paragraph [ref=e28]: Create sophisticated voting experiences with our value-based rating system. Perfect for teams, organizations, and communities.
+        - button "rocket_launch Get Started" [ref=e30] [cursor=pointer]:
+            - generic [ref=e31] [cursor=pointer]: rocket_launch
+            - text: Get Started
+    - generic [ref=e32]:
+        - generic [ref=e33]:
+            - heading "Why Choose Generalized Voting Platform?" [level=2] [ref=e34]
+            - paragraph [ref=e35]: Powerful features designed for modern organizations
+        - generic [ref=e36]:
+            - generic [ref=e37] [cursor=pointer]:
+                - generic [ref=e39] [cursor=pointer]: analytics
+                - heading "Value-Based Voting" [level=3] [ref=e40] [cursor=pointer]
+                - paragraph [ref=e41] [cursor=pointer]: Express nuanced preferences with our -2 to +2 rating system for better collective decisions.
+            - generic [ref=e42] [cursor=pointer]:
+                - generic [ref=e44] [cursor=pointer]: palette
+                - heading "Custom Content" [level=3] [ref=e45] [cursor=pointer]
+                - paragraph [ref=e46] [cursor=pointer]: Support for images, documents, and any content type. Perfect for design reviews and planning.
+            - generic [ref=e47] [cursor=pointer]:
+                - generic [ref=e49] [cursor=pointer]: speed
+                - heading "Real-Time Results" [level=3] [ref=e50] [cursor=pointer]
+                - paragraph [ref=e51] [cursor=pointer]: Watch votes update live with detailed analytics and exportable data for deeper insights.
+            - generic [ref=e52] [cursor=pointer]:
+                - generic [ref=e54] [cursor=pointer]: security
+                - heading "Enterprise Security" [level=3] [ref=e55] [cursor=pointer]
+                - paragraph [ref=e56] [cursor=pointer]: Bank-level security with JWT authentication, rate limiting, and comprehensive audit trails.
+            - generic [ref=e57] [cursor=pointer]:
+                - generic [ref=e59] [cursor=pointer]: devices
+                - heading "Mobile First" [level=3] [ref=e60] [cursor=pointer]
+                - paragraph [ref=e61] [cursor=pointer]: Optimized for all devices with touch-friendly interfaces and offline support.
+            - generic [ref=e62] [cursor=pointer]:
+                - generic [ref=e64] [cursor=pointer]: share
+                - heading "Easy Sharing" [level=3] [ref=e65] [cursor=pointer]
+                - paragraph [ref=e66] [cursor=pointer]: Generate unique links, control access, and manage participant lists effortlessly.
+    - generic [ref=e67]:
+        - generic [ref=e68]:
+            - heading "How It Works" [level=2] [ref=e69]
+            - paragraph [ref=e70]: Get started in minutes with our simple process
+        - generic [ref=e71]:
+            - generic [ref=e72]:
+                - generic [ref=e73]: '1'
+                - heading "Create Your Vote" [level=3] [ref=e74]
+                - paragraph [ref=e75]: Set up your voting parameters and add content options
+            - generic [ref=e76]:
+                - generic [ref=e77]: '2'
+                - heading "Share With Participants" [level=3] [ref=e78]
+                - paragraph [ref=e79]: Send unique links to your team or community members
+            - generic [ref=e80]:
+                - generic [ref=e81]: '3'
+                - heading "Collect Votes" [level=3] [ref=e82]
+                - paragraph [ref=e83]: Participants rate options on the -2 to +2 scale
+            - generic [ref=e84]:
+                - generic [ref=e85]: '4'
+                - heading "Analyze Results" [level=3] [ref=e86]
+                - paragraph [ref=e87]: View real-time analytics and make informed decisions
+    - generic [ref=e89]:
+        - heading "Ready to Transform Your Decision Making?" [level=2] [ref=e90]
+        - paragraph [ref=e91]: Start making better collective decisions with our free voting platform. Simple, powerful, and ready to use.
+        - button "rocket_launch Get Started Now" [ref=e92] [cursor=pointer]:
+            - generic [ref=e93] [cursor=pointer]: rocket_launch
+            - text: Get Started Now
+    - generic [ref=e95]: Welcome to Generalized Voting Platform! Start your free trial today.
+```

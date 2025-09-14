@@ -13,7 +13,7 @@ For local testing, run:
 """
 
 import os
-from datetime import datetime, timedelta
+from datetime import datetime
 from unittest.mock import patch
 from uuid import uuid4
 
@@ -23,7 +23,7 @@ from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_asyn
 
 from cardinal_vote.dependencies import get_async_session
 from cardinal_vote.main import app
-from cardinal_vote.models import Base, User, Vote, VoteOption
+from cardinal_vote.models import Base, User
 
 TEST_DATABASE_URL = os.getenv(
     "TEST_DATABASE_URL",

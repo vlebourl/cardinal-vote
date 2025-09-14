@@ -196,7 +196,7 @@ class TestEnhancedDashboardStats:
                     assert isinstance(result["draft_votes"], int)
                     assert isinstance(result["completed_votes"], int)
                     assert isinstance(result["total_responses"], int)
-                    assert isinstance(result["response_rate"], (int, float))
+                    assert isinstance(result["response_rate"], int | float)
                     assert isinstance(result["votes_by_status"], dict)
 
         finally:
@@ -428,7 +428,6 @@ class TestDashboardIntegration:
 
                     # Activity timeline should show activities within the timeframe
                     activities = activity_data["activities"]
-                    vote_creation_activities = [a for a in activities if a["type"] == "vote_created"]
 
                     # Should have some relationship between stats and activities
                     assert total_votes_from_stats > 0

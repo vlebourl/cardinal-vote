@@ -1,7 +1,7 @@
 """Test authentication integration helpers."""
 
 import uuid
-from typing import Any, Dict
+from typing import Any
 
 from fastapi.testclient import TestClient
 
@@ -15,7 +15,7 @@ def get_test_client() -> TestClient:
 
 async def create_test_user(
     email: str = None, password: str = "testpassword123"
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """Create a test user via the registration API."""
     if email is None:
         # Generate unique email for each test
@@ -43,7 +43,7 @@ async def create_test_user(
         raise Exception(f"Failed to create test user: {response.status_code} - {response.text}")
 
 
-async def get_auth_headers(email: str, password: str) -> Dict[str, str]:
+async def get_auth_headers(email: str, password: str) -> dict[str, str]:
     """Get authentication headers for a user."""
     client = get_test_client()
 
@@ -65,7 +65,7 @@ async def get_auth_headers(email: str, password: str) -> Dict[str, str]:
         raise Exception(f"Failed to authenticate user: {response.status_code} - {response.text}")
 
 
-def create_authenticated_client() -> tuple[TestClient, Dict[str, str]]:
+def create_authenticated_client() -> tuple[TestClient, dict[str, str]]:
     """Create a test client with authenticated headers.
 
     Returns:
