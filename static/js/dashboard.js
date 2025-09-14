@@ -180,17 +180,29 @@ class DashboardManager {
     if (!token) return
 
     try {
-      // Load user's votes
-      const votesResponse = await fetch(`${this.API_BASE}/votes/`, {
+      // Load enhanced dashboard statistics
+      const statsResponse = await fetch(`${this.API_BASE}/votes/dashboard/stats`, {
         headers: {
           Authorization: `Bearer ${token}`
         }
       })
 
-      if (votesResponse.ok) {
-        const votesData = await votesResponse.json()
-        this.updateStats(votesData)
-        this.updateRecentVotes(votesData.votes)
+      if (statsResponse.ok) {
+        const statsData = await statsResponse.json()
+        this.updateEnhancedStats(statsData)
+        this.updateRecentVotes(statsData.recent_votes)
+      }
+
+      // Load activity timeline
+      const activityResponse = await fetch(`${this.API_BASE}/votes/dashboard/activity?days=7&limit=10`, {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      })
+
+      if (activityResponse.ok) {
+        const activityData = await activityResponse.json()
+        this.updateActivityTimeline(activityData)
       }
     } catch (error) {
       console.error('Failed to load dashboard data:', error)
@@ -198,23 +210,41 @@ class DashboardManager {
     }
   }
 
-  updateStats(votesData) {
-    const votes = votesData.votes || []
+  updateEnhancedStats(statsData) {
+    const statusCards = statsData.status_cards || {}
 
-    // Update stat counters
-    document.getElementById('totalVotes').textContent = votes.length
-    document.getElementById('activeVotes').textContent = votes.filter(vote => vote.status === 'active').length
+    // Update all 6 status card metrics
+    const totalVotesEl = document.getElementById('totalVotes')
+    const activeVotesEl = document.getElementById('activeVotes')
+    const totalResponsesEl = document.getElementById('totalResponses')
+    const recentActivityEl = document.getElementById('recentActivity')
 
-    // For now, set mock data for responses and recent activity
-    document.getElementById('totalResponses').textContent = '0'
-    document.getElementById('recentActivity').textContent = votes.length
+    if (totalVotesEl) totalVotesEl.textContent = statusCards.total_votes || 0
+    if (activeVotesEl) activeVotesEl.textContent = statusCards.active_votes || 0
+    if (totalResponsesEl) totalResponsesEl.textContent = statusCards.total_responses || 0
+    if (recentActivityEl) recentActivityEl.textContent = statusCards.weekly_activity || 0
+
+    // Add additional status cards if they exist in the DOM
+    const draftVotesEl = document.getElementById('draftVotes')
+    const closedVotesEl = document.getElementById('closedVotes')
+
+    if (draftVotesEl) draftVotesEl.textContent = statusCards.draft_votes || 0
+    if (closedVotesEl) closedVotesEl.textContent = statusCards.closed_votes || 0
+
+    // Update user display if available
+    if (statsData.user) {
+      const userDisplayName = document.getElementById('userDisplayName')
+      if (userDisplayName && statsData.user.full_name) {
+        userDisplayName.textContent = statsData.user.full_name
+      }
+    }
   }
 
   updateRecentVotes(votes) {
     const recentVotesList = document.getElementById('recentVotesList')
     if (!recentVotesList) return
 
-    if (votes.length === 0) {
+    if (!votes || votes.length === 0) {
       // Show empty state (already in HTML)
       return
     }
@@ -224,6 +254,95 @@ class DashboardManager {
     const voteItems = recentVotes.map(vote => this.createVoteItem(vote)).join('')
 
     recentVotesList.innerHTML = voteItems
+  }
+
+  updateActivityTimeline(activityData) {
+    const activityContainer = document.getElementById('activityTimeline')
+    if (!activityContainer) {
+      // Create activity timeline section if it doesn't exist
+      this.createActivityTimelineSection()
+      return this.updateActivityTimeline(activityData)
+    }
+
+    const activities = activityData.activities || []
+
+    if (activities.length === 0) {
+      activityContainer.innerHTML = `
+        <div class="empty-state">
+          <div class="empty-state-icon">
+            <span class="material-icons">timeline</span>
+          </div>
+          <h3 class="md-headline-small">No recent activity</h3>
+          <p class="md-body-medium md-on-surface-variant">
+            Activity from the last 7 days will appear here.
+          </p>
+        </div>
+      `
+      return
+    }
+
+    const activityItems = activities.map(activity => this.createActivityItem(activity)).join('')
+    activityContainer.innerHTML = `
+      <div class="activity-list">
+        ${activityItems}
+      </div>
+    `
+  }
+
+  createActivityTimelineSection() {
+    const welcomeSection = document.querySelector('.welcome-section')
+    if (!welcomeSection) return
+
+    const activitySection = document.createElement('section')
+    activitySection.className = 'activity-section'
+    activitySection.innerHTML = `
+      <div class="md-container">
+        <div class="section-header">
+          <h2 class="md-headline-medium">Recent Activity</h2>
+          <span class="md-body-small md-on-surface-variant">Last 7 days</span>
+        </div>
+        <div class="activity-timeline-container md-card md-card-elevated">
+          <div id="activityTimeline" class="activity-timeline">
+            <!-- Activity items will be loaded here -->
+          </div>
+        </div>
+      </div>
+    `
+
+    // Insert after the welcome section
+    welcomeSection.parentNode.insertBefore(activitySection, welcomeSection.nextSibling)
+  }
+
+  createActivityItem(activity) {
+    const timeAgo = this.formatTimeAgo(new Date(activity.timestamp))
+    const colorClass = `activity-${activity.color || 'primary'}`
+
+    return `
+      <div class="activity-item ${colorClass}" data-activity-id="${activity.id}">
+        <div class="activity-icon">
+          <span class="material-icons">${activity.icon || 'circle'}</span>
+        </div>
+        <div class="activity-content">
+          <h4 class="activity-title md-title-small">${this.escapeHtml(activity.title)}</h4>
+          <p class="activity-description md-body-medium md-on-surface-variant">
+            ${this.escapeHtml(activity.description)}
+          </p>
+          <span class="activity-time md-body-small md-on-surface-variant">${timeAgo}</span>
+        </div>
+      </div>
+    `
+  }
+
+  formatTimeAgo(date) {
+    const now = new Date()
+    const diffInSeconds = Math.floor((now - date) / 1000)
+
+    if (diffInSeconds < 60) return 'Just now'
+    if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)}m ago`
+    if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)}h ago`
+    if (diffInSeconds < 604800) return `${Math.floor(diffInSeconds / 86400)}d ago`
+
+    return date.toLocaleDateString()
   }
 
   createVoteItem(vote) {
@@ -250,8 +369,8 @@ class DashboardManager {
   }
 
   createVote() {
-    // For now, show a placeholder message
-    this.showSnackbar('Vote creation feature coming soon!')
+    // The VoteCreationManager handles this via data-action="create-vote"
+    // This method is kept for compatibility but the modal is handled automatically
   }
 
   viewAllVotes() {

@@ -379,6 +379,117 @@ async def public_vote_page(
         ) from e
 
 
+@app.get("/vote-preview/{vote_id}", response_class=HTMLResponse, tags=["Frontend"])
+async def vote_preview_page(
+    request: Request,
+    vote_id: str,
+    session: AsyncDatabaseSession,
+) -> HTMLResponse:
+    """Serve the vote preview and sharing page."""
+    try:
+        # Import here to avoid circular imports
+        from .dependencies import get_auth_manager
+        from .vote_routes import get_vote_preview
+
+        # Get current user (required for vote preview)
+        auth_manager = get_auth_manager()
+        user = None
+
+        # Try to get user from session token
+        try:
+            from fastapi.security.utils import get_authorization_scheme_param
+
+            authorization = request.headers.get("Authorization")
+            if authorization:
+                scheme, token = get_authorization_scheme_param(authorization)
+                if scheme.lower() == "bearer" and token:
+                    payload = auth_manager.verify_token(token)
+                    if payload:
+                        from uuid import UUID
+
+                        user_id_str = payload.get("sub")
+                        if user_id_str:
+                            user_id = UUID(user_id_str)
+                            user = await auth_manager.get_user_by_id(user_id, session)
+        except Exception:
+            # Expected: token validation or user lookup may fail
+            logger.debug("Token validation failed during vote preview authentication")
+
+        # Check for session storage token in cookies or headers
+        if not user:
+            # Check for token in cookies (fallback for browser sessions)
+            session_token: str | None = request.cookies.get("access_token")
+            if not session_token:
+                # Check for X-Auth-Token header as fallback
+                session_token = request.headers.get("X-Auth-Token")
+
+            if session_token:
+                try:
+                    payload = auth_manager.verify_token(session_token)
+                    if payload:
+                        from uuid import UUID
+
+                        user_id_str = payload.get("sub")
+                        if user_id_str:
+                            user_id = UUID(user_id_str)
+                            user = await auth_manager.get_user_by_id(user_id, session)
+                except Exception:
+                    # Expected: token validation or user lookup may fail
+                    logger.debug(
+                        "Session token validation failed during vote preview authentication"
+                    )
+
+        if not user:
+            # Redirect to login if not authenticated
+            return templates.TemplateResponse(
+                "landing_material.html",
+                {
+                    "request": request,
+                    "app_name": settings.APP_NAME,
+                    "login_required": True,
+                    "redirect_message": "Please log in to view your vote preview.",
+                },
+            )
+
+        # Get vote preview data using the API endpoint
+        try:
+            preview_data = await get_vote_preview(vote_id, user, session)
+        except HTTPException as e:
+            if e.status_code == 404:
+                raise HTTPException(
+                    status_code=status.HTTP_404_NOT_FOUND,
+                    detail="Vote not found",
+                ) from e
+            elif e.status_code == 403:
+                raise HTTPException(
+                    status_code=status.HTTP_403_FORBIDDEN,
+                    detail="Not authorized to view this vote",
+                ) from e
+            else:
+                raise
+
+        return templates.TemplateResponse(
+            "vote_preview.html",
+            {
+                "request": request,
+                "app_name": settings.APP_NAME,
+                "vote": preview_data["vote"],
+                "stats": preview_data["stats"],
+                "sharing": preview_data["sharing"],
+                "access_settings": preview_data["access_settings"],
+            },
+        )
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Failed to serve vote preview page for vote {vote_id}: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to load vote preview page",
+        ) from e
+
+
 # Legacy API endpoints removed - these were broken due to removed DatabaseManager dependency
 # Use generalized platform API endpoints instead (available through auth_router and vote_router)
 

@@ -347,3 +347,180 @@ body {
     transform: translateX(0);
   }
 }
+
+/* Activity Timeline Section */
+.activity-section {
+  padding: 32px 0;
+  background-color: var(--md-sys-color-surface-container-lowest);
+}
+
+.activity-timeline-container {
+  background-color: var(--md-sys-color-surface);
+  padding: 24px;
+  border-radius: var(--md-sys-shape-corner-large);
+  max-height: 500px;
+  overflow-y: auto;
+}
+
+.activity-timeline {
+  position: relative;
+}
+
+.activity-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.activity-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  padding: 16px;
+  border-radius: var(--md-sys-shape-corner-medium);
+  background-color: var(--md-sys-color-surface-container-low);
+  transition: all 0.2s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.activity-item::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+  background-color: var(--md-sys-color-primary);
+  border-radius: 0 2px 2px 0;
+}
+
+.activity-item.activity-success::before {
+  background-color: var(--md-sys-color-tertiary);
+}
+
+.activity-item.activity-warning::before {
+  background-color: var(--md-sys-color-secondary);
+}
+
+.activity-item.activity-error::before {
+  background-color: var(--md-sys-color-error);
+}
+
+.activity-item:hover {
+  background-color: var(--md-sys-color-surface-container);
+  transform: translateY(-1px);
+  box-shadow: var(--md-elevation-level1);
+}
+
+.activity-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: var(--md-sys-shape-corner-full);
+  background-color: var(--md-sys-color-primary-container);
+  color: var(--md-sys-color-on-primary-container);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  font-size: 20px;
+}
+
+.activity-item.activity-success .activity-icon {
+  background-color: var(--md-sys-color-tertiary-container);
+  color: var(--md-sys-color-on-tertiary-container);
+}
+
+.activity-item.activity-warning .activity-icon {
+  background-color: var(--md-sys-color-secondary-container);
+  color: var(--md-sys-color-on-secondary-container);
+}
+
+.activity-item.activity-error .activity-icon {
+  background-color: var(--md-sys-color-error-container);
+  color: var(--md-sys-color-on-error-container);
+}
+
+.activity-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.activity-title {
+  margin: 0 0 4px 0;
+  color: var(--md-sys-color-on-surface);
+  font-weight: var(--md-sys-typescale-title-small-weight);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.activity-description {
+  margin: 0 0 8px 0;
+  color: var(--md-sys-color-on-surface-variant);
+  line-height: 1.4;
+}
+
+.activity-time {
+  margin: 0;
+  color: var(--md-sys-color-outline);
+  font-size: var(--md-sys-typescale-body-small-size);
+}
+
+/* Activity Timeline Empty State */
+.activity-timeline .empty-state {
+  padding: 48px 32px;
+}
+
+.activity-timeline .empty-state-icon .material-icons {
+  font-size: 48px;
+}
+
+/* Activity Timeline Responsive Design */
+@media (max-width: 640px) {
+  .activity-section {
+    padding: 24px 0;
+  }
+
+  .activity-timeline-container {
+    padding: 16px;
+    max-height: 400px;
+  }
+
+  .activity-item {
+    padding: 12px;
+  }
+
+  .activity-icon {
+    width: 36px;
+    height: 36px;
+    font-size: 18px;
+  }
+
+  .activity-title {
+    font-size: var(--md-sys-typescale-body-large-size);
+  }
+
+  .activity-description {
+    font-size: var(--md-sys-typescale-body-small-size);
+  }
+}
+
+/* Activity Timeline Scrollbar Styling */
+.activity-timeline-container::-webkit-scrollbar {
+  width: 8px;
+}
+
+.activity-timeline-container::-webkit-scrollbar-track {
+  background: var(--md-sys-color-surface-variant);
+  border-radius: 4px;
+}
+
+.activity-timeline-container::-webkit-scrollbar-thumb {
+  background: var(--md-sys-color-outline-variant);
+  border-radius: 4px;
+}
+
+.activity-timeline-container::-webkit-scrollbar-thumb:hover {
+  background: var(--md-sys-color-outline);
+}

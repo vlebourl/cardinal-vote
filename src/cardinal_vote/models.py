@@ -121,6 +121,8 @@ class Vote(Base):
     )
     starts_at = Column(DateTime(timezone=True))
     ends_at = Column(DateTime(timezone=True))
+    require_auth = Column(Boolean, default=False, nullable=False)
+    access_code = Column(String(50), nullable=True)
 
     # Relationships
     creator: Mapped["User"] = relationship("User", back_populates="votes")
@@ -514,6 +516,13 @@ class VoteCreate(BaseModel):
     )
     starts_at: datetime | None = Field(None, description="When voting starts")
     ends_at: datetime | None = Field(None, description="When voting ends")
+    require_auth: bool = Field(False, description="Require user authentication to vote")
+    access_code: str | None = Field(
+        None, max_length=50, description="Optional access code protection"
+    )
+    options: list["VoteOptionCreate"] = Field(
+        ..., min_length=2, max_length=20, description="Vote options"
+    )
 
     @validator("title")
     def validate_title(cls, v: str) -> str:

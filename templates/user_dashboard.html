@@ -20,6 +20,7 @@
 
     <!-- Dashboard Styles -->
     <link rel="stylesheet" href="/static/css/dashboard.css">
+    <link rel="stylesheet" href="/static/css/vote-creation.css">
 </head>
 <body>
     <!-- Top App Bar -->
@@ -193,6 +194,91 @@
         </div>
     </div>
 
+    <!-- Vote Creation Modal -->
+    <div class="md-dialog-scrim" id="voteCreationModalScrim" role="dialog" aria-labelledby="vote-creation-modal-title" aria-hidden="true">
+        <div class="md-dialog vote-creation-dialog" id="voteCreationModal">
+            <div class="md-dialog-icon">
+                <span class="material-icons">poll</span>
+            </div>
+            <h2 class="md-dialog-headline" id="vote-creation-modal-title">Create New Vote</h2>
+            <div class="md-dialog-supporting-text">
+                <form id="voteCreationForm" class="vote-form">
+                    <!-- Title Field -->
+                    <div class="md-text-field md-text-field-outlined">
+                        <input type="text" id="voteTitle" class="md-text-field-input" placeholder=" " required
+                               maxlength="200" aria-describedby="vote-title-help">
+                        <label for="voteTitle" class="md-text-field-label">Vote Title</label>
+                    </div>
+                    <div id="vote-title-help" class="md-text-field-helper">Enter a clear, descriptive title for your vote</div>
+
+                    <!-- Description Field -->
+                    <div class="md-text-field md-text-field-outlined">
+                        <textarea id="voteDescription" class="md-text-field-input" placeholder=" " rows="3"
+                                  maxlength="1000" aria-describedby="vote-description-help"></textarea>
+                        <label for="voteDescription" class="md-text-field-label">Description (Optional)</label>
+                    </div>
+                    <div id="vote-description-help" class="md-text-field-helper">Provide context or instructions for voters</div>
+
+                    <!-- Dynamic Options Container -->
+                    <div class="vote-options-container">
+                        <h3 class="md-title-medium">Vote Options</h3>
+                        <div id="voteOptionsContainer" class="options-list">
+                            <!-- Dynamic option fields will be inserted here -->
+                        </div>
+                        <div class="option-controls">
+                            <button type="button" class="md-button md-button-outlined" id="addOptionBtn" data-action="add-option">
+                                <span class="material-icons">add</span>
+                                Add Option
+                            </button>
+                            <span class="option-counter">2 of 20 options</span>
+                        </div>
+                    </div>
+
+                    <!-- Access Settings -->
+                    <div class="access-settings">
+                        <h3 class="md-title-medium">Access Settings</h3>
+                        <div class="setting-row">
+                            <label class="md-switch">
+                                <input type="checkbox" id="requireAuth" class="md-switch-input" />
+                                <div class="md-switch-track">
+                                    <div class="md-switch-thumb"></div>
+                                </div>
+                            </label>
+                            <span>Require user account to vote</span>
+                        </div>
+                        <div class="setting-row">
+                            <label class="md-switch">
+                                <input type="checkbox" id="useAccessCode" class="md-switch-input" />
+                                <div class="md-switch-track">
+                                    <div class="md-switch-thumb"></div>
+                                </div>
+                            </label>
+                            <span>Protect with access code</span>
+                        </div>
+                        <div class="md-text-field md-text-field-outlined access-code-field" id="accessCodeField" style="display: none;">
+                            <input type="text" id="accessCode" class="md-text-field-input" placeholder=" " maxlength="50">
+                            <label for="accessCode" class="md-text-field-label">Access Code</label>
+                        </div>
+                    </div>
+
+                    <div class="vote-error" id="voteCreationError" style="display: none;">
+                        <span class="material-icons">error</span>
+                        <span id="voteCreationErrorMessage"></span>
+                    </div>
+                </form>
+            </div>
+            <div class="md-dialog-actions">
+                <button type="button" class="md-button md-button-text" data-action="close-modal" data-modal="vote-creation">
+                    Cancel
+                </button>
+                <button type="submit" form="voteCreationForm" class="md-button md-button-filled" id="createVoteBtn">
+                    <span class="btn-text">Create Vote</span>
+                    <span class="material-icons btn-loading" style="display: none;">refresh</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
     <!-- Snackbar for notifications -->
     <div class="md-snackbar" id="snackbar">
         <span id="snackbar-message">Ready to create amazing votes!</span>
@@ -201,5 +287,6 @@
 
     <!-- Dashboard JavaScript -->
     <script src="/static/js/dashboard.js"></script>
+    <script src="/static/js/vote-creation-manager.js"></script>
 </body>
 </html>
