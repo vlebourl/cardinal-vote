@@ -88,6 +88,19 @@ class DashboardManager {
       case 'profile':
         this.showProfile()
         break
+      case 'switch-profile-tab':
+        if (window.profileManager) {
+          const tabName = element.dataset.tab
+          window.profileManager.switchTab(tabName)
+        }
+        break
+      case 'close-modal':
+        if (modalType === 'profile' && window.profileManager) {
+          window.profileManager.closeModal()
+        } else if (window.voteManager && modalType) {
+          window.voteManager.closeModal(modalType)
+        }
+        break
       case 'settings':
         this.showSettings()
         break
@@ -156,11 +169,6 @@ class DashboardManager {
           }
         }
         break
-      case 'close-modal':
-        if (window.voteManager && modalType) {
-          window.voteManager.closeModal(modalType)
-        }
-        break
       case 'view-vote':
         if (voteId) {
           // Open vote in new tab/window
@@ -170,6 +178,23 @@ class DashboardManager {
       case 'copy-link':
         if (voteId) {
           this.copyVoteLink(voteId)
+        }
+        break
+
+      // Account Deletion Actions
+      case 'show-delete-confirmation':
+        if (window.profileManager) {
+          window.profileManager.showDeleteConfirmation()
+        }
+        break
+      case 'close-delete-modal':
+        if (window.profileManager) {
+          window.profileManager.closeDeleteModal()
+        }
+        break
+      case 'confirm-account-deletion':
+        if (window.profileManager) {
+          window.profileManager.confirmAccountDeletion()
         }
         break
 
@@ -489,7 +514,11 @@ class DashboardManager {
 
   showProfile() {
     this.closeUserMenu()
-    this.showSnackbar('Profile settings coming soon!')
+    if (window.profileManager) {
+      window.profileManager.openModal()
+    } else {
+      this.showSnackbar('Profile manager not loaded')
+    }
   }
 
   showSettings() {

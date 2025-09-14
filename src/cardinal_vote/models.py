@@ -496,6 +496,49 @@ class VoteModerationAction(Base):
         return f"<VoteModerationAction(id={self.id}, action='{self.action_type}', moderator_id={self.moderator_id})>"
 
 
+class AccountDeletionLog(Base):
+    """SQLAlchemy model for logging account deletions for GDPR compliance."""
+
+    __tablename__ = "account_deletion_logs"
+
+    id = Column(
+        PostgreSQL_UUID(as_uuid=True),
+        primary_key=True,
+        server_default=func.gen_random_uuid(),
+    )
+    deleted_user_id = Column(
+        PostgreSQL_UUID(as_uuid=True),
+        nullable=False,  # Store the deleted user's ID for audit purposes
+    )
+    deleted_user_email = Column(CITEXT, nullable=False)  # Store email for audit
+    deleted_user_name = Column(String(200), nullable=False)  # Store full name for audit
+    deletion_reason = Column(String(100), default="user_requested", nullable=False)
+    deleted_at = Column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False
+    )
+    deleted_by_user_id = Column(
+        PostgreSQL_UUID(as_uuid=True),
+        nullable=True,  # NULL if user deleted their own account
+    )
+    ip_address = Column(INET, nullable=True)  # IP address of deletion request
+    user_agent = Column(Text, nullable=True)  # User agent of deletion request
+    data_summary = Column(JSONB, nullable=True)  # Summary of deleted data for audit
+
+    # Constraints and Indexes
+    __table_args__ = (
+        CheckConstraint(
+            "deletion_reason IN ('user_requested', 'admin_action', 'gdpr_request', 'violation')",
+            name="check_deletion_reason",
+        ),
+        Index("idx_deletion_logs_deleted_user_id", "deleted_user_id"),
+        Index("idx_deletion_logs_deleted_at", "deleted_at"),
+        Index("idx_deletion_logs_email", "deleted_user_email"),
+    )
+
+    def __repr__(self) -> str:
+        return f"<AccountDeletionLog(id={self.id}, user_id={self.deleted_user_id}, email='{self.deleted_user_email}')>"
+
+
 # ============================================================================
 # Generalized Platform Pydantic Models
 # ============================================================================

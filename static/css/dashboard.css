@@ -524,3 +524,507 @@ body {
 .activity-timeline-container::-webkit-scrollbar-thumb:hover {
   background: var(--md-sys-color-outline);
 }
+
+/* Profile Management Modal */
+.profile-dialog {
+  width: 600px;
+  max-width: 90vw;
+}
+
+/* Profile Tabs */
+.md-tabs {
+  display: flex;
+  border-bottom: 1px solid var(--md-sys-color-outline-variant);
+  margin-bottom: 24px;
+}
+
+.md-tab {
+  background: none;
+  border: none;
+  padding: 16px 24px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--md-sys-color-on-surface-variant);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border-bottom: 3px solid transparent;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+}
+
+.md-tab:hover {
+  background-color: var(--md-sys-color-surface-variant);
+  color: var(--md-sys-color-on-surface);
+}
+
+.md-tab-active {
+  color: var(--md-sys-color-primary);
+  border-bottom-color: var(--md-sys-color-primary);
+}
+
+.md-tab .material-icons {
+  font-size: 20px;
+}
+
+/* Tab Panels */
+.md-tab-panel {
+  display: none;
+}
+
+.md-tab-panel-active {
+  display: block;
+}
+
+/* Profile Form */
+.profile-form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  max-height: 400px;
+  overflow-y: auto;
+  padding-right: 8px;
+}
+
+.profile-form .md-text-field {
+  margin: 0;
+}
+
+/* Email Verification Status */
+.email-verification-status {
+  background-color: var(--md-sys-color-surface-container-low);
+  border-radius: 12px;
+  padding: 16px;
+  margin: 16px 0;
+}
+
+.verification-indicator {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.verification-icon {
+  font-size: 24px;
+}
+
+.verification-icon.verified {
+  color: var(--md-sys-color-tertiary);
+}
+
+.verification-icon.unverified {
+  color: var(--md-sys-color-error);
+}
+
+.verification-text {
+  font-weight: 500;
+  color: var(--md-sys-color-on-surface);
+}
+
+.verification-details {
+  margin: 0;
+  line-height: 1.4;
+}
+
+/* Password Strength Indicator */
+.password-strength {
+  background-color: var(--md-sys-color-surface-container-low);
+  border-radius: 8px;
+  padding: 12px;
+  margin: 8px 0;
+}
+
+.strength-label {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--md-sys-color-on-surface-variant);
+  margin-bottom: 8px;
+}
+
+.strength-indicator {
+  width: 100%;
+  height: 4px;
+  background-color: var(--md-sys-color-outline-variant);
+  border-radius: 2px;
+  overflow: hidden;
+  margin-bottom: 8px;
+}
+
+.strength-bar {
+  height: 100%;
+  transition: all 0.3s ease;
+  border-radius: 2px;
+}
+
+.strength-bar.weak {
+  width: 25%;
+  background-color: var(--md-sys-color-error);
+}
+
+.strength-bar.fair {
+  width: 50%;
+  background-color: #ff9800;
+}
+
+.strength-bar.good {
+  width: 75%;
+  background-color: #2196f3;
+}
+
+.strength-bar.strong {
+  width: 100%;
+  background-color: var(--md-sys-color-tertiary);
+}
+
+.strength-text {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--md-sys-color-on-surface);
+}
+
+/* Profile Error/Success Messages */
+.profile-error,
+.profile-success {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px;
+  border-radius: 8px;
+  font-size: 14px;
+  margin: 16px 0;
+}
+
+.profile-error {
+  background-color: var(--md-sys-color-error-container);
+  color: var(--md-sys-color-on-error-container);
+}
+
+.profile-success {
+  background-color: var(--md-sys-color-tertiary-container);
+  color: var(--md-sys-color-on-tertiary-container);
+}
+
+.profile-error .material-icons,
+.profile-success .material-icons {
+  font-size: 20px;
+}
+
+/* Profile Dialog Actions */
+.profile-dialog .md-dialog-actions {
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.profile-dialog .md-dialog-actions button {
+  flex: 0 0 auto;
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+  .profile-dialog {
+    width: 100%;
+    max-width: calc(100vw - 32px);
+    max-height: calc(100vh - 64px);
+  }
+
+  .profile-form {
+    max-height: 300px;
+  }
+
+  .md-tabs {
+    margin-bottom: 16px;
+  }
+
+  .md-tab {
+    padding: 12px 16px;
+    font-size: 12px;
+  }
+
+  .md-tab .material-icons {
+    font-size: 18px;
+  }
+}
+
+/* Loading Animation */
+.rotating {
+  animation: rotate 1s linear infinite;
+}
+
+@keyframes rotate {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Field Error Styles */
+.field-error {
+  color: var(--md-sys-color-error);
+  font-size: 12px;
+  margin-top: 4px;
+  display: none;
+}
+
+.md-text-field-error .md-text-field-input {
+  border-color: var(--md-sys-color-error);
+  color: var(--md-sys-color-error);
+}
+
+.md-text-field-error .md-text-field-label {
+  color: var(--md-sys-color-error);
+}
+
+/* Account Management Panel Styles */
+.account-section {
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+
+.account-section-title {
+  font-size: 18px;
+  font-weight: 500;
+  margin: 0 0 16px 0;
+  color: var(--md-sys-color-on-surface);
+}
+
+/* Account Information */
+.account-info {
+  padding: 24px;
+  background-color: var(--md-sys-color-surface-container-lowest);
+  border: 1px solid var(--md-sys-color-outline-variant);
+  border-radius: 12px;
+}
+
+.account-details {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.account-detail-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+}
+
+.account-detail-label {
+  font-weight: 500;
+  color: var(--md-sys-color-on-surface-variant);
+}
+
+.account-detail-value {
+  font-weight: 500;
+  color: var(--md-sys-color-on-surface);
+}
+
+/* Danger Zone */
+.account-danger-zone {
+  padding: 24px;
+  background-color: color-mix(in srgb, var(--md-sys-color-error-container) 20%, transparent);
+  border: 1px solid var(--md-sys-color-error);
+  border-radius: 12px;
+}
+
+.danger-zone-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 18px;
+  font-weight: 500;
+  margin: 0 0 16px 0;
+  color: var(--md-sys-color-error);
+}
+
+.danger-zone-title .material-icons {
+  font-size: 20px;
+}
+
+.danger-action {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 24px;
+}
+
+.danger-action-info {
+  flex: 1;
+}
+
+.danger-action-title {
+  font-size: 16px;
+  font-weight: 500;
+  margin: 0 0 8px 0;
+  color: var(--md-sys-color-on-surface);
+}
+
+.danger-action-description {
+  margin: 0;
+  color: var(--md-sys-color-on-surface-variant);
+  line-height: 1.4;
+}
+
+.md-button-danger {
+  background-color: var(--md-sys-color-error) !important;
+  color: var(--md-sys-color-on-error) !important;
+  border-color: var(--md-sys-color-error) !important;
+}
+
+.md-button-danger:hover {
+  background-color: color-mix(in srgb, var(--md-sys-color-error) 92%, transparent) !important;
+}
+
+.md-button-danger:disabled {
+  background-color: var(--md-sys-color-on-surface-variant) !important;
+  color: var(--md-sys-color-surface) !important;
+  opacity: 0.38;
+}
+
+/* Delete Account Modal Styles */
+.delete-account-dialog {
+  max-width: 600px;
+  width: 90vw;
+}
+
+.danger-icon {
+  background-color: var(--md-sys-color-error-container);
+}
+
+.danger-icon .material-icons {
+  color: var(--md-sys-color-error);
+}
+
+.delete-warning {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.warning-message p {
+  margin: 0 0 8px 0;
+  line-height: 1.4;
+}
+
+.warning-message strong {
+  color: var(--md-sys-color-error);
+}
+
+/* Data Loss List */
+.data-loss-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 16px;
+  background-color: var(--md-sys-color-error-container);
+  border-radius: 8px;
+  border: 1px solid var(--md-sys-color-error);
+}
+
+.data-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.data-item .material-icons {
+  font-size: 20px;
+  color: var(--md-sys-color-error);
+  margin-top: 2px;
+}
+
+.data-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.data-title {
+  font-weight: 500;
+  color: var(--md-sys-color-on-error-container);
+}
+
+.data-description {
+  font-size: 14px;
+  color: var(--md-sys-color-on-error-container);
+  opacity: 0.8;
+}
+
+/* Confirmation Section */
+.confirmation-section {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.confirmation-instruction {
+  margin: 0;
+  font-size: 16px;
+  line-height: 1.4;
+}
+
+.confirmation-instruction strong {
+  color: var(--md-sys-color-error);
+}
+
+.confirmation-field {
+  max-width: 300px;
+}
+
+.password-confirmation {
+  max-width: 400px;
+}
+
+.reason-section {
+  max-width: 100%;
+}
+
+.reason-section .md-text-field-input.textarea {
+  resize: vertical;
+  min-height: 80px;
+  font-family: inherit;
+}
+
+/* Delete Account Error */
+.delete-account-error {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px;
+  background-color: var(--md-sys-color-error-container);
+  border: 1px solid var(--md-sys-color-error);
+  border-radius: 8px;
+  color: var(--md-sys-color-on-error-container);
+}
+
+.delete-account-error .material-icons {
+  font-size: 20px;
+  color: var(--md-sys-color-error);
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+  .danger-action {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 16px;
+  }
+
+  .delete-account-dialog {
+    width: 95vw;
+    margin: 16px;
+  }
+
+  .data-loss-list {
+    padding: 12px;
+  }
+
+  .account-danger-zone,
+  .account-info {
+    padding: 16px;
+  }
+}

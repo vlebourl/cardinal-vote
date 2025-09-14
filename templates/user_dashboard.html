@@ -573,6 +573,297 @@
         </div>
     </div>
 
+    <!-- Profile Management Modal -->
+    <div class="md-dialog-scrim" id="profileModalScrim" role="dialog" aria-labelledby="profile-modal-title" aria-hidden="true">
+        <div class="md-dialog profile-dialog" id="profileModal">
+            <div class="md-dialog-icon">
+                <span class="material-icons">person</span>
+            </div>
+            <h2 class="md-dialog-headline" id="profile-modal-title">Profile Management</h2>
+            <div class="md-dialog-supporting-text">
+                <!-- Profile Tabs -->
+                <div class="md-tabs" role="tablist">
+                    <button class="md-tab md-tab-active" role="tab" aria-selected="true" aria-controls="profile-info-panel" id="profile-info-tab" data-action="switch-profile-tab" data-tab="info">
+                        <span class="material-icons">person</span>
+                        Personal Info
+                    </button>
+                    <button class="md-tab" role="tab" aria-selected="false" aria-controls="password-panel" id="password-tab" data-action="switch-profile-tab" data-tab="password">
+                        <span class="material-icons">lock</span>
+                        Password
+                    </button>
+                    <button class="md-tab" role="tab" aria-selected="false" aria-controls="account-panel" id="account-tab" data-action="switch-profile-tab" data-tab="account">
+                        <span class="material-icons">security</span>
+                        Account
+                    </button>
+                </div>
+
+                <!-- Personal Information Panel -->
+                <div class="md-tab-panel md-tab-panel-active" id="profile-info-panel" role="tabpanel" aria-labelledby="profile-info-tab">
+                    <form id="profileInfoForm" class="profile-form">
+                        <!-- First Name Field -->
+                        <div class="md-text-field md-text-field-outlined">
+                            <input type="text" id="profileFirstName" class="md-text-field-input" placeholder=" " required
+                                   maxlength="100" aria-describedby="profile-first-name-help">
+                            <label for="profileFirstName" class="md-text-field-label">First Name</label>
+                        </div>
+                        <div id="profile-first-name-help" class="md-text-field-helper">Enter your first name</div>
+
+                        <!-- Last Name Field -->
+                        <div class="md-text-field md-text-field-outlined">
+                            <input type="text" id="profileLastName" class="md-text-field-input" placeholder=" " required
+                                   maxlength="100" aria-describedby="profile-last-name-help">
+                            <label for="profileLastName" class="md-text-field-label">Last Name</label>
+                        </div>
+                        <div id="profile-last-name-help" class="md-text-field-helper">Enter your last name</div>
+
+                        <!-- Email Field -->
+                        <div class="md-text-field md-text-field-outlined">
+                            <input type="email" id="profileEmail" class="md-text-field-input" placeholder=" " required
+                                   maxlength="255" aria-describedby="profile-email-help">
+                            <label for="profileEmail" class="md-text-field-label">Email Address</label>
+                        </div>
+                        <div id="profile-email-help" class="md-text-field-helper">Your email address for account access and notifications</div>
+
+                        <!-- Email Verification Status -->
+                        <div class="email-verification-status" id="emailVerificationStatus">
+                            <div class="verification-indicator">
+                                <span class="material-icons verification-icon" id="verificationIcon">verified</span>
+                                <span class="verification-text" id="verificationText">Email verified</span>
+                            </div>
+                            <p class="verification-details md-body-small md-on-surface-variant" id="verificationDetails">
+                                Your email address is verified and active.
+                            </p>
+                        </div>
+
+                        <div class="profile-error" id="profileInfoError" style="display: none;">
+                            <span class="material-icons">error</span>
+                            <span id="profileInfoErrorMessage"></span>
+                        </div>
+
+                        <div class="profile-success" id="profileInfoSuccess" style="display: none;">
+                            <span class="material-icons">check_circle</span>
+                            <span id="profileInfoSuccessMessage"></span>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Password Change Panel -->
+                <div class="md-tab-panel" id="password-panel" role="tabpanel" aria-labelledby="password-tab">
+                    <form id="passwordChangeForm" class="profile-form">
+                        <!-- Current Password Field -->
+                        <div class="md-text-field md-text-field-outlined">
+                            <input type="password" id="currentPassword" class="md-text-field-input" placeholder=" " required
+                                   aria-describedby="current-password-help">
+                            <label for="currentPassword" class="md-text-field-label">Current Password</label>
+                        </div>
+                        <div id="current-password-help" class="md-text-field-helper">Enter your current password to confirm changes</div>
+
+                        <!-- New Password Field -->
+                        <div class="md-text-field md-text-field-outlined">
+                            <input type="password" id="newPassword" class="md-text-field-input" placeholder=" " required
+                                   minlength="8" aria-describedby="new-password-help">
+                            <label for="newPassword" class="md-text-field-label">New Password</label>
+                        </div>
+                        <div id="new-password-help" class="md-text-field-helper">Password must be at least 8 characters long</div>
+
+                        <!-- Confirm New Password Field -->
+                        <div class="md-text-field md-text-field-outlined">
+                            <input type="password" id="confirmPassword" class="md-text-field-input" placeholder=" " required
+                                   minlength="8" aria-describedby="confirm-password-help">
+                            <label for="confirmPassword" class="md-text-field-label">Confirm New Password</label>
+                        </div>
+                        <div id="confirm-password-help" class="md-text-field-helper">Re-enter your new password to confirm</div>
+
+                        <!-- Password Strength Indicator -->
+                        <div class="password-strength" id="passwordStrength" style="display: none;">
+                            <div class="strength-label">Password Strength:</div>
+                            <div class="strength-indicator">
+                                <div class="strength-bar" id="strengthBar"></div>
+                            </div>
+                            <span class="strength-text" id="strengthText">Weak</span>
+                        </div>
+
+                        <div class="profile-error" id="passwordChangeError" style="display: none;">
+                            <span class="material-icons">error</span>
+                            <span id="passwordChangeErrorMessage"></span>
+                        </div>
+
+                        <div class="profile-success" id="passwordChangeSuccess" style="display: none;">
+                            <span class="material-icons">check_circle</span>
+                            <span id="passwordChangeSuccessMessage"></span>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Account Management Panel -->
+                <div class="md-tab-panel" id="account-panel" role="tabpanel" aria-labelledby="account-tab">
+                    <div class="account-section">
+                        <!-- Account Information -->
+                        <div class="account-info">
+                            <h3 class="account-section-title">Account Information</h3>
+                            <div class="account-details">
+                                <div class="account-detail-item">
+                                    <span class="account-detail-label">Account Created:</span>
+                                    <span class="account-detail-value" id="accountCreatedDate">Loading...</span>
+                                </div>
+                                <div class="account-detail-item">
+                                    <span class="account-detail-label">Last Login:</span>
+                                    <span class="account-detail-value" id="lastLoginDate">Loading...</span>
+                                </div>
+                                <div class="account-detail-item">
+                                    <span class="account-detail-label">Total Votes Created:</span>
+                                    <span class="account-detail-value" id="totalVotesCount">0</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Danger Zone -->
+                        <div class="account-danger-zone">
+                            <h3 class="danger-zone-title">
+                                <span class="material-icons">warning</span>
+                                Danger Zone
+                            </h3>
+                            <div class="danger-zone-content">
+                                <div class="danger-action">
+                                    <div class="danger-action-info">
+                                        <h4 class="danger-action-title">Delete Account</h4>
+                                        <p class="danger-action-description">
+                                            Permanently delete your account and all associated data. This action cannot be undone.
+                                        </p>
+                                    </div>
+                                    <button type="button" class="md-button md-button-filled md-button-danger"
+                                            data-action="show-delete-confirmation" id="deleteAccountBtn">
+                                        <span class="material-icons">delete_forever</span>
+                                        Delete Account
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="md-dialog-actions">
+                <button type="button" class="md-button md-button-text" data-action="close-modal" data-modal="profile">
+                    Close
+                </button>
+                <button type="submit" form="profileInfoForm" class="md-button md-button-filled" id="saveProfileBtn">
+                    <span class="btn-text">Save Changes</span>
+                    <span class="material-icons btn-loading" style="display: none;">refresh</span>
+                </button>
+                <button type="submit" form="passwordChangeForm" class="md-button md-button-filled" id="changePasswordBtn" style="display: none;">
+                    <span class="btn-text">Change Password</span>
+                    <span class="material-icons btn-loading" style="display: none;">refresh</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Account Deletion Confirmation Modal -->
+    <div class="md-dialog-scrim" id="deleteAccountModalScrim" role="dialog" aria-labelledby="delete-account-modal-title" aria-hidden="true">
+        <div class="md-dialog delete-account-dialog">
+            <div class="md-dialog-icon danger-icon">
+                <span class="material-icons">warning</span>
+            </div>
+            <h2 class="md-dialog-headline" id="delete-account-modal-title">Delete Account</h2>
+            <div class="md-dialog-supporting-text">
+                <div class="delete-warning">
+                    <div class="warning-message">
+                        <p><strong>This action is permanent and cannot be undone.</strong></p>
+                        <p>By deleting your account, you will permanently lose:</p>
+                    </div>
+
+                    <div class="data-loss-list">
+                        <div class="data-item">
+                            <span class="material-icons">how_to_vote</span>
+                            <div class="data-info">
+                                <span class="data-title">All your votes</span>
+                                <span class="data-description">Including active, draft, and closed votes</span>
+                            </div>
+                        </div>
+                        <div class="data-item">
+                            <span class="material-icons">people</span>
+                            <div class="data-info">
+                                <span class="data-title">All voter responses</span>
+                                <span class="data-description">Responses submitted to your votes</span>
+                            </div>
+                        </div>
+                        <div class="data-item">
+                            <span class="material-icons">image</span>
+                            <div class="data-info">
+                                <span class="data-title">Uploaded images</span>
+                                <span class="data-description">All images associated with your votes</span>
+                            </div>
+                        </div>
+                        <div class="data-item">
+                            <span class="material-icons">analytics</span>
+                            <div class="data-info">
+                                <span class="data-title">Vote analytics</span>
+                                <span class="data-description">Statistics and performance data</span>
+                            </div>
+                        </div>
+                        <div class="data-item">
+                            <span class="material-icons">person</span>
+                            <div class="data-info">
+                                <span class="data-title">Account information</span>
+                                <span class="data-description">Profile data and preferences</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="confirmation-section">
+                        <p class="confirmation-instruction">
+                            <strong>To confirm deletion, type "DELETE" in the field below:</strong>
+                        </p>
+                        <div class="md-text-field md-text-field-outlined confirmation-field">
+                            <input type="text" id="deleteConfirmationInput" class="md-text-field-input" placeholder=" "
+                                   autocomplete="off" aria-describedby="delete-confirmation-help">
+                            <label for="deleteConfirmationInput" class="md-text-field-label">Type DELETE to confirm</label>
+                        </div>
+                        <div id="delete-confirmation-help" class="md-text-field-helper">Must match exactly: DELETE</div>
+
+                        <div class="password-confirmation">
+                            <div class="md-text-field md-text-field-outlined">
+                                <input type="password" id="deletePasswordConfirmation" class="md-text-field-input" placeholder=" "
+                                       aria-describedby="delete-password-help">
+                                <label for="deletePasswordConfirmation" class="md-text-field-label">Current Password</label>
+                            </div>
+                            <div id="delete-password-help" class="md-text-field-helper">Enter your current password to confirm</div>
+                        </div>
+
+                        <div class="reason-section">
+                            <div class="md-text-field md-text-field-outlined">
+                                <textarea id="deleteReasonInput" class="md-text-field-input textarea" placeholder=" "
+                                          maxlength="500" rows="3" aria-describedby="delete-reason-help"></textarea>
+                                <label for="deleteReasonInput" class="md-text-field-label">Reason for deletion (optional)</label>
+                            </div>
+                            <div id="delete-reason-help" class="md-text-field-helper">Help us improve by telling us why you're leaving</div>
+                        </div>
+                    </div>
+
+                    <div class="delete-account-error" id="deleteAccountError" style="display: none;">
+                        <span class="material-icons">error</span>
+                        <span id="deleteAccountErrorMessage"></span>
+                    </div>
+                </div>
+            </div>
+            <div class="md-dialog-actions">
+                <button type="button" class="md-button md-button-text" data-action="close-delete-modal">
+                    Cancel
+                </button>
+                <button type="button" class="md-button md-button-filled md-button-danger" id="confirmDeleteBtn" disabled
+                        data-action="confirm-account-deletion">
+                    <span class="btn-text">
+                        <span class="material-icons">delete_forever</span>
+                        Delete Account
+                    </span>
+                    <span class="btn-loading" style="display: none;">
+                        <span class="material-icons rotating">refresh</span>
+                    </span>
+                </button>
+            </div>
+        </div>
+    </div>
+
     <!-- Snackbar for notifications -->
     <div class="md-snackbar" id="snackbar">
         <span id="snackbar-message">Ready to create amazing votes!</span>
@@ -584,6 +875,7 @@
 
     <!-- Dashboard JavaScript -->
     <script src="/static/js/dashboard.js"></script>
+    <script src="/static/js/profile-manager.js"></script>
     <script src="/static/js/vote-creation-manager.js"></script>
     <script src="/static/js/vote-management-manager.js"></script>
 </body>
