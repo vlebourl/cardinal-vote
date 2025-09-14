@@ -108,11 +108,11 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
         # Content Security Policy - tailored for our modern UI
         csp_directives = [
             "default-src 'self'",
-            "script-src 'self'",  # No inline scripts - using data attributes and event delegation
-            "style-src 'self' https://fonts.googleapis.com",  # Inter font + our styles
+            "script-src 'self' 'unsafe-inline' https://www.google.com https://www.gstatic.com https://js.hcaptcha.com",  # Allow inline scripts for CAPTCHA config and external CAPTCHA services
+            "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",  # Inter font + our styles + inline styles for dynamic content
             "font-src 'self' https://fonts.gstatic.com",  # Inter font from Google Fonts
             "img-src 'self' data: blob:",  # Allow images and data URLs for uploads
-            "connect-src 'self'",  # API calls to same origin
+            "connect-src 'self' https://www.google.com https://hcaptcha.com",  # API calls to same origin and CAPTCHA services
             "frame-ancestors 'none'",  # Prevent embedding in frames
             "form-action 'self'",  # Only allow form submissions to same origin
             "base-uri 'self'",  # Restrict base element
@@ -269,6 +269,14 @@ async def home(request: Request) -> HTMLResponse:
                 "request": request,
                 "app_name": settings.APP_NAME,
                 "app_version": settings.APP_VERSION,
+                "captcha_backend": settings.CAPTCHA_BACKEND,
+                "captcha_site_key": (
+                    settings.RECAPTCHA_SITE_KEY
+                    if settings.CAPTCHA_BACKEND == "recaptcha"
+                    else settings.HCAPTCHA_SITE_KEY
+                    if settings.CAPTCHA_BACKEND == "hcaptcha"
+                    else ""
+                ),
             },
         )
     except Exception as e:

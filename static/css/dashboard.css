@@ -628,6 +628,19 @@ body {
   line-height: 1.4;
 }
 
+.verification-actions {
+  margin-top: 12px;
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.verification-actions .md-button {
+  min-height: 36px;
+  padding: 8px 16px;
+  font-size: 14px;
+}
+
 /* Password Strength Indicator */
 .password-strength {
   background-color: var(--md-sys-color-surface-container-low);

@@ -58,6 +58,14 @@ class ProfileManager {
       })
     }
 
+    // Resend verification email
+    const resendVerificationBtn = document.getElementById('resendVerificationBtn')
+    if (resendVerificationBtn) {
+      resendVerificationBtn.addEventListener('click', () => {
+        this.resendVerificationEmail()
+      })
+    }
+
     // Modal close on escape key
     document.addEventListener('keydown', e => {
       if (e.key === 'Escape' && this.modalScrim && this.modalScrim.getAttribute('aria-hidden') === 'false') {
@@ -202,20 +210,23 @@ class ProfileManager {
     const verificationIcon = document.getElementById('verificationIcon')
     const verificationText = document.getElementById('verificationText')
     const verificationDetails = document.getElementById('verificationDetails')
+    const verificationActions = document.getElementById('verificationActions')
 
-    if (verificationIcon && verificationText && verificationDetails) {
-      const isVerified = this.currentUser.email_verified || false
+    if (verificationIcon && verificationText && verificationDetails && verificationActions) {
+      const isVerified = this.currentUser.is_verified || false
 
       if (isVerified) {
         verificationIcon.textContent = 'verified'
         verificationIcon.className = 'material-icons verification-icon verified'
         verificationText.textContent = 'Email verified'
         verificationDetails.textContent = 'Your email address is verified and active.'
+        verificationActions.style.display = 'none'
       } else {
         verificationIcon.textContent = 'warning'
         verificationIcon.className = 'material-icons verification-icon unverified'
         verificationText.textContent = 'Email not verified'
         verificationDetails.textContent = 'Please check your email for a verification link.'
+        verificationActions.style.display = 'flex'
       }
     }
   }
@@ -360,6 +371,46 @@ class ProfileManager {
     }
   }
 
+  async resendVerificationEmail() {
+    if (this.isLoading) return
+
+    this.setLoading('resendVerification', true)
+    this.clearMessages('profileInfo')
+
+    try {
+      const response = await fetch('/api/auth/resend-verification', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${localStorage.getItem('authToken')}`
+        },
+        body: JSON.stringify({
+          email: this.currentUser.email
+        })
+      })
+
+      const result = await response.json()
+
+      if (response.ok && result.success) {
+        this.showSuccess('profileInfo', 'Verification email sent! Please check your inbox.')
+
+        // Update verification details to show email was sent
+        const verificationDetails = document.getElementById('verificationDetails')
+        if (verificationDetails) {
+          verificationDetails.textContent =
+            'Verification email sent! Please check your inbox and click the verification link.'
+        }
+      } else {
+        this.showError('profileInfo', result.detail || 'Failed to send verification email')
+      }
+    } catch (error) {
+      console.error('Error resending verification email:', error)
+      this.showError('profileInfo', 'Network error sending verification email')
+    } finally {
+      this.setLoading('resendVerification', false)
+    }
+  }
+
   updatePasswordStrength(password) {
     const strengthContainer = document.getElementById('passwordStrength')
     const strengthBar = document.getElementById('strengthBar')
@@ -420,7 +471,15 @@ class ProfileManager {
   setLoading(buttonType, isLoading) {
     this.isLoading = isLoading
 
-    const buttonId = buttonType === 'save' ? 'saveProfileBtn' : 'changePasswordBtn'
+    let buttonId
+    if (buttonType === 'save') {
+      buttonId = 'saveProfileBtn'
+    } else if (buttonType === 'changePassword') {
+      buttonId = 'changePasswordBtn'
+    } else if (buttonType === 'resendVerification') {
+      buttonId = 'resendVerificationBtn'
+    }
+
     const button = document.getElementById(buttonId)
 
     if (button) {
@@ -674,7 +733,7 @@ class ProfileManager {
     const token = this.getAccessToken()
     const deleteData = {
       current_password: password,
-      confirmation: confirmation,
+      confirmation,
       reason: reason || undefined
     }
 

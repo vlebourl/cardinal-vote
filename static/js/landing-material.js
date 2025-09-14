@@ -1,4 +1,5 @@
 // Landing Page Material Design JavaScript
+/* global grecaptcha, hcaptcha */
 
 // Wait for DOM to be loaded
 document.addEventListener('DOMContentLoaded', function () {
@@ -151,12 +152,16 @@ class AuthenticationManager {
     this.registerModal = null
     this.loginForm = null
     this.registerForm = null
+    this.captchaWidgetId = null
+    this.captchaResponse = null
+    this.captchaConfig = window.captchaConfig || { backend: 'mock', enabled: false }
   }
 
   static init() {
     const auth = new AuthenticationManager()
     auth.initializeElements()
     auth.initializeEventListeners()
+    auth.initializeCaptcha()
     auth.checkAuthStatus()
   }
 
@@ -348,9 +353,16 @@ class AuthenticationManager {
       return
     }
 
+    // CAPTCHA validation
+    const captchaResponse = this.validateCaptcha()
+    if (captchaResponse === null) {
+      return // CAPTCHA validation failed, error already shown
+    }
+
     // Set loading state
     this.setButtonLoading(submitBtn, true)
     this.clearErrors('register')
+    this.clearCaptchaError()
 
     try {
       const response = await fetch(`${this.API_BASE}/register`, {
@@ -363,7 +375,8 @@ class AuthenticationManager {
           last_name: lastName,
           username,
           email,
-          password
+          password,
+          ...(this.captchaConfig.enabled && { captcha_response: captchaResponse })
         })
       })
 
@@ -382,16 +395,26 @@ class AuthenticationManager {
           window.location.href = '/dashboard'
         }, 1500)
       } else {
+        // Reset CAPTCHA on registration failure
+        this.resetCaptcha()
+
         // Handle validation errors
         if (data.details && Array.isArray(data.details)) {
           const errorMessage = data.details.join(', ')
           this.showError('register', errorMessage)
         } else {
-          this.showError('register', data.message || 'Registration failed. Please try again.')
+          const message = data.message || 'Registration failed. Please try again.'
+          // Show specific CAPTCHA error if needed
+          if (message.toLowerCase().includes('captcha')) {
+            this.showCaptchaError(message)
+          } else {
+            this.showError('register', message)
+          }
         }
       }
     } catch (error) {
       console.error('Registration error:', error)
+      this.resetCaptcha()
       this.showError('register', 'Network error. Please check your connection and try again.')
     } finally {
       this.setButtonLoading(submitBtn, false)
@@ -439,6 +462,152 @@ class AuthenticationManager {
   clearTokens() {
     sessionStorage.removeItem('access_token')
     sessionStorage.removeItem('refresh_token')
+  }
+
+  // CAPTCHA Methods
+  async initializeCaptcha() {
+    if (!this.captchaConfig.enabled) return
+
+    // Wait for CAPTCHA scripts to load
+    const maxAttempts = 50
+    let attempts = 0
+
+    const waitForCaptcha = () => {
+      attempts++
+
+      if (this.captchaConfig.backend === 'recaptcha' && window.grecaptcha) {
+        this.renderReCaptcha()
+        return
+      }
+
+      if (this.captchaConfig.backend === 'hcaptcha' && window.hcaptcha) {
+        this.renderHCaptcha()
+        return
+      }
+
+      if (attempts < maxAttempts) {
+        setTimeout(waitForCaptcha, 100)
+      } else {
+        console.warn('CAPTCHA service failed to load')
+        this.showCaptchaError('CAPTCHA service unavailable. Please refresh the page.')
+      }
+    }
+
+    setTimeout(waitForCaptcha, 100)
+  }
+
+  renderReCaptcha() {
+    const container = document.getElementById('registerCaptcha')
+    if (!container) return
+
+    try {
+      container.innerHTML = '<div class="captcha-loading">Loading verification...</div>'
+
+      this.captchaWidgetId = grecaptcha.render(container, {
+        sitekey: this.captchaConfig.siteKey,
+        callback: response => {
+          this.captchaResponse = response
+          this.clearCaptchaError()
+        },
+        'expired-callback': () => {
+          this.captchaResponse = null
+          this.showCaptchaError('Verification expired. Please complete the CAPTCHA again.')
+        },
+        'error-callback': () => {
+          this.captchaResponse = null
+          this.showCaptchaError('Verification failed. Please try again.')
+        }
+      })
+    } catch (error) {
+      console.error('reCAPTCHA render error:', error)
+      this.showCaptchaError('Failed to load verification. Please refresh the page.')
+    }
+  }
+
+  renderHCaptcha() {
+    const container = document.getElementById('registerCaptcha')
+    if (!container) return
+
+    try {
+      container.innerHTML = '<div class="captcha-loading">Loading verification...</div>'
+
+      this.captchaWidgetId = hcaptcha.render(container, {
+        sitekey: this.captchaConfig.siteKey,
+        callback: response => {
+          this.captchaResponse = response
+          this.clearCaptchaError()
+        },
+        'expired-callback': () => {
+          this.captchaResponse = null
+          this.showCaptchaError('Verification expired. Please complete the CAPTCHA again.')
+        },
+        'error-callback': () => {
+          this.captchaResponse = null
+          this.showCaptchaError('Verification failed. Please try again.')
+        }
+      })
+    } catch (error) {
+      console.error('hCAPTCHA render error:', error)
+      this.showCaptchaError('Failed to load verification. Please refresh the page.')
+    }
+  }
+
+  resetCaptcha() {
+    if (!this.captchaConfig.enabled || !this.captchaWidgetId) return
+
+    try {
+      if (this.captchaConfig.backend === 'recaptcha' && window.grecaptcha) {
+        grecaptcha.reset(this.captchaWidgetId)
+      } else if (this.captchaConfig.backend === 'hcaptcha' && window.hcaptcha) {
+        hcaptcha.reset(this.captchaWidgetId)
+      }
+
+      this.captchaResponse = null
+      this.clearCaptchaError()
+    } catch (error) {
+      console.error('CAPTCHA reset error:', error)
+    }
+  }
+
+  validateCaptcha() {
+    if (!this.captchaConfig.enabled) {
+      // For mock/development, always return a mock response
+      return 'mock-captcha-response'
+    }
+
+    if (!this.captchaResponse) {
+      this.showCaptchaError('Please complete the verification to continue.')
+      return null
+    }
+
+    return this.captchaResponse
+  }
+
+  showCaptchaError(message) {
+    const errorElement = document.getElementById('registerCaptchaError')
+    const container = document.getElementById('registerCaptcha')
+
+    if (errorElement) {
+      errorElement.textContent = message
+      errorElement.style.display = 'block'
+    }
+
+    if (container) {
+      container.classList.add('error')
+    }
+  }
+
+  clearCaptchaError() {
+    const errorElement = document.getElementById('registerCaptchaError')
+    const container = document.getElementById('registerCaptcha')
+
+    if (errorElement) {
+      errorElement.style.display = 'none'
+    }
+
+    if (container) {
+      container.classList.remove('error')
+    }
   }
 
   showError(type, message) {

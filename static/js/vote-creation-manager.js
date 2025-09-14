@@ -89,6 +89,11 @@ class VoteCreationManager {
         this.removeOptionField(optionId)
         break
       }
+      case 'remove-image': {
+        const optionId = element.dataset.optionId
+        this.removeImage(optionId)
+        break
+      }
     }
   }
 
@@ -148,6 +153,32 @@ class VoteCreationManager {
                  placeholder=" " required maxlength="200" value="${placeholder}">
           <label for="${optionId}" class="md-text-field-label">Option ${optionNumber}</label>
         </div>
+
+        <!-- Enhanced Image Upload Interface -->
+        <div class="option-image-upload" data-option-id="${optionId}">
+          <input type="file" id="image-${optionId}" accept=".png,.jpg,.jpeg,.gif,.webp" class="image-input">
+
+          <div class="upload-content" onclick="document.getElementById('image-${optionId}').click()">
+            <span class="material-icons upload-icon">cloud_upload</span>
+            <div class="upload-text">Click or drag image here</div>
+            <div class="upload-hint">PNG, JPG, GIF, WebP (max 10MB)</div>
+          </div>
+
+          <div class="upload-progress">
+            <span class="material-icons">cloud_upload</span>
+            <div class="upload-progress-text">Uploading image...</div>
+          </div>
+        </div>
+
+        <div class="image-preview-container" id="preview-${optionId}" style="display: none;">
+          <!-- Image preview will be inserted here dynamically -->
+        </div>
+
+        <div class="upload-error" id="error-${optionId}" style="display: none;">
+          <span class="material-icons">error</span>
+          <span class="error-message"></span>
+        </div>
+
         ${
           !isDefault && this.currentOptionCount >= this.minOptions
             ? `
@@ -167,6 +198,9 @@ class VoteCreationManager {
       this.currentOptionCount++
       this.updateOptionCounter()
       this.updateAddButtonState()
+
+      // Initialize image upload functionality for the new option
+      this.initializeImageUpload(optionId)
     }
   }
 
@@ -302,12 +336,27 @@ class VoteCreationManager {
     const accessCode = useAccessCode ? document.getElementById('accessCode').value.trim() : null
 
     const options = Array.from(document.querySelectorAll('.option-input'))
-      .map((input, index) => ({
-        option_type: 'text',
-        title: input.value.trim(),
-        content: input.value.trim(),
-        display_order: index
-      }))
+      .map((input, index) => {
+        const optionId = input.id
+        const previewContainer = document.getElementById(`preview-${optionId}`)
+
+        // Check if this option has an uploaded image
+        let imageData = null
+        if (previewContainer && previewContainer.dataset.imageFilename) {
+          imageData = {
+            filename: previewContainer.dataset.imageFilename,
+            info: JSON.parse(previewContainer.dataset.imageInfo || '{}')
+          }
+        }
+
+        return {
+          option_type: imageData ? 'image' : 'text',
+          title: input.value.trim(),
+          content: input.value.trim(),
+          display_order: index,
+          image_filename: imageData ? imageData.filename : null
+        }
+      })
       .filter(option => option.title.length > 0)
 
     return {
@@ -404,6 +453,205 @@ class VoteCreationManager {
         loadingElement.style.display = 'none'
       }
     }
+  }
+
+  // Enhanced Image Upload Interface Methods
+  initializeImageUpload(optionId) {
+    const uploadContainer = document.querySelector(`.option-image-upload[data-option-id="${optionId}"]`)
+    const fileInput = document.getElementById(`image-${optionId}`)
+
+    if (!uploadContainer || !fileInput) return
+
+    // File input change handler
+    fileInput.addEventListener('change', e => {
+      this.handleImageFileSelect(e, optionId)
+    })
+
+    // Drag and drop handlers
+    uploadContainer.addEventListener('dragover', e => {
+      e.preventDefault()
+      uploadContainer.classList.add('drag-over')
+    })
+
+    uploadContainer.addEventListener('dragleave', e => {
+      e.preventDefault()
+      uploadContainer.classList.remove('drag-over')
+    })
+
+    uploadContainer.addEventListener('drop', e => {
+      e.preventDefault()
+      uploadContainer.classList.remove('drag-over')
+
+      const files = e.dataTransfer.files
+      if (files.length > 0) {
+        this.handleImageFile(files[0], optionId)
+      }
+    })
+  }
+
+  async handleImageFileSelect(event, optionId) {
+    const file = event.target.files[0]
+    if (file) {
+      await this.handleImageFile(file, optionId)
+    }
+  }
+
+  async handleImageFile(file, optionId) {
+    // Validate file type
+    const allowedTypes = ['image/png', 'image/jpeg', 'image/jpg', 'image/gif', 'image/webp']
+    if (!allowedTypes.includes(file.type)) {
+      this.showImageError(optionId, 'Please select a valid image file (PNG, JPG, GIF, WebP)')
+      return
+    }
+
+    // Validate file size (10MB limit)
+    const maxSize = 10 * 1024 * 1024
+    if (file.size > maxSize) {
+      this.showImageError(optionId, 'File size must be less than 10MB')
+      return
+    }
+
+    // Clear any previous errors
+    this.clearImageError(optionId)
+
+    // Show upload progress
+    this.setImageUploadState(optionId, 'uploading')
+
+    try {
+      const uploadedImageData = await this.uploadImageFile(file)
+      this.showImagePreview(optionId, uploadedImageData, file)
+      this.setImageUploadState(optionId, 'uploaded')
+    } catch (error) {
+      console.error('Image upload error:', error)
+      this.showImageError(optionId, error.message || 'Failed to upload image')
+      this.setImageUploadState(optionId, 'error')
+    }
+  }
+
+  async uploadImageFile(file) {
+    const formData = new FormData()
+    formData.append('file', file)
+
+    const response = await fetch(`${this.API_BASE}/votes/images/upload`, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${this.getAccessToken()}`
+      },
+      body: formData
+    })
+
+    if (!response.ok) {
+      const errorData = await response.json()
+      throw new Error(errorData.detail || 'Upload failed')
+    }
+
+    return await response.json()
+  }
+
+  showImagePreview(optionId, imageData, file) {
+    const previewContainer = document.getElementById(`preview-${optionId}`)
+
+    if (previewContainer) {
+      // Create image preview HTML
+      const previewHtml = `
+        <div class="image-preview">
+          <img src="/uploads/${imageData.filename}" alt="${file.name}" class="image-thumbnail">
+          <div class="image-info">
+            <div class="image-filename">${file.name}</div>
+            <div class="image-details">${this.formatFileSize(file.size)} • ${imageData.width}×${imageData.height}px</div>
+          </div>
+          <button type="button" class="remove-image-btn" data-action="remove-image" data-option-id="${optionId}">
+            <span class="material-icons">close</span>
+          </button>
+        </div>
+      `
+
+      previewContainer.innerHTML = previewHtml
+      previewContainer.style.display = 'block'
+
+      // Store image data for form submission
+      previewContainer.dataset.imageFilename = imageData.filename
+      previewContainer.dataset.imageInfo = JSON.stringify(imageData)
+
+      // Add remove image handler
+      const removeBtn = previewContainer.querySelector('.remove-image-btn')
+      if (removeBtn) {
+        removeBtn.addEventListener('click', () => this.removeImage(optionId))
+      }
+    }
+  }
+
+  removeImage(optionId) {
+    const previewContainer = document.getElementById(`preview-${optionId}`)
+    const fileInput = document.getElementById(`image-${optionId}`)
+
+    if (previewContainer) {
+      previewContainer.style.display = 'none'
+      previewContainer.innerHTML = ''
+      delete previewContainer.dataset.imageFilename
+      delete previewContainer.dataset.imageInfo
+    }
+
+    if (fileInput) {
+      fileInput.value = ''
+    }
+
+    this.setImageUploadState(optionId, 'ready')
+  }
+
+  setImageUploadState(optionId, state) {
+    const uploadContainer = document.querySelector(`.option-image-upload[data-option-id="${optionId}"]`)
+
+    if (uploadContainer) {
+      // Reset all states
+      uploadContainer.classList.remove('uploading', 'uploaded', 'error')
+
+      switch (state) {
+        case 'uploading':
+          uploadContainer.classList.add('uploading')
+          break
+        case 'uploaded':
+          uploadContainer.classList.add('uploaded')
+          uploadContainer.style.display = 'none' // Hide upload area when image is uploaded
+          break
+        case 'error':
+          uploadContainer.classList.add('error')
+          break
+        case 'ready':
+          uploadContainer.style.display = 'block' // Show upload area again
+          break
+      }
+    }
+  }
+
+  showImageError(optionId, message) {
+    const errorContainer = document.getElementById(`error-${optionId}`)
+
+    if (errorContainer) {
+      const errorMessage = errorContainer.querySelector('.error-message')
+      if (errorMessage) {
+        errorMessage.textContent = message
+      }
+      errorContainer.style.display = 'flex'
+    }
+  }
+
+  clearImageError(optionId) {
+    const errorContainer = document.getElementById(`error-${optionId}`)
+
+    if (errorContainer) {
+      errorContainer.style.display = 'none'
+    }
+  }
+
+  formatFileSize(bytes) {
+    if (bytes === 0) return '0 Bytes'
+
+    const k = 1024
+    const sizes = ['Bytes', 'KB', 'MB', 'GB']
+    const i = Math.floor(Math.log(bytes) / Math.log(k))
+
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i]
   }
 
   // Utility methods

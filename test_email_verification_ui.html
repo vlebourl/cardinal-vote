@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Email Verification Status UI Test</title>
+
+    <!-- Material Design 3 CSS -->
+    <link rel="stylesheet" href="/static/css/material-design.css">
+
+    <!-- Google Fonts - Roboto -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+
+    <!-- Material Icons -->
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+
+    <!-- Dashboard Styles -->
+    <link rel="stylesheet" href="/static/css/dashboard.css">
+
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            padding: 20px;
+            background: var(--md-sys-color-surface);
+        }
+
+        .test-container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: var(--md-sys-color-surface-container);
+            padding: 24px;
+            border-radius: 16px;
+        }
+
+        .test-section {
+            margin: 24px 0;
+            padding: 16px;
+            border: 1px solid var(--md-sys-color-outline-variant);
+            border-radius: 12px;
+        }
+
+        .test-controls {
+            display: flex;
+            gap: 12px;
+            margin: 16px 0;
+        }
+
+        .test-controls button {
+            padding: 8px 16px;
+            border: 1px solid var(--md-sys-color-primary);
+            background: var(--md-sys-color-surface);
+            color: var(--md-sys-color-primary);
+            border-radius: 8px;
+            cursor: pointer;
+        }
+
+        .test-controls button:hover {
+            background: var(--md-sys-color-primary-container);
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1 class="md-display-small">Email Verification Status UI Test</h1>
+
+        <div class="test-controls">
+            <button onclick="simulateUnverifiedUser()">Test Unverified User</button>
+            <button onclick="simulateVerifiedUser()">Test Verified User</button>
+            <button onclick="simulateResendSuccess()">Test Resend Success</button>
+            <button onclick="simulateResendError()">Test Resend Error</button>
+        </div>
+
+        <div class="test-section">
+            <h2 class="md-headline-medium">Email Verification Status Component</h2>
+
+            <!-- Email Verification Status (copied from user_dashboard.html) -->
+            <div class="email-verification-status" id="emailVerificationStatus">
+                <div class="verification-indicator">
+                    <span class="material-icons verification-icon" id="verificationIcon">verified</span>
+                    <span class="verification-text" id="verificationText">Email verified</span>
+                </div>
+                <p class="verification-details md-body-small md-on-surface-variant" id="verificationDetails">
+                    Your email address is verified and active.
+                </p>
+                <div class="verification-actions" id="verificationActions" style="display: none;">
+                    <button type="button" class="md-button md-button-text" id="resendVerificationBtn" data-action="resend-verification">
+                        <span class="material-icons">send</span>
+                        <span class="btn-text">Resend Verification Email</span>
+                        <span class="material-icons btn-loading" style="display: none;">refresh</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Success/Error Messages -->
+            <div class="profile-success" id="profileInfoSuccess" style="display: none;">
+                <span class="material-icons">check_circle</span>
+                <span id="profileInfoSuccessMessage"></span>
+            </div>
+
+            <div class="profile-error" id="profileInfoError" style="display: none;">
+                <span class="material-icons">error</span>
+                <span id="profileInfoErrorMessage"></span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Simulate ProfileManager methods for testing
+        class TestProfileManager {
+            constructor() {
+                this.currentUser = null;
+                this.isLoading = false;
+                this.initializeEventListeners();
+            }
+
+            initializeEventListeners() {
+                // Resend verification email
+                const resendVerificationBtn = document.getElementById('resendVerificationBtn');
+                if (resendVerificationBtn) {
+                    resendVerificationBtn.addEventListener('click', () => {
+                        this.resendVerificationEmail();
+                    });
+                }
+            }
+
+            updateEmailVerificationStatus() {
+                if (!this.currentUser) return;
+
+                const verificationIcon = document.getElementById('verificationIcon');
+                const verificationText = document.getElementById('verificationText');
+                const verificationDetails = document.getElementById('verificationDetails');
+                const verificationActions = document.getElementById('verificationActions');
+
+                if (verificationIcon && verificationText && verificationDetails && verificationActions) {
+                    const isVerified = this.currentUser.is_verified || false;
+
+                    if (isVerified) {
+                        verificationIcon.textContent = 'verified';
+                        verificationIcon.className = 'material-icons verification-icon verified';
+                        verificationText.textContent = 'Email verified';
+                        verificationDetails.textContent = 'Your email address is verified and active.';
+                        verificationActions.style.display = 'none';
+                    } else {
+                        verificationIcon.textContent = 'warning';
+                        verificationIcon.className = 'material-icons verification-icon unverified';
+                        verificationText.textContent = 'Email not verified';
+                        verificationDetails.textContent = 'Please check your email for a verification link.';
+                        verificationActions.style.display = 'flex';
+                    }
+                }
+            }
+
+            async resendVerificationEmail() {
+                if (this.isLoading) return;
+
+                this.setLoading('resendVerification', true);
+                this.clearMessages('profileInfo');
+
+                try {
+                    // Simulate API call with delay
+                    await new Promise(resolve => setTimeout(resolve, 1000));
+
+                    // Simulate different responses based on test scenario
+                    if (window.testScenario === 'error') {
+                        throw new Error('Failed to send verification email');
+                    }
+
+                    this.showSuccess('profileInfo', 'Verification email sent! Please check your inbox.');
+
+                    // Update verification details to show email was sent
+                    const verificationDetails = document.getElementById('verificationDetails');
+                    if (verificationDetails) {
+                        verificationDetails.textContent = 'Verification email sent! Please check your inbox and click the verification link.';
+                    }
+                } catch (error) {
+                    console.error('Error resending verification email:', error);
+                    this.showError('profileInfo', 'Network error sending verification email');
+                } finally {
+                    this.setLoading('resendVerification', false);
+                }
+            }
+
+            setLoading(buttonType, isLoading) {
+                this.isLoading = isLoading;
+
+                let buttonId;
+                if (buttonType === 'resendVerification') {
+                    buttonId = 'resendVerificationBtn';
+                }
+
+                const button = document.getElementById(buttonId);
+
+                if (button) {
+                    const btnText = button.querySelector('.btn-text');
+                    const btnLoading = button.querySelector('.btn-loading');
+
+                    button.disabled = isLoading;
+
+                    if (btnText && btnLoading) {
+                        if (isLoading) {
+                            btnText.style.display = 'none';
+                            btnLoading.style.display = 'inline-block';
+                            btnLoading.classList.add('rotating');
+                        } else {
+                            btnText.style.display = 'inline-block';
+                            btnLoading.style.display = 'none';
+                            btnLoading.classList.remove('rotating');
+                        }
+                    }
+                }
+            }
+
+            showSuccess(type, message) {
+                const successElement = document.getElementById(`${type}Success`);
+                const messageElement = document.getElementById(`${type}SuccessMessage`);
+
+                if (successElement && messageElement) {
+                    messageElement.textContent = message;
+                    successElement.style.display = 'flex';
+                }
+            }
+
+            showError(type, message) {
+                const errorElement = document.getElementById(`${type}Error`);
+                const messageElement = document.getElementById(`${type}ErrorMessage`);
+
+                if (errorElement && messageElement) {
+                    messageElement.textContent = message;
+                    errorElement.style.display = 'flex';
+                }
+            }
+
+            clearMessages(type) {
+                const successElement = document.getElementById(`${type}Success`);
+                const errorElement = document.getElementById(`${type}Error`);
+
+                if (successElement) successElement.style.display = 'none';
+                if (errorElement) errorElement.style.display = 'none';
+            }
+        }
+
+        // Initialize test profile manager
+        const testProfileManager = new TestProfileManager();
+
+        // Test scenarios
+        function simulateUnverifiedUser() {
+            testProfileManager.currentUser = {
+                id: "test-user-123",
+                email: "test@example.com",
+                first_name: "Test",
+                last_name: "User",
+                is_verified: false,
+                is_super_admin: false,
+                created_at: "2025-01-01T00:00:00Z"
+            };
+            window.testScenario = 'success';
+            testProfileManager.updateEmailVerificationStatus();
+            console.log('✅ Simulated unverified user');
+        }
+
+        function simulateVerifiedUser() {
+            testProfileManager.currentUser = {
+                id: "test-user-123",
+                email: "test@example.com",
+                first_name: "Test",
+                last_name: "User",
+                is_verified: true,
+                is_super_admin: false,
+                created_at: "2025-01-01T00:00:00Z"
+            };
+            testProfileManager.updateEmailVerificationStatus();
+            console.log('✅ Simulated verified user');
+        }
+
+        function simulateResendSuccess() {
+            window.testScenario = 'success';
+            console.log('✅ Set test scenario to success - click resend button to test');
+        }
+
+        function simulateResendError() {
+            window.testScenario = 'error';
+            console.log('❌ Set test scenario to error - click resend button to test');
+        }
+
+        // Start with unverified user for testing
+        simulateUnverifiedUser();
+    </script>
+</body>
+</html>

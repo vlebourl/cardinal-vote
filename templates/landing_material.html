@@ -20,6 +20,22 @@
 
     <!-- Landing Page Styles -->
     <link rel="stylesheet" href="/static/css/landing-material.css">
+
+    <!-- CAPTCHA Configuration -->
+    <script>
+        window.captchaConfig = {
+            backend: '{{ captcha_backend }}',
+            siteKey: '{{ captcha_site_key }}',
+            enabled: '{{ captcha_backend }}' !== 'mock' || window.location.hostname !== 'localhost'
+        };
+    </script>
+
+    <!-- Load CAPTCHA Scripts Based on Configuration -->
+    {% if captcha_backend == 'recaptcha' %}
+    <script src="https://www.google.com/recaptcha/api.js" async defer></script>
+    {% elif captcha_backend == 'hcaptcha' %}
+    <script src="https://js.hcaptcha.com/1/api.js" async defer></script>
+    {% endif %}
 </head>
 <body>
     <!-- Top App Bar -->
@@ -309,6 +325,13 @@
                         <label for="registerPassword" class="md-text-field-label">Password</label>
                     </div>
                     <div id="register-password-help" class="md-text-field-helper">At least 8 characters with mixed case and numbers</div>
+
+                    <!-- CAPTCHA Widget -->
+                    <div class="captcha-container" id="registerCaptcha" aria-describedby="register-captcha-help">
+                        <!-- CAPTCHA widget will be rendered here dynamically -->
+                    </div>
+                    <div id="register-captcha-help" class="md-text-field-helper">Please complete the verification to continue</div>
+                    <div id="registerCaptchaError" class="auth-error" style="display: none;" role="alert"></div>
 
                     <div class="auth-error" id="registerError" style="display: none;">
                         <span class="material-icons">error</span>

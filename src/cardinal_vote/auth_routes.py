@@ -35,6 +35,9 @@ class UserRegistration(BaseModel):
     last_name: str = Field(
         ..., min_length=1, max_length=100, description="User last name"
     )
+    captcha_response: str | None = Field(
+        None, description="CAPTCHA response token (optional for mock backend)"
+    )
 
     @validator("email")
     def validate_email(cls, v: str) -> str:
@@ -179,6 +182,22 @@ async def register_user(
     try:
         # Get client IP for rate limiting
         client_ip = request.client.host if request.client else "unknown"
+
+        # Validate CAPTCHA if required
+        if user_data.captcha_response:
+            from .captcha_service import verify_captcha_response
+
+            is_valid_captcha = await verify_captcha_response(
+                user_data.captcha_response, client_ip, raise_on_failure=True
+            )
+            if not is_valid_captcha:
+                logger.warning(
+                    f"Registration CAPTCHA validation failed for IP: {client_ip}"
+                )
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail="CAPTCHA verification failed. Please try again.",
+                )
 
         # Sanitize input data
         sanitized_email = InputSanitizer.sanitize_email(user_data.email)
