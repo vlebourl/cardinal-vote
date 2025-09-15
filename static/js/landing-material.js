@@ -178,6 +178,24 @@ class AuthenticationManager {
     this.registerModal = document.getElementById('registerModalScrim')
     this.loginForm = document.getElementById('loginForm')
     this.registerForm = document.getElementById('registerForm')
+
+    // Initialize inert states for modals (they start hidden)
+    if (this.loginModal) {
+      this.loginModal.inert = true
+    }
+    if (this.registerModal) {
+      this.registerModal.inert = true
+    }
+
+    // Initialize other modal elements
+    const forgotPasswordModal = document.getElementById('forgotPasswordModalScrim')
+    const resetPasswordModal = document.getElementById('resetPasswordModalScrim')
+    if (forgotPasswordModal) {
+      forgotPasswordModal.inert = true
+    }
+    if (resetPasswordModal) {
+      resetPasswordModal.inert = true
+    }
   }
 
   initializeEventListeners() {
@@ -254,6 +272,9 @@ class AuthenticationManager {
       case 'switch-to-register':
         this.switchToRegister()
         break
+      case 'show-forgot-password':
+        showForgotPassword()
+        break
     }
   }
 
@@ -264,12 +285,15 @@ class AuthenticationManager {
     if (modal) {
       modal.classList.add('md-dialog-scrim-visible')
       modal.setAttribute('aria-hidden', 'false')
+      modal.inert = false
 
-      // Focus first input
-      const firstInput = modal.querySelector('input')
-      if (firstInput) {
-        setTimeout(() => firstInput.focus(), 100)
-      }
+      // Focus first input after ensuring aria-hidden is processed
+      requestAnimationFrame(() => {
+        const firstInput = modal.querySelector('input')
+        if (firstInput) {
+          firstInput.focus()
+        }
+      })
 
       // Clear any previous errors
       this.clearErrors(type)
@@ -279,8 +303,15 @@ class AuthenticationManager {
   closeModal(type) {
     const modal = type === 'login' ? this.loginModal : this.registerModal
     if (modal) {
+      // Remove focus from any focused elements in the modal first
+      const focusedElement = modal.querySelector(':focus')
+      if (focusedElement) {
+        focusedElement.blur()
+      }
+
       modal.classList.remove('md-dialog-scrim-visible')
       modal.setAttribute('aria-hidden', 'true')
+      modal.inert = true
       this.clearErrors(type)
     }
   }
@@ -732,8 +763,15 @@ function showForgotPassword() {
   // Close login modal first
   const loginModal = document.getElementById('loginModalScrim')
   if (loginModal) {
+    // Remove focus from any focused elements in the modal first
+    const focusedElement = loginModal.querySelector(':focus')
+    if (focusedElement) {
+      focusedElement.blur()
+    }
+
     loginModal.classList.remove('md-dialog-scrim-visible')
     loginModal.setAttribute('aria-hidden', 'true')
+    loginModal.inert = true
   }
 
   // Show forgot password modal after a delay
@@ -742,14 +780,64 @@ function showForgotPassword() {
     if (forgotPasswordModal) {
       forgotPasswordModal.classList.add('md-dialog-scrim-visible')
       forgotPasswordModal.setAttribute('aria-hidden', 'false')
+      forgotPasswordModal.inert = false
 
-      // Focus first input
-      const firstInput = forgotPasswordModal.querySelector('input')
-      if (firstInput) {
-        setTimeout(() => firstInput.focus(), 100)
-      }
+      // Focus first input after ensuring aria-hidden is processed
+      requestAnimationFrame(() => {
+        const firstInput = forgotPasswordModal.querySelector('input')
+        if (firstInput) {
+          firstInput.focus()
+        }
+      })
     }
   }, 150)
+}
+
+/**
+ * Show authentication error message for standalone functions
+ */
+function showAuthError(errorElementId, messageElementId, message) {
+  const errorElement = document.getElementById(errorElementId)
+  const messageElement = document.getElementById(messageElementId)
+
+  if (errorElement && messageElement) {
+    messageElement.textContent = message
+    errorElement.style.display = 'flex'
+  }
+}
+
+/**
+ * Show toast/success message using the snackbar
+ */
+function showToast(type, title, message) {
+  showSnackbar(`${title}: ${message}`)
+}
+
+/**
+ * Standalone setButtonLoading function for password reset forms
+ */
+function setButtonLoading(button, loading) {
+  if (!button) {
+    console.warn('setButtonLoading called with null button')
+    return
+  }
+
+  const textElement = button.querySelector('.btn-text')
+  const loadingElement = button.querySelector('.btn-loading')
+
+  if (textElement && loadingElement) {
+    if (loading) {
+      button.disabled = true
+      button.classList.add('loading')
+      textElement.style.opacity = '0'
+      loadingElement.style.display = 'inline-block'
+    } else {
+      button.disabled = false
+      button.classList.remove('loading')
+      textElement.style.opacity = '1'
+      loadingElement.style.display = 'none'
+    }
+  }
 }
 
 /**
@@ -760,11 +848,13 @@ async function handleForgotPassword(e) {
   e.preventDefault()
 
   const form = e.target
-  const submitBtn = form.querySelector('button[type="submit"]')
+  const submitBtn = document.getElementById('forgotPasswordSubmitBtn')
   const email = form.querySelector('#resetEmail').value
 
   // Show loading state
-  setButtonLoading(submitBtn, true)
+  if (submitBtn) {
+    setButtonLoading(submitBtn, true)
+  }
 
   try {
     const response = await fetch('/api/auth/request-password-reset', {
@@ -788,8 +878,15 @@ async function handleForgotPassword(e) {
       )
       const forgotPasswordModal = document.getElementById('forgotPasswordModalScrim')
       if (forgotPasswordModal) {
+        // Remove focus from any focused elements in the modal first
+        const focusedElement = forgotPasswordModal.querySelector(':focus')
+        if (focusedElement) {
+          focusedElement.blur()
+        }
+
         forgotPasswordModal.classList.remove('md-dialog-scrim-visible')
         forgotPasswordModal.setAttribute('aria-hidden', 'true')
+        forgotPasswordModal.inert = true
       }
       form.reset()
     } else {
@@ -801,7 +898,9 @@ async function handleForgotPassword(e) {
     showAuthError('forgotPasswordError', 'forgotPasswordErrorMessage', 'Network error. Please try again.')
   } finally {
     // Hide loading state
-    setButtonLoading(submitBtn, false)
+    if (submitBtn) {
+      setButtonLoading(submitBtn, false)
+    }
   }
 }
 
@@ -817,12 +916,15 @@ function showResetPasswordModal(token) {
   if (resetPasswordModal) {
     resetPasswordModal.classList.add('md-dialog-scrim-visible')
     resetPasswordModal.setAttribute('aria-hidden', 'false')
+    resetPasswordModal.inert = false
 
-    // Focus first input
-    const firstInput = resetPasswordModal.querySelector('input[type="password"]')
-    if (firstInput) {
-      setTimeout(() => firstInput.focus(), 100)
-    }
+    // Focus first input after ensuring aria-hidden is processed
+    requestAnimationFrame(() => {
+      const firstInput = resetPasswordModal.querySelector('input[type="password"]')
+      if (firstInput) {
+        firstInput.focus()
+      }
+    })
   }
 }
 
@@ -867,8 +969,15 @@ async function handleResetPassword(e) {
       showToast('success', 'Password Reset', data.message || 'Your password has been reset successfully.')
       const resetPasswordModal = document.getElementById('resetPasswordModalScrim')
       if (resetPasswordModal) {
+        // Remove focus from any focused elements in the modal first
+        const focusedElement = resetPasswordModal.querySelector(':focus')
+        if (focusedElement) {
+          focusedElement.blur()
+        }
+
         resetPasswordModal.classList.remove('md-dialog-scrim-visible')
         resetPasswordModal.setAttribute('aria-hidden', 'true')
+        resetPasswordModal.inert = true
       }
       setTimeout(() => showLoginModal(), 1000)
       form.reset()

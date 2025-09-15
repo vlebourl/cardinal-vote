@@ -203,6 +203,27 @@ npm run format:check               # JavaScript formatting check
 
 ### Docker Development
 
+⚠️ **CRITICAL: Docker Deployment Requirements**
+
+**MANDATORY: After ANY code changes, you MUST rebuild without cache and restart:**
+
+```bash
+# 🚨 REQUIRED after code changes - rebuilds without cache
+docker compose build cardinal-vote --no-cache && docker compose restart cardinal-vote
+
+# Alternative: Full rebuild and restart
+docker compose down && docker compose up --build --force-recreate
+```
+
+**Why this is required:**
+
+- Docker cache prevents new code from being deployed
+- Template changes (HTML) won't be reflected without rebuild
+- JavaScript/CSS changes may be cached in container layers
+- Version watermarks and cache-busting parameters need fresh deployment
+
+**Standard Development Commands:**
+
 ```bash
 # Build and run with Docker Compose
 docker-compose up --build
@@ -210,6 +231,10 @@ docker-compose up --build
 # Run specific services
 docker-compose up -d postgres
 docker-compose up app
+
+# Force clean rebuild (when in doubt)
+docker compose build --no-cache
+docker compose up --force-recreate
 ```
 
 ## Testing Requirements
