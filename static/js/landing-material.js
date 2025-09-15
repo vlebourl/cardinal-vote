@@ -94,10 +94,16 @@ document.addEventListener('DOMContentLoaded', function () {
         snackbarAction.style.display = 'none'
       }
 
+      // Remove initial display: none and show the snackbar
+      snackbar.style.display = 'flex'
       snackbar.classList.add('md-snackbar-visible')
 
       setTimeout(() => {
         snackbar.classList.remove('md-snackbar-visible')
+        // Hide again after animation completes
+        setTimeout(() => {
+          snackbar.style.display = 'none'
+        }, 300) // Wait for transition to complete
       }, 4000)
     }
   }
@@ -109,6 +115,10 @@ document.addEventListener('DOMContentLoaded', function () {
       const snackbar = document.getElementById('snackbar')
       if (snackbar) {
         snackbar.classList.remove('md-snackbar-visible')
+        // Hide after animation completes
+        setTimeout(() => {
+          snackbar.style.display = 'none'
+        }, 300)
       }
     })
   }
@@ -653,10 +663,14 @@ class AuthenticationManager {
 
       if (snackbar && snackbarMessage) {
         snackbarMessage.textContent = message
+        snackbar.style.display = 'flex'
         snackbar.classList.add('md-snackbar-visible')
 
         setTimeout(() => {
           snackbar.classList.remove('md-snackbar-visible')
+          setTimeout(() => {
+            snackbar.style.display = 'none'
+          }, 300)
         }, 4000)
       }
     }
