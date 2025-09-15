@@ -32,13 +32,13 @@
         window.captchaConfig = {
             backend: '{{ captcha_backend }}',
             siteKey: '{{ captcha_site_key }}',
-            enabled: '{{ captcha_backend }}' !== 'mock' || window.location.hostname !== 'localhost'
+            enabled: '{{ captcha_backend }}' === 'recaptcha' && '{{ captcha_site_key }}' !== ''
         };
     </script>
 
     <!-- Load CAPTCHA Scripts Based on Configuration -->
-    {% if captcha_backend == 'recaptcha' %}
-    <script src="https://www.google.com/recaptcha/api.js" async defer></script>
+    {% if captcha_backend == 'recaptcha' and captcha_site_key %}
+    <script src="https://www.google.com/recaptcha/api.js?render={{ captcha_site_key }}" async defer></script>
     {% elif captcha_backend == 'hcaptcha' %}
     <script src="https://js.hcaptcha.com/1/api.js" async defer></script>
     {% endif %}
@@ -142,9 +142,9 @@
                 <div class="feature-icon">
                     <span class="material-icons">security</span>
                 </div>
-                <h3 class="md-headline-small">Enterprise Security</h3>
+                <h3 class="md-headline-small">Robust Security</h3>
                 <p class="md-body-medium md-on-surface-variant">
-                    Bank-level security with JWT authentication, rate limiting, and comprehensive audit trails.
+                    Modern security with JWT authentication, rate limiting, and comprehensive audit trails.
                 </p>
             </div>
 
