@@ -6,9 +6,9 @@ across different CAPTCHA backends (mock, reCAPTCHA, hCAPTCHA).
 """
 
 import asyncio
-import os
-from playwright.async_api import async_playwright, Page, expect
+
 import pytest
+from playwright.async_api import async_playwright, expect
 
 
 class TestCAPTCHAIntegration:
@@ -34,7 +34,9 @@ class TestCAPTCHAIntegration:
     async def open_registration_modal(self):
         """Helper method to open the registration modal."""
         # Click "Get Started" button to open registration modal
-        get_started_btn = self.page.locator('button[data-action="show-register"]').first()
+        get_started_btn = self.page.locator(
+            'button[data-action="show-register"]'
+        ).first
         await get_started_btn.wait_for(state="visible")
         await get_started_btn.click()
 
@@ -47,13 +49,15 @@ class TestCAPTCHAIntegration:
         await self.open_registration_modal()
 
         # Check CAPTCHA container exists
-        captcha_container = self.page.locator('#registerCaptcha')
+        captcha_container = self.page.locator("#registerCaptcha")
         await expect(captcha_container).to_be_visible()
 
         # Check CAPTCHA helper text
-        captcha_help = self.page.locator('#register-captcha-help')
+        captcha_help = self.page.locator("#register-captcha-help")
         await expect(captcha_help).to_be_visible()
-        await expect(captcha_help).to_contain_text("Please complete the verification to continue")
+        await expect(captcha_help).to_contain_text(
+            "Please complete the verification to continue"
+        )
 
     async def test_captcha_configuration_loaded(self):
         """Test that CAPTCHA configuration is properly loaded."""
@@ -78,7 +82,7 @@ class TestCAPTCHAIntegration:
         await self.page.wait_for_timeout(1000)
 
         # Check if mock CAPTCHA widget is rendered
-        mock_widget = self.page.locator('#registerCaptcha .mock-captcha-widget')
+        mock_widget = self.page.locator("#registerCaptcha .mock-captcha-widget")
         if await mock_widget.count() > 0:
             await expect(mock_widget).to_be_visible()
 
@@ -93,22 +97,22 @@ class TestCAPTCHAIntegration:
         await self.open_registration_modal()
 
         # Fill in registration form
-        await self.page.locator('#registerFirstName').fill("John")
-        await self.page.locator('#registerLastName').fill("Doe")
-        await self.page.locator('#registerUsername').fill("johndoe123")
-        await self.page.locator('#registerEmail').fill("john@example.com")
-        await self.page.locator('#registerPassword').fill("SecurePass123!")
+        await self.page.locator("#registerFirstName").fill("John")
+        await self.page.locator("#registerLastName").fill("Doe")
+        await self.page.locator("#registerUsername").fill("johndoe123")
+        await self.page.locator("#registerEmail").fill("john@example.com")
+        await self.page.locator("#registerPassword").fill("SecurePass123!")
 
         # Wait for CAPTCHA to load
         await self.page.wait_for_timeout(1000)
 
         # Try to submit without completing CAPTCHA (if not mock)
-        submit_button = self.page.locator('#registerSubmitBtn')
+        submit_button = self.page.locator("#registerSubmitBtn")
         await submit_button.click()
 
         # Check for CAPTCHA error message or successful submission
-        captcha_error = self.page.locator('#registerCaptchaError')
-        registration_error = self.page.locator('#registerError')
+        captcha_error = self.page.locator("#registerCaptchaError")
+        registration_error = self.page.locator("#registerError")
 
         # Wait for either error or success
         await self.page.wait_for_timeout(2000)
@@ -122,25 +126,29 @@ class TestCAPTCHAIntegration:
         # 1. CAPTCHA error is shown
         # 2. Registration error is shown (e.g., user already exists)
         # 3. Form submits successfully (less likely in test environment)
-        assert captcha_error_visible or registration_error_visible or await self.page.locator('.md-snackbar').is_visible()
+        assert (
+            captcha_error_visible
+            or registration_error_visible
+            or await self.page.locator(".md-snackbar").is_visible()
+        )
 
     async def test_captcha_error_handling(self):
         """Test CAPTCHA error display and clearing."""
         await self.open_registration_modal()
 
         # Check that CAPTCHA error is initially hidden
-        captcha_error = self.page.locator('#registerCaptchaError')
+        captcha_error = self.page.locator("#registerCaptchaError")
         await expect(captcha_error).to_be_hidden()
 
         # Fill form and attempt submission to trigger potential CAPTCHA error
-        await self.page.locator('#registerFirstName').fill("Jane")
-        await self.page.locator('#registerLastName').fill("Smith")
-        await self.page.locator('#registerUsername').fill("janesmith456")
-        await self.page.locator('#registerEmail').fill("jane@example.com")
-        await self.page.locator('#registerPassword').fill("AnotherPass456!")
+        await self.page.locator("#registerFirstName").fill("Jane")
+        await self.page.locator("#registerLastName").fill("Smith")
+        await self.page.locator("#registerUsername").fill("janesmith456")
+        await self.page.locator("#registerEmail").fill("jane@example.com")
+        await self.page.locator("#registerPassword").fill("AnotherPass456!")
 
         # Submit form (may trigger CAPTCHA validation)
-        submit_button = self.page.locator('#registerSubmitBtn')
+        submit_button = self.page.locator("#registerSubmitBtn")
         await submit_button.click()
 
         # Wait for potential error
@@ -151,15 +159,17 @@ class TestCAPTCHAIntegration:
         await self.open_registration_modal()
 
         # Check CAPTCHA container has proper ARIA attributes
-        captcha_container = self.page.locator('#registerCaptcha')
-        await expect(captcha_container).to_have_attribute('aria-describedby', 'register-captcha-help')
+        captcha_container = self.page.locator("#registerCaptcha")
+        await expect(captcha_container).to_have_attribute(
+            "aria-describedby", "register-captcha-help"
+        )
 
         # Check error container has proper role
-        captcha_error = self.page.locator('#registerCaptchaError')
-        await expect(captcha_error).to_have_attribute('role', 'alert')
+        captcha_error = self.page.locator("#registerCaptchaError")
+        await expect(captcha_error).to_have_attribute("role", "alert")
 
         # Check helper text is properly associated
-        captcha_help = self.page.locator('#register-captcha-help')
+        captcha_help = self.page.locator("#register-captcha-help")
         await expect(captcha_help).to_be_visible()
 
     async def test_captcha_responsive_layout(self):
@@ -168,7 +178,7 @@ class TestCAPTCHAIntegration:
 
         # Test desktop layout
         await self.page.set_viewport_size({"width": 1200, "height": 800})
-        captcha_container = self.page.locator('#registerCaptcha')
+        captcha_container = self.page.locator("#registerCaptcha")
         await expect(captcha_container).to_be_visible()
 
         # Test tablet layout
@@ -187,7 +197,9 @@ class TestCAPTCHAIntegration:
         await self.page.wait_for_timeout(1000)
 
         # Close modal
-        close_button = self.page.locator('button[data-action="close-modal"][data-modal="register"]')
+        close_button = self.page.locator(
+            'button[data-action="close-modal"][data-modal="register"]'
+        )
         await close_button.click()
 
         # Wait for modal to close
@@ -198,7 +210,7 @@ class TestCAPTCHAIntegration:
         await self.open_registration_modal()
 
         # Verify CAPTCHA container is still present and functional
-        captcha_container = self.page.locator('#registerCaptcha')
+        captcha_container = self.page.locator("#registerCaptcha")
         await expect(captcha_container).to_be_visible()
 
     async def test_captcha_form_validation_order(self):
@@ -206,20 +218,20 @@ class TestCAPTCHAIntegration:
         await self.open_registration_modal()
 
         # Try submitting with empty form
-        submit_button = self.page.locator('#registerSubmitBtn')
+        submit_button = self.page.locator("#registerSubmitBtn")
         await submit_button.click()
 
         # Check that HTML5 validation prevents submission
-        first_name_field = self.page.locator('#registerFirstName')
-        is_invalid = await first_name_field.evaluate('el => !el.checkValidity()')
+        first_name_field = self.page.locator("#registerFirstName")
+        is_invalid = await first_name_field.evaluate("el => !el.checkValidity()")
         assert is_invalid  # Should be invalid due to required attribute
 
         # Fill required fields
         await first_name_field.fill("Test")
-        await self.page.locator('#registerLastName').fill("User")
-        await self.page.locator('#registerUsername').fill("testuser789")
-        await self.page.locator('#registerEmail').fill("test@example.com")
-        await self.page.locator('#registerPassword').fill("TestPass789!")
+        await self.page.locator("#registerLastName").fill("User")
+        await self.page.locator("#registerUsername").fill("testuser789")
+        await self.page.locator("#registerEmail").fill("test@example.com")
+        await self.page.locator("#registerPassword").fill("TestPass789!")
 
         # Now submit (should reach CAPTCHA validation)
         await submit_button.click()
@@ -234,14 +246,23 @@ async def run_captcha_tests():
 
     tests = [
         ("CAPTCHA Container Present", test_instance.test_captcha_container_present),
-        ("CAPTCHA Configuration Loaded", test_instance.test_captcha_configuration_loaded),
+        (
+            "CAPTCHA Configuration Loaded",
+            test_instance.test_captcha_configuration_loaded,
+        ),
         ("Mock CAPTCHA Rendering", test_instance.test_mock_captcha_rendering),
-        ("Registration Form with CAPTCHA", test_instance.test_registration_form_with_captcha_validation),
+        (
+            "Registration Form with CAPTCHA",
+            test_instance.test_registration_form_with_captcha_validation,
+        ),
         ("CAPTCHA Error Handling", test_instance.test_captcha_error_handling),
         ("CAPTCHA Accessibility", test_instance.test_captcha_accessibility),
         ("CAPTCHA Responsive Layout", test_instance.test_captcha_responsive_layout),
         ("CAPTCHA Modal Interaction", test_instance.test_captcha_modal_interaction),
-        ("CAPTCHA Form Validation Order", test_instance.test_captcha_form_validation_order),
+        (
+            "CAPTCHA Form Validation Order",
+            test_instance.test_captcha_form_validation_order,
+        ),
     ]
 
     passed_tests = 0
@@ -262,10 +283,10 @@ async def run_captcha_tests():
             except StopAsyncIteration:
                 pass
 
-    print(f"\n📊 Test Results:")
+    print("\n📊 Test Results:")
     print(f"✅ Passed: {passed_tests}")
     print(f"❌ Failed: {failed_tests}")
-    print(f"📈 Success Rate: {passed_tests/(passed_tests + failed_tests)*100:.1f}%")
+    print(f"📈 Success Rate: {passed_tests / (passed_tests + failed_tests) * 100:.1f}%")
 
     return failed_tests == 0
 

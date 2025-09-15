@@ -623,10 +623,11 @@ body {
 
 .md-text-field-input:focus + .md-text-field-label,
 .md-text-field-input:not(:placeholder-shown) + .md-text-field-label {
-  top: 12px;
-  transform: translateY(0);
+  top: 0px;
+  transform: translateY(-50%);
   font-size: var(--md-sys-typescale-body-small-size);
   color: var(--md-sys-color-primary);
+  z-index: 1;
 }
 
 .md-text-field-input:not(:focus):not(:placeholder-shown) + .md-text-field-label {
@@ -652,6 +653,19 @@ body {
 
 .md-text-field-outlined .md-text-field-label {
   background-color: var(--md-sys-color-background);
+  margin: 0 -4px;
+  padding: 0 8px;
+}
+
+/* Fix for outlined field focused/filled state */
+.md-text-field-outlined .md-text-field-input:focus + .md-text-field-label,
+.md-text-field-outlined .md-text-field-input:not(:placeholder-shown) + .md-text-field-label {
+  top: 0px;
+  transform: translateY(-50%);
+  background-color: var(--md-sys-color-background);
+  padding: 0 8px;
+  margin: 0 -4px;
+  z-index: 2;
 }
 
 .md-text-field-helper {

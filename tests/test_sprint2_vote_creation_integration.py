@@ -149,12 +149,14 @@ class TestVoteCreationAPI:
                     # Create 20 options
                     options = []
                     for i in range(1, 21):
-                        options.append({
-                            "title": f"Option {i}",
-                            "content": f"Content for option {i}",
-                            "option_type": "text",
-                            "display_order": i,
-                        })
+                        options.append(
+                            {
+                                "title": f"Option {i}",
+                                "content": f"Content for option {i}",
+                                "option_type": "text",
+                                "display_order": i,
+                            }
+                        )
 
                     vote_data = {
                         "title": "Test Vote with 20 Options",
@@ -208,7 +210,10 @@ class TestVoteCreationAPI:
                     assert response.status_code == 422
 
                     error_data = response.json()
-                    assert "at least 2 items" in str(error_data).lower() or "min_length" in str(error_data).lower()
+                    assert (
+                        "at least 2 items" in str(error_data).lower()
+                        or "min_length" in str(error_data).lower()
+                    )
 
         finally:
             app.dependency_overrides.clear()
@@ -227,12 +232,14 @@ class TestVoteCreationAPI:
                     # Create 21 options
                     options = []
                     for i in range(1, 22):
-                        options.append({
-                            "title": f"Option {i}",
-                            "content": f"Content for option {i}",
-                            "option_type": "text",
-                            "display_order": i,
-                        })
+                        options.append(
+                            {
+                                "title": f"Option {i}",
+                                "content": f"Content for option {i}",
+                                "option_type": "text",
+                                "display_order": i,
+                            }
+                        )
 
                     vote_data = {
                         "title": "Invalid Vote",
@@ -246,14 +253,19 @@ class TestVoteCreationAPI:
                     assert response.status_code == 422
 
                     error_data = response.json()
-                    assert "at most 20 items" in str(error_data).lower() or "max_length" in str(error_data).lower()
+                    assert (
+                        "at most 20 items" in str(error_data).lower()
+                        or "max_length" in str(error_data).lower()
+                    )
 
         finally:
             app.dependency_overrides.clear()
 
     @pytest.mark.integration
     @pytest.mark.database
-    async def test_create_vote_with_authentication_required(self, test_session, test_user):
+    async def test_create_vote_with_authentication_required(
+        self, test_session, test_user
+    ):
         """Test creating vote with authentication required."""
         app.dependency_overrides[get_async_session] = lambda: test_session
 
@@ -337,7 +349,9 @@ class TestVoteCreationAPI:
 
     @pytest.mark.integration
     @pytest.mark.database
-    async def test_create_vote_with_both_auth_and_access_code(self, test_session, test_user):
+    async def test_create_vote_with_both_auth_and_access_code(
+        self, test_session, test_user
+    ):
         """Test creating vote with both authentication and access code."""
         app.dependency_overrides[get_async_session] = lambda: test_session
 
@@ -470,7 +484,9 @@ class TestVoteCreationValidation:
 
     @pytest.mark.integration
     @pytest.mark.database
-    async def test_create_vote_with_invalid_access_code_length(self, test_session, test_user):
+    async def test_create_vote_with_invalid_access_code_length(
+        self, test_session, test_user
+    ):
         """Test creating vote with access code too long."""
         app.dependency_overrides[get_async_session] = lambda: test_session
 
@@ -545,7 +561,9 @@ class TestVoteCreationPerformance:
 
     @pytest.mark.integration
     @pytest.mark.performance
-    async def test_create_vote_with_many_options_performance(self, test_session, test_user):
+    async def test_create_vote_with_many_options_performance(
+        self, test_session, test_user
+    ):
         """Test performance when creating votes with many options."""
         app.dependency_overrides[get_async_session] = lambda: test_session
 
@@ -559,12 +577,14 @@ class TestVoteCreationPerformance:
                     # Test with maximum options
                     options = []
                     for i in range(1, 21):  # 20 options
-                        options.append({
-                            "title": f"Performance Option {i}",
-                            "content": f"Content for performance testing option {i}",
-                            "option_type": "text",
-                            "display_order": i,
-                        })
+                        options.append(
+                            {
+                                "title": f"Performance Option {i}",
+                                "content": f"Content for performance testing option {i}",
+                                "option_type": "text",
+                                "display_order": i,
+                            }
+                        )
 
                     vote_data = {
                         "title": "Performance Test Vote",
@@ -604,7 +624,9 @@ class TestVoteCreationPerformance:
 
                 try:
                     with TestClient(app) as client:
-                        with patch("cardinal_vote.dependencies.get_current_user") as mock_auth:
+                        with patch(
+                            "cardinal_vote.dependencies.get_current_user"
+                        ) as mock_auth:
                             mock_auth.return_value = user
 
                             vote_data = {

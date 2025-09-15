@@ -226,14 +226,18 @@ class TestVotePreviewAPI:
                     # Verify access settings
                     access_settings = result["access_settings"]
                     assert access_settings["require_auth"] == sample_vote.require_auth
-                    assert access_settings["has_access_code"] == (sample_vote.access_code is not None)
+                    assert access_settings["has_access_code"] == (
+                        sample_vote.access_code is not None
+                    )
 
         finally:
             app.dependency_overrides.clear()
 
     @pytest.mark.integration
     @pytest.mark.database
-    async def test_get_vote_preview_protected_vote(self, test_session, test_user, protected_vote):
+    async def test_get_vote_preview_protected_vote(
+        self, test_session, test_user, protected_vote
+    ):
         """Test vote preview for protected vote."""
         app.dependency_overrides[get_async_session] = lambda: test_session
 
@@ -340,8 +344,7 @@ class TestVoteActivation:
 
                     # Activate vote
                     response = client.patch(
-                        f"/api/votes/{sample_vote.id}/status",
-                        json={"status": "active"}
+                        f"/api/votes/{sample_vote.id}/status", json={"status": "active"}
                     )
                     assert response.status_code == 200
 
@@ -372,8 +375,7 @@ class TestVoteActivation:
 
                     # Pause vote
                     response = client.patch(
-                        f"/api/votes/{sample_vote.id}/status",
-                        json={"status": "paused"}
+                        f"/api/votes/{sample_vote.id}/status", json={"status": "paused"}
                     )
                     assert response.status_code == 200
 
@@ -405,7 +407,7 @@ class TestVoteActivation:
                     # Complete vote
                     response = client.patch(
                         f"/api/votes/{sample_vote.id}/status",
-                        json={"status": "completed"}
+                        json={"status": "completed"},
                     )
                     assert response.status_code == 200
 
@@ -421,7 +423,9 @@ class TestVoteActivation:
 
     @pytest.mark.integration
     @pytest.mark.database
-    async def test_invalid_status_transition(self, test_session, test_user, sample_vote):
+    async def test_invalid_status_transition(
+        self, test_session, test_user, sample_vote
+    ):
         """Test invalid status transition."""
         # First complete the vote
         sample_vote.status = "completed"
@@ -436,8 +440,7 @@ class TestVoteActivation:
 
                     # Try to change completed vote back to draft (should fail or be allowed based on business logic)
                     response = client.patch(
-                        f"/api/votes/{sample_vote.id}/status",
-                        json={"status": "draft"}
+                        f"/api/votes/{sample_vote.id}/status", json={"status": "draft"}
                     )
                     # This might be 200 or 400 depending on business rules
                     assert response.status_code in [200, 400]
@@ -454,8 +457,7 @@ class TestVoteActivation:
         try:
             with TestClient(app) as client:
                 response = client.patch(
-                    f"/api/votes/{sample_vote.id}/status",
-                    json={"status": "active"}
+                    f"/api/votes/{sample_vote.id}/status", json={"status": "active"}
                 )
                 assert response.status_code == 401
 
@@ -468,7 +470,9 @@ class TestVotePreviewPage:
 
     @pytest.mark.integration
     @pytest.mark.database
-    async def test_vote_preview_page_authenticated(self, test_session, test_user, sample_vote):
+    async def test_vote_preview_page_authenticated(
+        self, test_session, test_user, sample_vote
+    ):
         """Test vote preview page for authenticated user."""
         app.dependency_overrides[get_async_session] = lambda: test_session
 
@@ -578,7 +582,9 @@ class TestSharingFunctionality:
 
     @pytest.mark.integration
     @pytest.mark.database
-    async def test_sharing_with_access_controls(self, test_session, test_user, protected_vote):
+    async def test_sharing_with_access_controls(
+        self, test_session, test_user, protected_vote
+    ):
         """Test sharing for vote with access controls."""
         app.dependency_overrides[get_async_session] = lambda: test_session
 
@@ -612,7 +618,9 @@ class TestVotePreviewIntegration:
 
     @pytest.mark.integration
     @pytest.mark.database
-    async def test_complete_preview_workflow(self, test_session, test_user, sample_vote):
+    async def test_complete_preview_workflow(
+        self, test_session, test_user, sample_vote
+    ):
         """Test complete vote preview and activation workflow."""
         app.dependency_overrides[get_async_session] = lambda: test_session
 
@@ -622,7 +630,9 @@ class TestVotePreviewIntegration:
                     mock_auth.return_value = test_user
 
                     # 1. Get initial preview (draft status)
-                    preview_response = client.get(f"/api/votes/{sample_vote.id}/preview")
+                    preview_response = client.get(
+                        f"/api/votes/{sample_vote.id}/preview"
+                    )
                     assert preview_response.status_code == 200
 
                     preview_data = preview_response.json()
@@ -630,13 +640,14 @@ class TestVotePreviewIntegration:
 
                     # 2. Activate the vote
                     activate_response = client.patch(
-                        f"/api/votes/{sample_vote.id}/status",
-                        json={"status": "active"}
+                        f"/api/votes/{sample_vote.id}/status", json={"status": "active"}
                     )
                     assert activate_response.status_code == 200
 
                     # 3. Get preview again (should show active status)
-                    updated_preview_response = client.get(f"/api/votes/{sample_vote.id}/preview")
+                    updated_preview_response = client.get(
+                        f"/api/votes/{sample_vote.id}/preview"
+                    )
                     assert updated_preview_response.status_code == 200
 
                     updated_preview_data = updated_preview_response.json()
@@ -646,8 +657,12 @@ class TestVotePreviewIntegration:
                     original_sharing = preview_data["sharing_info"]
                     updated_sharing = updated_preview_data["sharing_info"]
 
-                    assert original_sharing["public_url"] == updated_sharing["public_url"]
-                    assert original_sharing["embed_code"] == updated_sharing["embed_code"]
+                    assert (
+                        original_sharing["public_url"] == updated_sharing["public_url"]
+                    )
+                    assert (
+                        original_sharing["embed_code"] == updated_sharing["embed_code"]
+                    )
 
         finally:
             app.dependency_overrides.clear()
@@ -679,10 +694,10 @@ class TestVotePreviewIntegration:
                 option = VoteOption(
                     id=uuid4(),
                     vote_id=vote.id,
-                    title=f"Performance Option {i+1}",
-                    content=f"Content for performance option {i+1}",
+                    title=f"Performance Option {i + 1}",
+                    content=f"Content for performance option {i + 1}",
                     option_type="text",
-                    display_order=i+1,
+                    display_order=i + 1,
                 )
                 session.add(option)
 
@@ -693,7 +708,9 @@ class TestVotePreviewIntegration:
 
             try:
                 with TestClient(app) as client:
-                    with patch("cardinal_vote.dependencies.get_current_user") as mock_auth:
+                    with patch(
+                        "cardinal_vote.dependencies.get_current_user"
+                    ) as mock_auth:
                         mock_auth.return_value = test_user
 
                         import time
@@ -704,7 +721,9 @@ class TestVotePreviewIntegration:
                         preview_time = time.time() - start_time
 
                         assert response.status_code == 200
-                        assert preview_time < 1.0  # Should complete in less than 1 second
+                        assert (
+                            preview_time < 1.0
+                        )  # Should complete in less than 1 second
 
                         result = response.json()
                         assert len(result["vote"]["options"]) == 20

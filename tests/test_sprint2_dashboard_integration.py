@@ -114,7 +114,9 @@ async def sample_votes_with_activity(test_session, test_user):
             status=status,
             creator_id=test_user.id,
             created_at=now - time_ago,
-            updated_at=now - time_ago + timedelta(minutes=30) if status != "draft" else None,
+            updated_at=now - time_ago + timedelta(minutes=30)
+            if status != "draft"
+            else None,
             require_auth=False,
             access_code=None,
         )
@@ -129,10 +131,10 @@ async def sample_votes_with_activity(test_session, test_user):
             option = VoteOption(
                 id=uuid4(),
                 vote_id=vote.id,
-                title=f"Option {i-1}",
-                content=f"Content for option {i-1} in {vote.title}",
+                title=f"Option {i - 1}",
+                content=f"Content for option {i - 1} in {vote.title}",
                 option_type="text",
-                display_order=i-1,
+                display_order=i - 1,
             )
             test_session.add(option)
 
@@ -147,7 +149,9 @@ async def sample_responses(test_session, sample_votes_with_activity):
     now = datetime.utcnow()
 
     # Create responses for some votes
-    for i, vote in enumerate(sample_votes_with_activity[:4]):  # First 4 votes get responses
+    for i, vote in enumerate(
+        sample_votes_with_activity[:4]
+    ):  # First 4 votes get responses
         for j in range(i + 1):  # Varying response counts
             response = VoterResponse(
                 id=uuid4(),
@@ -204,7 +208,9 @@ class TestEnhancedDashboardStats:
 
     @pytest.mark.integration
     @pytest.mark.database
-    async def test_get_dashboard_stats_with_data(self, test_session, test_user, sample_votes_with_activity, sample_responses):
+    async def test_get_dashboard_stats_with_data(
+        self, test_session, test_user, sample_votes_with_activity, sample_responses
+    ):
         """Test dashboard statistics with actual data."""
         app.dependency_overrides[get_async_session] = lambda: test_session
 
@@ -221,9 +227,19 @@ class TestEnhancedDashboardStats:
                     # Verify counts match our sample data
                     assert result["total_votes"] == len(sample_votes_with_activity)
 
-                    active_count = len([v for v in sample_votes_with_activity if v.status == "active"])
-                    draft_count = len([v for v in sample_votes_with_activity if v.status == "draft"])
-                    completed_count = len([v for v in sample_votes_with_activity if v.status == "completed"])
+                    active_count = len(
+                        [v for v in sample_votes_with_activity if v.status == "active"]
+                    )
+                    draft_count = len(
+                        [v for v in sample_votes_with_activity if v.status == "draft"]
+                    )
+                    completed_count = len(
+                        [
+                            v
+                            for v in sample_votes_with_activity
+                            if v.status == "completed"
+                        ]
+                    )
 
                     assert result["active_votes"] == active_count
                     assert result["draft_votes"] == draft_count
@@ -289,7 +305,9 @@ class TestActivityTimeline:
 
     @pytest.mark.integration
     @pytest.mark.database
-    async def test_get_activity_timeline_with_data(self, test_session, test_user, sample_votes_with_activity, sample_responses):
+    async def test_get_activity_timeline_with_data(
+        self, test_session, test_user, sample_votes_with_activity, sample_responses
+    ):
         """Test activity timeline with actual data."""
         app.dependency_overrides[get_async_session] = lambda: test_session
 
@@ -298,7 +316,9 @@ class TestActivityTimeline:
                 with patch("cardinal_vote.dependencies.get_current_user") as mock_auth:
                     mock_auth.return_value = test_user
 
-                    response = client.get("/api/votes/dashboard/activity?days=30&limit=50")
+                    response = client.get(
+                        "/api/votes/dashboard/activity?days=30&limit=50"
+                    )
                     assert response.status_code == 200
 
                     result = response.json()
@@ -318,7 +338,9 @@ class TestActivityTimeline:
                         # Verify timestamp format
                         assert isinstance(activity["timestamp"], str)
                         # Should be in ISO format
-                        datetime.fromisoformat(activity["timestamp"].replace("Z", "+00:00"))
+                        datetime.fromisoformat(
+                            activity["timestamp"].replace("Z", "+00:00")
+                        )
 
                     # Activities should be sorted by timestamp (most recent first)
                     timestamps = [activity["timestamp"] for activity in activities]
@@ -329,7 +351,9 @@ class TestActivityTimeline:
 
     @pytest.mark.integration
     @pytest.mark.database
-    async def test_activity_timeline_filtering(self, test_session, test_user, sample_votes_with_activity):
+    async def test_activity_timeline_filtering(
+        self, test_session, test_user, sample_votes_with_activity
+    ):
         """Test activity timeline filtering by days."""
         app.dependency_overrides[get_async_session] = lambda: test_session
 
@@ -339,10 +363,14 @@ class TestActivityTimeline:
                     mock_auth.return_value = test_user
 
                     # Test with different day filters
-                    response_7_days = client.get("/api/votes/dashboard/activity?days=7&limit=50")
+                    response_7_days = client.get(
+                        "/api/votes/dashboard/activity?days=7&limit=50"
+                    )
                     assert response_7_days.status_code == 200
 
-                    response_30_days = client.get("/api/votes/dashboard/activity?days=30&limit=50")
+                    response_30_days = client.get(
+                        "/api/votes/dashboard/activity?days=30&limit=50"
+                    )
                     assert response_30_days.status_code == 200
 
                     activities_7 = response_7_days.json()["activities"]
@@ -356,7 +384,9 @@ class TestActivityTimeline:
 
     @pytest.mark.integration
     @pytest.mark.database
-    async def test_activity_timeline_limit(self, test_session, test_user, sample_votes_with_activity):
+    async def test_activity_timeline_limit(
+        self, test_session, test_user, sample_votes_with_activity
+    ):
         """Test activity timeline limit parameter."""
         app.dependency_overrides[get_async_session] = lambda: test_session
 
@@ -366,7 +396,9 @@ class TestActivityTimeline:
                     mock_auth.return_value = test_user
 
                     # Test with small limit
-                    response = client.get("/api/votes/dashboard/activity?days=30&limit=3")
+                    response = client.get(
+                        "/api/votes/dashboard/activity?days=30&limit=3"
+                    )
                     assert response.status_code == 200
 
                     result = response.json()
@@ -404,7 +436,9 @@ class TestDashboardIntegration:
 
     @pytest.mark.integration
     @pytest.mark.database
-    async def test_complete_dashboard_workflow(self, test_session, test_user, sample_votes_with_activity, sample_responses):
+    async def test_complete_dashboard_workflow(
+        self, test_session, test_user, sample_votes_with_activity, sample_responses
+    ):
         """Test complete dashboard data loading workflow."""
         app.dependency_overrides[get_async_session] = lambda: test_session
 
@@ -419,7 +453,9 @@ class TestDashboardIntegration:
                     stats_data = stats_response.json()
 
                     # 2. Load activity timeline
-                    activity_response = client.get("/api/votes/dashboard/activity?days=7&limit=10")
+                    activity_response = client.get(
+                        "/api/votes/dashboard/activity?days=7&limit=10"
+                    )
                     assert activity_response.status_code == 200
                     activity_data = activity_response.json()
 
@@ -488,7 +524,9 @@ class TestDashboardPerformance:
 
             try:
                 with TestClient(app) as client:
-                    with patch("cardinal_vote.dependencies.get_current_user") as mock_auth:
+                    with patch(
+                        "cardinal_vote.dependencies.get_current_user"
+                    ) as mock_auth:
                         mock_auth.return_value = test_user
 
                         import time
@@ -503,11 +541,15 @@ class TestDashboardPerformance:
 
                         # Test activity timeline performance
                         start_time = time.time()
-                        activity_response = client.get("/api/votes/dashboard/activity?days=30&limit=20")
+                        activity_response = client.get(
+                            "/api/votes/dashboard/activity?days=30&limit=20"
+                        )
                         activity_time = time.time() - start_time
 
                         assert activity_response.status_code == 200
-                        assert activity_time < 1.0  # Should complete in less than 1 second
+                        assert (
+                            activity_time < 1.0
+                        )  # Should complete in less than 1 second
 
                         # Verify data accuracy
                         stats_data = stats_response.json()
@@ -519,7 +561,9 @@ class TestDashboardPerformance:
 
     @pytest.mark.integration
     @pytest.mark.performance
-    async def test_concurrent_dashboard_requests(self, async_session_maker, test_user, sample_votes_with_activity):
+    async def test_concurrent_dashboard_requests(
+        self, async_session_maker, test_user, sample_votes_with_activity
+    ):
         """Test concurrent dashboard requests don't cause issues."""
         import asyncio
 
@@ -532,13 +576,17 @@ class TestDashboardPerformance:
 
                 try:
                     with TestClient(app) as client:
-                        with patch("cardinal_vote.dependencies.get_current_user") as mock_auth:
+                        with patch(
+                            "cardinal_vote.dependencies.get_current_user"
+                        ) as mock_auth:
                             mock_auth.return_value = user
 
                             if request_type == "stats":
                                 response = client.get("/api/votes/dashboard/stats")
                             else:  # activity
-                                response = client.get("/api/votes/dashboard/activity?days=7&limit=10")
+                                response = client.get(
+                                    "/api/votes/dashboard/activity?days=7&limit=10"
+                                )
 
                             return response.status_code, response.json()
 
@@ -549,7 +597,9 @@ class TestDashboardPerformance:
         tasks = []
         for i in range(10):
             request_type = "stats" if i % 2 == 0 else "activity"
-            tasks.append(make_dashboard_request(async_session_maker, test_user, request_type))
+            tasks.append(
+                make_dashboard_request(async_session_maker, test_user, request_type)
+            )
 
         results = await asyncio.gather(*tasks, return_exceptions=True)
 

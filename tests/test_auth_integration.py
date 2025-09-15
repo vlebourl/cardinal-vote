@@ -34,13 +34,11 @@ async def create_test_user(
     response = client.post("/api/auth/register", json=user_data)
 
     if response.status_code == 201:
-        return {
-            "email": email,
-            "password": password,
-            "user_data": response.json()
-        }
+        return {"email": email, "password": password, "user_data": response.json()}
     else:
-        raise Exception(f"Failed to create test user: {response.status_code} - {response.text}")
+        raise Exception(
+            f"Failed to create test user: {response.status_code} - {response.text}"
+        )
 
 
 async def get_auth_headers(email: str, password: str) -> dict[str, str]:
@@ -59,10 +57,12 @@ async def get_auth_headers(email: str, password: str) -> dict[str, str]:
         access_token = token_data["access_token"]
         return {
             "Authorization": f"Bearer {access_token}",
-            "Content-Type": "application/json"
+            "Content-Type": "application/json",
         }
     else:
-        raise Exception(f"Failed to authenticate user: {response.status_code} - {response.text}")
+        raise Exception(
+            f"Failed to authenticate user: {response.status_code} - {response.text}"
+        )
 
 
 def create_authenticated_client() -> tuple[TestClient, dict[str, str]]:
