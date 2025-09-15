@@ -79,6 +79,7 @@ document.addEventListener('DOMContentLoaded', function () {
   })
 
   // Snackbar functionality
+  /* eslint-disable no-unused-vars */
   function showSnackbar(message, action = null) {
     const snackbar = document.getElementById('snackbar')
     const snackbarMessage = document.getElementById('snackbar-message')
@@ -169,6 +170,7 @@ class AuthenticationManager {
     auth.initializeEventListeners()
     auth.initializeCaptcha()
     auth.checkAuthStatus()
+    auth.checkUrlParameters()
   }
 
   initializeElements() {
@@ -195,6 +197,17 @@ class AuthenticationManager {
 
     if (this.registerForm) {
       this.registerForm.addEventListener('submit', e => this.handleRegister(e))
+    }
+
+    // Password reset forms
+    const forgotPasswordForm = document.getElementById('forgotPasswordForm')
+    if (forgotPasswordForm) {
+      forgotPasswordForm.addEventListener('submit', handleForgotPassword)
+    }
+
+    const resetPasswordForm = document.getElementById('resetPasswordForm')
+    if (resetPasswordForm) {
+      resetPasswordForm.addEventListener('submit', handleResetPassword)
     }
 
     // Close modals on escape key
@@ -465,6 +478,21 @@ class AuthenticationManager {
     }
   }
 
+  checkUrlParameters() {
+    // Check for password reset token in URL
+    const urlParams = new URLSearchParams(window.location.search)
+    const resetToken = urlParams.get('reset_token')
+
+    if (resetToken) {
+      // Show the reset password modal with the token
+      showResetPasswordModal(resetToken)
+
+      // Clean up URL without reloading the page
+      const newUrl = window.location.pathname
+      window.history.replaceState({}, document.title, newUrl)
+    }
+  }
+
   clearTokens() {
     sessionStorage.removeItem('access_token')
     sessionStorage.removeItem('refresh_token')
@@ -675,5 +703,184 @@ class AuthenticationManager {
         }, 4000)
       }
     }
+  }
+}
+
+/**
+ * Switch from login to register modal
+ */
+/* eslint-disable no-unused-vars, no-undef */
+function switchToRegister() {
+  closeModal('loginModal')
+  setTimeout(() => showRegisterModal(), 150)
+}
+
+/**
+ * Switch from register to login modal
+ */
+/* eslint-disable no-unused-vars, no-undef */
+function switchToLogin() {
+  closeModal('registerModal')
+  setTimeout(() => showLoginModal(), 150)
+}
+
+/**
+ * Show forgot password modal
+ */
+/* eslint-disable no-unused-vars */
+function showForgotPassword() {
+  // Close login modal first
+  const loginModal = document.getElementById('loginModalScrim')
+  if (loginModal) {
+    loginModal.classList.remove('md-dialog-scrim-visible')
+    loginModal.setAttribute('aria-hidden', 'true')
+  }
+
+  // Show forgot password modal after a delay
+  setTimeout(() => {
+    const forgotPasswordModal = document.getElementById('forgotPasswordModalScrim')
+    if (forgotPasswordModal) {
+      forgotPasswordModal.classList.add('md-dialog-scrim-visible')
+      forgotPasswordModal.setAttribute('aria-hidden', 'false')
+
+      // Focus first input
+      const firstInput = forgotPasswordModal.querySelector('input')
+      if (firstInput) {
+        setTimeout(() => firstInput.focus(), 100)
+      }
+    }
+  }, 150)
+}
+
+/**
+ * Handle forgot password form submission
+ */
+/* eslint-disable no-undef */
+async function handleForgotPassword(e) {
+  e.preventDefault()
+
+  const form = e.target
+  const submitBtn = form.querySelector('button[type="submit"]')
+  const email = form.querySelector('#resetEmail').value
+
+  // Show loading state
+  setButtonLoading(submitBtn, true)
+
+  try {
+    const response = await fetch('/api/auth/request-password-reset', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        email
+      })
+    })
+
+    const data = await response.json()
+
+    if (response.ok) {
+      // Success - show message and close modal
+      showToast(
+        'success',
+        'Reset Link Sent',
+        data.message || 'If the email exists, a password reset link has been sent.'
+      )
+      const forgotPasswordModal = document.getElementById('forgotPasswordModalScrim')
+      if (forgotPasswordModal) {
+        forgotPasswordModal.classList.remove('md-dialog-scrim-visible')
+        forgotPasswordModal.setAttribute('aria-hidden', 'true')
+      }
+      form.reset()
+    } else {
+      // Error
+      showAuthError('forgotPasswordError', 'forgotPasswordErrorMessage', data.detail || 'Failed to send reset link')
+    }
+  } catch (error) {
+    console.error('Forgot password error:', error)
+    showAuthError('forgotPasswordError', 'forgotPasswordErrorMessage', 'Network error. Please try again.')
+  } finally {
+    // Hide loading state
+    setButtonLoading(submitBtn, false)
+  }
+}
+
+/**
+ * Show reset password modal (when user clicks email link)
+ */
+function showResetPasswordModal(token) {
+  // Set the token in the hidden field
+  document.getElementById('resetToken').value = token
+
+  // Show reset password modal
+  const resetPasswordModal = document.getElementById('resetPasswordModalScrim')
+  if (resetPasswordModal) {
+    resetPasswordModal.classList.add('md-dialog-scrim-visible')
+    resetPasswordModal.setAttribute('aria-hidden', 'false')
+
+    // Focus first input
+    const firstInput = resetPasswordModal.querySelector('input[type="password"]')
+    if (firstInput) {
+      setTimeout(() => firstInput.focus(), 100)
+    }
+  }
+}
+
+/**
+ * Handle reset password form submission
+ */
+/* eslint-disable no-undef */
+async function handleResetPassword(e) {
+  e.preventDefault()
+
+  const form = e.target
+  const submitBtn = form.querySelector('button[type="submit"]')
+  const token = form.querySelector('#resetToken').value
+  const newPassword = form.querySelector('#newPassword').value
+  const confirmPassword = form.querySelector('#confirmNewPassword').value
+
+  // Validate passwords match
+  if (newPassword !== confirmPassword) {
+    showAuthError('resetPasswordError', 'resetPasswordErrorMessage', 'Passwords do not match')
+    return
+  }
+
+  // Show loading state
+  setButtonLoading(submitBtn, true)
+
+  try {
+    const response = await fetch('/api/auth/reset-password', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        token,
+        new_password: newPassword
+      })
+    })
+
+    const data = await response.json()
+
+    if (response.ok) {
+      // Success - show message, close modal, and redirect to login
+      showToast('success', 'Password Reset', data.message || 'Your password has been reset successfully.')
+      const resetPasswordModal = document.getElementById('resetPasswordModalScrim')
+      if (resetPasswordModal) {
+        resetPasswordModal.classList.remove('md-dialog-scrim-visible')
+        resetPasswordModal.setAttribute('aria-hidden', 'true')
+      }
+      setTimeout(() => showLoginModal(), 1000)
+      form.reset()
+    } else {
+      // Error
+      showAuthError('resetPasswordError', 'resetPasswordErrorMessage', data.detail || 'Failed to reset password')
+    }
+  } catch (error) {
+    console.error('Reset password error:', error)
+    showAuthError('resetPasswordError', 'resetPasswordErrorMessage', 'Network error. Please try again.')
+  } finally {
+    // Hide loading state
+    setButtonLoading(submitBtn, false)
   }
 }

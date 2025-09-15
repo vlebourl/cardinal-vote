@@ -250,19 +250,19 @@
             <h2 class="md-dialog-headline" id="login-modal-title">Welcome Back</h2>
             <div class="md-dialog-supporting-text">
                 <form id="loginForm" class="auth-form">
+                    <div id="login-email-help" class="md-text-field-helper" tabindex="-1" role="text">Enter your registered email address</div>
                     <div class="md-text-field md-text-field-outlined">
                         <input type="email" id="loginEmail" class="md-text-field-input" placeholder=" " required
                                autocomplete="email" aria-describedby="login-email-help">
                         <label for="loginEmail" class="md-text-field-label">Email Address</label>
                     </div>
-                    <div id="login-email-help" class="md-text-field-helper" tabindex="-1" role="text">Enter your registered email address</div>
 
+                    <div id="login-password-help" class="md-text-field-helper" tabindex="-1" role="text">Enter your account password</div>
                     <div class="md-text-field md-text-field-outlined">
                         <input type="password" id="loginPassword" class="md-text-field-input" placeholder=" " required
                                autocomplete="current-password" aria-describedby="login-password-help">
                         <label for="loginPassword" class="md-text-field-label">Password</label>
                     </div>
-                    <div id="login-password-help" class="md-text-field-helper" tabindex="-1" role="text">Enter your account password</div>
 
                     <div class="auth-error" id="loginError" style="display: none;">
                         <span class="material-icons">error</span>
@@ -303,6 +303,7 @@
             <h2 class="md-dialog-headline" id="register-modal-title">Create Your Account</h2>
             <div class="md-dialog-supporting-text">
                 <form id="registerForm" class="auth-form">
+                    <div id="register-name-help" class="md-text-field-helper" tabindex="-1" role="text">Enter your full name for account creation</div>
                     <div class="form-row">
                         <div class="md-text-field md-text-field-outlined">
                             <input type="text" id="registerFirstName" class="md-text-field-input" placeholder=" " required
@@ -315,28 +316,27 @@
                             <label for="registerLastName" class="md-text-field-label">Last Name</label>
                         </div>
                     </div>
-                    <div id="register-name-help" class="md-text-field-helper" tabindex="-1" role="text">Enter your full name for account creation</div>
 
+                    <div id="register-username-help" class="md-text-field-helper" tabindex="-1" role="text">Choose a unique username for your account</div>
                     <div class="md-text-field md-text-field-outlined">
                         <input type="text" id="registerUsername" class="md-text-field-input" placeholder=" " required
                                autocomplete="username" aria-describedby="register-username-help">
                         <label for="registerUsername" class="md-text-field-label">Username</label>
                     </div>
-                    <div id="register-username-help" class="md-text-field-helper" tabindex="-1" role="text">Choose a unique username for your account</div>
 
+                    <div id="register-email-help" class="md-text-field-helper" tabindex="-1" role="text">We'll use this for account notifications</div>
                     <div class="md-text-field md-text-field-outlined">
                         <input type="email" id="registerEmail" class="md-text-field-input" placeholder=" " required
                                autocomplete="email" aria-describedby="register-email-help">
                         <label for="registerEmail" class="md-text-field-label">Email Address</label>
                     </div>
-                    <div id="register-email-help" class="md-text-field-helper" tabindex="-1" role="text">We'll use this for account notifications</div>
 
+                    <div id="register-password-help" class="md-text-field-helper" tabindex="-1" role="text">At least 8 characters with mixed case and numbers</div>
                     <div class="md-text-field md-text-field-outlined">
                         <input type="password" id="registerPassword" class="md-text-field-input" placeholder=" " required
                                autocomplete="new-password" aria-describedby="register-password-help">
                         <label for="registerPassword" class="md-text-field-label">Password</label>
                     </div>
-                    <div id="register-password-help" class="md-text-field-helper" tabindex="-1" role="text">At least 8 characters with mixed case and numbers</div>
 
                     <!-- CAPTCHA Widget -->
                     <div class="captcha-container" id="registerCaptcha" aria-describedby="register-captcha-help">
@@ -364,6 +364,87 @@
                 </button>
                 <button type="submit" form="registerForm" class="md-button md-button-filled" id="registerSubmitBtn">
                     <span class="btn-text">Create Account</span>
+                    <span class="material-icons btn-loading" style="display: none;">refresh</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Password Reset Modal -->
+    <div class="md-dialog-scrim" id="forgotPasswordModalScrim" role="dialog" aria-labelledby="forgot-password-modal-title" aria-hidden="true">
+        <div class="md-dialog" id="forgotPasswordModal">
+            <div class="md-dialog-icon">
+                <span class="material-icons">lock_reset</span>
+            </div>
+            <h2 class="md-dialog-headline" id="forgot-password-modal-title">Reset Your Password</h2>
+            <div class="md-dialog-supporting-text">
+                <form id="forgotPasswordForm" class="auth-form">
+                    <div class="md-text-field-helper">Enter your email address and we'll send you a password reset link</div>
+                    <div class="md-text-field md-text-field-outlined">
+                        <input type="email" id="resetEmail" class="md-text-field-input" placeholder=" " required aria-describedby="reset-email-help">
+                        <label for="resetEmail" class="md-text-field-label">Email Address</label>
+                    </div>
+
+                    <div class="auth-error" id="forgotPasswordError" style="display: none;">
+                        <span class="material-icons">error</span>
+                        <span id="forgotPasswordErrorMessage"></span>
+                    </div>
+                </form>
+
+                <div class="auth-divider">
+                    <p class="md-body-medium">Remember your password?</p>
+                    <button type="button" class="md-button md-button-text" data-action="switch-to-login">
+                        Sign In
+                    </button>
+                </div>
+            </div>
+            <div class="md-dialog-actions">
+                <button type="button" class="md-button md-button-text" data-action="close-modal" data-modal="forgotPassword">
+                    Cancel
+                </button>
+                <button type="submit" form="forgotPasswordForm" class="md-button md-button-filled" id="forgotPasswordSubmitBtn">
+                    <span class="btn-text">Send Reset Link</span>
+                    <span class="material-icons btn-loading" style="display: none;">refresh</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Password Reset Confirmation Modal -->
+    <div class="md-dialog-scrim" id="resetPasswordModalScrim" role="dialog" aria-labelledby="reset-password-modal-title" aria-hidden="true">
+        <div class="md-dialog" id="resetPasswordModal">
+            <div class="md-dialog-icon">
+                <span class="material-icons">lock</span>
+            </div>
+            <h2 class="md-dialog-headline" id="reset-password-modal-title">Set New Password</h2>
+            <div class="md-dialog-supporting-text">
+                <form id="resetPasswordForm" class="auth-form">
+                    <input type="hidden" id="resetToken" name="token">
+
+                    <div class="md-text-field-helper">Enter your new password (at least 8 characters with mixed case and numbers)</div>
+                    <div class="md-text-field md-text-field-outlined">
+                        <input type="password" id="newPassword" class="md-text-field-input" placeholder=" " required minlength="8" aria-describedby="new-password-help">
+                        <label for="newPassword" class="md-text-field-label">New Password</label>
+                    </div>
+
+                    <div class="md-text-field-helper">Confirm your new password</div>
+                    <div class="md-text-field md-text-field-outlined">
+                        <input type="password" id="confirmNewPassword" class="md-text-field-input" placeholder=" " required minlength="8" aria-describedby="confirm-password-help">
+                        <label for="confirmNewPassword" class="md-text-field-label">Confirm Password</label>
+                    </div>
+
+                    <div class="auth-error" id="resetPasswordError" style="display: none;">
+                        <span class="material-icons">error</span>
+                        <span id="resetPasswordErrorMessage"></span>
+                    </div>
+                </form>
+            </div>
+            <div class="md-dialog-actions">
+                <button type="button" class="md-button md-button-text" data-action="close-modal" data-modal="resetPassword">
+                    Cancel
+                </button>
+                <button type="submit" form="resetPasswordForm" class="md-button md-button-filled" id="resetPasswordSubmitBtn">
+                    <span class="btn-text">Reset Password</span>
                     <span class="material-icons btn-loading" style="display: none;">refresh</span>
                 </button>
             </div>
