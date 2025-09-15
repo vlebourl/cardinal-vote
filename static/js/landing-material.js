@@ -360,7 +360,7 @@ class AuthenticationManager {
     }
 
     // CAPTCHA validation
-    const captchaResponse = this.validateCaptcha()
+    const captchaResponse = await this.validateCaptcha()
     if (captchaResponse === null) {
       return // CAPTCHA validation failed, error already shown
     }
@@ -507,25 +507,16 @@ class AuthenticationManager {
     if (!container) return
 
     try {
-      container.innerHTML = '<div class="captcha-loading">Loading verification...</div>'
+      // reCAPTCHA v3 doesn't need a visible widget - it runs in the background
+      container.innerHTML = '<div class="captcha-info">🔒 Secured by reCAPTCHA</div>'
 
-      this.captchaWidgetId = grecaptcha.render(container, {
-        sitekey: this.captchaConfig.siteKey,
-        callback: response => {
-          this.captchaResponse = response
-          this.clearCaptchaError()
-        },
-        'expired-callback': () => {
-          this.captchaResponse = null
-          this.showCaptchaError('Verification expired. Please complete the CAPTCHA again.')
-        },
-        'error-callback': () => {
-          this.captchaResponse = null
-          this.showCaptchaError('Verification failed. Please try again.')
-        }
+      // Initialize reCAPTCHA v3 ready state
+      grecaptcha.ready(() => {
+        console.log('reCAPTCHA v3 ready')
+        this.clearCaptchaError()
       })
     } catch (error) {
-      console.error('reCAPTCHA render error:', error)
+      console.error('reCAPTCHA v3 setup error:', error)
       this.showCaptchaError('Failed to load verification. Please refresh the page.')
     }
   }
@@ -559,11 +550,12 @@ class AuthenticationManager {
   }
 
   resetCaptcha() {
-    if (!this.captchaConfig.enabled || !this.captchaWidgetId) return
+    if (!this.captchaConfig.enabled) return
 
     try {
-      if (this.captchaConfig.backend === 'recaptcha' && window.grecaptcha) {
-        grecaptcha.reset(this.captchaWidgetId)
+      // For reCAPTCHA v3, there's no widget to reset - it generates tokens on demand
+      if (this.captchaConfig.backend === 'recaptcha') {
+        console.log('reCAPTCHA v3 - no reset needed, tokens generated on demand')
       } else if (this.captchaConfig.backend === 'hcaptcha' && window.hcaptcha) {
         hcaptcha.reset(this.captchaWidgetId)
       }
@@ -575,18 +567,21 @@ class AuthenticationManager {
     }
   }
 
-  validateCaptcha() {
+  async validateCaptcha() {
     if (!this.captchaConfig.enabled) {
       // For mock/development, always return a mock response
       return 'mock-captcha-response'
     }
 
-    if (!this.captchaResponse) {
-      this.showCaptchaError('Please complete the verification to continue.')
+    try {
+      // For reCAPTCHA v3, we generate a token on demand
+      const token = await grecaptcha.execute(this.captchaConfig.siteKey, { action: 'register' })
+      return token
+    } catch (error) {
+      console.error('reCAPTCHA v3 execution error:', error)
+      this.showCaptchaError('Verification failed. Please try again.')
       return null
     }
-
-    return this.captchaResponse
   }
 
   showCaptchaError(message) {

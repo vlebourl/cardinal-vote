@@ -28,13 +28,13 @@
         window.captchaConfig = {
             backend: '{{ captcha_backend }}',
             siteKey: '{{ captcha_site_key }}',
-            enabled: '{{ captcha_backend }}' !== 'mock'
+            enabled: '{{ captcha_backend }}' === 'recaptcha' && '{{ captcha_site_key }}' !== ''
         };
     </script>
 
     <!-- Load CAPTCHA Scripts Based on Configuration -->
-    {% if captcha_backend == 'recaptcha' %}
-    <script src="https://www.google.com/recaptcha/api.js" async defer></script>
+    {% if captcha_backend == 'recaptcha' and captcha_site_key %}
+    <script src="https://www.google.com/recaptcha/api.js?render={{ captcha_site_key }}" async defer></script>
     {% elif captcha_backend == 'hcaptcha' %}
     <script src="https://js.hcaptcha.com/1/api.js" async defer></script>
     {% endif %}
@@ -307,7 +307,7 @@
                         <div id="register-password-help" class="form-help">At least 8 characters with mixed case and numbers</div>
                     </div>
                     <!-- CAPTCHA Widget -->
-                    {% if captcha_backend != 'mock' %}
+                    {% if captcha_backend == 'recaptcha' and captcha_site_key %}
                     <div class="form-group">
                         <div class="captcha-container" id="registerCaptcha" aria-describedby="register-captcha-help">
                             <!-- CAPTCHA widget will be rendered here dynamically -->

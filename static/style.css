@@ -2620,6 +2620,16 @@ input[type='text']::placeholder {
   color: var(--on-surface-variant);
 }
 
+.captcha-info {
+  font-size: var(--text-body-small);
+  color: var(--on-surface-variant);
+  text-align: center;
+  padding: var(--space-2);
+  background: var(--surface-variant);
+  border-radius: var(--radius-sm);
+  margin-top: var(--space-1);
+}
+
 .form-actions {
   display: flex;
   flex-direction: column;
