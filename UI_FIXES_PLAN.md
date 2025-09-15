@@ -10,6 +10,9 @@ This branch addresses UI bugs and inconsistencies in the generalized platform.
 - [x] Created production CAPTCHA setup guide (CAPTCHA_SETUP_GUIDE.md) - CAPTCHA works properly in development (mock mode)
 - [x] The 2 top right icons on the landing page don't seem to do anything. If they are useless they should be simply removed.
 - [x] In the left collapsable menue, the "sign in" is not aligned with the other 2.
+  - Fixed button element styling to match anchor element alignment perfectly
+  - Applied same flex properties, padding, margins, and visual styling to button
+  - Navigation menu items now have consistent alignment and spacing
 - [x] The "getting started" button is a bit missleading, maybe having a "login" and "register" instead? or a better option given best practices?
   - Added separate "Get Started Free" (primary) and "Sign In" (secondary) buttons in hero section
   - Updated button text to be more clear about being free
@@ -34,11 +37,13 @@ This branch addresses UI bugs and inconsistencies in the generalized platform.
   - Reduced box-shadow from 3px to 2px and increased opacity from 0.1 to 0.2 for better visibility
   - Creates a cleaner, single focus indicator without the double border effect
 - [x] Fix CAPTCHA implementation for dev vs prod environments - ensure no error messages or fields appear when CAPTCHA is disabled in development mode
-  - Fixed frontend CAPTCHA configuration logic: `enabled: '{{ captcha_backend }}' !== 'mock'`
-  - Added conditional rendering: CAPTCHA HTML only shows when `captcha_backend != 'mock'`
-  - Updated `showCaptchaError()` and `clearCaptchaError()` to return early when CAPTCHA is disabled
-  - Backend already correctly validates only when `captcha_response` is provided
-  - Result: Clean dev environment with no CAPTCHA fields or error messages
+  - **UPDATED**: Changed from mock/dev conditional to environment-based reCAPTCHA v3 activation
+  - Fixed frontend CAPTCHA logic: `enabled: '{{ captcha_backend }}' === 'recaptcha' && '{{ captcha_site_key }}' !== ''`
+  - Implemented reCAPTCHA v3 with background token generation (no visible widget)
+  - Updated conditional rendering: CAPTCHA HTML shows when reCAPTCHA keys are configured
+  - Configured async CAPTCHA validation with `grecaptcha.execute()` for register action
+  - Added modern reCAPTCHA v3 styling with "🔒 Secured by reCAPTCHA" indicator
+  - Result: Professional reCAPTCHA v3 integration activated by environment variables
 
 ## Approach
 

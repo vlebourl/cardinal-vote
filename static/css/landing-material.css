@@ -404,10 +404,24 @@ body {
   width: 100%;
   text-align: left;
   padding: 0;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  height: 56px;
+  padding: 0 24px 0 16px;
+  border-radius: var(--md-sys-shape-corner-full);
+  color: var(--md-sys-color-on-surface-variant);
+  text-decoration: none;
+  transition: all var(--md-sys-motion-duration-short3) var(--md-sys-motion-easing-standard);
+  cursor: pointer;
+  margin-bottom: 4px;
+  box-sizing: border-box;
 }
 
 .md-navigation-drawer-item[type='button']:hover {
-  background-color: var(--md-sys-color-secondary-container);
+  background-color: rgba(0, 0, 0, 0.08);
+  color: var(--md-sys-color-on-surface);
 }
 
 /* Responsive Design for Auth Modals */
