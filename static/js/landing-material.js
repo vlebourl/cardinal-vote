@@ -113,12 +113,8 @@ document.addEventListener('DOMContentLoaded', function () {
     })
   }
 
-  // Show welcome message after page load
-  window.addEventListener('load', () => {
-    setTimeout(() => {
-      showSnackbar('Welcome to Generalized Voting Platform! Start your free trial today.')
-    }, 1000)
-  })
+  // Removed automatic welcome popup - was causing unwanted black popup on page load
+  // Users can still see CTAs and welcome messages in the hero section
 
   // Intersection Observer for animations
   const observerOptions = {
