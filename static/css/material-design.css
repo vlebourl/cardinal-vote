@@ -727,7 +727,29 @@ body {
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
   user-select: none;
   pointer-events: none;
-  outline: none;
+  outline: none !important;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  -webkit-touch-callout: none;
+  -webkit-tap-highlight-color: transparent;
+  tabindex: -1;
+}
+
+.md-text-field-helper:focus,
+.md-text-field-helper:active,
+.md-text-field-helper:hover {
+  outline: none !important;
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05) !important;
+}
+
+.md-text-field-helper::selection {
+  background: transparent;
+}
+
+.md-text-field-helper::-moz-selection {
+  background: transparent;
 }
 
 .md-text-field-error .md-text-field-input {

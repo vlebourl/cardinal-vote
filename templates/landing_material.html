@@ -252,14 +252,14 @@
                                autocomplete="email" aria-describedby="login-email-help">
                         <label for="loginEmail" class="md-text-field-label">Email Address</label>
                     </div>
-                    <div id="login-email-help" class="md-text-field-helper">Enter your registered email address</div>
+                    <div id="login-email-help" class="md-text-field-helper" tabindex="-1" role="text">Enter your registered email address</div>
 
                     <div class="md-text-field md-text-field-outlined">
                         <input type="password" id="loginPassword" class="md-text-field-input" placeholder=" " required
                                autocomplete="current-password" aria-describedby="login-password-help">
                         <label for="loginPassword" class="md-text-field-label">Password</label>
                     </div>
-                    <div id="login-password-help" class="md-text-field-helper">Enter your account password</div>
+                    <div id="login-password-help" class="md-text-field-helper" tabindex="-1" role="text">Enter your account password</div>
 
                     <div class="auth-error" id="loginError" style="display: none;">
                         <span class="material-icons">error</span>
@@ -307,34 +307,34 @@
                             <label for="registerLastName" class="md-text-field-label">Last Name</label>
                         </div>
                     </div>
-                    <div id="register-name-help" class="md-text-field-helper">Enter your full name for account creation</div>
+                    <div id="register-name-help" class="md-text-field-helper" tabindex="-1" role="text">Enter your full name for account creation</div>
 
                     <div class="md-text-field md-text-field-outlined">
                         <input type="text" id="registerUsername" class="md-text-field-input" placeholder=" " required
                                autocomplete="username" aria-describedby="register-username-help">
                         <label for="registerUsername" class="md-text-field-label">Username</label>
                     </div>
-                    <div id="register-username-help" class="md-text-field-helper">Choose a unique username for your account</div>
+                    <div id="register-username-help" class="md-text-field-helper" tabindex="-1" role="text">Choose a unique username for your account</div>
 
                     <div class="md-text-field md-text-field-outlined">
                         <input type="email" id="registerEmail" class="md-text-field-input" placeholder=" " required
                                autocomplete="email" aria-describedby="register-email-help">
                         <label for="registerEmail" class="md-text-field-label">Email Address</label>
                     </div>
-                    <div id="register-email-help" class="md-text-field-helper">We'll use this for account notifications</div>
+                    <div id="register-email-help" class="md-text-field-helper" tabindex="-1" role="text">We'll use this for account notifications</div>
 
                     <div class="md-text-field md-text-field-outlined">
                         <input type="password" id="registerPassword" class="md-text-field-input" placeholder=" " required
                                autocomplete="new-password" aria-describedby="register-password-help">
                         <label for="registerPassword" class="md-text-field-label">Password</label>
                     </div>
-                    <div id="register-password-help" class="md-text-field-helper">At least 8 characters with mixed case and numbers</div>
+                    <div id="register-password-help" class="md-text-field-helper" tabindex="-1" role="text">At least 8 characters with mixed case and numbers</div>
 
                     <!-- CAPTCHA Widget -->
                     <div class="captcha-container" id="registerCaptcha" aria-describedby="register-captcha-help">
                         <!-- CAPTCHA widget will be rendered here dynamically -->
                     </div>
-                    <div id="register-captcha-help" class="md-text-field-helper">Please complete the verification to continue</div>
+                    <div id="register-captcha-help" class="md-text-field-helper" tabindex="-1" role="text">Please complete the verification to continue</div>
                     <div id="registerCaptchaError" class="auth-error" style="display: none;" role="alert"></div>
 
                     <div class="auth-error" id="registerError" style="display: none;">
