@@ -23,12 +23,28 @@ This branch addresses UI bugs and inconsistencies in the generalized platform.
   - Replaced solid white background with smooth gradient that fades to transparent at edges
   - Creates a softer, more elegant visual appearance
   - Maintains readability while removing harsh visual breaks
+- [x] Verify each claim in the "Features" section, make sure they are accurate, not false promising, and up-to-date with the current state of the code. Don't claim anything that is not actually in the code, don't claim any "enterprise grade" or other overly promising stuff.
+  - Fixed "Real-Time Analytics" → "Vote Analytics" (no live updates implemented)
+  - Fixed "Custom Content Types" → "Multiple Content Types" (only text and images supported)
+  - Fixed "Enterprise Security" → "Robust Security" (removed overpromising language)
+  - Fixed "Bank-level security" → "Modern security" (more accurate for open-source project)
+  - Updated trust indicators to remove "Enterprise" language
+- [x] Fix double blue square border around focused input fields in registration/login modals - the redundant outline feels excessive and needs to be simplified
+  - Removed redundant border-color change on focus, keeping only the subtle box-shadow
+  - Reduced box-shadow from 3px to 2px and increased opacity from 0.1 to 0.2 for better visibility
+  - Creates a cleaner, single focus indicator without the double border effect
+- [x] Fix CAPTCHA implementation for dev vs prod environments - ensure no error messages or fields appear when CAPTCHA is disabled in development mode
+  - Fixed frontend CAPTCHA configuration logic: `enabled: '{{ captcha_backend }}' !== 'mock'`
+  - Added conditional rendering: CAPTCHA HTML only shows when `captcha_backend != 'mock'`
+  - Updated `showCaptchaError()` and `clearCaptchaError()` to return early when CAPTCHA is disabled
+  - Backend already correctly validates only when `captcha_response` is provided
+  - Result: Clean dev environment with no CAPTCHA fields or error messages
 
 ## Approach
 
-- Identify UI issues through testing, using the playwright mcp if needed.
-- Fix systematically
-- Test across browsers and devices
-- Commit and push
-- Rebuild the container image from scratch
-- Restart the app
+1. Identify UI issues through testing, using the playwright mcp if needed.
+2. Fix systematically
+3. Test across browsers and devices
+4. Commit and push
+5. Rebuild the container image from scratch
+6. Restart the app

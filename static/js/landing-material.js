@@ -590,6 +590,9 @@ class AuthenticationManager {
   }
 
   showCaptchaError(message) {
+    // Only show CAPTCHA errors if CAPTCHA is enabled
+    if (!this.captchaConfig.enabled) return
+
     const errorElement = document.getElementById('registerCaptchaError')
     const container = document.getElementById('registerCaptcha')
 
@@ -604,6 +607,9 @@ class AuthenticationManager {
   }
 
   clearCaptchaError() {
+    // Only clear CAPTCHA errors if CAPTCHA is enabled
+    if (!this.captchaConfig.enabled) return
+
     const errorElement = document.getElementById('registerCaptchaError')
     const container = document.getElementById('registerCaptcha')
 

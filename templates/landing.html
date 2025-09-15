@@ -28,7 +28,7 @@
         window.captchaConfig = {
             backend: '{{ captcha_backend }}',
             siteKey: '{{ captcha_site_key }}',
-            enabled: '{{ captcha_backend }}' !== 'mock' || window.location.hostname !== 'localhost'
+            enabled: '{{ captcha_backend }}' !== 'mock'
         };
     </script>
 
@@ -79,7 +79,7 @@
                     </button>
                 </div>
                 <div class="trust-indicators">
-                    <span class="trust-item">🔒 Enterprise Security</span>
+                    <span class="trust-item">🔒 Secure Platform</span>
                     <span class="trust-item">⚡ Real-time Results</span>
                     <span class="trust-item">📱 Mobile Optimized</span>
                 </div>
@@ -134,9 +134,9 @@
                     <div class="feature-icon" aria-hidden="true">
                         <div class="icon-bg secondary">🎨</div>
                     </div>
-                    <h3 class="feature-title">Custom Content Types</h3>
+                    <h3 class="feature-title">Multiple Content Types</h3>
                     <p class="feature-description">
-                        Create votes with images, text, documents, or any content type.
+                        Create votes with text descriptions and images.
                         Perfect for design reviews, product decisions, or strategic planning.
                     </p>
                 </div>
@@ -145,10 +145,10 @@
                     <div class="feature-icon" aria-hidden="true">
                         <div class="icon-bg accent">⚡</div>
                     </div>
-                    <h3 class="feature-title">Real-Time Analytics</h3>
+                    <h3 class="feature-title">Vote Analytics</h3>
                     <p class="feature-description">
-                        Watch results update live as votes come in.
-                        Get detailed breakdowns, export data, and track participation rates.
+                        View comprehensive vote results and statistics.
+                        Get detailed breakdowns and track participation rates.
                     </p>
                 </div>
 
@@ -167,10 +167,10 @@
                     <div class="feature-icon" aria-hidden="true">
                         <div class="icon-bg secondary">🔒</div>
                     </div>
-                    <h3 class="feature-title">Enterprise Security</h3>
+                    <h3 class="feature-title">Robust Security</h3>
                     <p class="feature-description">
-                        Bank-level security with JWT authentication, rate limiting,
-                        and comprehensive audit trails for compliance and governance.
+                        Modern security with JWT authentication, rate limiting,
+                        and comprehensive audit trails for transparency and accountability.
                     </p>
                 </div>
 
@@ -307,6 +307,7 @@
                         <div id="register-password-help" class="form-help">At least 8 characters with mixed case and numbers</div>
                     </div>
                     <!-- CAPTCHA Widget -->
+                    {% if captcha_backend != 'mock' %}
                     <div class="form-group">
                         <div class="captcha-container" id="registerCaptcha" aria-describedby="register-captcha-help">
                             <!-- CAPTCHA widget will be rendered here dynamically -->
@@ -314,6 +315,7 @@
                         <div id="register-captcha-help" class="form-help">Please complete the verification to continue</div>
                         <div id="registerCaptchaError" class="form-error" style="display: none;" role="alert"></div>
                     </div>
+                    {% endif %}
                     <div class="form-actions">
                         <button type="submit" class="btn-form-primary">
                             Create Account
