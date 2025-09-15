@@ -14,11 +14,17 @@ This branch addresses UI bugs and inconsistencies in the generalized platform.
   - Added separate "Get Started Free" (primary) and "Sign In" (secondary) buttons in hero section
   - Updated button text to be more clear about being free
   - Improved UX following modern landing page best practices
+- [x] Remove any reference to Free (and / or Paid or Pricing) as this is an open-source self hosted project.
+  - Changed "Free Voting Platform" to "Open Source Voting Platform"
+  - Updated "Get Started Free" to "Get Started"
+  - Changed "free voting platform" to "open-source voting platform"
+  - Updated "Start Free Today" to "Get Started Today"
 
 ## Approach
 
 - Identify UI issues through testing, using the playwright mcp if needed.
 - Fix systematically
 - Test across browsers and devices
+- Commit and push
 - Rebuild the container image from scratch
 - Restart the app
