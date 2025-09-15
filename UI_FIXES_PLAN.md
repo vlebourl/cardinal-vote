@@ -24,7 +24,9 @@ This branch addresses UI bugs and inconsistencies in the generalized platform.
   - Updated "Start Free Today" to "Get Started Today"
 - [x] Fix harsh white squared background on field descriptions in login/registration modals - make it smooth and less aggressive
   - Replaced solid white background with smooth gradient that fades to transparent at edges
-  - Creates a softer, more elegant visual appearance
+  - Added sophisticated gradient: `linear-gradient(135deg, rgba(255, 255, 255, 0.9) 0%, rgba(255, 255, 255, 0.6) 50%, rgba(255, 255, 255, 0.3) 100%)`
+  - Enhanced with backdrop-filter blur, subtle border, and soft shadow
+  - Creates a softer, more elegant visual appearance with modern glass morphism effect
   - Maintains readability while removing harsh visual breaks
 - [x] Verify each claim in the "Features" section, make sure they are accurate, not false promising, and up-to-date with the current state of the code. Don't claim anything that is not actually in the code, don't claim any "enterprise grade" or other overly promising stuff.
   - Fixed "Real-Time Analytics" → "Vote Analytics" (no live updates implemented)
