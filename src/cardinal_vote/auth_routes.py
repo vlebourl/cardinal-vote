@@ -15,7 +15,7 @@ from .dependencies import (
     get_auth_manager,
 )
 from .input_sanitizer import InputSanitizer
-from .models import DatabaseError
+from .models import AccountDeletionLog, DatabaseError
 
 logger = logging.getLogger(__name__)
 
@@ -34,6 +34,9 @@ class UserRegistration(BaseModel):
     )
     last_name: str = Field(
         ..., min_length=1, max_length=100, description="User last name"
+    )
+    captcha_response: str | None = Field(
+        None, description="CAPTCHA response token (optional for mock backend)"
     )
 
     @validator("email")
@@ -99,6 +102,73 @@ class MessageResponse(BaseModel):
     message: str
 
 
+class UserProfileUpdate(BaseModel):
+    """Model for user profile update request."""
+
+    first_name: str | None = Field(
+        None, min_length=1, max_length=100, description="User first name"
+    )
+    last_name: str | None = Field(
+        None, min_length=1, max_length=100, description="User last name"
+    )
+    email: str | None = Field(None, description="User email address")
+
+    @validator("email")
+    def validate_email(cls, v: str | None) -> str | None:
+        """Basic email validation."""
+        if v is None:
+            return v
+        v = v.strip().lower()
+        if "@" not in v or len(v) < 5:
+            raise ValueError("Invalid email address")
+        return v
+
+    @validator("first_name", "last_name")
+    def validate_names(cls, v: str | None) -> str | None:
+        """Name validation."""
+        if v is None:
+            return v
+        v = v.strip()
+        if not v:
+            raise ValueError("Name cannot be empty")
+        return v
+
+
+class PasswordChangeRequest(BaseModel):
+    """Model for password change request."""
+
+    current_password: str = Field(..., description="Current user password")
+    new_password: str = Field(..., min_length=8, description="New user password")
+
+
+class AccountDeletionRequest(BaseModel):
+    """Model for account deletion request."""
+
+    current_password: str = Field(
+        ..., description="Current user password for verification"
+    )
+    confirmation: str = Field(..., description="Confirmation text (must be 'DELETE')")
+    reason: str | None = Field(
+        None, max_length=500, description="Optional deletion reason"
+    )
+
+    @validator("confirmation")
+    def validate_confirmation(cls, v: str) -> str:
+        """Validate confirmation text."""
+        if v.strip().upper() != "DELETE":
+            raise ValueError("Confirmation must be exactly 'DELETE'")
+        return v.strip().upper()
+
+    @validator("reason")
+    def validate_reason(cls, v: str | None) -> str | None:
+        """Validate and sanitize reason."""
+        if v is not None:
+            v = v.strip()
+            if not v:
+                return None
+        return v
+
+
 @auth_router.post(
     "/register", response_model=TokenResponse, status_code=status.HTTP_201_CREATED
 )
@@ -112,6 +182,22 @@ async def register_user(
     try:
         # Get client IP for rate limiting
         client_ip = request.client.host if request.client else "unknown"
+
+        # Validate CAPTCHA if required
+        if user_data.captcha_response:
+            from .captcha_service import verify_captcha_response
+
+            is_valid_captcha = await verify_captcha_response(
+                user_data.captcha_response, client_ip, raise_on_failure=True
+            )
+            if not is_valid_captcha:
+                logger.warning(
+                    f"Registration CAPTCHA validation failed for IP: {client_ip}"
+                )
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail="CAPTCHA verification failed. Please try again.",
+                )
 
         # Sanitize input data
         sanitized_email = InputSanitizer.sanitize_email(user_data.email)
@@ -600,4 +686,280 @@ async def resend_verification_email(
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to resend verification email",
+        ) from e
+
+
+@auth_router.get("/profile", response_model=UserResponse)
+async def get_user_profile(
+    current_user: CurrentUser,
+) -> UserResponse:
+    """Get current user profile information."""
+    try:
+        return UserResponse(
+            id=str(current_user.id),
+            email=current_user.email or "",
+            first_name=current_user.first_name or "",
+            last_name=current_user.last_name or "",
+            is_verified=current_user.is_verified or False,
+            is_super_admin=current_user.is_super_admin or False,
+            created_at=current_user.created_at.isoformat()
+            if current_user.created_at
+            else "",
+        )
+
+    except Exception as e:
+        logger.error(f"Error retrieving user profile: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to retrieve profile",
+        ) from e
+
+
+@auth_router.put("/profile", response_model=MessageResponse)
+async def update_user_profile(
+    profile_data: UserProfileUpdate,
+    current_user: CurrentUser,
+    auth_manager: Annotated[GeneralizedAuthManager, Depends(get_auth_manager)],
+    session: AsyncDatabaseSession,
+) -> MessageResponse:
+    """Update user profile information."""
+    try:
+        # Track if email is being changed
+        email_changed = False
+
+        # Update fields that are provided
+        if profile_data.first_name is not None:
+            sanitized_first_name = InputSanitizer.sanitize_text(
+                profile_data.first_name, field_name="first_name"
+            )
+            current_user.first_name = sanitized_first_name
+
+        if profile_data.last_name is not None:
+            sanitized_last_name = InputSanitizer.sanitize_text(
+                profile_data.last_name, field_name="last_name"
+            )
+            current_user.last_name = sanitized_last_name
+
+        if profile_data.email is not None and profile_data.email != current_user.email:
+            # Validate and sanitize email
+            sanitized_email = InputSanitizer.sanitize_email(profile_data.email)
+            if not sanitized_email:
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail="Invalid email format",
+                )
+
+            # Check if email is already taken by another user
+            existing_user = await auth_manager.get_user_by_email(
+                sanitized_email, session
+            )
+            if existing_user and existing_user.id != current_user.id:
+                raise HTTPException(
+                    status_code=status.HTTP_409_CONFLICT,
+                    detail="Email address is already in use",
+                )
+
+            # Update email and reset verification
+            current_user.email = sanitized_email
+            current_user.is_verified = False
+            email_changed = True
+
+        # Save changes
+        await session.commit()
+
+        # Send verification email if email was changed
+        if email_changed:
+            try:
+                # Generate verification token
+                verification_token = auth_manager.create_email_verification_token(
+                    current_user
+                )
+
+                # Send verification email
+                from .email_service import get_email_service
+
+                email_service = get_email_service()
+
+                await email_service.send_verification_email(
+                    current_user.email or "",
+                    current_user.full_name,
+                    verification_token,
+                )
+
+                return MessageResponse(
+                    success=True,
+                    message="Profile updated successfully. Please verify your new email address.",
+                )
+            except Exception as email_error:
+                logger.warning(f"Failed to send verification email: {email_error}")
+                return MessageResponse(
+                    success=True,
+                    message="Profile updated successfully. Please request a verification email manually.",
+                )
+
+        return MessageResponse(success=True, message="Profile updated successfully")
+
+    except HTTPException:
+        await session.rollback()
+        raise
+    except Exception as e:
+        await session.rollback()
+        logger.error(f"Error updating user profile: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to update profile",
+        ) from e
+
+
+@auth_router.post("/change-password", response_model=MessageResponse)
+async def change_user_password(
+    password_data: PasswordChangeRequest,
+    current_user: CurrentUser,
+    auth_manager: Annotated[GeneralizedAuthManager, Depends(get_auth_manager)],
+    session: AsyncDatabaseSession,
+) -> MessageResponse:
+    """Change user password."""
+    try:
+        # Verify current password
+        is_valid = auth_manager.verify_password(
+            password_data.current_password, current_user.hashed_password or ""
+        )
+        if not is_valid:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Current password is incorrect",
+            )
+
+        # Sanitize and validate new password
+        sanitized_new_password = InputSanitizer.sanitize_password(
+            password_data.new_password
+        )
+        if not sanitized_new_password:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="New password does not meet security requirements",
+            )
+
+        # Hash new password and update
+        new_hashed_password = auth_manager.hash_password(sanitized_new_password)
+        current_user.hashed_password = new_hashed_password
+
+        # Save changes
+        await session.commit()
+
+        logger.info(f"Password changed for user: {current_user.email}")
+
+        return MessageResponse(success=True, message="Password updated successfully")
+
+    except HTTPException:
+        await session.rollback()
+        raise
+    except Exception as e:
+        await session.rollback()
+        logger.error(f"Error changing password: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to change password",
+        ) from e
+
+
+@auth_router.delete("/account", response_model=MessageResponse)
+async def delete_user_account(
+    deletion_data: AccountDeletionRequest,
+    current_user: CurrentUser,
+    request: Request,
+    auth_manager: Annotated[GeneralizedAuthManager, Depends(get_auth_manager)],
+    session: AsyncDatabaseSession,
+) -> MessageResponse:
+    """Delete user account and all associated data (GDPR compliant)."""
+    try:
+        # Prevent super admin account deletion
+        if current_user.is_super_admin:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Super admin accounts cannot be deleted",
+            )
+
+        # Verify current password
+        if not auth_manager.verify_password(
+            deletion_data.current_password, current_user.hashed_password or ""
+        ):
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Current password is incorrect",
+            )
+
+        # Get client information for audit logging
+        client_ip = request.client.host if request.client else "unknown"
+        user_agent = request.headers.get("user-agent", "unknown")
+
+        # Collect data summary before deletion for audit purposes
+        from sqlalchemy import func, select
+
+        from .models import Vote, VoterResponse
+
+        # Count user's votes and responses
+        vote_count_result = await session.execute(
+            select(func.count(Vote.id)).where(Vote.creator_id == current_user.id)
+        )
+        vote_count = vote_count_result.scalar() or 0
+
+        response_count_result = await session.execute(
+            select(func.count(VoterResponse.id)).where(
+                VoterResponse.vote_id.in_(
+                    select(Vote.id).where(Vote.creator_id == current_user.id)
+                )
+            )
+        )
+        response_count = response_count_result.scalar() or 0
+
+        data_summary = {
+            "user_id": str(current_user.id),
+            "email": current_user.email,
+            "full_name": current_user.full_name,
+            "votes_created": vote_count,
+            "responses_received": response_count,
+            "account_created": current_user.created_at.isoformat()
+            if current_user.created_at
+            else None,
+            "deletion_reason": deletion_data.reason or "user_requested",
+        }
+
+        # Create audit log entry before deletion
+        deletion_log = AccountDeletionLog(
+            deleted_user_id=current_user.id,
+            deleted_user_email=current_user.email,
+            deleted_user_name=current_user.full_name,
+            deletion_reason="user_requested",
+            deleted_by_user_id=None,  # Self-deletion
+            ip_address=client_ip,
+            user_agent=user_agent,
+            data_summary=data_summary,
+        )
+        session.add(deletion_log)
+
+        # Delete user account (cascade relationships will handle associated data)
+        # This includes: votes, vote_options, voter_responses, moderation flags, etc.
+        await session.delete(current_user)
+        await session.commit()
+
+        logger.info(
+            f"Account deleted: {current_user.email} (ID: {current_user.id}) "
+            f"from IP: {client_ip}, Reason: {deletion_data.reason or 'user_requested'}"
+        )
+
+        return MessageResponse(
+            success=True,
+            message="Your account and all associated data have been permanently deleted.",
+        )
+
+    except HTTPException:
+        await session.rollback()
+        raise
+    except Exception as e:
+        await session.rollback()
+        logger.error(f"Error deleting user account: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to delete account",
         ) from e

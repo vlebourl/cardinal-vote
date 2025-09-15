@@ -22,6 +22,22 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;700&display=swap" rel="stylesheet" media="print" data-onload="font-load">
     <noscript><link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;700&display=swap" rel="stylesheet"></noscript>
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🗳️</text></svg>">
+
+    <!-- CAPTCHA Configuration -->
+    <script>
+        window.captchaConfig = {
+            backend: '{{ captcha_backend }}',
+            siteKey: '{{ captcha_site_key }}',
+            enabled: '{{ captcha_backend }}' !== 'mock' || window.location.hostname !== 'localhost'
+        };
+    </script>
+
+    <!-- Load CAPTCHA Scripts Based on Configuration -->
+    {% if captcha_backend == 'recaptcha' %}
+    <script src="https://www.google.com/recaptcha/api.js" async defer></script>
+    {% elif captcha_backend == 'hcaptcha' %}
+    <script src="https://js.hcaptcha.com/1/api.js" async defer></script>
+    {% endif %}
 </head>
 <body class="modern-landing">
     <!-- Navigation Header -->
@@ -289,6 +305,14 @@
                         <input type="password" id="registerPassword" class="form-input" required
                                aria-describedby="register-password-help" autocomplete="new-password">
                         <div id="register-password-help" class="form-help">At least 8 characters with mixed case and numbers</div>
+                    </div>
+                    <!-- CAPTCHA Widget -->
+                    <div class="form-group">
+                        <div class="captcha-container" id="registerCaptcha" aria-describedby="register-captcha-help">
+                            <!-- CAPTCHA widget will be rendered here dynamically -->
+                        </div>
+                        <div id="register-captcha-help" class="form-help">Please complete the verification to continue</div>
+                        <div id="registerCaptchaError" class="form-error" style="display: none;" role="alert"></div>
                     </div>
                     <div class="form-actions">
                         <button type="submit" class="btn-form-primary">

@@ -134,26 +134,32 @@ async def create_vote(
             slug=slug,
             starts_at=vote_data.starts_at,
             ends_at=vote_data.ends_at,
+            require_auth=vote_data.require_auth,
+            access_code=vote_data.access_code,
             status="draft",  # Always start as draft
         )
 
         session.add(vote)
         await session.flush()  # Get the vote ID
 
-        # Create default text options if none provided
-        # For Phase 1 Week 2, we'll create basic text options
-        default_options: list[dict[str, Any]] = [
-            {"title": "Option A", "display_order": 0},
-            {"title": "Option B", "display_order": 1},
-        ]
+        # Create vote options from request data
+        for option_data in vote_data.options:
+            sanitized_title = InputSanitizer.sanitize_text(
+                option_data.title, field_name="option_title"
+            )
+            sanitized_content = None
+            if option_data.content:
+                sanitized_content = InputSanitizer.sanitize_text(
+                    option_data.content, field_name="option_content"
+                )
 
-        for _idx, option_data in enumerate(default_options):
             option = VoteOption(
                 vote_id=vote.id,
-                option_type="text",
-                title=str(option_data["title"]),
-                content=str(option_data["title"]),  # For text options, content = title
-                display_order=int(option_data["display_order"]),
+                option_type=option_data.option_type,
+                title=sanitized_title,
+                content=sanitized_content
+                or sanitized_title,  # Use title as content if no content provided
+                display_order=option_data.display_order,
             )
             session.add(option)
 
@@ -1176,9 +1182,9 @@ async def get_creator_dashboard_stats(
     session: AsyncDatabaseSession,
 ) -> dict[str, Any]:
     """
-    Get creator dashboard statistics.
+    Get enhanced creator dashboard statistics.
 
-    Returns overview of user's votes and platform activity.
+    Returns comprehensive overview including status cards and activity metrics.
     """
     try:
         # Get user's votes count by status
@@ -1196,6 +1202,32 @@ async def get_creator_dashboard_stats(
             .where(Vote.creator_id == current_user.id)
         )
         total_responses = total_responses_result.scalar() or 0
+
+        # Get weekly activity (votes created and responses received in last 7 days)
+        from datetime import timedelta
+
+        week_ago = datetime.utcnow() - timedelta(days=7)
+
+        # Votes created this week
+        weekly_votes_result: Result[tuple[int]] = await session.execute(
+            select(func.count(Vote.id)).where(
+                Vote.creator_id == current_user.id, Vote.created_at >= week_ago
+            )
+        )
+        weekly_votes = weekly_votes_result.scalar() or 0
+
+        # Responses received this week
+        weekly_responses_result: Result[tuple[int]] = await session.execute(
+            select(func.count(VoterResponse.id))
+            .join(Vote, VoterResponse.vote_id == Vote.id)
+            .where(
+                Vote.creator_id == current_user.id,
+                VoterResponse.submitted_at >= week_ago,
+            )
+        )
+        weekly_responses = weekly_responses_result.scalar() or 0
+
+        weekly_activity = weekly_votes + weekly_responses
 
         # Get recent votes (last 5)
         recent_votes_result: Result[tuple[Vote]] = await session.execute(
@@ -1228,30 +1260,48 @@ async def get_creator_dashboard_stats(
                 }
             )
 
+        # Enhanced response format for dashboard cards
+        total_votes = sum(status_counts.values())
+        active_votes = status_counts.get("active", 0)
+        draft_votes = status_counts.get("draft", 0)
+        closed_votes = status_counts.get("closed", 0)
+
         return {
             "user": {
                 "id": str(current_user.id),
                 "email": current_user.email,
                 "full_name": current_user.full_name,
             },
+            # Enhanced status card metrics (6 cards)
+            "status_cards": {
+                "total_votes": total_votes,
+                "active_votes": active_votes,
+                "draft_votes": draft_votes,
+                "closed_votes": closed_votes,
+                "total_responses": total_responses,
+                "weekly_activity": weekly_activity,
+            },
+            # Legacy format for backward compatibility
             "votes": {
-                "total": sum(status_counts.values()),
+                "total": total_votes,
                 "by_status": {
-                    "draft": status_counts.get("draft", 0),
-                    "active": status_counts.get("active", 0),
-                    "closed": status_counts.get("closed", 0),
+                    "draft": draft_votes,
+                    "active": active_votes,
+                    "closed": closed_votes,
                 },
             },
             "responses": {
                 "total": total_responses,
-                "average_per_vote": round(
-                    total_responses / max(sum(status_counts.values()), 1), 1
-                ),
+                "average_per_vote": round(total_responses / max(total_votes, 1), 1),
             },
             "recent_votes": recent_votes_data,
             "platform_stats": {
                 "member_since": current_user.created_at,
                 "last_login": current_user.last_login,
+                "weekly_activity_breakdown": {
+                    "new_votes": weekly_votes,
+                    "new_responses": weekly_responses,
+                },
             },
         }
 
@@ -1260,6 +1310,279 @@ async def get_creator_dashboard_stats(
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to get dashboard statistics",
+        ) from e
+
+
+@vote_router.get("/dashboard/activity", response_model=dict[str, Any])
+async def get_creator_activity_timeline(
+    current_user: CurrentUser,
+    session: AsyncDatabaseSession,
+    days: int = 30,
+    limit: int = 50,
+) -> dict[str, Any]:
+    """
+    Get creator activity timeline for dashboard.
+
+    Returns recent activity including vote creation, status changes, and responses.
+    """
+    try:
+        from datetime import timedelta
+
+        # Calculate date range
+        start_date = datetime.utcnow() - timedelta(days=days)
+
+        # Get recent votes created by user
+        votes_result: Result[tuple[Vote]] = await session.execute(
+            select(Vote)
+            .where(Vote.creator_id == current_user.id, Vote.created_at >= start_date)
+            .order_by(Vote.created_at.desc())
+            .limit(limit // 2)  # Reserve space for other activities
+        )
+        votes = votes_result.scalars().all()
+
+        # Get recent responses on user's votes
+        responses_result: Result[tuple[VoterResponse, Vote]] = await session.execute(
+            select(VoterResponse, Vote)
+            .join(Vote, VoterResponse.vote_id == Vote.id)
+            .where(
+                Vote.creator_id == current_user.id,
+                VoterResponse.submitted_at >= start_date,
+            )
+            .order_by(VoterResponse.submitted_at.desc())
+            .limit(limit // 2)  # Reserve space for other activities
+        )
+        responses = responses_result.all()
+
+        # Build activity timeline
+        activities = []
+
+        # Add vote creation activities
+        for vote in votes:
+            activities.append(
+                {
+                    "id": f"vote-created-{vote.id}",
+                    "type": "vote_created",
+                    "timestamp": vote.created_at,
+                    "title": f"Created vote '{vote.title}'",
+                    "description": f"New vote created with {vote.status} status",
+                    "metadata": {
+                        "vote_id": str(vote.id),
+                        "vote_title": vote.title,
+                        "vote_slug": vote.slug,
+                        "vote_status": vote.status,
+                    },
+                    "icon": "poll",
+                    "color": "primary",
+                }
+            )
+
+        # Add response activities
+        for response, vote in responses:
+            voter_name = f"{response.voter_first_name} {response.voter_last_name}"
+            activities.append(
+                {
+                    "id": f"response-{response.id}",
+                    "type": "response_received",
+                    "timestamp": response.submitted_at,
+                    "title": f"New response on '{vote.title}'",
+                    "description": f"Response from {voter_name}",
+                    "metadata": {
+                        "vote_id": str(vote.id),
+                        "vote_title": vote.title,
+                        "voter_name": voter_name,
+                        "response_id": str(response.id),
+                    },
+                    "icon": "how_to_vote",
+                    "color": "success",
+                }
+            )
+
+        # Add status change activities (simulated for now - would need audit log in production)
+        for vote in votes:
+            if (
+                vote.status == "active"
+                and vote.updated_at
+                and vote.updated_at != vote.created_at
+            ):
+                activities.append(
+                    {
+                        "id": f"status-change-{vote.id}",
+                        "type": "status_changed",
+                        "timestamp": vote.updated_at,
+                        "title": f"Vote '{vote.title}' activated",
+                        "description": f"Status changed to {vote.status}",
+                        "metadata": {
+                            "vote_id": str(vote.id),
+                            "vote_title": vote.title,
+                            "new_status": vote.status,
+                        },
+                        "icon": "trending_up",
+                        "color": "warning",
+                    }
+                )
+
+        # Sort all activities by timestamp (newest first)
+        def get_timestamp(activity: dict[str, Any]) -> datetime:
+            timestamp = activity.get("timestamp")
+            return timestamp if isinstance(timestamp, datetime) else datetime.min
+
+        activities.sort(key=get_timestamp, reverse=True)
+
+        # Limit to requested number of activities
+        activities = activities[:limit]
+
+        # Calculate activity summary
+        vote_creates = sum(1 for a in activities if a["type"] == "vote_created")
+        response_count = sum(1 for a in activities if a["type"] == "response_received")
+        status_changes = sum(1 for a in activities if a["type"] == "status_changed")
+
+        return {
+            "activities": activities,
+            "summary": {
+                "total_activities": len(activities),
+                "votes_created": vote_creates,
+                "responses_received": response_count,
+                "status_changes": status_changes,
+                "date_range": {
+                    "start": start_date,
+                    "end": datetime.utcnow(),
+                    "days": days,
+                },
+            },
+            "pagination": {
+                "limit": limit,
+                "has_more": len(activities) == limit,  # Simple check
+            },
+        }
+
+    except Exception as e:
+        logger.error(f"Error getting activity timeline for user {current_user.id}: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to get activity timeline",
+        ) from e
+
+
+@vote_router.get("/{vote_id}/preview", response_model=dict[str, Any])
+async def get_vote_preview(
+    vote_id: str,
+    current_user: CurrentUser,
+    session: AsyncDatabaseSession,
+) -> dict[str, Any]:
+    """
+    Get vote preview data for sharing interface.
+
+    Returns vote details formatted for preview display with sharing options.
+    """
+    try:
+        # Parse UUID
+        try:
+            vote_uuid = uuid.UUID(vote_id)
+        except ValueError:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid vote ID format"
+            ) from None
+
+        # Get vote and verify ownership
+        result: Result[tuple[Vote]] = await session.execute(
+            select(Vote).where(Vote.id == vote_uuid)
+        )
+        vote = result.scalar_one_or_none()
+
+        if not vote:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND, detail="Vote not found"
+            )
+
+        # Verify user is the creator
+        if vote.creator_id != current_user.id:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Not authorized to preview this vote",
+            )
+
+        # Get vote options
+        options_result: Result[tuple[VoteOption]] = await session.execute(
+            select(VoteOption)
+            .where(VoteOption.vote_id == vote_uuid)
+            .order_by(VoteOption.display_order)
+        )
+        options = options_result.scalars().all()
+
+        # Get current response count
+        response_count_result: Result[tuple[int]] = await session.execute(
+            select(func.count(VoterResponse.id)).where(
+                VoterResponse.vote_id == vote_uuid
+            )
+        )
+        response_count = response_count_result.scalar() or 0
+
+        # Format options for preview
+        formatted_options = []
+        for option in options:
+            formatted_options.append(
+                {
+                    "id": str(option.id),
+                    "title": option.title,
+                    "content": option.content,
+                    "option_type": option.option_type,
+                    "display_order": option.display_order,
+                }
+            )
+
+        # Generate sharing URLs
+        base_url = "https://example.com"  # TODO: Get from config
+        public_url = f"{base_url}/vote/{vote.slug}"
+        preview_url = f"{base_url}/vote-preview/{vote.id}"
+
+        # Generate sharing metadata
+        sharing_data = {
+            "public_url": public_url,
+            "preview_url": preview_url,
+            "embed_code": f'<iframe src="{public_url}" width="600" height="400"></iframe>',
+            "social_sharing": {
+                "twitter": f"https://twitter.com/intent/tweet?text=Vote on: {vote.title}&url={public_url}",
+                "facebook": f"https://www.facebook.com/sharer/sharer.php?u={public_url}",
+                "linkedin": f"https://www.linkedin.com/sharing/share-offsite/?url={public_url}",
+            },
+            "qr_code_url": f"/api/votes/{vote_id}/qr-code",  # Future enhancement
+        }
+
+        return {
+            "vote": {
+                "id": str(vote.id),
+                "title": vote.title,
+                "description": vote.description,
+                "slug": vote.slug,
+                "status": vote.status,
+                "created_at": vote.created_at,
+                "starts_at": vote.starts_at,
+                "ends_at": vote.ends_at,
+                "require_auth": vote.require_auth,
+                "has_access_code": bool(vote.access_code),
+                "options": formatted_options,
+            },
+            "stats": {
+                "response_count": response_count,
+                "option_count": len(formatted_options),
+                "status": vote.status,
+            },
+            "sharing": sharing_data,
+            "access_settings": {
+                "is_public": vote.status == "active",
+                "requires_auth": vote.require_auth,
+                "has_access_code": bool(vote.access_code),
+                "can_vote": vote.status == "active",
+            },
+        }
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error getting vote preview {vote_id}: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to get vote preview",
         ) from e
 
 

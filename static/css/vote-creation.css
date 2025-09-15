@@ -1,0 +1,429 @@
+/* Vote Creation Modal Styles - Material Design 3 */
+
+/* Extend existing modal styles from landing-material.css */
+.vote-creation-dialog {
+  max-width: 800px; /* Larger for form content */
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+/* Vote Form Layout */
+.vote-form {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  margin: 16px 0;
+}
+
+.vote-form .md-text-field {
+  margin-bottom: 8px;
+}
+
+.vote-form textarea.md-text-field-input {
+  min-height: 80px;
+  resize: vertical;
+}
+
+/* Dynamic Options Container */
+.vote-options-container {
+  margin: 24px 0;
+}
+
+.options-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin: 16px 0;
+}
+
+.vote-option-field {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  position: relative;
+}
+
+.vote-option-field .md-text-field {
+  flex: 1;
+  margin-bottom: 0;
+}
+
+.remove-option-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: var(--md-sys-shape-corner-full);
+  background-color: var(--md-sys-color-error-container);
+  color: var(--md-sys-color-on-error-container);
+  margin-top: 8px; /* Align with input field */
+  flex-shrink: 0;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.remove-option-btn:hover {
+  background-color: var(--md-sys-color-error);
+  color: var(--md-sys-color-on-error);
+}
+
+/* Option Controls */
+.option-controls {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 16px;
+  padding: 16px 0;
+  border-top: 1px solid var(--md-sys-color-outline-variant);
+}
+
+.option-counter {
+  font-size: var(--md-sys-typescale-body-small-size);
+  color: var(--md-sys-color-on-surface-variant);
+}
+
+/* Access Settings */
+.access-settings {
+  margin: 24px 0;
+  padding: 16px;
+  background-color: var(--md-sys-color-surface-container-low);
+  border-radius: var(--md-sys-shape-corner-medium);
+}
+
+.setting-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 12px 0;
+}
+
+.access-code-field {
+  margin-left: 36px; /* Align with switch content */
+  margin-top: 12px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.access-code-field.show {
+  opacity: 1;
+  max-height: 100px;
+}
+
+.access-code-field.hide {
+  opacity: 0;
+  max-height: 0;
+  margin: 0;
+  padding: 0;
+}
+
+/* Vote Error Display */
+.vote-error {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  background-color: var(--md-sys-color-error-container);
+  color: var(--md-sys-color-on-error-container);
+  border-radius: var(--md-sys-shape-corner-medium);
+  margin-top: 16px;
+}
+
+.vote-error .material-icons {
+  font-size: 20px;
+}
+
+/* Switch Component Styles */
+.md-switch {
+  position: relative;
+  display: inline-block;
+  width: 52px;
+  height: 32px;
+  cursor: pointer;
+}
+
+.md-switch-input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.md-switch-track {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: var(--md-sys-color-surface-variant);
+  border: 2px solid var(--md-sys-color-outline);
+  border-radius: 16px;
+  transition: all 0.2s ease;
+}
+
+.md-switch-thumb {
+  position: absolute;
+  height: 20px;
+  width: 20px;
+  left: 4px;
+  top: 4px;
+  background-color: var(--md-sys-color-outline);
+  border-radius: 50%;
+  transition: all 0.2s ease;
+}
+
+.md-switch-input:checked + .md-switch-track {
+  background-color: var(--md-sys-color-primary);
+  border-color: var(--md-sys-color-primary);
+}
+
+.md-switch-input:checked + .md-switch-track .md-switch-thumb {
+  transform: translateX(20px);
+  background-color: var(--md-sys-color-on-primary);
+}
+
+.md-switch-input:focus + .md-switch-track {
+  box-shadow: 0 0 0 2px var(--md-sys-color-primary);
+}
+
+/* Responsive Design */
+@media (max-width: 640px) {
+  .vote-creation-dialog {
+    width: calc(100vw - 32px);
+    max-width: none;
+    margin: 16px;
+    max-height: calc(100vh - 32px);
+  }
+
+  .vote-option-field {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .remove-option-btn {
+    align-self: flex-end;
+    margin-top: -8px;
+    margin-bottom: 8px;
+  }
+
+  .option-controls {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+  }
+}
+
+/* Enhanced Image Upload Interface Styles */
+.option-image-upload {
+  margin-top: 16px;
+  padding: 16px;
+  border: 2px dashed var(--md-sys-color-outline-variant);
+  border-radius: var(--md-sys-shape-corner-medium);
+  background-color: var(--md-sys-color-surface-container-lowest);
+  text-align: center;
+  transition: all 0.2s ease;
+  position: relative;
+}
+
+.option-image-upload.drag-over {
+  border-color: var(--md-sys-color-primary);
+  background-color: var(--md-sys-color-primary-container);
+}
+
+.option-image-upload input[type='file'] {
+  display: none;
+}
+
+.upload-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 16px;
+  cursor: pointer;
+}
+
+.upload-icon {
+  font-size: 48px;
+  color: var(--md-sys-color-on-surface-variant);
+  transition: all 0.2s ease;
+}
+
+.upload-text {
+  color: var(--md-sys-color-on-surface-variant);
+  font-size: var(--md-sys-typescale-body-medium-size);
+  font-weight: var(--md-sys-typescale-body-medium-weight);
+}
+
+.upload-hint {
+  color: var(--md-sys-color-on-surface-variant);
+  font-size: var(--md-sys-typescale-body-small-size);
+  opacity: 0.7;
+}
+
+.drag-over .upload-icon {
+  color: var(--md-sys-color-primary);
+  transform: scale(1.1);
+}
+
+.drag-over .upload-text,
+.drag-over .upload-hint {
+  color: var(--md-sys-color-on-primary-container);
+}
+
+/* Image Preview Styles */
+.image-preview {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px;
+  background-color: var(--md-sys-color-surface-container-low);
+  border-radius: var(--md-sys-shape-corner-medium);
+  margin-top: 12px;
+}
+
+.image-thumbnail {
+  width: 80px;
+  height: 80px;
+  border-radius: var(--md-sys-shape-corner-medium);
+  object-fit: cover;
+  border: 1px solid var(--md-sys-color-outline-variant);
+}
+
+.image-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.image-filename {
+  font-size: var(--md-sys-typescale-body-medium-size);
+  font-weight: var(--md-sys-typescale-body-medium-weight);
+  color: var(--md-sys-color-on-surface);
+}
+
+.image-details {
+  font-size: var(--md-sys-typescale-body-small-size);
+  color: var(--md-sys-color-on-surface-variant);
+}
+
+.remove-image-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: var(--md-sys-shape-corner-full);
+  background-color: var(--md-sys-color-error-container);
+  color: var(--md-sys-color-on-error-container);
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.remove-image-btn:hover {
+  background-color: var(--md-sys-color-error);
+  color: var(--md-sys-color-on-error);
+}
+
+/* Upload Progress Indicator */
+.upload-progress {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.upload-progress .material-icons {
+  font-size: 32px;
+  color: var(--md-sys-color-primary);
+  animation: spin 1s linear infinite;
+}
+
+.upload-progress-text {
+  font-size: var(--md-sys-typescale-body-small-size);
+  color: var(--md-sys-color-on-surface-variant);
+}
+
+.option-image-upload.uploading .upload-content {
+  opacity: 0.3;
+}
+
+.option-image-upload.uploading .upload-progress {
+  display: flex;
+}
+
+/* Error State */
+.upload-error {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px;
+  background-color: var(--md-sys-color-error-container);
+  color: var(--md-sys-color-on-error-container);
+  border-radius: var(--md-sys-shape-corner-medium);
+  margin-top: 8px;
+  font-size: var(--md-sys-typescale-body-small-size);
+}
+
+.upload-error .material-icons {
+  font-size: 20px;
+}
+
+/* Animation for adding/removing options */
+.vote-option-field {
+  animation: slideInUp 0.3s ease-out;
+}
+
+.vote-option-field.removing {
+  animation: slideOutUp 0.3s ease-in forwards;
+}
+
+@keyframes slideInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideOutUp {
+  to {
+    opacity: 0;
+    transform: translateY(-20px);
+    height: 0;
+    margin: 0;
+    padding: 0;
+  }
+}
+
+/* Loading State for Create Button */
+.md-button.loading {
+  pointer-events: none;
+}
+
+.md-button.loading .btn-text {
+  opacity: 0;
+}
+
+.md-button.loading .btn-loading {
+  display: inline-block !important;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}

@@ -1,0 +1,898 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - {{ app_name }}</title>
+    <meta name="description" content="Your voting dashboard - create, manage, and analyze votes.">
+    <meta name="theme-color" content="#0061a4">
+
+    <!-- Material Design 3 CSS -->
+    <link rel="stylesheet" href="/static/css/material-design.css">
+
+    <!-- Google Fonts - Roboto -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+
+    <!-- Material Icons -->
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+
+    <!-- Dashboard Styles -->
+    <link rel="stylesheet" href="/static/css/dashboard.css">
+    <link rel="stylesheet" href="/static/css/vote-creation.css">
+
+    <!-- Mobile-First Responsive Design -->
+    <link rel="stylesheet" href="/static/css/mobile-responsive.css">
+
+    <!-- Touch Interaction Enhancements -->
+    <link rel="stylesheet" href="/static/css/touch-enhancements.css">
+</head>
+<body>
+    <!-- Top App Bar -->
+    <header class="md-top-app-bar md-top-app-bar-elevated">
+        <button class="md-top-app-bar-navigation-icon" aria-label="Open navigation menu">
+            <span class="material-icons">menu</span>
+        </button>
+        <div class="md-top-app-bar-title">{{ app_name }} Dashboard</div>
+        <button class="md-top-app-bar-action" aria-label="Create new vote" data-action="create-vote">
+            <span class="material-icons">add</span>
+        </button>
+        <button class="md-top-app-bar-action" aria-label="User menu" data-action="user-menu">
+            <span class="material-icons">account_circle</span>
+        </button>
+    </header>
+
+    <!-- Navigation Drawer -->
+    <nav class="md-navigation-drawer" id="navigationDrawer">
+        <div class="md-navigation-drawer-header">
+            <h3 class="md-headline-small">Welcome back!</h3>
+            <p class="md-body-medium md-on-surface-variant" id="userDisplayName">User</p>
+        </div>
+        <div class="md-navigation-drawer-content">
+            <a href="#dashboard" class="md-navigation-drawer-item md-navigation-drawer-item-selected">
+                <span class="material-icons md-navigation-drawer-item-icon">dashboard</span>
+                <span class="md-navigation-drawer-item-label">Dashboard</span>
+            </a>
+            <a href="#votes" class="md-navigation-drawer-item">
+                <span class="material-icons md-navigation-drawer-item-icon">how_to_vote</span>
+                <span class="md-navigation-drawer-item-label">My Votes</span>
+            </a>
+            <a href="#analytics" class="md-navigation-drawer-item">
+                <span class="material-icons md-navigation-drawer-item-icon">analytics</span>
+                <span class="md-navigation-drawer-item-label">Analytics</span>
+            </a>
+            <a href="#settings" class="md-navigation-drawer-item">
+                <span class="material-icons md-navigation-drawer-item-icon">settings</span>
+                <span class="md-navigation-drawer-item-label">Settings</span>
+            </a>
+            <hr class="md-divider">
+            <button type="button" class="md-navigation-drawer-item" data-action="logout">
+                <span class="material-icons md-navigation-drawer-item-icon">logout</span>
+                <span class="md-navigation-drawer-item-label">Sign Out</span>
+            </button>
+        </div>
+    </nav>
+    <div class="md-navigation-drawer-scrim" id="navigationScrim"></div>
+
+    <!-- Main Content -->
+    <main class="dashboard-content">
+        <!-- Welcome Section -->
+        <section class="welcome-section">
+            <div class="md-container">
+                <div class="welcome-card md-card md-card-elevated">
+                    <div class="welcome-content">
+                        <h1 class="md-display-small">Welcome to Your Dashboard</h1>
+                        <p class="md-body-large md-on-surface-variant">
+                            Start creating engaging votes and gathering valuable insights from your community.
+                        </p>
+                        <div class="welcome-actions">
+                            <button class="md-button md-button-filled" data-action="create-vote">
+                                <span class="material-icons">add</span>
+                                Create Your First Vote
+                            </button>
+                            <button class="md-button md-button-outlined">
+                                <span class="material-icons">help_outline</span>
+                                View Tutorial
+                            </button>
+                        </div>
+                    </div>
+                    <div class="welcome-illustration">
+                        <span class="material-icons">poll</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Quick Stats -->
+        <section class="stats-section">
+            <div class="md-container">
+                <h2 class="md-headline-medium section-title">Quick Overview</h2>
+                <div class="stats-grid">
+                    <div class="stat-card md-card md-card-elevated">
+                        <div class="stat-icon">
+                            <span class="material-icons">how_to_vote</span>
+                        </div>
+                        <div class="stat-content">
+                            <h3 class="md-title-large" id="totalVotes">0</h3>
+                            <p class="md-body-medium md-on-surface-variant">Total Votes</p>
+                        </div>
+                    </div>
+
+                    <div class="stat-card md-card md-card-elevated">
+                        <div class="stat-icon">
+                            <span class="material-icons">trending_up</span>
+                        </div>
+                        <div class="stat-content">
+                            <h3 class="md-title-large" id="activeVotes">0</h3>
+                            <p class="md-body-medium md-on-surface-variant">Active Votes</p>
+                        </div>
+                    </div>
+
+                    <div class="stat-card md-card md-card-elevated">
+                        <div class="stat-icon">
+                            <span class="material-icons">people</span>
+                        </div>
+                        <div class="stat-content">
+                            <h3 class="md-title-large" id="totalResponses">0</h3>
+                            <p class="md-body-medium md-on-surface-variant">Total Responses</p>
+                        </div>
+                    </div>
+
+                    <div class="stat-card md-card md-card-elevated">
+                        <div class="stat-icon">
+                            <span class="material-icons">schedule</span>
+                        </div>
+                        <div class="stat-content">
+                            <h3 class="md-title-large" id="recentActivity">0</h3>
+                            <p class="md-body-medium md-on-surface-variant">This Week</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Recent Votes -->
+        <section class="recent-votes-section">
+            <div class="md-container">
+                <div class="section-header">
+                    <h2 class="md-headline-medium">Recent Votes</h2>
+                    <button class="md-button md-button-text" data-action="view-all-votes">
+                        View All
+                        <span class="material-icons">arrow_forward</span>
+                    </button>
+                </div>
+
+                <div class="votes-list" id="recentVotesList">
+                    <!-- Recent votes will be loaded here -->
+                    <div class="empty-state">
+                        <div class="empty-state-icon">
+                            <span class="material-icons">inbox</span>
+                        </div>
+                        <h3 class="md-headline-small">No votes yet</h3>
+                        <p class="md-body-medium md-on-surface-variant">
+                            Create your first vote to start gathering insights from your community.
+                        </p>
+                        <button class="md-button md-button-filled" data-action="create-vote">
+                            <span class="material-icons">add</span>
+                            Create Vote
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Vote Management -->
+        <section class="vote-management-section">
+            <div class="md-container">
+                <div class="section-header">
+                    <h2 class="md-headline-medium">Manage Votes</h2>
+                    <div class="filter-actions">
+                        <div class="filter-buttons">
+                            <button class="md-button md-button-filled filter-btn active" data-filter="all" data-action="filter-votes">
+                                All
+                            </button>
+                            <button class="md-button md-button-outlined filter-btn" data-filter="draft" data-action="filter-votes">
+                                <span class="material-icons">edit</span>
+                                Draft
+                            </button>
+                            <button class="md-button md-button-outlined filter-btn" data-filter="active" data-action="filter-votes">
+                                <span class="material-icons">trending_up</span>
+                                Active
+                            </button>
+                            <button class="md-button md-button-outlined filter-btn" data-filter="closed" data-action="filter-votes">
+                                <span class="material-icons">archive</span>
+                                Closed
+                            </button>
+                        </div>
+                        <div class="sort-dropdown">
+                            <select class="md-select" id="sortSelect" data-action="sort-votes">
+                                <option value="created_at">Date Created</option>
+                                <option value="title">Title</option>
+                                <option value="response_count">Responses</option>
+                                <option value="status">Status</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="vote-management-container">
+                    <div class="vote-list" id="voteList">
+                        <!-- Vote cards will be populated by JavaScript -->
+                        <div class="loading-state" id="voteListLoading">
+                            <div class="loading-skeleton">
+                                <div class="skeleton-card"></div>
+                                <div class="skeleton-card"></div>
+                                <div class="skeleton-card"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Load More Button -->
+                    <div class="load-more-container" id="loadMoreContainer" style="display: none;">
+                        <button class="md-button md-button-outlined" id="loadMoreBtn" data-action="load-more-votes">
+                            <span class="btn-text">Load More</span>
+                            <span class="material-icons btn-loading" style="display: none;">refresh</span>
+                        </button>
+                    </div>
+
+                    <!-- Empty State -->
+                    <div class="empty-state" id="voteListEmpty" style="display: none;">
+                        <div class="empty-state-icon">
+                            <span class="material-icons">ballot</span>
+                        </div>
+                        <h3 class="md-headline-small">No votes found</h3>
+                        <p class="md-body-medium md-on-surface-variant">
+                            Create your first vote or adjust your filters to see results.
+                        </p>
+                        <button class="md-button md-button-filled" data-action="create-vote">
+                            <span class="material-icons">add</span>
+                            Create Vote
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- User Menu -->
+    <div class="md-menu" id="userMenu" style="display: none;">
+        <div class="md-menu-item" data-action="profile">
+            <span class="material-icons">person</span>
+            <span>Profile</span>
+        </div>
+        <div class="md-menu-item" data-action="settings">
+            <span class="material-icons">settings</span>
+            <span>Settings</span>
+        </div>
+        <hr class="md-divider">
+        <div class="md-menu-item" data-action="logout">
+            <span class="material-icons">logout</span>
+            <span>Sign Out</span>
+        </div>
+    </div>
+
+    <!-- Vote Creation Modal -->
+    <div class="md-dialog-scrim" id="voteCreationModalScrim" role="dialog" aria-labelledby="vote-creation-modal-title" aria-hidden="true">
+        <div class="md-dialog vote-creation-dialog" id="voteCreationModal">
+            <div class="md-dialog-icon">
+                <span class="material-icons">poll</span>
+            </div>
+            <h2 class="md-dialog-headline" id="vote-creation-modal-title">Create New Vote</h2>
+            <div class="md-dialog-supporting-text">
+                <form id="voteCreationForm" class="vote-form">
+                    <!-- Title Field -->
+                    <div class="md-text-field md-text-field-outlined">
+                        <input type="text" id="voteTitle" class="md-text-field-input" placeholder=" " required
+                               maxlength="200" aria-describedby="vote-title-help">
+                        <label for="voteTitle" class="md-text-field-label">Vote Title</label>
+                    </div>
+                    <div id="vote-title-help" class="md-text-field-helper">Enter a clear, descriptive title for your vote</div>
+
+                    <!-- Description Field -->
+                    <div class="md-text-field md-text-field-outlined">
+                        <textarea id="voteDescription" class="md-text-field-input" placeholder=" " rows="3"
+                                  maxlength="1000" aria-describedby="vote-description-help"></textarea>
+                        <label for="voteDescription" class="md-text-field-label">Description (Optional)</label>
+                    </div>
+                    <div id="vote-description-help" class="md-text-field-helper">Provide context or instructions for voters</div>
+
+                    <!-- Dynamic Options Container -->
+                    <div class="vote-options-container">
+                        <h3 class="md-title-medium">Vote Options</h3>
+                        <div id="voteOptionsContainer" class="options-list">
+                            <!-- Dynamic option fields will be inserted here -->
+                        </div>
+                        <div class="option-controls">
+                            <button type="button" class="md-button md-button-outlined" id="addOptionBtn" data-action="add-option">
+                                <span class="material-icons">add</span>
+                                Add Option
+                            </button>
+                            <span class="option-counter">2 of 20 options</span>
+                        </div>
+                    </div>
+
+                    <!-- Access Settings -->
+                    <div class="access-settings">
+                        <h3 class="md-title-medium">Access Settings</h3>
+                        <div class="setting-row">
+                            <label class="md-switch">
+                                <input type="checkbox" id="requireAuth" class="md-switch-input" />
+                                <div class="md-switch-track">
+                                    <div class="md-switch-thumb"></div>
+                                </div>
+                            </label>
+                            <span>Require user account to vote</span>
+                        </div>
+                        <div class="setting-row">
+                            <label class="md-switch">
+                                <input type="checkbox" id="useAccessCode" class="md-switch-input" />
+                                <div class="md-switch-track">
+                                    <div class="md-switch-thumb"></div>
+                                </div>
+                            </label>
+                            <span>Protect with access code</span>
+                        </div>
+                        <div class="md-text-field md-text-field-outlined access-code-field" id="accessCodeField" style="display: none;">
+                            <input type="text" id="accessCode" class="md-text-field-input" placeholder=" " maxlength="50">
+                            <label for="accessCode" class="md-text-field-label">Access Code</label>
+                        </div>
+                    </div>
+
+                    <div class="vote-error" id="voteCreationError" style="display: none;">
+                        <span class="material-icons">error</span>
+                        <span id="voteCreationErrorMessage"></span>
+                    </div>
+                </form>
+            </div>
+            <div class="md-dialog-actions">
+                <button type="button" class="md-button md-button-text" data-action="close-modal" data-modal="vote-creation">
+                    Cancel
+                </button>
+                <button type="submit" form="voteCreationForm" class="md-button md-button-filled" id="createVoteBtn">
+                    <span class="btn-text">Create Vote</span>
+                    <span class="material-icons btn-loading" style="display: none;">refresh</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Vote Modal -->
+    <div class="md-dialog-scrim" id="editVoteModalScrim" role="dialog" aria-labelledby="edit-vote-modal-title" aria-hidden="true">
+        <div class="md-dialog edit-vote-dialog" id="editVoteModal">
+            <div class="md-dialog-icon">
+                <span class="material-icons">edit</span>
+            </div>
+            <h2 class="md-dialog-headline" id="edit-vote-modal-title">Edit Vote</h2>
+            <div class="md-dialog-supporting-text">
+                <form id="editVoteForm" class="vote-form">
+                    <!-- Title Field -->
+                    <div class="md-text-field md-text-field-outlined">
+                        <input type="text" id="editVoteTitle" class="md-text-field-input" placeholder=" " required
+                               maxlength="200" aria-describedby="edit-vote-title-help">
+                        <label for="editVoteTitle" class="md-text-field-label">Vote Title</label>
+                    </div>
+                    <div id="edit-vote-title-help" class="md-text-field-helper">Enter a clear, descriptive title for your vote</div>
+
+                    <!-- Description Field -->
+                    <div class="md-text-field md-text-field-outlined">
+                        <textarea id="editVoteDescription" class="md-text-field-input" placeholder=" " rows="3"
+                                  maxlength="1000" aria-describedby="edit-vote-description-help"></textarea>
+                        <label for="editVoteDescription" class="md-text-field-label">Description (Optional)</label>
+                    </div>
+                    <div id="edit-vote-description-help" class="md-text-field-helper">Provide context or instructions for voters</div>
+
+                    <!-- Status Warning -->
+                    <div class="status-warning" id="editStatusWarning" style="display: none;">
+                        <div class="warning-content">
+                            <span class="material-icons">warning</span>
+                            <div class="warning-text">
+                                <h4>Limited Editing</h4>
+                                <p id="warningMessage">This vote is active. You can only edit the title and description.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Dynamic Options Container (conditionally disabled) -->
+                    <div class="vote-options-container" id="editOptionsContainer">
+                        <h3 class="md-title-medium">Vote Options</h3>
+                        <div id="editVoteOptionsContainer" class="options-list">
+                            <!-- Dynamic option fields will be inserted here -->
+                        </div>
+                        <div class="option-controls">
+                            <button type="button" class="md-button md-button-outlined" id="editAddOptionBtn" data-action="add-edit-option">
+                                <span class="material-icons">add</span>
+                                Add Option
+                            </button>
+                            <span class="option-counter" id="editOptionCounter">0 of 20 options</span>
+                        </div>
+                    </div>
+
+                    <!-- Access Settings (conditionally disabled) -->
+                    <div class="access-settings" id="editAccessSettings">
+                        <h3 class="md-title-medium">Access Settings</h3>
+                        <div class="setting-row">
+                            <label class="md-switch">
+                                <input type="checkbox" id="editRequireAuth" class="md-switch-input" />
+                                <div class="md-switch-track">
+                                    <div class="md-switch-thumb"></div>
+                                </div>
+                            </label>
+                            <span>Require user account to vote</span>
+                        </div>
+                        <div class="setting-row">
+                            <label class="md-switch">
+                                <input type="checkbox" id="editUseAccessCode" class="md-switch-input" />
+                                <div class="md-switch-track">
+                                    <div class="md-switch-thumb"></div>
+                                </div>
+                            </label>
+                            <span>Protect with access code</span>
+                        </div>
+                        <div class="md-text-field md-text-field-outlined access-code-field" id="editAccessCodeField" style="display: none;">
+                            <input type="text" id="editAccessCode" class="md-text-field-input" placeholder=" " maxlength="50">
+                            <label for="editAccessCode" class="md-text-field-label">Access Code</label>
+                        </div>
+                    </div>
+
+                    <div class="vote-error" id="editVoteError" style="display: none;">
+                        <span class="material-icons">error</span>
+                        <span id="editVoteErrorMessage"></span>
+                    </div>
+
+                    <!-- Hidden field to track vote ID -->
+                    <input type="hidden" id="editVoteId" />
+                </form>
+            </div>
+            <div class="md-dialog-actions">
+                <button type="button" class="md-button md-button-text" data-action="close-modal" data-modal="edit-vote">
+                    Cancel
+                </button>
+                <button type="submit" form="editVoteForm" class="md-button md-button-filled" id="saveVoteBtn">
+                    <span class="btn-text">Save Changes</span>
+                    <span class="material-icons btn-loading" style="display: none;">refresh</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Delete Confirmation Modal -->
+    <div class="md-dialog-scrim" id="deleteVoteModalScrim" role="dialog" aria-labelledby="delete-vote-modal-title" aria-hidden="true">
+        <div class="md-dialog delete-vote-dialog" id="deleteVoteModal">
+            <div class="md-dialog-icon danger">
+                <span class="material-icons">delete</span>
+            </div>
+            <h2 class="md-dialog-headline" id="delete-vote-modal-title">Delete Vote</h2>
+            <div class="md-dialog-supporting-text">
+                <p>Are you sure you want to delete this vote?</p>
+                <div class="delete-warning">
+                    <p><strong id="deleteVoteTitle">Vote Title</strong></p>
+                    <p class="warning-text" id="deleteWarningText">
+                        This action cannot be undone. All responses will be preserved but the vote will be permanently deleted.
+                    </p>
+                </div>
+
+                <!-- Hidden field to track vote ID -->
+                <input type="hidden" id="deleteVoteId" />
+            </div>
+            <div class="md-dialog-actions">
+                <button type="button" class="md-button md-button-text" data-action="close-modal" data-modal="delete-vote">
+                    Cancel
+                </button>
+                <button type="button" class="md-button md-button-filled danger" id="confirmDeleteBtn" data-action="confirm-delete-vote">
+                    <span class="btn-text">Delete Vote</span>
+                    <span class="material-icons btn-loading" style="display: none;">refresh</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Results Visualization Modal -->
+    <div class="md-dialog-scrim results-modal-scrim" id="resultsModalScrim" role="dialog" aria-labelledby="results-modal-title" aria-hidden="true">
+        <div class="md-dialog results-dialog" id="resultsModal">
+            <div class="md-dialog-icon">
+                <span class="material-icons">analytics</span>
+            </div>
+            <h2 class="md-dialog-headline" id="results-modal-title">Vote Results</h2>
+            <div class="md-dialog-supporting-text">
+                <div class="results-container">
+                    <!-- Results Header -->
+                    <div class="results-header">
+                        <div class="results-meta">
+                            <h3 id="resultsVoteTitle" class="md-title-large">Vote Title</h3>
+                            <div class="results-stats">
+                                <div class="stat-item">
+                                    <span class="stat-value" id="totalVoteResponses">0</span>
+                                    <span class="stat-label">Total Votes</span>
+                                </div>
+                                <div class="stat-item">
+                                    <span class="stat-value" id="averageRating">0.0</span>
+                                    <span class="stat-label">Average Rating</span>
+                                </div>
+                                <div class="stat-item">
+                                    <span class="stat-value" id="participationRate">0%</span>
+                                    <span class="stat-label">Participation</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="results-actions">
+                            <button class="md-button md-button-outlined" data-action="export-csv" id="exportCsvBtn">
+                                <span class="material-icons">download</span>
+                                CSV
+                            </button>
+                            <button class="md-button md-button-outlined" data-action="export-json" id="exportJsonBtn">
+                                <span class="material-icons">download</span>
+                                JSON
+                            </button>
+                            <button class="md-button md-button-text" data-action="refresh-results" id="refreshResultsBtn">
+                                <span class="material-icons">refresh</span>
+                                Refresh
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Charts Container -->
+                    <div class="charts-container">
+                        <div class="chart-section">
+                            <h4 class="md-title-medium">Vote Distribution</h4>
+                            <div class="chart-wrapper">
+                                <canvas id="resultsBarChart" width="400" height="200"></canvas>
+                            </div>
+                        </div>
+                        <div class="chart-section">
+                            <h4 class="md-title-medium">Rating Overview</h4>
+                            <div class="chart-wrapper">
+                                <canvas id="resultsPieChart" width="300" height="200"></canvas>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Detailed Results Table -->
+                    <div class="results-table-container">
+                        <h4 class="md-title-medium">Detailed Results</h4>
+                        <div class="results-table">
+                            <table class="md-table">
+                                <thead>
+                                    <tr>
+                                        <th>Option</th>
+                                        <th>Average Rating</th>
+                                        <th>Total Votes</th>
+                                        <th>Distribution</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="resultsTableBody">
+                                    <!-- Populated by JavaScript -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Hidden field to track vote ID -->
+                <input type="hidden" id="resultsVoteId" />
+            </div>
+            <div class="md-dialog-actions">
+                <button type="button" class="md-button md-button-text" data-action="close-modal" data-modal="results">
+                    Close
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Profile Management Modal -->
+    <div class="md-dialog-scrim" id="profileModalScrim" role="dialog" aria-labelledby="profile-modal-title" aria-hidden="true">
+        <div class="md-dialog profile-dialog" id="profileModal">
+            <div class="md-dialog-icon">
+                <span class="material-icons">person</span>
+            </div>
+            <h2 class="md-dialog-headline" id="profile-modal-title">Profile Management</h2>
+            <div class="md-dialog-supporting-text">
+                <!-- Profile Tabs -->
+                <div class="md-tabs" role="tablist">
+                    <button class="md-tab md-tab-active" role="tab" aria-selected="true" aria-controls="profile-info-panel" id="profile-info-tab" data-action="switch-profile-tab" data-tab="info">
+                        <span class="material-icons">person</span>
+                        Personal Info
+                    </button>
+                    <button class="md-tab" role="tab" aria-selected="false" aria-controls="password-panel" id="password-tab" data-action="switch-profile-tab" data-tab="password">
+                        <span class="material-icons">lock</span>
+                        Password
+                    </button>
+                    <button class="md-tab" role="tab" aria-selected="false" aria-controls="account-panel" id="account-tab" data-action="switch-profile-tab" data-tab="account">
+                        <span class="material-icons">security</span>
+                        Account
+                    </button>
+                </div>
+
+                <!-- Personal Information Panel -->
+                <div class="md-tab-panel md-tab-panel-active" id="profile-info-panel" role="tabpanel" aria-labelledby="profile-info-tab">
+                    <form id="profileInfoForm" class="profile-form">
+                        <!-- First Name Field -->
+                        <div class="md-text-field md-text-field-outlined">
+                            <input type="text" id="profileFirstName" class="md-text-field-input" placeholder=" " required
+                                   maxlength="100" aria-describedby="profile-first-name-help">
+                            <label for="profileFirstName" class="md-text-field-label">First Name</label>
+                        </div>
+                        <div id="profile-first-name-help" class="md-text-field-helper">Enter your first name</div>
+
+                        <!-- Last Name Field -->
+                        <div class="md-text-field md-text-field-outlined">
+                            <input type="text" id="profileLastName" class="md-text-field-input" placeholder=" " required
+                                   maxlength="100" aria-describedby="profile-last-name-help">
+                            <label for="profileLastName" class="md-text-field-label">Last Name</label>
+                        </div>
+                        <div id="profile-last-name-help" class="md-text-field-helper">Enter your last name</div>
+
+                        <!-- Email Field -->
+                        <div class="md-text-field md-text-field-outlined">
+                            <input type="email" id="profileEmail" class="md-text-field-input" placeholder=" " required
+                                   maxlength="255" aria-describedby="profile-email-help">
+                            <label for="profileEmail" class="md-text-field-label">Email Address</label>
+                        </div>
+                        <div id="profile-email-help" class="md-text-field-helper">Your email address for account access and notifications</div>
+
+                        <!-- Email Verification Status -->
+                        <div class="email-verification-status" id="emailVerificationStatus">
+                            <div class="verification-indicator">
+                                <span class="material-icons verification-icon" id="verificationIcon">verified</span>
+                                <span class="verification-text" id="verificationText">Email verified</span>
+                            </div>
+                            <p class="verification-details md-body-small md-on-surface-variant" id="verificationDetails">
+                                Your email address is verified and active.
+                            </p>
+                            <div class="verification-actions" id="verificationActions" style="display: none;">
+                                <button type="button" class="md-button md-button-text" id="resendVerificationBtn" data-action="resend-verification">
+                                    <span class="material-icons">send</span>
+                                    <span class="btn-text">Resend Verification Email</span>
+                                    <span class="material-icons btn-loading" style="display: none;">refresh</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="profile-error" id="profileInfoError" style="display: none;">
+                            <span class="material-icons">error</span>
+                            <span id="profileInfoErrorMessage"></span>
+                        </div>
+
+                        <div class="profile-success" id="profileInfoSuccess" style="display: none;">
+                            <span class="material-icons">check_circle</span>
+                            <span id="profileInfoSuccessMessage"></span>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Password Change Panel -->
+                <div class="md-tab-panel" id="password-panel" role="tabpanel" aria-labelledby="password-tab">
+                    <form id="passwordChangeForm" class="profile-form">
+                        <!-- Current Password Field -->
+                        <div class="md-text-field md-text-field-outlined">
+                            <input type="password" id="currentPassword" class="md-text-field-input" placeholder=" " required
+                                   aria-describedby="current-password-help">
+                            <label for="currentPassword" class="md-text-field-label">Current Password</label>
+                        </div>
+                        <div id="current-password-help" class="md-text-field-helper">Enter your current password to confirm changes</div>
+
+                        <!-- New Password Field -->
+                        <div class="md-text-field md-text-field-outlined">
+                            <input type="password" id="newPassword" class="md-text-field-input" placeholder=" " required
+                                   minlength="8" aria-describedby="new-password-help">
+                            <label for="newPassword" class="md-text-field-label">New Password</label>
+                        </div>
+                        <div id="new-password-help" class="md-text-field-helper">Password must be at least 8 characters long</div>
+
+                        <!-- Confirm New Password Field -->
+                        <div class="md-text-field md-text-field-outlined">
+                            <input type="password" id="confirmPassword" class="md-text-field-input" placeholder=" " required
+                                   minlength="8" aria-describedby="confirm-password-help">
+                            <label for="confirmPassword" class="md-text-field-label">Confirm New Password</label>
+                        </div>
+                        <div id="confirm-password-help" class="md-text-field-helper">Re-enter your new password to confirm</div>
+
+                        <!-- Password Strength Indicator -->
+                        <div class="password-strength" id="passwordStrength" style="display: none;">
+                            <div class="strength-label">Password Strength:</div>
+                            <div class="strength-indicator">
+                                <div class="strength-bar" id="strengthBar"></div>
+                            </div>
+                            <span class="strength-text" id="strengthText">Weak</span>
+                        </div>
+
+                        <div class="profile-error" id="passwordChangeError" style="display: none;">
+                            <span class="material-icons">error</span>
+                            <span id="passwordChangeErrorMessage"></span>
+                        </div>
+
+                        <div class="profile-success" id="passwordChangeSuccess" style="display: none;">
+                            <span class="material-icons">check_circle</span>
+                            <span id="passwordChangeSuccessMessage"></span>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Account Management Panel -->
+                <div class="md-tab-panel" id="account-panel" role="tabpanel" aria-labelledby="account-tab">
+                    <div class="account-section">
+                        <!-- Account Information -->
+                        <div class="account-info">
+                            <h3 class="account-section-title">Account Information</h3>
+                            <div class="account-details">
+                                <div class="account-detail-item">
+                                    <span class="account-detail-label">Account Created:</span>
+                                    <span class="account-detail-value" id="accountCreatedDate">Loading...</span>
+                                </div>
+                                <div class="account-detail-item">
+                                    <span class="account-detail-label">Last Login:</span>
+                                    <span class="account-detail-value" id="lastLoginDate">Loading...</span>
+                                </div>
+                                <div class="account-detail-item">
+                                    <span class="account-detail-label">Total Votes Created:</span>
+                                    <span class="account-detail-value" id="totalVotesCount">0</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Danger Zone -->
+                        <div class="account-danger-zone">
+                            <h3 class="danger-zone-title">
+                                <span class="material-icons">warning</span>
+                                Danger Zone
+                            </h3>
+                            <div class="danger-zone-content">
+                                <div class="danger-action">
+                                    <div class="danger-action-info">
+                                        <h4 class="danger-action-title">Delete Account</h4>
+                                        <p class="danger-action-description">
+                                            Permanently delete your account and all associated data. This action cannot be undone.
+                                        </p>
+                                    </div>
+                                    <button type="button" class="md-button md-button-filled md-button-danger"
+                                            data-action="show-delete-confirmation" id="deleteAccountBtn">
+                                        <span class="material-icons">delete_forever</span>
+                                        Delete Account
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="md-dialog-actions">
+                <button type="button" class="md-button md-button-text" data-action="close-modal" data-modal="profile">
+                    Close
+                </button>
+                <button type="submit" form="profileInfoForm" class="md-button md-button-filled" id="saveProfileBtn">
+                    <span class="btn-text">Save Changes</span>
+                    <span class="material-icons btn-loading" style="display: none;">refresh</span>
+                </button>
+                <button type="submit" form="passwordChangeForm" class="md-button md-button-filled" id="changePasswordBtn" style="display: none;">
+                    <span class="btn-text">Change Password</span>
+                    <span class="material-icons btn-loading" style="display: none;">refresh</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Account Deletion Confirmation Modal -->
+    <div class="md-dialog-scrim" id="deleteAccountModalScrim" role="dialog" aria-labelledby="delete-account-modal-title" aria-hidden="true">
+        <div class="md-dialog delete-account-dialog">
+            <div class="md-dialog-icon danger-icon">
+                <span class="material-icons">warning</span>
+            </div>
+            <h2 class="md-dialog-headline" id="delete-account-modal-title">Delete Account</h2>
+            <div class="md-dialog-supporting-text">
+                <div class="delete-warning">
+                    <div class="warning-message">
+                        <p><strong>This action is permanent and cannot be undone.</strong></p>
+                        <p>By deleting your account, you will permanently lose:</p>
+                    </div>
+
+                    <div class="data-loss-list">
+                        <div class="data-item">
+                            <span class="material-icons">how_to_vote</span>
+                            <div class="data-info">
+                                <span class="data-title">All your votes</span>
+                                <span class="data-description">Including active, draft, and closed votes</span>
+                            </div>
+                        </div>
+                        <div class="data-item">
+                            <span class="material-icons">people</span>
+                            <div class="data-info">
+                                <span class="data-title">All voter responses</span>
+                                <span class="data-description">Responses submitted to your votes</span>
+                            </div>
+                        </div>
+                        <div class="data-item">
+                            <span class="material-icons">image</span>
+                            <div class="data-info">
+                                <span class="data-title">Uploaded images</span>
+                                <span class="data-description">All images associated with your votes</span>
+                            </div>
+                        </div>
+                        <div class="data-item">
+                            <span class="material-icons">analytics</span>
+                            <div class="data-info">
+                                <span class="data-title">Vote analytics</span>
+                                <span class="data-description">Statistics and performance data</span>
+                            </div>
+                        </div>
+                        <div class="data-item">
+                            <span class="material-icons">person</span>
+                            <div class="data-info">
+                                <span class="data-title">Account information</span>
+                                <span class="data-description">Profile data and preferences</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="confirmation-section">
+                        <p class="confirmation-instruction">
+                            <strong>To confirm deletion, type "DELETE" in the field below:</strong>
+                        </p>
+                        <div class="md-text-field md-text-field-outlined confirmation-field">
+                            <input type="text" id="deleteConfirmationInput" class="md-text-field-input" placeholder=" "
+                                   autocomplete="off" aria-describedby="delete-confirmation-help">
+                            <label for="deleteConfirmationInput" class="md-text-field-label">Type DELETE to confirm</label>
+                        </div>
+                        <div id="delete-confirmation-help" class="md-text-field-helper">Must match exactly: DELETE</div>
+
+                        <div class="password-confirmation">
+                            <div class="md-text-field md-text-field-outlined">
+                                <input type="password" id="deletePasswordConfirmation" class="md-text-field-input" placeholder=" "
+                                       aria-describedby="delete-password-help">
+                                <label for="deletePasswordConfirmation" class="md-text-field-label">Current Password</label>
+                            </div>
+                            <div id="delete-password-help" class="md-text-field-helper">Enter your current password to confirm</div>
+                        </div>
+
+                        <div class="reason-section">
+                            <div class="md-text-field md-text-field-outlined">
+                                <textarea id="deleteReasonInput" class="md-text-field-input textarea" placeholder=" "
+                                          maxlength="500" rows="3" aria-describedby="delete-reason-help"></textarea>
+                                <label for="deleteReasonInput" class="md-text-field-label">Reason for deletion (optional)</label>
+                            </div>
+                            <div id="delete-reason-help" class="md-text-field-helper">Help us improve by telling us why you're leaving</div>
+                        </div>
+                    </div>
+
+                    <div class="delete-account-error" id="deleteAccountError" style="display: none;">
+                        <span class="material-icons">error</span>
+                        <span id="deleteAccountErrorMessage"></span>
+                    </div>
+                </div>
+            </div>
+            <div class="md-dialog-actions">
+                <button type="button" class="md-button md-button-text" data-action="close-delete-modal">
+                    Cancel
+                </button>
+                <button type="button" class="md-button md-button-filled md-button-danger" id="confirmDeleteBtn" disabled
+                        data-action="confirm-account-deletion">
+                    <span class="btn-text">
+                        <span class="material-icons">delete_forever</span>
+                        Delete Account
+                    </span>
+                    <span class="btn-loading" style="display: none;">
+                        <span class="material-icons rotating">refresh</span>
+                    </span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Snackbar for notifications -->
+    <div class="md-snackbar" id="snackbar">
+        <span id="snackbar-message">Ready to create amazing votes!</span>
+        <button class="md-snackbar-action" id="snackbar-action">DISMISS</button>
+    </div>
+
+    <!-- Chart.js for results visualization -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <!-- Dashboard JavaScript -->
+    <script src="/static/js/dashboard.js"></script>
+    <script src="/static/js/profile-manager.js"></script>
+    <script src="/static/js/vote-creation-manager.js"></script>
+    <script src="/static/js/vote-management-manager.js"></script>
+
+    <!-- Touch Interaction Enhancements -->
+    <script src="/static/js/touch-interaction-manager.js"></script>
+</body>
+</html>

@@ -1,0 +1,534 @@
+/**
+ * Touch Enhancements CSS - Material Design 3
+ * Touch-specific styling and animations for T-010
+ *
+ * Provides visual feedback, smooth animations, and optimized touch interactions
+ * following Material Design 3 touch interaction guidelines.
+ */
+
+/* ==========================================================================
+   TOUCH FEEDBACK ANIMATIONS
+   ========================================================================== */
+
+/* Touch ripple effect animation */
+@keyframes touch-ripple {
+  0% {
+    transform: scale(0);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 0;
+  }
+}
+
+/* Touch feedback states */
+.touch-active {
+  transform: scale(0.95);
+  transition: transform 0.1s ease-out;
+}
+
+.touch-feedback {
+  /* Enhanced visual feedback during touch */
+  filter: brightness(1.1);
+  transition: filter 0.15s ease-out;
+}
+
+/* Material Design 3 touch ripple */
+.touch-ripple {
+  position: absolute;
+  pointer-events: none;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.3) 0%, rgba(255, 255, 255, 0.1) 70%, transparent 100%);
+  animation: touch-ripple 0.6s ease-out;
+}
+
+/* Long press feedback */
+.long-press-active {
+  animation: long-press-pulse 0.5s ease-in-out;
+  transform: scale(1.02);
+}
+
+@keyframes long-press-pulse {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+  100% {
+    transform: scale(1.02);
+  }
+}
+
+/* ==========================================================================
+   TOUCH-OPTIMIZED BUTTON STATES
+   ========================================================================== */
+
+/* Enhanced touch targets for Material Design buttons */
+.md-button,
+.md-icon-button,
+.md-text-button,
+button {
+  position: relative;
+  overflow: hidden;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+}
+
+/* Remove outline on touch devices for better aesthetics */
+@media (hover: none) and (pointer: coarse) {
+  .md-button:focus,
+  .md-icon-button:focus,
+  button:focus {
+    outline: none;
+  }
+
+  .md-button:focus-visible,
+  .md-icon-button:focus-visible,
+  button:focus-visible {
+    outline: 2px solid var(--md-sys-color-primary);
+    outline-offset: 2px;
+  }
+}
+
+/* Touch-optimized FAB */
+.md-fab,
+.creation-fab,
+.dashboard-fab {
+  transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.md-fab.touch-active,
+.creation-fab.touch-active,
+.dashboard-fab.touch-active {
+  transform: scale(0.9);
+}
+
+/* ==========================================================================
+   SWIPE GESTURE ANIMATIONS
+   ========================================================================== */
+
+/* Base swipe animation */
+.swiping {
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  z-index: 10;
+}
+
+/* Swipe direction animations */
+.swipe-left {
+  transform: translateX(-20px);
+  opacity: 0.8;
+}
+
+.swipe-right {
+  transform: translateX(20px);
+  opacity: 0.8;
+}
+
+.swipe-up {
+  transform: translateY(-20px);
+  opacity: 0.8;
+}
+
+.swipe-down {
+  transform: translateY(20px);
+  opacity: 0.8;
+}
+
+/* Image gallery swipe enhancements */
+.image-gallery,
+.image-preview-grid {
+  position: relative;
+}
+
+.image-preview-item {
+  transition:
+    transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+    opacity 0.3s ease,
+    box-shadow 0.2s ease;
+  cursor: grab;
+}
+
+.image-preview-item:active {
+  cursor: grabbing;
+}
+
+.image-preview-item.active,
+.image-preview-item.selected {
+  transform: scale(1.02);
+  box-shadow: var(--md-elevation-level3);
+  z-index: 2;
+}
+
+/* Card swipe animations */
+.vote-card,
+.swipeable-card {
+  transition: transform 0.2s ease;
+}
+
+.vote-card.swiping,
+.swipeable-card.swiping {
+  box-shadow: var(--md-elevation-level4);
+}
+
+/* ==========================================================================
+   TOUCH TOOLTIP
+   ========================================================================== */
+
+.touch-tooltip {
+  font-family: var(--md-sys-typescale-body-small-font);
+  font-size: var(--md-sys-typescale-body-small-size);
+  font-weight: var(--md-sys-typescale-body-small-weight);
+  line-height: var(--md-sys-typescale-body-small-line-height);
+}
+
+@keyframes touch-tooltip-fade {
+  0% {
+    opacity: 0;
+    transform: translateX(-50%) translateY(10px);
+  }
+  20% {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+  80% {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+  100% {
+    opacity: 0;
+    transform: translateX(-50%) translateY(-10px);
+  }
+}
+
+/* ==========================================================================
+   FORM ELEMENT TOUCH ENHANCEMENTS
+   ========================================================================== */
+
+/* Touch-optimized form inputs */
+.md-text-field,
+input,
+textarea,
+select {
+  transition:
+    transform 0.1s ease,
+    box-shadow 0.2s ease;
+}
+
+@media (hover: none) and (pointer: coarse) {
+  .md-text-field:focus,
+  input:focus,
+  textarea:focus {
+    transform: scale(1.02);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.12);
+  }
+}
+
+/* Touch-optimized checkboxes and radio buttons */
+input[type='checkbox'],
+input[type='radio'] {
+  transform: scale(1.2);
+  margin: 8px;
+}
+
+/* ==========================================================================
+   MODAL TOUCH ENHANCEMENTS
+   ========================================================================== */
+
+/* Touch-optimized modal interactions */
+.md-dialog,
+.modal-dialog {
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Modal drag handles for mobile */
+.modal-drag-handle {
+  width: 40px;
+  height: 4px;
+  background-color: var(--md-sys-color-outline-variant);
+  border-radius: 2px;
+  margin: 8px auto;
+  opacity: 0.7;
+  transition: opacity 0.2s ease;
+}
+
+.modal-drag-handle:hover,
+.modal-drag-handle.touch-active {
+  opacity: 1;
+}
+
+/* ==========================================================================
+   CARD TOUCH INTERACTIONS
+   ========================================================================== */
+
+/* Enhanced card touch feedback */
+.md-card,
+.vote-card,
+.sharing-card,
+.stat-card {
+  transition:
+    transform 0.2s cubic-bezier(0.4, 0, 0.2, 1),
+    box-shadow 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.md-card.touch-active,
+.vote-card.touch-active,
+.sharing-card.touch-active {
+  transform: translateY(-2px) scale(0.98);
+  box-shadow: var(--md-elevation-level2);
+}
+
+/* ==========================================================================
+   NAVIGATION TOUCH ENHANCEMENTS
+   ========================================================================== */
+
+/* Touch-optimized menu items */
+.md-menu-item {
+  transition: background-color 0.15s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.md-menu-item.touch-active {
+  background-color: var(--md-sys-color-secondary-container);
+}
+
+/* Top app bar touch interactions */
+.md-top-app-bar-navigation-icon,
+.md-top-app-bar-action {
+  transition: transform 0.1s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.md-top-app-bar-navigation-icon.touch-active,
+.md-top-app-bar-action.touch-active {
+  transform: scale(0.9);
+  background-color: var(--md-sys-color-primary-container);
+}
+
+/* ==========================================================================
+   ACCESSIBILITY AND REDUCED MOTION
+   ========================================================================== */
+
+/* Respect user's reduced motion preferences */
+@media (prefers-reduced-motion: reduce) {
+  .touch-active,
+  .swiping,
+  .image-preview-item,
+  .md-card,
+  .md-button {
+    transition: none !important;
+    animation: none !important;
+  }
+
+  .touch-ripple {
+    display: none;
+  }
+}
+
+/* High contrast mode enhancements */
+@media (prefers-contrast: high) {
+  .touch-active {
+    outline: 2px solid;
+    outline-offset: 2px;
+  }
+
+  .touch-feedback {
+    filter: invert(0.1);
+  }
+}
+
+/* ==========================================================================
+   DARK THEME TOUCH ENHANCEMENTS
+   ========================================================================== */
+
+@media (prefers-color-scheme: dark) {
+  .touch-ripple {
+    background: radial-gradient(circle, rgba(255, 255, 255, 0.2) 0%, rgba(255, 255, 255, 0.05) 70%, transparent 100%);
+  }
+
+  .touch-feedback {
+    filter: brightness(1.2);
+  }
+
+  .touch-tooltip {
+    background: var(--md-sys-color-inverse-surface);
+    color: var(--md-sys-color-inverse-on-surface);
+    border: 1px solid var(--md-sys-color-outline-variant);
+  }
+}
+
+/* ==========================================================================
+   SPECIFIC COMPONENT TOUCH ENHANCEMENTS
+   ========================================================================== */
+
+/* Vote option touch interactions */
+.vote-option,
+.option-preview,
+.option-item {
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.vote-option.touch-active,
+.option-preview.touch-active {
+  transform: scale(0.98);
+  background-color: var(--md-sys-color-secondary-container);
+}
+
+/* Rating button touch enhancements */
+.rating-button {
+  transition:
+    transform 0.1s ease,
+    background-color 0.15s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.rating-button.touch-active {
+  transform: scale(0.85);
+  background-color: var(--md-sys-color-primary-container);
+}
+
+/* Image upload drag and drop touch enhancements */
+.image-drop-zone {
+  transition:
+    background-color 0.2s ease,
+    border-color 0.2s ease;
+}
+
+.image-drop-zone.drag-over,
+.image-drop-zone.touch-active {
+  background-color: var(--md-sys-color-tertiary-container);
+  border-color: var(--md-sys-color-tertiary);
+  transform: scale(1.01);
+}
+
+/* Profile management touch optimizations */
+.profile-avatar {
+  transition: transform 0.2s ease;
+}
+
+.profile-avatar.touch-active {
+  transform: scale(0.95);
+}
+
+/* ==========================================================================
+   PERFORMANCE OPTIMIZATIONS
+   ========================================================================== */
+
+/* GPU acceleration for touch animations */
+.touch-active,
+.swiping,
+.long-press-active {
+  will-change: transform;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+/* Contain layout changes during touch interactions */
+.md-card.touch-active,
+.image-preview-item.touch-active,
+.vote-option.touch-active {
+  contain: layout style paint;
+}
+
+/* ==========================================================================
+   UTILITY CLASSES FOR TOUCH INTERACTIONS
+   ========================================================================== */
+
+/* Disable touch interactions when needed */
+.no-touch {
+  pointer-events: none;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+/* Enhanced touch target */
+.touch-enhanced {
+  position: relative;
+  overflow: hidden;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Swipeable container */
+.swipeable {
+  touch-action: pan-x;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+/* Long press enabled */
+.long-press-enabled {
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+}
+
+/* Touch-friendly spacing */
+.touch-spacing > * {
+  margin: 8px 0;
+}
+
+.touch-spacing > button,
+.touch-spacing > .md-button {
+  margin: 12px 8px;
+}
+
+/* ==========================================================================
+   MOBILE-SPECIFIC TOUCH STATES
+   ========================================================================== */
+
+@media (hover: none) and (pointer: coarse) {
+  /* Remove hover effects that don't work on touch */
+  *:hover {
+    /* Reset hover states */
+  }
+
+  /* Touch-specific active states */
+  .md-button:active,
+  button:active {
+    transform: scale(0.95);
+    background-color: var(--md-sys-color-primary-container);
+  }
+
+  .md-card:active {
+    transform: translateY(-1px);
+  }
+
+  /* Prevent text selection during touch interactions */
+  .touch-target,
+  .md-button,
+  .md-card,
+  button {
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-touch-callout: none;
+  }
+}
+
+/* ==========================================================================
+   PRINT STYLES
+   ========================================================================== */
+
+@media print {
+  /* Hide touch-specific elements in print */
+  .touch-ripple,
+  .touch-tooltip,
+  .modal-drag-handle {
+    display: none !important;
+  }
+
+  /* Reset touch states for print */
+  .touch-active,
+  .touch-feedback {
+    transform: none !important;
+    filter: none !important;
+  }
+}
+
+/* ==========================================================================
+   END OF TOUCH-ENHANCEMENTS.CSS
+   ========================================================================== */

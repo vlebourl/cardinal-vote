@@ -108,11 +108,11 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
         # Content Security Policy - tailored for our modern UI
         csp_directives = [
             "default-src 'self'",
-            "script-src 'self'",  # No inline scripts - using data attributes and event delegation
-            "style-src 'self' https://fonts.googleapis.com",  # Inter font + our styles
+            "script-src 'self' 'unsafe-inline' https://www.google.com https://www.gstatic.com https://js.hcaptcha.com",  # Allow inline scripts for CAPTCHA config and external CAPTCHA services
+            "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",  # Inter font + our styles + inline styles for dynamic content
             "font-src 'self' https://fonts.gstatic.com",  # Inter font from Google Fonts
             "img-src 'self' data: blob:",  # Allow images and data URLs for uploads
-            "connect-src 'self'",  # API calls to same origin
+            "connect-src 'self' https://www.google.com https://hcaptcha.com",  # API calls to same origin and CAPTCHA services
             "frame-ancestors 'none'",  # Prevent embedding in frames
             "form-action 'self'",  # Only allow form submissions to same origin
             "base-uri 'self'",  # Restrict base element
@@ -269,6 +269,14 @@ async def home(request: Request) -> HTMLResponse:
                 "request": request,
                 "app_name": settings.APP_NAME,
                 "app_version": settings.APP_VERSION,
+                "captcha_backend": settings.CAPTCHA_BACKEND,
+                "captcha_site_key": (
+                    settings.RECAPTCHA_SITE_KEY
+                    if settings.CAPTCHA_BACKEND == "recaptcha"
+                    else settings.HCAPTCHA_SITE_KEY
+                    if settings.CAPTCHA_BACKEND == "hcaptcha"
+                    else ""
+                ),
             },
         )
     except Exception as e:
@@ -276,6 +284,26 @@ async def home(request: Request) -> HTMLResponse:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to load landing page",
+        ) from e
+
+
+@app.get("/dashboard", response_class=HTMLResponse, tags=["Frontend"])
+async def dashboard(request: Request) -> HTMLResponse:
+    """Serve the user dashboard page."""
+    try:
+        return templates.TemplateResponse(
+            "user_dashboard.html",
+            {
+                "request": request,
+                "app_name": settings.APP_NAME,
+                "app_version": settings.APP_VERSION,
+            },
+        )
+    except Exception as e:
+        logger.error(f"Failed to serve dashboard page: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to load dashboard page",
         ) from e
 
 
@@ -356,6 +384,117 @@ async def public_vote_page(
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to load voting page",
+        ) from e
+
+
+@app.get("/vote-preview/{vote_id}", response_class=HTMLResponse, tags=["Frontend"])
+async def vote_preview_page(
+    request: Request,
+    vote_id: str,
+    session: AsyncDatabaseSession,
+) -> HTMLResponse:
+    """Serve the vote preview and sharing page."""
+    try:
+        # Import here to avoid circular imports
+        from .dependencies import get_auth_manager
+        from .vote_routes import get_vote_preview
+
+        # Get current user (required for vote preview)
+        auth_manager = get_auth_manager()
+        user = None
+
+        # Try to get user from session token
+        try:
+            from fastapi.security.utils import get_authorization_scheme_param
+
+            authorization = request.headers.get("Authorization")
+            if authorization:
+                scheme, token = get_authorization_scheme_param(authorization)
+                if scheme.lower() == "bearer" and token:
+                    payload = auth_manager.verify_token(token)
+                    if payload:
+                        from uuid import UUID
+
+                        user_id_str = payload.get("sub")
+                        if user_id_str:
+                            user_id = UUID(user_id_str)
+                            user = await auth_manager.get_user_by_id(user_id, session)
+        except Exception:
+            # Expected: token validation or user lookup may fail
+            logger.debug("Token validation failed during vote preview authentication")
+
+        # Check for session storage token in cookies or headers
+        if not user:
+            # Check for token in cookies (fallback for browser sessions)
+            session_token: str | None = request.cookies.get("access_token")
+            if not session_token:
+                # Check for X-Auth-Token header as fallback
+                session_token = request.headers.get("X-Auth-Token")
+
+            if session_token:
+                try:
+                    payload = auth_manager.verify_token(session_token)
+                    if payload:
+                        from uuid import UUID
+
+                        user_id_str = payload.get("sub")
+                        if user_id_str:
+                            user_id = UUID(user_id_str)
+                            user = await auth_manager.get_user_by_id(user_id, session)
+                except Exception:
+                    # Expected: token validation or user lookup may fail
+                    logger.debug(
+                        "Session token validation failed during vote preview authentication"
+                    )
+
+        if not user:
+            # Redirect to login if not authenticated
+            return templates.TemplateResponse(
+                "landing_material.html",
+                {
+                    "request": request,
+                    "app_name": settings.APP_NAME,
+                    "login_required": True,
+                    "redirect_message": "Please log in to view your vote preview.",
+                },
+            )
+
+        # Get vote preview data using the API endpoint
+        try:
+            preview_data = await get_vote_preview(vote_id, user, session)
+        except HTTPException as e:
+            if e.status_code == 404:
+                raise HTTPException(
+                    status_code=status.HTTP_404_NOT_FOUND,
+                    detail="Vote not found",
+                ) from e
+            elif e.status_code == 403:
+                raise HTTPException(
+                    status_code=status.HTTP_403_FORBIDDEN,
+                    detail="Not authorized to view this vote",
+                ) from e
+            else:
+                raise
+
+        return templates.TemplateResponse(
+            "vote_preview.html",
+            {
+                "request": request,
+                "app_name": settings.APP_NAME,
+                "vote": preview_data["vote"],
+                "stats": preview_data["stats"],
+                "sharing": preview_data["sharing"],
+                "access_settings": preview_data["access_settings"],
+            },
+        )
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Failed to serve vote preview page for vote {vote_id}: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to load vote preview page",
         ) from e
 
 

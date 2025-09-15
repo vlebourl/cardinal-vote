@@ -25,6 +25,7 @@
   "author": "Cardinal Vote Team",
   "license": "MIT",
   "devDependencies": {
+    "@playwright/test": "^1.55.0",
     "@testing-library/dom": "^9.3.4",
     "@testing-library/jest-dom": "^6.1.5",
     "eslint": "^8.57.0",
@@ -35,7 +36,7 @@
     "eslint-plugin-promise": "^6.1.1",
     "jest": "^29.7.0",
     "jest-environment-jsdom": "^29.7.0",
-    "prettier": "^3.2.5"
+    "prettier": "^3.6.2"
   },
   "engines": {
     "node": ">=16.0.0",

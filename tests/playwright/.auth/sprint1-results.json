@@ -1,0 +1,303 @@
+[
+  {
+    "title": "should have accessible authentication endpoints",
+    "status": "passed",
+    "duration": 220,
+    "timestamp": "2025-09-14T10:04:47.448Z",
+    "sprint": "Sprint 1 - Authentication (Adapted)"
+  },
+  {
+    "title": "should handle authentication API calls",
+    "status": "passed",
+    "duration": 89,
+    "timestamp": "2025-09-14T10:04:47.719Z",
+    "sprint": "Sprint 1 - Authentication (Adapted)"
+  },
+  {
+    "title": "should display complete Material Design 3 landing page",
+    "status": "failed",
+    "duration": 623,
+    "timestamp": "2025-09-14T10:04:48.109Z",
+    "sprint": "Sprint 1 - Authentication (Adapted)"
+  },
+  {
+    "title": "should handle form field interactions",
+    "status": "failed",
+    "duration": 1079,
+    "timestamp": "2025-09-14T10:04:48.609Z",
+    "sprint": "Sprint 1 - Authentication (Adapted)"
+  },
+  {
+    "title": "should have complete registration modal HTML structure",
+    "status": "failed",
+    "duration": 1168,
+    "timestamp": "2025-09-14T10:04:48.641Z",
+    "sprint": "Sprint 1 - Authentication (Adapted)"
+  },
+  {
+    "title": "should validate form field attributes and HTML5 validation",
+    "status": "failed",
+    "duration": 1206,
+    "timestamp": "2025-09-14T10:04:48.742Z",
+    "sprint": "Sprint 1 - Authentication (Adapted)"
+  },
+  {
+    "title": "should clear authentication state on logout",
+    "status": "passed",
+    "duration": 496,
+    "timestamp": "2025-09-14T10:04:50.185Z",
+    "sprint": "Sprint 1 - Authentication (Adapted)"
+  },
+  {
+    "title": "should meet performance thresholds",
+    "status": "passed",
+    "duration": 999,
+    "timestamp": "2025-09-14T10:04:51.282Z",
+    "sprint": "Sprint 1 - Authentication (Adapted)"
+  },
+  {
+    "title": "should handle JavaScript errors gracefully",
+    "status": "passed",
+    "duration": 2578,
+    "timestamp": "2025-09-14T10:04:52.826Z",
+    "sprint": "Sprint 1 - Authentication (Adapted)"
+  },
+  {
+    "title": "should have proper semantic HTML structure",
+    "status": "failed",
+    "duration": 5480,
+    "timestamp": "2025-09-14T10:04:53.041Z",
+    "sprint": "Sprint 1 - Authentication (Adapted)"
+  },
+  {
+    "title": "should have responsive design across breakpoints",
+    "status": "failed",
+    "duration": 6199,
+    "timestamp": "2025-09-14T10:04:53.767Z",
+    "sprint": "Sprint 1 - Authentication (Adapted)"
+  },
+  {
+    "title": "should have accessible authentication endpoints",
+    "status": "passed",
+    "duration": 311,
+    "timestamp": "2025-09-14T10:06:17.559Z",
+    "sprint": "Sprint 1 - Authentication (Adapted)"
+  },
+  {
+    "title": "should handle authentication API calls",
+    "status": "passed",
+    "duration": 150,
+    "timestamp": "2025-09-14T10:06:17.963Z",
+    "sprint": "Sprint 1 - Authentication (Adapted)"
+  },
+  {
+    "title": "should test registration API endpoint",
+    "status": "passed",
+    "duration": 81,
+    "timestamp": "2025-09-14T10:06:18.212Z",
+    "sprint": "Sprint 1 - Authentication (Adapted)"
+  },
+  {
+    "title": "should display complete Material Design 3 landing page",
+    "status": "failed",
+    "duration": 812,
+    "timestamp": "2025-09-14T10:06:18.404Z",
+    "sprint": "Sprint 1 - Authentication (Adapted)"
+  },
+  {
+    "title": "should validate form field attributes and HTML5 validation",
+    "status": "failed",
+    "duration": 1076,
+    "timestamp": "2025-09-14T10:06:18.563Z",
+    "sprint": "Sprint 1 - Authentication (Adapted)"
+  },
+  {
+    "title": "should have complete login modal HTML structure",
+    "status": "failed",
+    "duration": 1119,
+    "timestamp": "2025-09-14T10:06:18.686Z",
+    "sprint": "Sprint 1 - Authentication (Adapted)"
+  },
+  {
+    "title": "should handle form field interactions",
+    "status": "failed",
+    "duration": 1156,
+    "timestamp": "2025-09-14T10:06:18.775Z",
+    "sprint": "Sprint 1 - Authentication (Adapted)"
+  },
+  {
+    "title": "should have complete registration modal HTML structure",
+    "status": "failed",
+    "duration": 1178,
+    "timestamp": "2025-09-14T10:06:18.796Z",
+    "sprint": "Sprint 1 - Authentication (Adapted)"
+  },
+  {
+    "title": "should support sessionStorage for authentication state",
+    "status": "passed",
+    "duration": 954,
+    "timestamp": "2025-09-14T10:06:19.360Z",
+    "sprint": "Sprint 1 - Authentication (Adapted)"
+  },
+  {
+    "title": "should have responsive design across breakpoints",
+    "status": "passed",
+    "duration": 2249,
+    "timestamp": "2025-09-14T10:06:19.420Z",
+    "sprint": "Sprint 1 - Authentication (Adapted)"
+  },
+  {
+    "title": "should clear authentication state on logout",
+    "status": "passed",
+    "duration": 516,
+    "timestamp": "2025-09-14T10:06:20.344Z",
+    "sprint": "Sprint 1 - Authentication (Adapted)"
+  },
+  {
+    "title": "should attempt dashboard access",
+    "status": "passed",
+    "duration": 520,
+    "timestamp": "2025-09-14T10:06:20.502Z",
+    "sprint": "Sprint 1 - Authentication (Adapted)"
+  },
+  {
+    "title": "should handle authentication flow with mock token",
+    "status": "passed",
+    "duration": 482,
+    "timestamp": "2025-09-14T10:06:20.591Z",
+    "sprint": "Sprint 1 - Authentication (Adapted)"
+  },
+  {
+    "title": "should meet performance thresholds",
+    "status": "passed",
+    "duration": 990,
+    "timestamp": "2025-09-14T10:06:21.165Z",
+    "sprint": "Sprint 1 - Authentication (Adapted)"
+  },
+  {
+    "title": "should handle JavaScript errors gracefully",
+    "status": "passed",
+    "duration": 2577,
+    "timestamp": "2025-09-14T10:06:22.804Z",
+    "sprint": "Sprint 1 - Authentication (Adapted)"
+  },
+  {
+    "title": "should have proper semantic HTML structure",
+    "status": "failed",
+    "duration": 5561,
+    "timestamp": "2025-09-14T10:06:23.057Z",
+    "sprint": "Sprint 1 - Authentication (Adapted)"
+  },
+  {
+    "title": "should have accessible authentication endpoints",
+    "status": "passed",
+    "duration": 275,
+    "timestamp": "2025-09-14T10:12:13.077Z",
+    "sprint": "Sprint 1 - Authentication (Adapted)"
+  },
+  {
+    "title": "should handle authentication API calls",
+    "status": "passed",
+    "duration": 153,
+    "timestamp": "2025-09-14T10:12:13.487Z",
+    "sprint": "Sprint 1 - Authentication (Adapted)"
+  },
+  {
+    "title": "should test registration API endpoint",
+    "status": "passed",
+    "duration": 72,
+    "timestamp": "2025-09-14T10:12:13.774Z",
+    "sprint": "Sprint 1 - Authentication (Adapted)"
+  },
+  {
+    "title": "should display complete Material Design 3 landing page",
+    "status": "failed",
+    "duration": 784,
+    "timestamp": "2025-09-14T10:12:13.879Z",
+    "sprint": "Sprint 1 - Authentication (Adapted)"
+  },
+  {
+    "title": "should validate form field attributes and HTML5 validation",
+    "status": "failed",
+    "duration": 1248,
+    "timestamp": "2025-09-14T10:12:14.295Z",
+    "sprint": "Sprint 1 - Authentication (Adapted)"
+  },
+  {
+    "title": "should have complete login modal HTML structure",
+    "status": "failed",
+    "duration": 1281,
+    "timestamp": "2025-09-14T10:12:14.339Z",
+    "sprint": "Sprint 1 - Authentication (Adapted)"
+  },
+  {
+    "title": "should have complete registration modal HTML structure",
+    "status": "failed",
+    "duration": 1186,
+    "timestamp": "2025-09-14T10:12:14.413Z",
+    "sprint": "Sprint 1 - Authentication (Adapted)"
+  },
+  {
+    "title": "should handle form field interactions",
+    "status": "failed",
+    "duration": 1352,
+    "timestamp": "2025-09-14T10:12:14.415Z",
+    "sprint": "Sprint 1 - Authentication (Adapted)"
+  },
+  {
+    "title": "should support sessionStorage for authentication state",
+    "status": "passed",
+    "duration": 941,
+    "timestamp": "2025-09-14T10:12:14.838Z",
+    "sprint": "Sprint 1 - Authentication (Adapted)"
+  },
+  {
+    "title": "should have responsive design across breakpoints",
+    "status": "passed",
+    "duration": 2282,
+    "timestamp": "2025-09-14T10:12:15.074Z",
+    "sprint": "Sprint 1 - Authentication (Adapted)"
+  },
+  {
+    "title": "should clear authentication state on logout",
+    "status": "passed",
+    "duration": 582,
+    "timestamp": "2025-09-14T10:12:15.989Z",
+    "sprint": "Sprint 1 - Authentication (Adapted)"
+  },
+  {
+    "title": "should attempt dashboard access",
+    "status": "passed",
+    "duration": 665,
+    "timestamp": "2025-09-14T10:12:16.458Z",
+    "sprint": "Sprint 1 - Authentication (Adapted)"
+  },
+  {
+    "title": "should handle authentication flow with mock token",
+    "status": "passed",
+    "duration": 831,
+    "timestamp": "2025-09-14T10:12:16.650Z",
+    "sprint": "Sprint 1 - Authentication (Adapted)"
+  },
+  {
+    "title": "should meet performance thresholds",
+    "status": "passed",
+    "duration": 1037,
+    "timestamp": "2025-09-14T10:12:16.883Z",
+    "sprint": "Sprint 1 - Authentication (Adapted)"
+  },
+  {
+    "title": "should handle JavaScript errors gracefully",
+    "status": "passed",
+    "duration": 2591,
+    "timestamp": "2025-09-14T10:12:18.579Z",
+    "sprint": "Sprint 1 - Authentication (Adapted)"
+  },
+  {
+    "title": "should have proper semantic HTML structure",
+    "status": "failed",
+    "duration": 5672,
+    "timestamp": "2025-09-14T10:12:18.689Z",
+    "sprint": "Sprint 1 - Authentication (Adapted)"
+  }
+]

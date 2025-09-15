@@ -1,0 +1,93 @@
+[
+  {
+    "title": "should display enhanced dashboard with status cards and timeline",
+    "status": "passed",
+    "duration": 437,
+    "timestamp": "2025-09-14T10:12:15.496Z",
+    "sprint": "Sprint 2 - Vote Creation and Dashboard"
+  },
+  {
+    "title": "should validate dashboard status cards structure",
+    "status": "passed",
+    "duration": 418,
+    "timestamp": "2025-09-14T10:12:15.692Z",
+    "sprint": "Sprint 2 - Vote Creation and Dashboard"
+  },
+  {
+    "title": "should validate activity timeline structure",
+    "status": "passed",
+    "duration": 475,
+    "timestamp": "2025-09-14T10:12:16.180Z",
+    "sprint": "Sprint 2 - Vote Creation and Dashboard"
+  },
+  {
+    "title": "should test dashboard navigation and user flow",
+    "status": "passed",
+    "duration": 611,
+    "timestamp": "2025-09-14T10:12:16.562Z",
+    "sprint": "Sprint 2 - Vote Creation and Dashboard"
+  },
+  {
+    "title": "should validate vote creation form structure",
+    "status": "passed",
+    "duration": 541,
+    "timestamp": "2025-09-14T10:12:17.040Z",
+    "sprint": "Sprint 2 - Vote Creation and Dashboard"
+  },
+  {
+    "title": "should validate vote creation form submission simulation",
+    "status": "passed",
+    "duration": 449,
+    "timestamp": "2025-09-14T10:12:17.276Z",
+    "sprint": "Sprint 2 - Vote Creation and Dashboard"
+  },
+  {
+    "title": "should validate vote preview functionality structure",
+    "status": "passed",
+    "duration": 599,
+    "timestamp": "2025-09-14T10:12:17.623Z",
+    "sprint": "Sprint 2 - Vote Creation and Dashboard"
+  },
+  {
+    "title": "should validate Material Design 3 compliance in vote creation",
+    "status": "passed",
+    "duration": 369,
+    "timestamp": "2025-09-14T10:12:18.325Z",
+    "sprint": "Sprint 2 - Vote Creation and Dashboard"
+  },
+  {
+    "title": "should test vote sharing link generation simulation",
+    "status": "passed",
+    "duration": 1595,
+    "timestamp": "2025-09-14T10:12:18.871Z",
+    "sprint": "Sprint 2 - Vote Creation and Dashboard"
+  },
+  {
+    "title": "should meet performance thresholds for vote creation workflow",
+    "status": "passed",
+    "duration": 1658,
+    "timestamp": "2025-09-14T10:12:19.179Z",
+    "sprint": "Sprint 2 - Vote Creation and Dashboard"
+  },
+  {
+    "title": "should validate cross-component data flow",
+    "status": "passed",
+    "duration": 512,
+    "timestamp": "2025-09-14T10:12:19.476Z",
+    "sprint": "Sprint 2 - Vote Creation and Dashboard"
+  },
+  {
+    "title": "should simulate complete user workflow",
+    "status": "passed",
+    "duration": 2477,
+    "timestamp": "2025-09-14T10:12:19.811Z",
+    "sprint": "Sprint 2 - Vote Creation and Dashboard"
+  },
+  {
+    "title": "should test dynamic option management simulation",
+    "status": "passed",
+    "duration": 3371,
+    "timestamp": "2025-09-14T10:12:20.218Z",
+    "sprint": "Sprint 2 - Vote Creation and Dashboard"
+  }
+]

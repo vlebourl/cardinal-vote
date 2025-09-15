@@ -306,7 +306,7 @@ class TestEnvValidator:
     def test_comprehensive_integration(self):
         """Test comprehensive validation with realistic configuration"""
         realistic_config = {
-            "DATABASE_URL": "postgresql+asyncpg://user:securepass@localhost:5432/cardinal_vote",
+            "DATABASE_URL": "postgresql+asyncpg://user:securepass@localhost:5432/cardinal_vote"
             + "x" * 40,
             "JWT_SECRET_KEY": "jwt_secret_key_for_authentication_testing_" + "x" * 40,
             "SUPER_ADMIN_PASSWORD": "VerySecureSuperAdminPassword123!",

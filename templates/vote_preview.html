@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vote Preview - {{ vote.title }} | {{ app_name }}</title>
+    <meta name="description" content="Preview and share your vote: {{ vote.title }}">
+    <meta name="theme-color" content="#0061a4">
+
+    <!-- Material Design 3 CSS -->
+    <link rel="stylesheet" href="/static/css/material-design.css">
+
+    <!-- Google Fonts - Roboto -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+
+    <!-- Material Icons -->
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+
+    <!-- Vote Preview Styles -->
+    <link rel="stylesheet" href="/static/css/vote-preview.css">
+
+    <!-- Mobile-First Responsive Design -->
+    <link rel="stylesheet" href="/static/css/mobile-responsive.css">
+
+    <!-- Touch Interaction Enhancements -->
+    <link rel="stylesheet" href="/static/css/touch-enhancements.css">
+</head>
+<body>
+    <!-- Top App Bar -->
+    <header class="md-top-app-bar md-top-app-bar-elevated">
+        <button class="md-top-app-bar-navigation-icon" onclick="history.back()" aria-label="Go back">
+            <span class="material-icons">arrow_back</span>
+        </button>
+        <div class="md-top-app-bar-title">Vote Preview</div>
+        <button class="md-top-app-bar-action" data-action="share-vote" aria-label="Share vote">
+            <span class="material-icons">share</span>
+        </button>
+        <button class="md-top-app-bar-action" data-action="vote-settings" aria-label="Vote settings">
+            <span class="material-icons">settings</span>
+        </button>
+    </header>
+
+    <!-- Main Content -->
+    <main class="preview-content">
+        <!-- Vote Status Banner -->
+        <section class="status-banner">
+            <div class="md-container">
+                <div class="status-card md-card md-card-elevated" data-status="{{ vote.status }}">
+                    <div class="status-icon">
+                        <span class="material-icons">
+                            {% if vote.status == 'active' %}public{% elif vote.status == 'draft' %}edit{% else %}lock{% endif %}
+                        </span>
+                    </div>
+                    <div class="status-content">
+                        <h2 class="md-title-large status-title">
+                            {% if vote.status == 'active' %}Vote is Live{% elif vote.status == 'draft' %}Draft Vote{% else %}Vote Closed{% endif %}
+                        </h2>
+                        <p class="md-body-medium md-on-surface-variant status-description">
+                            {% if vote.status == 'active' %}
+                                Your vote is live and accepting responses. Share the link below to gather votes.
+                            {% elif vote.status == 'draft' %}
+                                Your vote is saved as a draft. Activate it when you're ready to start collecting votes.
+                            {% else %}
+                                This vote has been closed and is no longer accepting responses.
+                            {% endif %}
+                        </p>
+                        {% if vote.status == 'draft' %}
+                        <div class="status-actions">
+                            <button class="md-button md-button-filled" data-action="activate-vote" data-vote-id="{{ vote.id }}">
+                                <span class="material-icons">play_arrow</span>
+                                Activate Vote
+                            </button>
+                        </div>
+                        {% endif %}
+                    </div>
+                    <div class="status-stats">
+                        <div class="stat-item">
+                            <span class="stat-value">{{ stats.response_count }}</span>
+                            <span class="stat-label">Responses</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-value">{{ stats.option_count }}</span>
+                            <span class="stat-label">Options</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Vote Preview -->
+        <section class="vote-preview-section">
+            <div class="md-container">
+                <h2 class="md-headline-medium section-title">Vote Preview</h2>
+                <p class="md-body-medium md-on-surface-variant">
+                    This is how your vote will appear to voters:
+                </p>
+
+                <!-- Vote Card Preview -->
+                <div class="vote-preview-card md-card md-card-elevated">
+                    <div class="vote-header">
+                        <h1 class="md-display-small vote-title">{{ vote.title }}</h1>
+                        {% if vote.description %}
+                        <p class="md-body-large vote-description">{{ vote.description }}</p>
+                        {% endif %}
+
+                        <!-- Access Requirements -->
+                        {% if vote.require_auth or vote.has_access_code %}
+                        <div class="access-requirements">
+                            {% if vote.require_auth %}
+                            <div class="requirement-chip">
+                                <span class="material-icons">person</span>
+                                <span>Account Required</span>
+                            </div>
+                            {% endif %}
+                            {% if vote.has_access_code %}
+                            <div class="requirement-chip">
+                                <span class="material-icons">key</span>
+                                <span>Access Code Required</span>
+                            </div>
+                            {% endif %}
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <div class="vote-options">
+                        <h3 class="md-headline-small options-title">Rate each option:</h3>
+                        <div class="options-list">
+                            {% for option in vote.options %}
+                            <div class="option-preview" data-option-id="{{ option.id }}">
+                                <div class="option-content">
+                                    <h4 class="md-title-medium option-title">{{ option.title }}</h4>
+                                    {% if option.content and option.content != option.title %}
+                                    <p class="md-body-medium option-description">{{ option.content }}</p>
+                                    {% endif %}
+                                </div>
+                                <div class="rating-preview">
+                                    <div class="rating-scale">
+                                        <span class="rating-label">Strongly Disagree</span>
+                                        <div class="rating-buttons">
+                                            {% for rating in [-2, -1, 0, 1, 2] %}
+                                            <button class="md-button rating-button" data-rating="{{ rating }}" disabled>
+                                                <span class="rating-value">{{ rating }}</span>
+                                            </button>
+                                            {% endfor %}
+                                        </div>
+                                        <span class="rating-label">Strongly Agree</span>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <div class="vote-footer-preview">
+                        <button class="md-button md-button-filled" disabled>
+                            <span class="material-icons">how_to_vote</span>
+                            Submit Vote
+                        </button>
+                        <p class="md-body-small preview-note">
+                            <span class="material-icons">info</span>
+                            Preview mode - voting is disabled
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Sharing Section -->
+        <section class="sharing-section">
+            <div class="md-container">
+                <h2 class="md-headline-medium section-title">Share Your Vote</h2>
+
+                <div class="sharing-options">
+                    <!-- Direct Link -->
+                    <div class="sharing-card md-card md-card-elevated">
+                        <div class="sharing-header">
+                            <div class="sharing-icon">
+                                <span class="material-icons">link</span>
+                            </div>
+                            <div class="sharing-content">
+                                <h3 class="md-title-medium">Direct Link</h3>
+                                <p class="md-body-medium md-on-surface-variant">
+                                    Share this link directly with voters
+                                </p>
+                            </div>
+                        </div>
+                        <div class="sharing-actions">
+                            <div class="link-input">
+                                <input type="text" class="md-text-field-input"
+                                       id="voteLink" value="{{ sharing.public_url }}" readonly>
+                                <button class="md-button md-button-icon" data-action="copy-link"
+                                        data-target="voteLink" aria-label="Copy link">
+                                    <span class="material-icons">content_copy</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Social Media -->
+                    <div class="sharing-card md-card md-card-elevated">
+                        <div class="sharing-header">
+                            <div class="sharing-icon">
+                                <span class="material-icons">share</span>
+                            </div>
+                            <div class="sharing-content">
+                                <h3 class="md-title-medium">Social Media</h3>
+                                <p class="md-body-medium md-on-surface-variant">
+                                    Share on social platforms
+                                </p>
+                            </div>
+                        </div>
+                        <div class="sharing-actions">
+                            <div class="social-buttons">
+                                <a href="{{ sharing.social_sharing.twitter }}" target="_blank"
+                                   class="md-button md-button-outlined social-button twitter">
+                                    <span class="social-icon">𝕏</span>
+                                    Twitter
+                                </a>
+                                <a href="{{ sharing.social_sharing.facebook }}" target="_blank"
+                                   class="md-button md-button-outlined social-button facebook">
+                                    <span class="social-icon">f</span>
+                                    Facebook
+                                </a>
+                                <a href="{{ sharing.social_sharing.linkedin }}" target="_blank"
+                                   class="md-button md-button-outlined social-button linkedin">
+                                    <span class="social-icon">in</span>
+                                    LinkedIn
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Embed Code -->
+                    <div class="sharing-card md-card md-card-elevated">
+                        <div class="sharing-header">
+                            <div class="sharing-icon">
+                                <span class="material-icons">code</span>
+                            </div>
+                            <div class="sharing-content">
+                                <h3 class="md-title-medium">Embed Code</h3>
+                                <p class="md-body-medium md-on-surface-variant">
+                                    Embed this vote on your website
+                                </p>
+                            </div>
+                        </div>
+                        <div class="sharing-actions">
+                            <div class="code-input">
+                                <textarea class="md-text-field-input code-textarea"
+                                         id="embedCode" readonly>{{ sharing.embed_code }}</textarea>
+                                <button class="md-button md-button-icon" data-action="copy-code"
+                                        data-target="embedCode" aria-label="Copy embed code">
+                                    <span class="material-icons">content_copy</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Access Settings -->
+        <section class="settings-section">
+            <div class="md-container">
+                <h2 class="md-headline-medium section-title">Access Settings</h2>
+
+                <div class="settings-card md-card md-card-elevated">
+                    <div class="settings-list">
+                        <div class="setting-item">
+                            <div class="setting-content">
+                                <h4 class="md-title-small setting-title">Public Access</h4>
+                                <p class="md-body-medium md-on-surface-variant">
+                                    {% if access_settings.is_public %}
+                                        Vote is publicly accessible via the link
+                                    {% else %}
+                                        Vote is not publicly accessible
+                                    {% endif %}
+                                </p>
+                            </div>
+                            <div class="setting-status">
+                                <span class="status-indicator {% if access_settings.is_public %}active{% else %}inactive{% endif %}">
+                                    <span class="material-icons">
+                                        {% if access_settings.is_public %}check_circle{% else %}cancel{% endif %}
+                                    </span>
+                                </span>
+                            </div>
+                        </div>
+
+                        <div class="setting-item">
+                            <div class="setting-content">
+                                <h4 class="md-title-small setting-title">Authentication Required</h4>
+                                <p class="md-body-medium md-on-surface-variant">
+                                    {% if access_settings.requires_auth %}
+                                        Voters must have an account to participate
+                                    {% else %}
+                                        Anonymous voting is allowed
+                                    {% endif %}
+                                </p>
+                            </div>
+                            <div class="setting-status">
+                                <span class="status-indicator {% if access_settings.requires_auth %}active{% else %}inactive{% endif %}">
+                                    <span class="material-icons">
+                                        {% if access_settings.requires_auth %}person{% else %}public{% endif %}
+                                    </span>
+                                </span>
+                            </div>
+                        </div>
+
+                        <div class="setting-item">
+                            <div class="setting-content">
+                                <h4 class="md-title-small setting-title">Access Code</h4>
+                                <p class="md-body-medium md-on-surface-variant">
+                                    {% if access_settings.has_access_code %}
+                                        Additional access code required to vote
+                                    {% else %}
+                                        No access code required
+                                    {% endif %}
+                                </p>
+                            </div>
+                            <div class="setting-status">
+                                <span class="status-indicator {% if access_settings.has_access_code %}active{% else %}inactive{% endif %}">
+                                    <span class="material-icons">
+                                        {% if access_settings.has_access_code %}key{% else %}lock_open{% endif %}
+                                    </span>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Success Snackbar -->
+    <div class="md-snackbar" id="snackbar">
+        <span id="snackbar-message">Link copied to clipboard!</span>
+        <button class="md-snackbar-action" id="snackbar-action">DISMISS</button>
+    </div>
+
+    <!-- Vote Preview JavaScript -->
+    <script>
+        // Pass vote data to JavaScript
+        window.voteData = {
+            id: "{{ vote.id }}",
+            title: "{{ vote.title|escapejs }}",
+            status: "{{ vote.status }}",
+            sharing: {
+                public_url: "{{ sharing.public_url|escapejs }}",
+                embed_code: `{{ sharing.embed_code|escapejs }}`
+            }
+        };
+    </script>
+    <script src="/static/js/vote-preview.js"></script>
+
+    <!-- Touch Interaction Enhancements -->
+    <script src="/static/js/touch-interaction-manager.js"></script>
+</body>
+</html>
