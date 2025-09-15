@@ -680,7 +680,13 @@ body {
 }
 
 .md-text-field-outlined .md-text-field-label {
-  background-color: var(--md-sys-color-background);
+  background: linear-gradient(
+    to right,
+    transparent 0%,
+    var(--md-sys-color-background) 10%,
+    var(--md-sys-color-background) 90%,
+    transparent 100%
+  );
   margin: 0 -4px;
   padding: 0 8px;
 }
@@ -690,7 +696,13 @@ body {
 .md-text-field-outlined .md-text-field-input:not(:placeholder-shown) + .md-text-field-label {
   top: 0px;
   transform: translateY(-50%);
-  background-color: var(--md-sys-color-background);
+  background: linear-gradient(
+    to right,
+    transparent 0%,
+    var(--md-sys-color-background) 10%,
+    var(--md-sys-color-background) 90%,
+    transparent 100%
+  );
   padding: 0 8px;
   margin: 0 -4px;
   z-index: 2;

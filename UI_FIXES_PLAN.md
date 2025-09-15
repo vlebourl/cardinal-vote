@@ -19,6 +19,10 @@ This branch addresses UI bugs and inconsistencies in the generalized platform.
   - Updated "Get Started Free" to "Get Started"
   - Changed "free voting platform" to "open-source voting platform"
   - Updated "Start Free Today" to "Get Started Today"
+- [x] Fix harsh white squared background on field descriptions in login/registration modals - make it smooth and less aggressive
+  - Replaced solid white background with smooth gradient that fades to transparent at edges
+  - Creates a softer, more elegant visual appearance
+  - Maintains readability while removing harsh visual breaks
 
 ## Approach
 
