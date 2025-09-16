@@ -83,8 +83,15 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
         app.include_router(super_admin_router)
 
         # Create initial super admin user if it doesn't exist
-        async with generalized_db_manager.get_session() as session:
-            await generalized_auth_manager.create_initial_super_admin(session)
+        try:
+            logger.info("Creating initial super admin user...")
+            async with generalized_db_manager.get_session() as session:
+                await generalized_auth_manager.create_initial_super_admin(session)
+            logger.info("Super admin user creation completed")
+        except Exception as e:
+            logger.error(f"Failed to create super admin user: {e}")
+            # Don't raise the exception to prevent app startup failure
+            # The admin can be created later via other means
 
         logger.info("Generalized platform initialized successfully")
         logger.info("Application startup completed successfully")
