@@ -14,7 +14,7 @@ async function globalSetup(config) {
   // Get environment configuration
   const isCI = !!process.env.CI;
   const testEnv = process.env.TEST_ENV || 'development';
-  const baseURL = process.env.BASE_URL || config.use.baseURL;
+  const baseURL = process.env.BASE_URL || config.use?.baseURL || 'http://localhost:8000';
 
   console.log(`📊 Environment: ${testEnv}`);
   console.log(`🌐 Base URL: ${baseURL}`);

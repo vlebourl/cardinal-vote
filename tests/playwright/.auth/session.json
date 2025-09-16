@@ -1,0 +1,5 @@
+{
+  "auth_token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ0ZXN0LXVzZXIiLCJpYXQiOjE3MDk1Njk2MDAsImV4cCI6MTc0MTEwNTYwMCwiZW1haWwiOiJ0ZXN0QGV4YW1wbGUuY29tIiwicm9sZSI6InVzZXIifQ.mock_signature",
+  "user": "{\"email\":\"test@example.com\",\"role\":\"user\",\"authenticated\":true}",
+  "jwt": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ0ZXN0LXVzZXIiLCJpYXQiOjE3MDk1Njk2MDAsImV4cCI6MTc0MTEwNTYwMCwiZW1haWwiOiJ0ZXN0QGV4YW1wbGUuY29tIiwicm9sZSI6InVzZXIifQ.mock_signature"
+}
