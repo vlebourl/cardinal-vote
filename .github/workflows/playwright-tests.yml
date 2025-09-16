@@ -126,12 +126,12 @@ jobs:
 
       - name: Start test environment
         run: |
-          docker compose -f docker-compose.test.yml up -d --wait
-          docker compose -f docker-compose.test.yml logs
+          docker compose -f docker-compose.playwright.yml up -d --wait postgres-playwright cardinal-vote-e2e postgres-playwright cardinal-vote-e2e
+          docker compose -f docker-compose.playwright.yml logs cardinal-vote-e2e
 
       - name: Wait for application to be ready
         run: |
-          timeout 60 bash -c 'until curl -f http://localhost:8000/health; do sleep 2; done'
+          timeout 60 bash -c 'until curl -f http://localhost:8000/api/health; do sleep 2; done'
 
       - name: Run Core Flow Tests
         run: |
@@ -155,7 +155,7 @@ jobs:
       - name: Cleanup test environment
         if: always()
         run: |
-          docker compose -f docker-compose.test.yml down -v
+          docker compose -f docker-compose.playwright.yml down -v
           docker system prune -f
 
   # Advanced scenario tests
@@ -186,11 +186,11 @@ jobs:
 
       - name: Start test environment
         run: |
-          docker compose -f docker-compose.test.yml up -d --wait
+          docker compose -f docker-compose.playwright.yml up -d --wait postgres-playwright cardinal-vote-e2e
 
       - name: Wait for application to be ready
         run: |
-          timeout 60 bash -c 'until curl -f http://localhost:8000/health; do sleep 2; done'
+          timeout 60 bash -c 'until curl -f http://localhost:8000/api/health; do sleep 2; done'
 
       - name: Run Advanced Scenario Tests
         run: |
@@ -213,7 +213,7 @@ jobs:
       - name: Cleanup test environment
         if: always()
         run: |
-          docker compose -f docker-compose.test.yml down -v
+          docker compose -f docker-compose.playwright.yml down -v
 
   # Error scenario tests
   test-error-scenarios:
@@ -243,11 +243,11 @@ jobs:
 
       - name: Start test environment
         run: |
-          docker compose -f docker-compose.test.yml up -d --wait
+          docker compose -f docker-compose.playwright.yml up -d --wait postgres-playwright cardinal-vote-e2e
 
       - name: Wait for application to be ready
         run: |
-          timeout 60 bash -c 'until curl -f http://localhost:8000/health; do sleep 2; done'
+          timeout 60 bash -c 'until curl -f http://localhost:8000/api/health; do sleep 2; done'
 
       - name: Run Error Scenario Tests
         run: |
@@ -270,7 +270,7 @@ jobs:
       - name: Cleanup test environment
         if: always()
         run: |
-          docker compose -f docker-compose.test.yml down -v
+          docker compose -f docker-compose.playwright.yml down -v
 
   # Mobile device testing
   test-mobile-devices:
@@ -299,11 +299,11 @@ jobs:
 
       - name: Start test environment
         run: |
-          docker compose -f docker-compose.test.yml up -d --wait
+          docker compose -f docker-compose.playwright.yml up -d --wait postgres-playwright cardinal-vote-e2e
 
       - name: Wait for application to be ready
         run: |
-          timeout 60 bash -c 'until curl -f http://localhost:8000/health; do sleep 2; done'
+          timeout 60 bash -c 'until curl -f http://localhost:8000/api/health; do sleep 2; done'
 
       - name: Run Mobile Device Tests
         run: |
@@ -326,7 +326,7 @@ jobs:
       - name: Cleanup test environment
         if: always()
         run: |
-          docker compose -f docker-compose.test.yml down -v
+          docker compose -f docker-compose.playwright.yml down -v
 
   # Performance testing
   test-performance:
@@ -351,11 +351,11 @@ jobs:
 
       - name: Start test environment
         run: |
-          docker compose -f docker-compose.test.yml up -d --wait
+          docker compose -f docker-compose.playwright.yml up -d --wait postgres-playwright cardinal-vote-e2e
 
       - name: Wait for application to be ready
         run: |
-          timeout 60 bash -c 'until curl -f http://localhost:8000/health; do sleep 2; done'
+          timeout 60 bash -c 'until curl -f http://localhost:8000/api/health; do sleep 2; done'
 
       - name: Run Performance Tests
         run: |
@@ -385,7 +385,7 @@ jobs:
       - name: Cleanup test environment
         if: always()
         run: |
-          docker compose -f docker-compose.test.yml down -v
+          docker compose -f docker-compose.playwright.yml down -v
 
   # Visual regression testing
   test-visual-regression:
@@ -410,11 +410,11 @@ jobs:
 
       - name: Start test environment
         run: |
-          docker compose -f docker-compose.test.yml up -d --wait
+          docker compose -f docker-compose.playwright.yml up -d --wait postgres-playwright cardinal-vote-e2e
 
       - name: Wait for application to be ready
         run: |
-          timeout 60 bash -c 'until curl -f http://localhost:8000/health; do sleep 2; done'
+          timeout 60 bash -c 'until curl -f http://localhost:8000/api/health; do sleep 2; done'
 
       - name: Run Visual Regression Tests
         run: |
@@ -439,7 +439,7 @@ jobs:
       - name: Cleanup test environment
         if: always()
         run: |
-          docker compose -f docker-compose.test.yml down -v
+          docker compose -f docker-compose.playwright.yml down -v
 
   # Accessibility testing
   test-accessibility:
@@ -464,11 +464,11 @@ jobs:
 
       - name: Start test environment
         run: |
-          docker compose -f docker-compose.test.yml up -d --wait
+          docker compose -f docker-compose.playwright.yml up -d --wait postgres-playwright cardinal-vote-e2e
 
       - name: Wait for application to be ready
         run: |
-          timeout 60 bash -c 'until curl -f http://localhost:8000/health; do sleep 2; done'
+          timeout 60 bash -c 'until curl -f http://localhost:8000/api/health; do sleep 2; done'
 
       - name: Run Accessibility Tests
         run: |
@@ -493,7 +493,7 @@ jobs:
       - name: Cleanup test environment
         if: always()
         run: |
-          docker compose -f docker-compose.test.yml down -v
+          docker compose -f docker-compose.playwright.yml down -v
 
   # Aggregate test results
   aggregate-results:
@@ -530,7 +530,6 @@ jobs:
 
       - name: Merge test reports
         run: |
-          npm install -g playwright-merge-reports
           npx playwright merge-reports test-artifacts/ --reporter=html,json
 
       - name: Generate comprehensive test report
