@@ -1,0 +1,10 @@
+{
+  "allowlist": [],
+  "pass-enoaudit": false,
+  "low": true,
+  "moderate": true,
+  "high": true,
+  "critical": true,
+  "report-type": "summary",
+  "output-format": "text"
+}
