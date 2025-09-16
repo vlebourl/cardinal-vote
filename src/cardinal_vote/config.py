@@ -16,7 +16,7 @@ class Settings:
     # Server settings
     HOST: str = os.getenv("HOST", "0.0.0.0")
     PORT: int = int(os.getenv("PORT", "8000"))
-    PUBLIC_URL: str = os.getenv("PUBLIC_URL", "http://localhost:8000")
+    PUBLIC_URL: str = os.getenv("PUBLIC_URL", "")  # Must be set - no default fallback
 
     # Database settings
     DATABASE_URL: str = os.getenv(
@@ -185,12 +185,35 @@ class Settings:
                 )
 
     @classmethod
+    def validate_public_url(cls) -> None:
+        """Validate PUBLIC_URL configuration."""
+        if not cls.PUBLIC_URL:
+            raise ValueError(
+                "PUBLIC_URL environment variable is required. "
+                "This must be set to the full URL where the application is accessible "
+                "(e.g., https://yourdomain.com or http://192.168.1.100:8000 for local development). "
+                "This URL is used in password reset emails and other user-facing links."
+            )
+
+        if not cls.PUBLIC_URL.startswith(("http://", "https://")):
+            raise ValueError(
+                f"PUBLIC_URL must start with http:// or https://, got: {cls.PUBLIC_URL}"
+            )
+
+        # Additional validation for common mistakes
+        if cls.PUBLIC_URL.endswith("/"):
+            raise ValueError(
+                f"PUBLIC_URL should not end with a trailing slash, got: {cls.PUBLIC_URL}"
+            )
+
+    @classmethod
     def validate_all(cls) -> None:
         """Validate all configuration settings."""
         cls.validate_directories()
         cls.validate_database()
         cls.validate_security()
         cls.validate_email()
+        cls.validate_public_url()
 
         # Create upload directory if it doesn't exist
         upload_dir = Path(cls.UPLOAD_PATH)

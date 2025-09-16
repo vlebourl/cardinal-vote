@@ -43,7 +43,7 @@ class MockEmailService(EmailServiceBase):
         self.from_email = getattr(
             settings, "FROM_EMAIL", "noreply@voting-platform.local"
         )
-        self.public_url = getattr(settings, "PUBLIC_URL", "http://localhost:8000")
+        self.public_url = settings.PUBLIC_URL
         logger.info("Initialized Mock Email Service (Development Mode)")
 
     async def send_verification_email(
@@ -184,7 +184,7 @@ class SMTPEmailService(EmailServiceBase):
         self.from_email = getattr(
             settings, "FROM_EMAIL", "noreply@voting-platform.local"
         )
-        self.public_url = getattr(settings, "PUBLIC_URL", "http://localhost:8000")
+        self.public_url = settings.PUBLIC_URL
         self.use_tls = True
 
         logger.info(
