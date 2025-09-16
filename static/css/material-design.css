@@ -903,7 +903,7 @@ body {
   color: inherit;
   font-size: 24px;
   position: relative;
-  z-index: 201;
+  z-index: 300;
 }
 
 .md-top-app-bar-navigation-icon:hover,
@@ -996,6 +996,50 @@ body {
   font-size: var(--md-sys-typescale-label-large-size);
   font-weight: var(--md-sys-typescale-label-large-weight);
   flex: 1;
+}
+
+/* Admin Section Styling */
+.admin-section {
+  margin-top: 16px;
+}
+
+.admin-section-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 28px 8px;
+  color: var(--md-sys-color-primary);
+  font-size: var(--md-sys-typescale-title-small-size);
+  font-weight: var(--md-sys-typescale-title-small-weight);
+}
+
+.admin-badge {
+  font-size: 20px !important;
+  color: var(--md-sys-color-primary);
+}
+
+.admin-label {
+  font-weight: 600;
+}
+
+.admin-item {
+  background-color: rgba(var(--md-sys-color-primary-rgb), 0.05);
+  border-left: 4px solid var(--md-sys-color-primary);
+  margin-left: 12px;
+  width: calc(100% - 12px);
+}
+
+.admin-item:hover {
+  background-color: rgba(var(--md-sys-color-primary-rgb), 0.1);
+}
+
+.sign-out-item {
+  margin-top: 8px;
+  color: var(--md-sys-color-error);
+}
+
+.sign-out-item:hover {
+  background-color: rgba(var(--md-sys-color-error-rgb), 0.1);
 }
 
 /* Snackbar */

@@ -205,15 +205,56 @@ npm run format:check               # JavaScript formatting check
 
 ⚠️ **CRITICAL: Docker Deployment Requirements**
 
-**MANDATORY: After ANY code changes, you MUST rebuild without cache and restart:**
+**🚨 MANDATORY SEQUENCE FOR ANY CODE CHANGE:**
+
+**STEP 1: Version Watermark Update (ALL TEMPLATES)**
 
 ```bash
-# 🚨 REQUIRED after code changes - rebuilds without cache
-docker compose build cardinal-vote --no-cache && docker compose restart cardinal-vote
-
-# Alternative: Full rebuild and restart
-docker compose down && docker compose up --build --force-recreate
+# 🚨 CRITICAL: ALWAYS bump version watermark in ALL templates FIRST before rebuilding
+# Update EVERY template with version watermark (e.g., v2.4.5 → v2.4.6):
+# - templates/landing_material.html (homepage)
+# - templates/user_dashboard.html (dashboard)
+# - templates/super_admin/base.html (admin)
+# - templates/vote_preview.html (vote preview)
+# - templates/public_vote.html (public voting)
+# - Check for other templates: find templates/ -name "*.html" -exec grep -l "VERSION WATERMARK" {} \;
+# Also bump cache-busting parameters (e.g., v=001 → v=002)
 ```
+
+**STEP 2: Container Rebuild (MANDATORY)**
+
+```bash
+# 🚨 REQUIRED after ANY code changes - rebuilds without cache
+docker compose down
+docker compose build cardinal-vote --no-cache && docker compose up
+
+# Alternative single command:
+docker compose down && docker compose build cardinal-vote --no-cache && docker compose up
+```
+
+**STEP 3: Version Verification (MANDATORY - CHECK ALL TEMPLATES)**
+
+```bash
+# 🚨 CRITICAL: Verify ALL templates show the NEW version watermark
+curl -s http://localhost:8000/ | grep "VERSION WATERMARK"        # Homepage
+curl -s http://localhost:8000/dashboard | grep "VERSION WATERMARK"  # Dashboard
+
+# Expected output should show the NEW version consistently (e.g., v2.4.6):
+# <!-- VERSION WATERMARK: DASHBOARD-FIXES-2025-09-16-v2.4.6 -->
+# <!-- VERSION WATERMARK: DASHBOARD-FIXES-2025-09-16-v2.4.6 -->
+
+# If ANY template still shows the OLD version, the container rebuild failed or cached
+# templates were not properly updated - repeat STEPS 1-2
+# NEVER proceed if versions are inconsistent across templates
+```
+
+**⚠️ CRITICAL: This sequence is MANDATORY for:**
+
+- HTML template changes
+- CSS/JavaScript modifications
+- Python code updates
+- Configuration changes
+- ANY file modifications
 
 **Why this is required:**
 
@@ -221,6 +262,7 @@ docker compose down && docker compose up --build --force-recreate
 - Template changes (HTML) won't be reflected without rebuild
 - JavaScript/CSS changes may be cached in container layers
 - Version watermarks and cache-busting parameters need fresh deployment
+- **Without --no-cache rebuild, changes WILL NOT be visible**
 
 **Standard Development Commands:**
 
@@ -502,3 +544,5 @@ For critical security fixes only:
 - 🤝 **Collaboration**: Transparent change process
 
 This workflow ensures code quality, security, and maintainability while enabling efficient collaboration.
+
+- Remember to always build the container image with the no-cache option

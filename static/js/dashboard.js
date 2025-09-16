@@ -14,9 +14,11 @@ class DashboardManager {
   static init() {
     const dashboard = new DashboardManager()
     dashboard.initializeElements()
+
+    // Force drawer to be hidden immediately (before any CSS transitions)
+    dashboard.forceCloseDrawer()
+
     dashboard.initializeEventListeners()
-    // Ensure navigation drawer starts collapsed
-    dashboard.closeNavigationDrawer()
     dashboard.loadUserData()
     dashboard.loadDashboardData()
   }
@@ -219,6 +221,24 @@ class DashboardManager {
     }
   }
 
+  forceCloseDrawer() {
+    // Immediately hide drawer without waiting for DOM ready
+    const drawer = document.getElementById('navigationDrawer')
+    const scrim = document.getElementById('navigationScrim')
+
+    if (drawer) {
+      drawer.classList.remove('md-navigation-drawer-open')
+      drawer.style.transform = 'translateX(-100%)'
+      drawer.style.pointerEvents = 'none'
+    }
+
+    if (scrim) {
+      scrim.classList.remove('md-navigation-drawer-scrim-visible')
+      scrim.style.opacity = '0'
+      scrim.style.pointerEvents = 'none'
+    }
+  }
+
   toggleUserMenu() {
     if (this.userMenu) {
       const isVisible = this.userMenu.style.display === 'block'
@@ -280,6 +300,12 @@ class DashboardManager {
       const displayName = document.getElementById('userDisplayName')
       if (displayName) {
         displayName.textContent = `${this.user.first_name} ${this.user.last_name}`
+      }
+
+      // Show admin section for super admin users
+      const adminSection = document.getElementById('adminSection')
+      if (adminSection && this.user.is_super_admin) {
+        adminSection.style.display = 'block'
       }
     }
   }
