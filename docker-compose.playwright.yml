@@ -58,7 +58,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-      target: development
+      target: production
     container_name: cardinal-vote-app-test
     ports:
       - '${TEST_PORT:-8000}:8000'
@@ -142,7 +142,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-      target: development
+      target: production
     container_name: cardinal-vote-seeder
     depends_on:
       cardinal-vote-e2e:
