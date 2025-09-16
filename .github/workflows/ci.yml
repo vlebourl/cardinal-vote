@@ -503,6 +503,7 @@ jobs:
           POSTGRES_PASSWORD: test-postgres-password-for-ci-testing
           JWT_SECRET_KEY: test-jwt-secret-for-ci-extremely-long-key-64-chars-minimum
           SUPER_ADMIN_PASSWORD: test-super-admin-password-32-chars-minimum-for-ci
+          PUBLIC_URL: http://localhost:8000
         run: |
           # Test that docker-compose builds successfully
           docker compose build
