@@ -1,10 +1,10 @@
 import { test, expect } from '@playwright/test';
-import { LandingPage } from '../../pages/LandingPage.js';
-import { DashboardPage } from '../../pages/DashboardPage.js';
-import { VoteCreationPage } from '../../pages/VoteCreationPage.js';
-import { PublicVotingPage } from '../../pages/PublicVotingPage.js';
-import { AdminPage } from '../../pages/AdminPage.js';
-import { ErrorPage } from '../../pages/ErrorPage.js';
+import { EnhancedLandingPage as LandingPage } from '../../pages/LandingPage.js';
+import { EnhancedDashboardPage as DashboardPage } from '../../pages/DashboardPage.js';
+import { EnhancedVoteCreationPage as VoteCreationPage } from '../../pages/VoteCreationPage.js';
+import { EnhancedPublicVotingPage as PublicVotingPage } from '../../pages/PublicVotingPage.js';
+import { EnhancedAdminPage as AdminPage } from '../../pages/AdminPage.js';
+import { EnhancedErrorPage as ErrorPage } from '../../pages/ErrorPage.js';
 import { VALIDATION_FIXTURES, PERFORMANCE_FIXTURES } from '../../fixtures/validationFixtures.js';
 
 test.describe('Validation Error Scenarios', () => {

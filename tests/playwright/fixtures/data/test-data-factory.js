@@ -496,12 +496,3 @@ export class TestDataManager {
 
 // Export singleton instance
 export const testDataManager = new TestDataManager();
-
-// Export individual factories for direct use
-export {
-  UserDataFactory,
-  VoteDataFactory,
-  FormDataFactory,
-  PerformanceDataFactory,
-  ErrorScenarioDataFactory
-};

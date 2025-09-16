@@ -1,0 +1,2206 @@
+<testsuites id="" name="" tests="536" failures="0" skipped="536" errors="0" time="0.8341279999999996">
+<testsuite name="auth.setup.js" timestamp="2025-09-16T07:04:53.736Z" hostname="setup" tests="1" failures="0" skipped="1" time="0" errors="0">
+<testcase name="authenticate user" classname="auth.setup.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+</testsuite>
+<testsuite name="sprint1-authentication-adapted.spec.js" timestamp="2025-09-16T07:04:53.736Z" hostname="core-chromium" tests="16" failures="0" skipped="16" time="0" errors="0">
+<testcase name="Sprint 1: Authentication System Validation (Adapted) › Material Design 3 Landing Page Structure › should display complete Material Design 3 landing page" classname="sprint1-authentication-adapted.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Sprint 1: Authentication System Validation (Adapted) › Material Design 3 Landing Page Structure › should have responsive design across breakpoints" classname="sprint1-authentication-adapted.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Sprint 1: Authentication System Validation (Adapted) › Material Design 3 Landing Page Structure › should have proper semantic HTML structure" classname="sprint1-authentication-adapted.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Sprint 1: Authentication System Validation (Adapted) › Authentication Modal Structure and Behavior › should have complete login modal HTML structure" classname="sprint1-authentication-adapted.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Sprint 1: Authentication System Validation (Adapted) › Authentication Modal Structure and Behavior › should have complete registration modal HTML structure" classname="sprint1-authentication-adapted.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Sprint 1: Authentication System Validation (Adapted) › Authentication Modal Structure and Behavior › should handle form field interactions" classname="sprint1-authentication-adapted.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Sprint 1: Authentication System Validation (Adapted) › Authentication Modal Structure and Behavior › should validate form field attributes and HTML5 validation" classname="sprint1-authentication-adapted.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Sprint 1: Authentication System Validation (Adapted) › Authentication API Integration › should have accessible authentication endpoints" classname="sprint1-authentication-adapted.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Sprint 1: Authentication System Validation (Adapted) › Authentication API Integration › should handle authentication API calls" classname="sprint1-authentication-adapted.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Sprint 1: Authentication System Validation (Adapted) › Authentication API Integration › should test registration API endpoint" classname="sprint1-authentication-adapted.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Sprint 1: Authentication System Validation (Adapted) › JWT Token and Session Management › should support sessionStorage for authentication state" classname="sprint1-authentication-adapted.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Sprint 1: Authentication System Validation (Adapted) › JWT Token and Session Management › should clear authentication state on logout" classname="sprint1-authentication-adapted.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Sprint 1: Authentication System Validation (Adapted) › Dashboard Access and Redirection › should attempt dashboard access" classname="sprint1-authentication-adapted.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Sprint 1: Authentication System Validation (Adapted) › Dashboard Access and Redirection › should handle authentication flow with mock token" classname="sprint1-authentication-adapted.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Sprint 1: Authentication System Validation (Adapted) › Performance and Error Handling › should meet performance thresholds" classname="sprint1-authentication-adapted.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Sprint 1: Authentication System Validation (Adapted) › Performance and Error Handling › should handle JavaScript errors gracefully" classname="sprint1-authentication-adapted.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+</testsuite>
+<testsuite name="sprint1-authentication.spec.js" timestamp="2025-09-16T07:04:53.736Z" hostname="core-chromium" tests="11" failures="0" skipped="11" time="0" errors="0">
+<testcase name="Sprint 1: Authentication System Validation › Landing Page Material Design Validation › should display Material Design 3 landing page correctly" classname="sprint1-authentication.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Sprint 1: Authentication System Validation › Landing Page Material Design Validation › should be responsive across different screen sizes" classname="sprint1-authentication.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Sprint 1: Authentication System Validation › Landing Page Material Design Validation › should handle navigation interactions correctly" classname="sprint1-authentication.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Sprint 1: Authentication System Validation › Authentication Flow Testing › should handle login attempt and token management" classname="sprint1-authentication.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Sprint 1: Authentication System Validation › Authentication Flow Testing › should validate JWT token format and persistence" classname="sprint1-authentication.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Sprint 1: Authentication System Validation › Authentication Flow Testing › should handle authentication API integration" classname="sprint1-authentication.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Sprint 1: Authentication System Validation › Dashboard Post-Authentication Validation › should redirect to dashboard after authentication" classname="sprint1-authentication.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Sprint 1: Authentication System Validation › Dashboard Post-Authentication Validation › should maintain session across navigation" classname="sprint1-authentication.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Sprint 1: Authentication System Validation › Dashboard Post-Authentication Validation › should measure authentication performance" classname="sprint1-authentication.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Sprint 1: Authentication System Validation › Error Handling and Edge Cases › should handle network errors gracefully" classname="sprint1-authentication.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Sprint 1: Authentication System Validation › Error Handling and Edge Cases › should validate form validation and error messages" classname="sprint1-authentication.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+</testsuite>
+<testsuite name="sprint2-vote-creation.spec.js" timestamp="2025-09-16T07:04:53.736Z" hostname="core-chromium" tests="14" failures="0" skipped="14" time="0" errors="0">
+<testcase name="Sprint 2: Vote Creation and Dashboard Enhancement Validation › Dashboard Enhancement Validation › should display enhanced dashboard with status cards and timeline" classname="sprint2-vote-creation.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Sprint 2: Vote Creation and Dashboard Enhancement Validation › Dashboard Enhancement Validation › should validate dashboard status cards structure" classname="sprint2-vote-creation.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Sprint 2: Vote Creation and Dashboard Enhancement Validation › Dashboard Enhancement Validation › should validate activity timeline structure" classname="sprint2-vote-creation.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Sprint 2: Vote Creation and Dashboard Enhancement Validation › Dashboard Enhancement Validation › should test dashboard navigation and user flow" classname="sprint2-vote-creation.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Sprint 2: Vote Creation and Dashboard Enhancement Validation › Vote Creation Interface Validation › should access vote creation interface" classname="sprint2-vote-creation.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Sprint 2: Vote Creation and Dashboard Enhancement Validation › Vote Creation Interface Validation › should validate vote creation form structure" classname="sprint2-vote-creation.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Sprint 2: Vote Creation and Dashboard Enhancement Validation › Vote Creation Interface Validation › should test dynamic option management simulation" classname="sprint2-vote-creation.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Sprint 2: Vote Creation and Dashboard Enhancement Validation › Vote Creation Interface Validation › should validate vote creation form submission simulation" classname="sprint2-vote-creation.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Sprint 2: Vote Creation and Dashboard Enhancement Validation › Vote Preview and Sharing Validation › should validate vote preview functionality structure" classname="sprint2-vote-creation.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Sprint 2: Vote Creation and Dashboard Enhancement Validation › Vote Preview and Sharing Validation › should test vote sharing link generation simulation" classname="sprint2-vote-creation.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Sprint 2: Vote Creation and Dashboard Enhancement Validation › Complete User Journey Flow Testing › should simulate complete user workflow" classname="sprint2-vote-creation.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Sprint 2: Vote Creation and Dashboard Enhancement Validation › Complete User Journey Flow Testing › should validate cross-component data flow" classname="sprint2-vote-creation.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Sprint 2: Vote Creation and Dashboard Enhancement Validation › Sprint 2 Performance and Integration Testing › should meet performance thresholds for vote creation workflow" classname="sprint2-vote-creation.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Sprint 2: Vote Creation and Dashboard Enhancement Validation › Sprint 2 Performance and Integration Testing › should validate Material Design 3 compliance in vote creation" classname="sprint2-vote-creation.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+</testsuite>
+<testsuite name="tests/01-core-flows/authentication.spec.js" timestamp="2025-09-16T07:04:53.736Z" hostname="core-chromium" tests="20" failures="0" skipped="20" time="0" errors="0">
+<testcase name="Core Authentication Flow Tests › User Registration Flow › should successfully register a new user with valid data" classname="tests/01-core-flows/authentication.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Core Authentication Flow Tests › User Registration Flow › should handle registration with invalid email format" classname="tests/01-core-flows/authentication.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Core Authentication Flow Tests › User Registration Flow › should handle registration with weak password" classname="tests/01-core-flows/authentication.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Core Authentication Flow Tests › User Registration Flow › should handle password confirmation mismatch" classname="tests/01-core-flows/authentication.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Core Authentication Flow Tests › User Registration Flow › should require terms and conditions acceptance" classname="tests/01-core-flows/authentication.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Core Authentication Flow Tests › User Registration Flow › should handle duplicate email registration" classname="tests/01-core-flows/authentication.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Core Authentication Flow Tests › User Login Flow › should successfully login with valid credentials" classname="tests/01-core-flows/authentication.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Core Authentication Flow Tests › User Login Flow › should handle login with invalid credentials" classname="tests/01-core-flows/authentication.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Core Authentication Flow Tests › User Login Flow › should handle login with empty credentials" classname="tests/01-core-flows/authentication.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Core Authentication Flow Tests › User Login Flow › should maintain remember me functionality" classname="tests/01-core-flows/authentication.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Core Authentication Flow Tests › User Login Flow › should handle admin login with special permissions" classname="tests/01-core-flows/authentication.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Core Authentication Flow Tests › User Logout Flow › should successfully logout user" classname="tests/01-core-flows/authentication.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Core Authentication Flow Tests › User Logout Flow › should handle logout from multiple tabs" classname="tests/01-core-flows/authentication.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Core Authentication Flow Tests › Session Management › should handle session expiration gracefully" classname="tests/01-core-flows/authentication.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Core Authentication Flow Tests › Session Management › should refresh session tokens when needed" classname="tests/01-core-flows/authentication.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Core Authentication Flow Tests › Password Reset Flow › should handle password reset request" classname="tests/01-core-flows/authentication.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Core Authentication Flow Tests › Authentication Performance › should meet performance thresholds for authentication flows" classname="tests/01-core-flows/authentication.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Core Authentication Flow Tests › Authentication Accessibility › should have accessible authentication forms" classname="tests/01-core-flows/authentication.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Core Authentication Flow Tests › Authentication Accessibility › should support keyboard navigation for authentication" classname="tests/01-core-flows/authentication.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Core Authentication Flow Tests › Multi-Factor Authentication › should handle 2FA when enabled" classname="tests/01-core-flows/authentication.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+</testsuite>
+<testsuite name="tests/01-core-flows/public-voting.spec.js" timestamp="2025-09-16T07:04:53.736Z" hostname="core-chromium" tests="26" failures="0" skipped="26" time="0" errors="0">
+<testcase name="Core Public Voting Flow Tests › Anonymous Public Voting › should allow anonymous voting on public votes" classname="tests/01-core-flows/public-voting.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Core Public Voting Flow Tests › Anonymous Public Voting › should handle multi-choice voting" classname="tests/01-core-flows/public-voting.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Core Public Voting Flow Tests › Anonymous Public Voting › should display vote results after voting" classname="tests/01-core-flows/public-voting.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Core Public Voting Flow Tests › Anonymous Public Voting › should handle voting with voter information collection" classname="tests/01-core-flows/public-voting.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Core Public Voting Flow Tests › Authenticated Voting › should handle authenticated voting" classname="tests/01-core-flows/public-voting.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Core Public Voting Flow Tests › Authenticated Voting › should handle login requirement for restricted votes" classname="tests/01-core-flows/public-voting.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Core Public Voting Flow Tests › Authenticated Voting › should prevent duplicate voting by authenticated users" classname="tests/01-core-flows/public-voting.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Core Public Voting Flow Tests › Vote Results and Analytics › should display real-time vote counts" classname="tests/01-core-flows/public-voting.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Core Public Voting Flow Tests › Vote Results and Analytics › should handle results visibility settings" classname="tests/01-core-flows/public-voting.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Core Public Voting Flow Tests › Vote Results and Analytics › should refresh results data" classname="tests/01-core-flows/public-voting.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Core Public Voting Flow Tests › Social Sharing and Interaction › should share vote via social media" classname="tests/01-core-flows/public-voting.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Core Public Voting Flow Tests › Social Sharing and Interaction › should handle vote comments" classname="tests/01-core-flows/public-voting.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Core Public Voting Flow Tests › Mobile Responsive Voting › should handle mobile voting interface" classname="tests/01-core-flows/public-voting.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Core Public Voting Flow Tests › Mobile Responsive Voting › should adapt to different screen sizes" classname="tests/01-core-flows/public-voting.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Core Public Voting Flow Tests › Voting Performance › should meet performance thresholds for voting" classname="tests/01-core-flows/public-voting.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Core Public Voting Flow Tests › Voting Performance › should handle large numbers of options efficiently" classname="tests/01-core-flows/public-voting.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Core Public Voting Flow Tests › Voting Accessibility › should have accessible voting interface" classname="tests/01-core-flows/public-voting.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Core Public Voting Flow Tests › Voting Accessibility › should support keyboard voting" classname="tests/01-core-flows/public-voting.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Core Public Voting Flow Tests › Voting Accessibility › should have proper ARIA labels for vote options" classname="tests/01-core-flows/public-voting.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Core Public Voting Flow Tests › Material Design Validation › should follow Material Design principles for voting interface" classname="tests/01-core-flows/public-voting.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Core Public Voting Flow Tests › Error Scenarios › should handle vote not found" classname="tests/01-core-flows/public-voting.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Core Public Voting Flow Tests › Error Scenarios › should handle closed votes" classname="tests/01-core-flows/public-voting.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Core Public Voting Flow Tests › Error Scenarios › should handle network errors during voting" classname="tests/01-core-flows/public-voting.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Core Public Voting Flow Tests › Error Scenarios › should handle permission errors" classname="tests/01-core-flows/public-voting.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Core Public Voting Flow Tests › Vote State Management › should preserve vote state during page navigation" classname="tests/01-core-flows/public-voting.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Core Public Voting Flow Tests › Vote State Management › should handle browser refresh during voting" classname="tests/01-core-flows/public-voting.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+</testsuite>
+<testsuite name="tests/01-core-flows/vote-creation.spec.js" timestamp="2025-09-16T07:04:53.736Z" hostname="core-chromium" tests="20" failures="0" skipped="20" time="0" errors="0">
+<testcase name="Core Vote Creation Flow Tests › Basic Vote Creation › should successfully create a simple vote" classname="tests/01-core-flows/vote-creation.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Core Vote Creation Flow Tests › Basic Vote Creation › should create a multi-choice vote" classname="tests/01-core-flows/vote-creation.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Core Vote Creation Flow Tests › Basic Vote Creation › should create a time-limited vote" classname="tests/01-core-flows/vote-creation.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Core Vote Creation Flow Tests › Complex Vote Creation › should create a complex vote with advanced features" classname="tests/01-core-flows/vote-creation.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Core Vote Creation Flow Tests › Complex Vote Creation › should handle bulk option import" classname="tests/01-core-flows/vote-creation.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Core Vote Creation Flow Tests › File Upload for Vote Options › should handle image uploads for vote options" classname="tests/01-core-flows/vote-creation.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Core Vote Creation Flow Tests › Draft Management › should save and load vote drafts" classname="tests/01-core-flows/vote-creation.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Core Vote Creation Flow Tests › Preview Functionality › should show accurate vote preview" classname="tests/01-core-flows/vote-creation.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Core Vote Creation Flow Tests › Form Validation › should validate required fields" classname="tests/01-core-flows/vote-creation.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Core Vote Creation Flow Tests › Form Validation › should validate minimum options requirement" classname="tests/01-core-flows/vote-creation.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Core Vote Creation Flow Tests › Form Validation › should validate empty options" classname="tests/01-core-flows/vote-creation.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Core Vote Creation Flow Tests › Form Validation › should validate date ranges" classname="tests/01-core-flows/vote-creation.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Core Vote Creation Flow Tests › Step Navigation › should handle step navigation correctly" classname="tests/01-core-flows/vote-creation.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Core Vote Creation Flow Tests › Step Navigation › should preserve data across step navigation" classname="tests/01-core-flows/vote-creation.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Core Vote Creation Flow Tests › Performance Testing › should meet performance thresholds for vote creation" classname="tests/01-core-flows/vote-creation.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Core Vote Creation Flow Tests › Accessibility Testing › should have accessible vote creation form" classname="tests/01-core-flows/vote-creation.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Core Vote Creation Flow Tests › Accessibility Testing › should support keyboard navigation through vote creation" classname="tests/01-core-flows/vote-creation.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Core Vote Creation Flow Tests › Material Design Validation › should follow Material Design principles for vote creation form" classname="tests/01-core-flows/vote-creation.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Core Vote Creation Flow Tests › Error Handling › should handle server errors gracefully" classname="tests/01-core-flows/vote-creation.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Core Vote Creation Flow Tests › Error Handling › should handle network timeout" classname="tests/01-core-flows/vote-creation.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+</testsuite>
+<testsuite name="sprint1-authentication-adapted.spec.js" timestamp="2025-09-16T07:04:53.736Z" hostname="core-firefox" tests="16" failures="0" skipped="16" time="0" errors="0">
+<testcase name="Sprint 1: Authentication System Validation (Adapted) › Material Design 3 Landing Page Structure › should display complete Material Design 3 landing page" classname="sprint1-authentication-adapted.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Sprint 1: Authentication System Validation (Adapted) › Material Design 3 Landing Page Structure › should have responsive design across breakpoints" classname="sprint1-authentication-adapted.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Sprint 1: Authentication System Validation (Adapted) › Material Design 3 Landing Page Structure › should have proper semantic HTML structure" classname="sprint1-authentication-adapted.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Sprint 1: Authentication System Validation (Adapted) › Authentication Modal Structure and Behavior › should have complete login modal HTML structure" classname="sprint1-authentication-adapted.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Sprint 1: Authentication System Validation (Adapted) › Authentication Modal Structure and Behavior › should have complete registration modal HTML structure" classname="sprint1-authentication-adapted.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Sprint 1: Authentication System Validation (Adapted) › Authentication Modal Structure and Behavior › should handle form field interactions" classname="sprint1-authentication-adapted.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Sprint 1: Authentication System Validation (Adapted) › Authentication Modal Structure and Behavior › should validate form field attributes and HTML5 validation" classname="sprint1-authentication-adapted.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Sprint 1: Authentication System Validation (Adapted) › Authentication API Integration › should have accessible authentication endpoints" classname="sprint1-authentication-adapted.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Sprint 1: Authentication System Validation (Adapted) › Authentication API Integration › should handle authentication API calls" classname="sprint1-authentication-adapted.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Sprint 1: Authentication System Validation (Adapted) › Authentication API Integration › should test registration API endpoint" classname="sprint1-authentication-adapted.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Sprint 1: Authentication System Validation (Adapted) › JWT Token and Session Management › should support sessionStorage for authentication state" classname="sprint1-authentication-adapted.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Sprint 1: Authentication System Validation (Adapted) › JWT Token and Session Management › should clear authentication state on logout" classname="sprint1-authentication-adapted.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Sprint 1: Authentication System Validation (Adapted) › Dashboard Access and Redirection › should attempt dashboard access" classname="sprint1-authentication-adapted.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Sprint 1: Authentication System Validation (Adapted) › Dashboard Access and Redirection › should handle authentication flow with mock token" classname="sprint1-authentication-adapted.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Sprint 1: Authentication System Validation (Adapted) › Performance and Error Handling › should meet performance thresholds" classname="sprint1-authentication-adapted.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Sprint 1: Authentication System Validation (Adapted) › Performance and Error Handling › should handle JavaScript errors gracefully" classname="sprint1-authentication-adapted.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+</testsuite>
+<testsuite name="sprint1-authentication.spec.js" timestamp="2025-09-16T07:04:53.736Z" hostname="core-firefox" tests="11" failures="0" skipped="11" time="0" errors="0">
+<testcase name="Sprint 1: Authentication System Validation › Landing Page Material Design Validation › should display Material Design 3 landing page correctly" classname="sprint1-authentication.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Sprint 1: Authentication System Validation › Landing Page Material Design Validation › should be responsive across different screen sizes" classname="sprint1-authentication.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Sprint 1: Authentication System Validation › Landing Page Material Design Validation › should handle navigation interactions correctly" classname="sprint1-authentication.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Sprint 1: Authentication System Validation › Authentication Flow Testing › should handle login attempt and token management" classname="sprint1-authentication.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Sprint 1: Authentication System Validation › Authentication Flow Testing › should validate JWT token format and persistence" classname="sprint1-authentication.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Sprint 1: Authentication System Validation › Authentication Flow Testing › should handle authentication API integration" classname="sprint1-authentication.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Sprint 1: Authentication System Validation › Dashboard Post-Authentication Validation › should redirect to dashboard after authentication" classname="sprint1-authentication.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Sprint 1: Authentication System Validation › Dashboard Post-Authentication Validation › should maintain session across navigation" classname="sprint1-authentication.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Sprint 1: Authentication System Validation › Dashboard Post-Authentication Validation › should measure authentication performance" classname="sprint1-authentication.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Sprint 1: Authentication System Validation › Error Handling and Edge Cases › should handle network errors gracefully" classname="sprint1-authentication.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Sprint 1: Authentication System Validation › Error Handling and Edge Cases › should validate form validation and error messages" classname="sprint1-authentication.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+</testsuite>
+<testsuite name="sprint2-vote-creation.spec.js" timestamp="2025-09-16T07:04:53.736Z" hostname="core-firefox" tests="14" failures="0" skipped="14" time="0" errors="0">
+<testcase name="Sprint 2: Vote Creation and Dashboard Enhancement Validation › Dashboard Enhancement Validation › should display enhanced dashboard with status cards and timeline" classname="sprint2-vote-creation.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Sprint 2: Vote Creation and Dashboard Enhancement Validation › Dashboard Enhancement Validation › should validate dashboard status cards structure" classname="sprint2-vote-creation.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Sprint 2: Vote Creation and Dashboard Enhancement Validation › Dashboard Enhancement Validation › should validate activity timeline structure" classname="sprint2-vote-creation.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Sprint 2: Vote Creation and Dashboard Enhancement Validation › Dashboard Enhancement Validation › should test dashboard navigation and user flow" classname="sprint2-vote-creation.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Sprint 2: Vote Creation and Dashboard Enhancement Validation › Vote Creation Interface Validation › should access vote creation interface" classname="sprint2-vote-creation.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Sprint 2: Vote Creation and Dashboard Enhancement Validation › Vote Creation Interface Validation › should validate vote creation form structure" classname="sprint2-vote-creation.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Sprint 2: Vote Creation and Dashboard Enhancement Validation › Vote Creation Interface Validation › should test dynamic option management simulation" classname="sprint2-vote-creation.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Sprint 2: Vote Creation and Dashboard Enhancement Validation › Vote Creation Interface Validation › should validate vote creation form submission simulation" classname="sprint2-vote-creation.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Sprint 2: Vote Creation and Dashboard Enhancement Validation › Vote Preview and Sharing Validation › should validate vote preview functionality structure" classname="sprint2-vote-creation.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Sprint 2: Vote Creation and Dashboard Enhancement Validation › Vote Preview and Sharing Validation › should test vote sharing link generation simulation" classname="sprint2-vote-creation.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Sprint 2: Vote Creation and Dashboard Enhancement Validation › Complete User Journey Flow Testing › should simulate complete user workflow" classname="sprint2-vote-creation.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Sprint 2: Vote Creation and Dashboard Enhancement Validation › Complete User Journey Flow Testing › should validate cross-component data flow" classname="sprint2-vote-creation.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Sprint 2: Vote Creation and Dashboard Enhancement Validation › Sprint 2 Performance and Integration Testing › should meet performance thresholds for vote creation workflow" classname="sprint2-vote-creation.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Sprint 2: Vote Creation and Dashboard Enhancement Validation › Sprint 2 Performance and Integration Testing › should validate Material Design 3 compliance in vote creation" classname="sprint2-vote-creation.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+</testsuite>
+<testsuite name="tests/01-core-flows/authentication.spec.js" timestamp="2025-09-16T07:04:53.736Z" hostname="core-firefox" tests="20" failures="0" skipped="20" time="0" errors="0">
+<testcase name="Core Authentication Flow Tests › User Registration Flow › should successfully register a new user with valid data" classname="tests/01-core-flows/authentication.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Core Authentication Flow Tests › User Registration Flow › should handle registration with invalid email format" classname="tests/01-core-flows/authentication.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Core Authentication Flow Tests › User Registration Flow › should handle registration with weak password" classname="tests/01-core-flows/authentication.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Core Authentication Flow Tests › User Registration Flow › should handle password confirmation mismatch" classname="tests/01-core-flows/authentication.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Core Authentication Flow Tests › User Registration Flow › should require terms and conditions acceptance" classname="tests/01-core-flows/authentication.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Core Authentication Flow Tests › User Registration Flow › should handle duplicate email registration" classname="tests/01-core-flows/authentication.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Core Authentication Flow Tests › User Login Flow › should successfully login with valid credentials" classname="tests/01-core-flows/authentication.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Core Authentication Flow Tests › User Login Flow › should handle login with invalid credentials" classname="tests/01-core-flows/authentication.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Core Authentication Flow Tests › User Login Flow › should handle login with empty credentials" classname="tests/01-core-flows/authentication.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Core Authentication Flow Tests › User Login Flow › should maintain remember me functionality" classname="tests/01-core-flows/authentication.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Core Authentication Flow Tests › User Login Flow › should handle admin login with special permissions" classname="tests/01-core-flows/authentication.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Core Authentication Flow Tests › User Logout Flow › should successfully logout user" classname="tests/01-core-flows/authentication.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Core Authentication Flow Tests › User Logout Flow › should handle logout from multiple tabs" classname="tests/01-core-flows/authentication.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Core Authentication Flow Tests › Session Management › should handle session expiration gracefully" classname="tests/01-core-flows/authentication.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Core Authentication Flow Tests › Session Management › should refresh session tokens when needed" classname="tests/01-core-flows/authentication.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Core Authentication Flow Tests › Password Reset Flow › should handle password reset request" classname="tests/01-core-flows/authentication.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Core Authentication Flow Tests › Authentication Performance › should meet performance thresholds for authentication flows" classname="tests/01-core-flows/authentication.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Core Authentication Flow Tests › Authentication Accessibility › should have accessible authentication forms" classname="tests/01-core-flows/authentication.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Core Authentication Flow Tests › Authentication Accessibility › should support keyboard navigation for authentication" classname="tests/01-core-flows/authentication.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Core Authentication Flow Tests › Multi-Factor Authentication › should handle 2FA when enabled" classname="tests/01-core-flows/authentication.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+</testsuite>
+<testsuite name="tests/01-core-flows/public-voting.spec.js" timestamp="2025-09-16T07:04:53.736Z" hostname="core-firefox" tests="26" failures="0" skipped="26" time="0" errors="0">
+<testcase name="Core Public Voting Flow Tests › Anonymous Public Voting › should allow anonymous voting on public votes" classname="tests/01-core-flows/public-voting.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Core Public Voting Flow Tests › Anonymous Public Voting › should handle multi-choice voting" classname="tests/01-core-flows/public-voting.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Core Public Voting Flow Tests › Anonymous Public Voting › should display vote results after voting" classname="tests/01-core-flows/public-voting.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Core Public Voting Flow Tests › Anonymous Public Voting › should handle voting with voter information collection" classname="tests/01-core-flows/public-voting.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Core Public Voting Flow Tests › Authenticated Voting › should handle authenticated voting" classname="tests/01-core-flows/public-voting.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Core Public Voting Flow Tests › Authenticated Voting › should handle login requirement for restricted votes" classname="tests/01-core-flows/public-voting.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Core Public Voting Flow Tests › Authenticated Voting › should prevent duplicate voting by authenticated users" classname="tests/01-core-flows/public-voting.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Core Public Voting Flow Tests › Vote Results and Analytics › should display real-time vote counts" classname="tests/01-core-flows/public-voting.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Core Public Voting Flow Tests › Vote Results and Analytics › should handle results visibility settings" classname="tests/01-core-flows/public-voting.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Core Public Voting Flow Tests › Vote Results and Analytics › should refresh results data" classname="tests/01-core-flows/public-voting.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Core Public Voting Flow Tests › Social Sharing and Interaction › should share vote via social media" classname="tests/01-core-flows/public-voting.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Core Public Voting Flow Tests › Social Sharing and Interaction › should handle vote comments" classname="tests/01-core-flows/public-voting.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Core Public Voting Flow Tests › Mobile Responsive Voting › should handle mobile voting interface" classname="tests/01-core-flows/public-voting.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Core Public Voting Flow Tests › Mobile Responsive Voting › should adapt to different screen sizes" classname="tests/01-core-flows/public-voting.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Core Public Voting Flow Tests › Voting Performance › should meet performance thresholds for voting" classname="tests/01-core-flows/public-voting.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Core Public Voting Flow Tests › Voting Performance › should handle large numbers of options efficiently" classname="tests/01-core-flows/public-voting.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Core Public Voting Flow Tests › Voting Accessibility › should have accessible voting interface" classname="tests/01-core-flows/public-voting.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Core Public Voting Flow Tests › Voting Accessibility › should support keyboard voting" classname="tests/01-core-flows/public-voting.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Core Public Voting Flow Tests › Voting Accessibility › should have proper ARIA labels for vote options" classname="tests/01-core-flows/public-voting.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Core Public Voting Flow Tests › Material Design Validation › should follow Material Design principles for voting interface" classname="tests/01-core-flows/public-voting.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Core Public Voting Flow Tests › Error Scenarios › should handle vote not found" classname="tests/01-core-flows/public-voting.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Core Public Voting Flow Tests › Error Scenarios › should handle closed votes" classname="tests/01-core-flows/public-voting.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Core Public Voting Flow Tests › Error Scenarios › should handle network errors during voting" classname="tests/01-core-flows/public-voting.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Core Public Voting Flow Tests › Error Scenarios › should handle permission errors" classname="tests/01-core-flows/public-voting.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Core Public Voting Flow Tests › Vote State Management › should preserve vote state during page navigation" classname="tests/01-core-flows/public-voting.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Core Public Voting Flow Tests › Vote State Management › should handle browser refresh during voting" classname="tests/01-core-flows/public-voting.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+</testsuite>
+<testsuite name="tests/01-core-flows/vote-creation.spec.js" timestamp="2025-09-16T07:04:53.736Z" hostname="core-firefox" tests="20" failures="0" skipped="20" time="0" errors="0">
+<testcase name="Core Vote Creation Flow Tests › Basic Vote Creation › should successfully create a simple vote" classname="tests/01-core-flows/vote-creation.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Core Vote Creation Flow Tests › Basic Vote Creation › should create a multi-choice vote" classname="tests/01-core-flows/vote-creation.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Core Vote Creation Flow Tests › Basic Vote Creation › should create a time-limited vote" classname="tests/01-core-flows/vote-creation.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Core Vote Creation Flow Tests › Complex Vote Creation › should create a complex vote with advanced features" classname="tests/01-core-flows/vote-creation.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Core Vote Creation Flow Tests › Complex Vote Creation › should handle bulk option import" classname="tests/01-core-flows/vote-creation.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Core Vote Creation Flow Tests › File Upload for Vote Options › should handle image uploads for vote options" classname="tests/01-core-flows/vote-creation.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Core Vote Creation Flow Tests › Draft Management › should save and load vote drafts" classname="tests/01-core-flows/vote-creation.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Core Vote Creation Flow Tests › Preview Functionality › should show accurate vote preview" classname="tests/01-core-flows/vote-creation.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Core Vote Creation Flow Tests › Form Validation › should validate required fields" classname="tests/01-core-flows/vote-creation.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Core Vote Creation Flow Tests › Form Validation › should validate minimum options requirement" classname="tests/01-core-flows/vote-creation.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Core Vote Creation Flow Tests › Form Validation › should validate empty options" classname="tests/01-core-flows/vote-creation.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Core Vote Creation Flow Tests › Form Validation › should validate date ranges" classname="tests/01-core-flows/vote-creation.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Core Vote Creation Flow Tests › Step Navigation › should handle step navigation correctly" classname="tests/01-core-flows/vote-creation.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Core Vote Creation Flow Tests › Step Navigation › should preserve data across step navigation" classname="tests/01-core-flows/vote-creation.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Core Vote Creation Flow Tests › Performance Testing › should meet performance thresholds for vote creation" classname="tests/01-core-flows/vote-creation.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Core Vote Creation Flow Tests › Accessibility Testing › should have accessible vote creation form" classname="tests/01-core-flows/vote-creation.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Core Vote Creation Flow Tests › Accessibility Testing › should support keyboard navigation through vote creation" classname="tests/01-core-flows/vote-creation.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Core Vote Creation Flow Tests › Material Design Validation › should follow Material Design principles for vote creation form" classname="tests/01-core-flows/vote-creation.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Core Vote Creation Flow Tests › Error Handling › should handle server errors gracefully" classname="tests/01-core-flows/vote-creation.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Core Vote Creation Flow Tests › Error Handling › should handle network timeout" classname="tests/01-core-flows/vote-creation.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+</testsuite>
+<testsuite name="sprint1-authentication-adapted.spec.js" timestamp="2025-09-16T07:04:53.736Z" hostname="core-webkit" tests="16" failures="0" skipped="16" time="0" errors="0">
+<testcase name="Sprint 1: Authentication System Validation (Adapted) › Material Design 3 Landing Page Structure › should display complete Material Design 3 landing page" classname="sprint1-authentication-adapted.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Sprint 1: Authentication System Validation (Adapted) › Material Design 3 Landing Page Structure › should have responsive design across breakpoints" classname="sprint1-authentication-adapted.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Sprint 1: Authentication System Validation (Adapted) › Material Design 3 Landing Page Structure › should have proper semantic HTML structure" classname="sprint1-authentication-adapted.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Sprint 1: Authentication System Validation (Adapted) › Authentication Modal Structure and Behavior › should have complete login modal HTML structure" classname="sprint1-authentication-adapted.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Sprint 1: Authentication System Validation (Adapted) › Authentication Modal Structure and Behavior › should have complete registration modal HTML structure" classname="sprint1-authentication-adapted.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Sprint 1: Authentication System Validation (Adapted) › Authentication Modal Structure and Behavior › should handle form field interactions" classname="sprint1-authentication-adapted.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Sprint 1: Authentication System Validation (Adapted) › Authentication Modal Structure and Behavior › should validate form field attributes and HTML5 validation" classname="sprint1-authentication-adapted.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Sprint 1: Authentication System Validation (Adapted) › Authentication API Integration › should have accessible authentication endpoints" classname="sprint1-authentication-adapted.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Sprint 1: Authentication System Validation (Adapted) › Authentication API Integration › should handle authentication API calls" classname="sprint1-authentication-adapted.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Sprint 1: Authentication System Validation (Adapted) › Authentication API Integration › should test registration API endpoint" classname="sprint1-authentication-adapted.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Sprint 1: Authentication System Validation (Adapted) › JWT Token and Session Management › should support sessionStorage for authentication state" classname="sprint1-authentication-adapted.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Sprint 1: Authentication System Validation (Adapted) › JWT Token and Session Management › should clear authentication state on logout" classname="sprint1-authentication-adapted.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Sprint 1: Authentication System Validation (Adapted) › Dashboard Access and Redirection › should attempt dashboard access" classname="sprint1-authentication-adapted.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Sprint 1: Authentication System Validation (Adapted) › Dashboard Access and Redirection › should handle authentication flow with mock token" classname="sprint1-authentication-adapted.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Sprint 1: Authentication System Validation (Adapted) › Performance and Error Handling › should meet performance thresholds" classname="sprint1-authentication-adapted.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Sprint 1: Authentication System Validation (Adapted) › Performance and Error Handling › should handle JavaScript errors gracefully" classname="sprint1-authentication-adapted.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+</testsuite>
+<testsuite name="sprint1-authentication.spec.js" timestamp="2025-09-16T07:04:53.736Z" hostname="core-webkit" tests="11" failures="0" skipped="11" time="0" errors="0">
+<testcase name="Sprint 1: Authentication System Validation › Landing Page Material Design Validation › should display Material Design 3 landing page correctly" classname="sprint1-authentication.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Sprint 1: Authentication System Validation › Landing Page Material Design Validation › should be responsive across different screen sizes" classname="sprint1-authentication.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Sprint 1: Authentication System Validation › Landing Page Material Design Validation › should handle navigation interactions correctly" classname="sprint1-authentication.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Sprint 1: Authentication System Validation › Authentication Flow Testing › should handle login attempt and token management" classname="sprint1-authentication.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Sprint 1: Authentication System Validation › Authentication Flow Testing › should validate JWT token format and persistence" classname="sprint1-authentication.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Sprint 1: Authentication System Validation › Authentication Flow Testing › should handle authentication API integration" classname="sprint1-authentication.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Sprint 1: Authentication System Validation › Dashboard Post-Authentication Validation › should redirect to dashboard after authentication" classname="sprint1-authentication.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Sprint 1: Authentication System Validation › Dashboard Post-Authentication Validation › should maintain session across navigation" classname="sprint1-authentication.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Sprint 1: Authentication System Validation › Dashboard Post-Authentication Validation › should measure authentication performance" classname="sprint1-authentication.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Sprint 1: Authentication System Validation › Error Handling and Edge Cases › should handle network errors gracefully" classname="sprint1-authentication.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Sprint 1: Authentication System Validation › Error Handling and Edge Cases › should validate form validation and error messages" classname="sprint1-authentication.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+</testsuite>
+<testsuite name="sprint2-vote-creation.spec.js" timestamp="2025-09-16T07:04:53.736Z" hostname="core-webkit" tests="14" failures="0" skipped="14" time="0" errors="0">
+<testcase name="Sprint 2: Vote Creation and Dashboard Enhancement Validation › Dashboard Enhancement Validation › should display enhanced dashboard with status cards and timeline" classname="sprint2-vote-creation.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Sprint 2: Vote Creation and Dashboard Enhancement Validation › Dashboard Enhancement Validation › should validate dashboard status cards structure" classname="sprint2-vote-creation.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Sprint 2: Vote Creation and Dashboard Enhancement Validation › Dashboard Enhancement Validation › should validate activity timeline structure" classname="sprint2-vote-creation.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Sprint 2: Vote Creation and Dashboard Enhancement Validation › Dashboard Enhancement Validation › should test dashboard navigation and user flow" classname="sprint2-vote-creation.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Sprint 2: Vote Creation and Dashboard Enhancement Validation › Vote Creation Interface Validation › should access vote creation interface" classname="sprint2-vote-creation.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Sprint 2: Vote Creation and Dashboard Enhancement Validation › Vote Creation Interface Validation › should validate vote creation form structure" classname="sprint2-vote-creation.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Sprint 2: Vote Creation and Dashboard Enhancement Validation › Vote Creation Interface Validation › should test dynamic option management simulation" classname="sprint2-vote-creation.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Sprint 2: Vote Creation and Dashboard Enhancement Validation › Vote Creation Interface Validation › should validate vote creation form submission simulation" classname="sprint2-vote-creation.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Sprint 2: Vote Creation and Dashboard Enhancement Validation › Vote Preview and Sharing Validation › should validate vote preview functionality structure" classname="sprint2-vote-creation.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Sprint 2: Vote Creation and Dashboard Enhancement Validation › Vote Preview and Sharing Validation › should test vote sharing link generation simulation" classname="sprint2-vote-creation.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Sprint 2: Vote Creation and Dashboard Enhancement Validation › Complete User Journey Flow Testing › should simulate complete user workflow" classname="sprint2-vote-creation.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Sprint 2: Vote Creation and Dashboard Enhancement Validation › Complete User Journey Flow Testing › should validate cross-component data flow" classname="sprint2-vote-creation.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Sprint 2: Vote Creation and Dashboard Enhancement Validation › Sprint 2 Performance and Integration Testing › should meet performance thresholds for vote creation workflow" classname="sprint2-vote-creation.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Sprint 2: Vote Creation and Dashboard Enhancement Validation › Sprint 2 Performance and Integration Testing › should validate Material Design 3 compliance in vote creation" classname="sprint2-vote-creation.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+</testsuite>
+<testsuite name="tests/01-core-flows/authentication.spec.js" timestamp="2025-09-16T07:04:53.736Z" hostname="core-webkit" tests="20" failures="0" skipped="20" time="0" errors="0">
+<testcase name="Core Authentication Flow Tests › User Registration Flow › should successfully register a new user with valid data" classname="tests/01-core-flows/authentication.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Core Authentication Flow Tests › User Registration Flow › should handle registration with invalid email format" classname="tests/01-core-flows/authentication.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Core Authentication Flow Tests › User Registration Flow › should handle registration with weak password" classname="tests/01-core-flows/authentication.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Core Authentication Flow Tests › User Registration Flow › should handle password confirmation mismatch" classname="tests/01-core-flows/authentication.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Core Authentication Flow Tests › User Registration Flow › should require terms and conditions acceptance" classname="tests/01-core-flows/authentication.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Core Authentication Flow Tests › User Registration Flow › should handle duplicate email registration" classname="tests/01-core-flows/authentication.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Core Authentication Flow Tests › User Login Flow › should successfully login with valid credentials" classname="tests/01-core-flows/authentication.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Core Authentication Flow Tests › User Login Flow › should handle login with invalid credentials" classname="tests/01-core-flows/authentication.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Core Authentication Flow Tests › User Login Flow › should handle login with empty credentials" classname="tests/01-core-flows/authentication.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Core Authentication Flow Tests › User Login Flow › should maintain remember me functionality" classname="tests/01-core-flows/authentication.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Core Authentication Flow Tests › User Login Flow › should handle admin login with special permissions" classname="tests/01-core-flows/authentication.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Core Authentication Flow Tests › User Logout Flow › should successfully logout user" classname="tests/01-core-flows/authentication.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Core Authentication Flow Tests › User Logout Flow › should handle logout from multiple tabs" classname="tests/01-core-flows/authentication.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Core Authentication Flow Tests › Session Management › should handle session expiration gracefully" classname="tests/01-core-flows/authentication.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Core Authentication Flow Tests › Session Management › should refresh session tokens when needed" classname="tests/01-core-flows/authentication.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Core Authentication Flow Tests › Password Reset Flow › should handle password reset request" classname="tests/01-core-flows/authentication.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Core Authentication Flow Tests › Authentication Performance › should meet performance thresholds for authentication flows" classname="tests/01-core-flows/authentication.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Core Authentication Flow Tests › Authentication Accessibility › should have accessible authentication forms" classname="tests/01-core-flows/authentication.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Core Authentication Flow Tests › Authentication Accessibility › should support keyboard navigation for authentication" classname="tests/01-core-flows/authentication.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Core Authentication Flow Tests › Multi-Factor Authentication › should handle 2FA when enabled" classname="tests/01-core-flows/authentication.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+</testsuite>
+<testsuite name="tests/01-core-flows/public-voting.spec.js" timestamp="2025-09-16T07:04:53.736Z" hostname="core-webkit" tests="26" failures="0" skipped="26" time="0" errors="0">
+<testcase name="Core Public Voting Flow Tests › Anonymous Public Voting › should allow anonymous voting on public votes" classname="tests/01-core-flows/public-voting.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Core Public Voting Flow Tests › Anonymous Public Voting › should handle multi-choice voting" classname="tests/01-core-flows/public-voting.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Core Public Voting Flow Tests › Anonymous Public Voting › should display vote results after voting" classname="tests/01-core-flows/public-voting.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Core Public Voting Flow Tests › Anonymous Public Voting › should handle voting with voter information collection" classname="tests/01-core-flows/public-voting.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Core Public Voting Flow Tests › Authenticated Voting › should handle authenticated voting" classname="tests/01-core-flows/public-voting.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Core Public Voting Flow Tests › Authenticated Voting › should handle login requirement for restricted votes" classname="tests/01-core-flows/public-voting.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Core Public Voting Flow Tests › Authenticated Voting › should prevent duplicate voting by authenticated users" classname="tests/01-core-flows/public-voting.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Core Public Voting Flow Tests › Vote Results and Analytics › should display real-time vote counts" classname="tests/01-core-flows/public-voting.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Core Public Voting Flow Tests › Vote Results and Analytics › should handle results visibility settings" classname="tests/01-core-flows/public-voting.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Core Public Voting Flow Tests › Vote Results and Analytics › should refresh results data" classname="tests/01-core-flows/public-voting.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Core Public Voting Flow Tests › Social Sharing and Interaction › should share vote via social media" classname="tests/01-core-flows/public-voting.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Core Public Voting Flow Tests › Social Sharing and Interaction › should handle vote comments" classname="tests/01-core-flows/public-voting.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Core Public Voting Flow Tests › Mobile Responsive Voting › should handle mobile voting interface" classname="tests/01-core-flows/public-voting.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Core Public Voting Flow Tests › Mobile Responsive Voting › should adapt to different screen sizes" classname="tests/01-core-flows/public-voting.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Core Public Voting Flow Tests › Voting Performance › should meet performance thresholds for voting" classname="tests/01-core-flows/public-voting.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Core Public Voting Flow Tests › Voting Performance › should handle large numbers of options efficiently" classname="tests/01-core-flows/public-voting.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Core Public Voting Flow Tests › Voting Accessibility › should have accessible voting interface" classname="tests/01-core-flows/public-voting.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Core Public Voting Flow Tests › Voting Accessibility › should support keyboard voting" classname="tests/01-core-flows/public-voting.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Core Public Voting Flow Tests › Voting Accessibility › should have proper ARIA labels for vote options" classname="tests/01-core-flows/public-voting.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Core Public Voting Flow Tests › Material Design Validation › should follow Material Design principles for voting interface" classname="tests/01-core-flows/public-voting.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Core Public Voting Flow Tests › Error Scenarios › should handle vote not found" classname="tests/01-core-flows/public-voting.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Core Public Voting Flow Tests › Error Scenarios › should handle closed votes" classname="tests/01-core-flows/public-voting.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Core Public Voting Flow Tests › Error Scenarios › should handle network errors during voting" classname="tests/01-core-flows/public-voting.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Core Public Voting Flow Tests › Error Scenarios › should handle permission errors" classname="tests/01-core-flows/public-voting.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Core Public Voting Flow Tests › Vote State Management › should preserve vote state during page navigation" classname="tests/01-core-flows/public-voting.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Core Public Voting Flow Tests › Vote State Management › should handle browser refresh during voting" classname="tests/01-core-flows/public-voting.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+</testsuite>
+<testsuite name="tests/01-core-flows/vote-creation.spec.js" timestamp="2025-09-16T07:04:53.736Z" hostname="core-webkit" tests="20" failures="0" skipped="20" time="0" errors="0">
+<testcase name="Core Vote Creation Flow Tests › Basic Vote Creation › should successfully create a simple vote" classname="tests/01-core-flows/vote-creation.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Core Vote Creation Flow Tests › Basic Vote Creation › should create a multi-choice vote" classname="tests/01-core-flows/vote-creation.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Core Vote Creation Flow Tests › Basic Vote Creation › should create a time-limited vote" classname="tests/01-core-flows/vote-creation.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Core Vote Creation Flow Tests › Complex Vote Creation › should create a complex vote with advanced features" classname="tests/01-core-flows/vote-creation.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Core Vote Creation Flow Tests › Complex Vote Creation › should handle bulk option import" classname="tests/01-core-flows/vote-creation.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Core Vote Creation Flow Tests › File Upload for Vote Options › should handle image uploads for vote options" classname="tests/01-core-flows/vote-creation.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Core Vote Creation Flow Tests › Draft Management › should save and load vote drafts" classname="tests/01-core-flows/vote-creation.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Core Vote Creation Flow Tests › Preview Functionality › should show accurate vote preview" classname="tests/01-core-flows/vote-creation.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Core Vote Creation Flow Tests › Form Validation › should validate required fields" classname="tests/01-core-flows/vote-creation.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Core Vote Creation Flow Tests › Form Validation › should validate minimum options requirement" classname="tests/01-core-flows/vote-creation.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Core Vote Creation Flow Tests › Form Validation › should validate empty options" classname="tests/01-core-flows/vote-creation.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Core Vote Creation Flow Tests › Form Validation › should validate date ranges" classname="tests/01-core-flows/vote-creation.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Core Vote Creation Flow Tests › Step Navigation › should handle step navigation correctly" classname="tests/01-core-flows/vote-creation.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Core Vote Creation Flow Tests › Step Navigation › should preserve data across step navigation" classname="tests/01-core-flows/vote-creation.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Core Vote Creation Flow Tests › Performance Testing › should meet performance thresholds for vote creation" classname="tests/01-core-flows/vote-creation.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Core Vote Creation Flow Tests › Accessibility Testing › should have accessible vote creation form" classname="tests/01-core-flows/vote-creation.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Core Vote Creation Flow Tests › Accessibility Testing › should support keyboard navigation through vote creation" classname="tests/01-core-flows/vote-creation.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Core Vote Creation Flow Tests › Material Design Validation › should follow Material Design principles for vote creation form" classname="tests/01-core-flows/vote-creation.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Core Vote Creation Flow Tests › Error Handling › should handle server errors gracefully" classname="tests/01-core-flows/vote-creation.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Core Vote Creation Flow Tests › Error Handling › should handle network timeout" classname="tests/01-core-flows/vote-creation.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+</testsuite>
+<testsuite name="tests/02-advanced-scenarios/responsive-design.spec.js" timestamp="2025-09-16T07:04:53.736Z" hostname="mobile-chrome" tests="23" failures="0" skipped="23" time="0" errors="0">
+<testcase name="Advanced Responsive Design Tests › Material Design Breakpoint Testing › should adapt layout across all Material Design breakpoints" classname="tests/02-advanced-scenarios/responsive-design.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Advanced Responsive Design Tests › Material Design Breakpoint Testing › should handle intermediate viewport sizes smoothly" classname="tests/02-advanced-scenarios/responsive-design.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Advanced Responsive Design Tests › Mobile-First Responsive Navigation › should show mobile navigation on small screens" classname="tests/02-advanced-scenarios/responsive-design.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Advanced Responsive Design Tests › Mobile-First Responsive Navigation › should hide mobile navigation on desktop screens" classname="tests/02-advanced-scenarios/responsive-design.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Advanced Responsive Design Tests › Mobile-First Responsive Navigation › should maintain navigation functionality across breakpoints" classname="tests/02-advanced-scenarios/responsive-design.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Advanced Responsive Design Tests › Dashboard Responsive Layout › should adapt dashboard layout for different screen sizes" classname="tests/02-advanced-scenarios/responsive-design.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Advanced Responsive Design Tests › Dashboard Responsive Layout › should handle vote card grid responsiveness" classname="tests/02-advanced-scenarios/responsive-design.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Advanced Responsive Design Tests › Dashboard Responsive Layout › should maintain dashboard functionality on mobile" classname="tests/02-advanced-scenarios/responsive-design.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Advanced Responsive Design Tests › Vote Creation Form Responsiveness › should adapt vote creation form for mobile devices" classname="tests/02-advanced-scenarios/responsive-design.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Advanced Responsive Design Tests › Vote Creation Form Responsiveness › should handle option management on mobile" classname="tests/02-advanced-scenarios/responsive-design.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Advanced Responsive Design Tests › Vote Creation Form Responsiveness › should adapt form controls for touch interaction" classname="tests/02-advanced-scenarios/responsive-design.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Advanced Responsive Design Tests › Public Voting Interface Responsiveness › should provide responsive voting interface" classname="tests/02-advanced-scenarios/responsive-design.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Advanced Responsive Design Tests › Public Voting Interface Responsiveness › should handle results display responsively" classname="tests/02-advanced-scenarios/responsive-design.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Advanced Responsive Design Tests › Public Voting Interface Responsiveness › should support mobile touch voting" classname="tests/02-advanced-scenarios/responsive-design.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Advanced Responsive Design Tests › Admin Interface Responsiveness › should adapt admin interface for tablets and mobile" classname="tests/02-advanced-scenarios/responsive-design.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Advanced Responsive Design Tests › Admin Interface Responsiveness › should handle data tables responsively" classname="tests/02-advanced-scenarios/responsive-design.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Advanced Responsive Design Tests › Admin Interface Responsiveness › should maintain admin form usability on mobile" classname="tests/02-advanced-scenarios/responsive-design.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Advanced Responsive Design Tests › Cross-Device Consistency › should maintain visual consistency across devices" classname="tests/02-advanced-scenarios/responsive-design.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Advanced Responsive Design Tests › Cross-Device Consistency › should maintain feature parity across form factors" classname="tests/02-advanced-scenarios/responsive-design.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Advanced Responsive Design Tests › Performance Impact of Responsive Design › should maintain performance across viewport changes" classname="tests/02-advanced-scenarios/responsive-design.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Advanced Responsive Design Tests › Performance Impact of Responsive Design › should optimize resource loading for mobile" classname="tests/02-advanced-scenarios/responsive-design.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Advanced Responsive Design Tests › Responsive Accessibility › should maintain accessibility across screen sizes" classname="tests/02-advanced-scenarios/responsive-design.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Advanced Responsive Design Tests › Responsive Accessibility › should support zoom up to 200% without loss of functionality" classname="tests/02-advanced-scenarios/responsive-design.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+</testsuite>
+<testsuite name="tests/02-advanced-scenarios/responsive-design.spec.js" timestamp="2025-09-16T07:04:53.736Z" hostname="mobile-safari" tests="23" failures="0" skipped="23" time="0" errors="0">
+<testcase name="Advanced Responsive Design Tests › Material Design Breakpoint Testing › should adapt layout across all Material Design breakpoints" classname="tests/02-advanced-scenarios/responsive-design.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Advanced Responsive Design Tests › Material Design Breakpoint Testing › should handle intermediate viewport sizes smoothly" classname="tests/02-advanced-scenarios/responsive-design.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Advanced Responsive Design Tests › Mobile-First Responsive Navigation › should show mobile navigation on small screens" classname="tests/02-advanced-scenarios/responsive-design.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Advanced Responsive Design Tests › Mobile-First Responsive Navigation › should hide mobile navigation on desktop screens" classname="tests/02-advanced-scenarios/responsive-design.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Advanced Responsive Design Tests › Mobile-First Responsive Navigation › should maintain navigation functionality across breakpoints" classname="tests/02-advanced-scenarios/responsive-design.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Advanced Responsive Design Tests › Dashboard Responsive Layout › should adapt dashboard layout for different screen sizes" classname="tests/02-advanced-scenarios/responsive-design.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Advanced Responsive Design Tests › Dashboard Responsive Layout › should handle vote card grid responsiveness" classname="tests/02-advanced-scenarios/responsive-design.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Advanced Responsive Design Tests › Dashboard Responsive Layout › should maintain dashboard functionality on mobile" classname="tests/02-advanced-scenarios/responsive-design.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Advanced Responsive Design Tests › Vote Creation Form Responsiveness › should adapt vote creation form for mobile devices" classname="tests/02-advanced-scenarios/responsive-design.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Advanced Responsive Design Tests › Vote Creation Form Responsiveness › should handle option management on mobile" classname="tests/02-advanced-scenarios/responsive-design.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Advanced Responsive Design Tests › Vote Creation Form Responsiveness › should adapt form controls for touch interaction" classname="tests/02-advanced-scenarios/responsive-design.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Advanced Responsive Design Tests › Public Voting Interface Responsiveness › should provide responsive voting interface" classname="tests/02-advanced-scenarios/responsive-design.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Advanced Responsive Design Tests › Public Voting Interface Responsiveness › should handle results display responsively" classname="tests/02-advanced-scenarios/responsive-design.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Advanced Responsive Design Tests › Public Voting Interface Responsiveness › should support mobile touch voting" classname="tests/02-advanced-scenarios/responsive-design.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Advanced Responsive Design Tests › Admin Interface Responsiveness › should adapt admin interface for tablets and mobile" classname="tests/02-advanced-scenarios/responsive-design.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Advanced Responsive Design Tests › Admin Interface Responsiveness › should handle data tables responsively" classname="tests/02-advanced-scenarios/responsive-design.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Advanced Responsive Design Tests › Admin Interface Responsiveness › should maintain admin form usability on mobile" classname="tests/02-advanced-scenarios/responsive-design.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Advanced Responsive Design Tests › Cross-Device Consistency › should maintain visual consistency across devices" classname="tests/02-advanced-scenarios/responsive-design.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Advanced Responsive Design Tests › Cross-Device Consistency › should maintain feature parity across form factors" classname="tests/02-advanced-scenarios/responsive-design.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Advanced Responsive Design Tests › Performance Impact of Responsive Design › should maintain performance across viewport changes" classname="tests/02-advanced-scenarios/responsive-design.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Advanced Responsive Design Tests › Performance Impact of Responsive Design › should optimize resource loading for mobile" classname="tests/02-advanced-scenarios/responsive-design.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Advanced Responsive Design Tests › Responsive Accessibility › should maintain accessibility across screen sizes" classname="tests/02-advanced-scenarios/responsive-design.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Advanced Responsive Design Tests › Responsive Accessibility › should support zoom up to 200% without loss of functionality" classname="tests/02-advanced-scenarios/responsive-design.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+</testsuite>
+<testsuite name="tests/02-advanced-scenarios/responsive-design.spec.js" timestamp="2025-09-16T07:04:53.736Z" hostname="tablet-ipad" tests="23" failures="0" skipped="23" time="0" errors="0">
+<testcase name="Advanced Responsive Design Tests › Material Design Breakpoint Testing › should adapt layout across all Material Design breakpoints" classname="tests/02-advanced-scenarios/responsive-design.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Advanced Responsive Design Tests › Material Design Breakpoint Testing › should handle intermediate viewport sizes smoothly" classname="tests/02-advanced-scenarios/responsive-design.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Advanced Responsive Design Tests › Mobile-First Responsive Navigation › should show mobile navigation on small screens" classname="tests/02-advanced-scenarios/responsive-design.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Advanced Responsive Design Tests › Mobile-First Responsive Navigation › should hide mobile navigation on desktop screens" classname="tests/02-advanced-scenarios/responsive-design.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Advanced Responsive Design Tests › Mobile-First Responsive Navigation › should maintain navigation functionality across breakpoints" classname="tests/02-advanced-scenarios/responsive-design.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Advanced Responsive Design Tests › Dashboard Responsive Layout › should adapt dashboard layout for different screen sizes" classname="tests/02-advanced-scenarios/responsive-design.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Advanced Responsive Design Tests › Dashboard Responsive Layout › should handle vote card grid responsiveness" classname="tests/02-advanced-scenarios/responsive-design.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Advanced Responsive Design Tests › Dashboard Responsive Layout › should maintain dashboard functionality on mobile" classname="tests/02-advanced-scenarios/responsive-design.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Advanced Responsive Design Tests › Vote Creation Form Responsiveness › should adapt vote creation form for mobile devices" classname="tests/02-advanced-scenarios/responsive-design.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Advanced Responsive Design Tests › Vote Creation Form Responsiveness › should handle option management on mobile" classname="tests/02-advanced-scenarios/responsive-design.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Advanced Responsive Design Tests › Vote Creation Form Responsiveness › should adapt form controls for touch interaction" classname="tests/02-advanced-scenarios/responsive-design.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Advanced Responsive Design Tests › Public Voting Interface Responsiveness › should provide responsive voting interface" classname="tests/02-advanced-scenarios/responsive-design.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Advanced Responsive Design Tests › Public Voting Interface Responsiveness › should handle results display responsively" classname="tests/02-advanced-scenarios/responsive-design.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Advanced Responsive Design Tests › Public Voting Interface Responsiveness › should support mobile touch voting" classname="tests/02-advanced-scenarios/responsive-design.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Advanced Responsive Design Tests › Admin Interface Responsiveness › should adapt admin interface for tablets and mobile" classname="tests/02-advanced-scenarios/responsive-design.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Advanced Responsive Design Tests › Admin Interface Responsiveness › should handle data tables responsively" classname="tests/02-advanced-scenarios/responsive-design.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Advanced Responsive Design Tests › Admin Interface Responsiveness › should maintain admin form usability on mobile" classname="tests/02-advanced-scenarios/responsive-design.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Advanced Responsive Design Tests › Cross-Device Consistency › should maintain visual consistency across devices" classname="tests/02-advanced-scenarios/responsive-design.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Advanced Responsive Design Tests › Cross-Device Consistency › should maintain feature parity across form factors" classname="tests/02-advanced-scenarios/responsive-design.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Advanced Responsive Design Tests › Performance Impact of Responsive Design › should maintain performance across viewport changes" classname="tests/02-advanced-scenarios/responsive-design.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Advanced Responsive Design Tests › Performance Impact of Responsive Design › should optimize resource loading for mobile" classname="tests/02-advanced-scenarios/responsive-design.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Advanced Responsive Design Tests › Responsive Accessibility › should maintain accessibility across screen sizes" classname="tests/02-advanced-scenarios/responsive-design.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Advanced Responsive Design Tests › Responsive Accessibility › should support zoom up to 200% without loss of functionality" classname="tests/02-advanced-scenarios/responsive-design.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+</testsuite>
+<testsuite name="tests/02-advanced-scenarios/form-validation.spec.js" timestamp="2025-09-16T07:04:53.736Z" hostname="advanced-chromium" tests="22" failures="0" skipped="22" time="0" errors="0">
+<testcase name="Advanced Form Validation Tests › Real-time Field Validation › should validate email format in real-time" classname="tests/02-advanced-scenarios/form-validation.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Advanced Form Validation Tests › Real-time Field Validation › should validate password strength in real-time" classname="tests/02-advanced-scenarios/form-validation.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Advanced Form Validation Tests › Real-time Field Validation › should validate form fields on blur and focus" classname="tests/02-advanced-scenarios/form-validation.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Advanced Form Validation Tests › Real-time Field Validation › should handle async validation (email uniqueness)" classname="tests/02-advanced-scenarios/form-validation.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Advanced Form Validation Tests › Form Validation Performance › should validate forms within performance thresholds" classname="tests/02-advanced-scenarios/form-validation.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Advanced Form Validation Tests › Form Validation Performance › should handle rapid field updates without validation lag" classname="tests/02-advanced-scenarios/form-validation.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Advanced Form Validation Tests › Complex Vote Creation Form Validation › should validate multi-step form progression" classname="tests/02-advanced-scenarios/form-validation.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Advanced Form Validation Tests › Complex Vote Creation Form Validation › should validate vote options requirements" classname="tests/02-advanced-scenarios/form-validation.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Advanced Form Validation Tests › Complex Vote Creation Form Validation › should validate empty and duplicate options" classname="tests/02-advanced-scenarios/form-validation.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Advanced Form Validation Tests › Complex Vote Creation Form Validation › should validate date range settings" classname="tests/02-advanced-scenarios/form-validation.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Advanced Form Validation Tests › Complex Vote Creation Form Validation › should validate numeric field constraints" classname="tests/02-advanced-scenarios/form-validation.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Advanced Form Validation Tests › Admin Form Validation › should validate user management forms" classname="tests/02-advanced-scenarios/form-validation.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Advanced Form Validation Tests › Admin Form Validation › should validate system settings forms" classname="tests/02-advanced-scenarios/form-validation.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Advanced Form Validation Tests › Admin Form Validation › should validate security settings with complex rules" classname="tests/02-advanced-scenarios/form-validation.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Advanced Form Validation Tests › Cross-field Validation › should validate password confirmation matching" classname="tests/02-advanced-scenarios/form-validation.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Advanced Form Validation Tests › Cross-field Validation › should validate start/end date relationships" classname="tests/02-advanced-scenarios/form-validation.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Advanced Form Validation Tests › Cross-field Validation › should validate dependent field relationships" classname="tests/02-advanced-scenarios/form-validation.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Advanced Form Validation Tests › Form Validation Accessibility › should provide accessible error messages" classname="tests/02-advanced-scenarios/form-validation.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Advanced Form Validation Tests › Form Validation Accessibility › should support keyboard navigation of validation errors" classname="tests/02-advanced-scenarios/form-validation.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Advanced Form Validation Tests › Form Validation Error Recovery › should clear errors when fields become valid" classname="tests/02-advanced-scenarios/form-validation.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Advanced Form Validation Tests › Form Validation Error Recovery › should handle server-side validation errors" classname="tests/02-advanced-scenarios/form-validation.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Advanced Form Validation Tests › Form Validation Error Recovery › should handle network errors during validation" classname="tests/02-advanced-scenarios/form-validation.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+</testsuite>
+<testsuite name="tests/02-advanced-scenarios/modal-interactions.spec.js" timestamp="2025-09-16T07:04:53.736Z" hostname="advanced-chromium" tests="18" failures="0" skipped="18" time="0" errors="0">
+<testcase name="Advanced Modal Interaction Tests › Authentication Modal Interactions › should handle login modal lifecycle" classname="tests/02-advanced-scenarios/modal-interactions.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Advanced Modal Interaction Tests › Authentication Modal Interactions › should handle registration modal with form validation" classname="tests/02-advanced-scenarios/modal-interactions.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Advanced Modal Interaction Tests › Authentication Modal Interactions › should handle modal keyboard navigation and focus management" classname="tests/02-advanced-scenarios/modal-interactions.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Advanced Modal Interaction Tests › Authentication Modal Interactions › should prevent tabbing outside modal (focus trap)" classname="tests/02-advanced-scenarios/modal-interactions.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Advanced Modal Interaction Tests › Vote Management Modal Interactions › should handle vote deletion confirmation modal" classname="tests/02-advanced-scenarios/modal-interactions.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Advanced Modal Interaction Tests › Vote Management Modal Interactions › should handle vote sharing modal with social options" classname="tests/02-advanced-scenarios/modal-interactions.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Advanced Modal Interaction Tests › Vote Management Modal Interactions › should handle vote preview modal with accurate data" classname="tests/02-advanced-scenarios/modal-interactions.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Advanced Modal Interaction Tests › Admin Modal Interactions › should handle user management modals" classname="tests/02-advanced-scenarios/modal-interactions.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Advanced Modal Interaction Tests › Admin Modal Interactions › should handle bulk action confirmation modals" classname="tests/02-advanced-scenarios/modal-interactions.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Advanced Modal Interaction Tests › Admin Modal Interactions › should handle system settings confirmation modals" classname="tests/02-advanced-scenarios/modal-interactions.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Advanced Modal Interaction Tests › Vote Participation Modal Interactions › should handle vote confirmation modal" classname="tests/02-advanced-scenarios/modal-interactions.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Advanced Modal Interaction Tests › Vote Participation Modal Interactions › should handle change vote modal for authenticated users" classname="tests/02-advanced-scenarios/modal-interactions.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Advanced Modal Interaction Tests › Modal Accessibility and Material Design › should have accessible modal implementations" classname="tests/02-advanced-scenarios/modal-interactions.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Advanced Modal Interaction Tests › Modal Accessibility and Material Design › should handle multiple modal layers correctly" classname="tests/02-advanced-scenarios/modal-interactions.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Advanced Modal Interaction Tests › Modal Accessibility and Material Design › should handle modal backdrop click behavior" classname="tests/02-advanced-scenarios/modal-interactions.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Advanced Modal Interaction Tests › Modal Accessibility and Material Design › should maintain modal performance under load" classname="tests/02-advanced-scenarios/modal-interactions.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Advanced Modal Interaction Tests › Modal Error Handling › should handle modal content loading errors" classname="tests/02-advanced-scenarios/modal-interactions.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Advanced Modal Interaction Tests › Modal Error Handling › should handle modal submission errors gracefully" classname="tests/02-advanced-scenarios/modal-interactions.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+</testsuite>
+<testsuite name="tests/03-error-scenarios/network-errors.spec.js" timestamp="2025-09-16T07:04:53.736Z" hostname="error-scenarios" tests="23" failures="0" skipped="23" time="0" errors="0">
+<testcase name="Network Error Scenario Tests › Offline Mode Testing › should handle going offline during authentication" classname="tests/03-error-scenarios/network-errors.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Network Error Scenario Tests › Offline Mode Testing › should handle going offline during vote submission" classname="tests/03-error-scenarios/network-errors.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Network Error Scenario Tests › Offline Mode Testing › should cache content for offline viewing" classname="tests/03-error-scenarios/network-errors.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Network Error Scenario Tests › Offline Mode Testing › should handle offline mode with graceful degradation" classname="tests/03-error-scenarios/network-errors.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Network Error Scenario Tests › Connection Timeout Testing › should handle API request timeouts" classname="tests/03-error-scenarios/network-errors.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Network Error Scenario Tests › Connection Timeout Testing › should handle vote creation timeout" classname="tests/03-error-scenarios/network-errors.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Network Error Scenario Tests › Connection Timeout Testing › should handle file upload timeouts" classname="tests/03-error-scenarios/network-errors.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Network Error Scenario Tests › Server Error Response Testing › should handle 500 internal server errors" classname="tests/03-error-scenarios/network-errors.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Network Error Scenario Tests › Server Error Response Testing › should handle 503 service unavailable" classname="tests/03-error-scenarios/network-errors.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Network Error Scenario Tests › Server Error Response Testing › should handle rate limiting (429 errors)" classname="tests/03-error-scenarios/network-errors.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Network Error Scenario Tests › Server Error Response Testing › should handle CORS errors" classname="tests/03-error-scenarios/network-errors.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Network Error Scenario Tests › Intermittent Network Issues › should handle flaky network connections" classname="tests/03-error-scenarios/network-errors.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Network Error Scenario Tests › Intermittent Network Issues › should implement exponential backoff for retries" classname="tests/03-error-scenarios/network-errors.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Network Error Scenario Tests › Slow Network Simulation › should handle slow network conditions" classname="tests/03-error-scenarios/network-errors.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Network Error Scenario Tests › Slow Network Simulation › should show loading indicators for slow operations" classname="tests/03-error-scenarios/network-errors.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Network Error Scenario Tests › Network Recovery Testing › should automatically retry failed requests when connection restored" classname="tests/03-error-scenarios/network-errors.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Network Error Scenario Tests › Network Recovery Testing › should preserve form data during network issues" classname="tests/03-error-scenarios/network-errors.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Network Error Scenario Tests › Network Recovery Testing › should handle partial page loads gracefully" classname="tests/03-error-scenarios/network-errors.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Network Error Scenario Tests › API Endpoint Specific Errors › should handle authentication API failures" classname="tests/03-error-scenarios/network-errors.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Network Error Scenario Tests › API Endpoint Specific Errors › should handle vote management API failures" classname="tests/03-error-scenarios/network-errors.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Network Error Scenario Tests › Network Error User Experience › should provide helpful error messages and recovery options" classname="tests/03-error-scenarios/network-errors.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Network Error Scenario Tests › Network Error User Experience › should maintain accessibility during network errors" classname="tests/03-error-scenarios/network-errors.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Network Error Scenario Tests › Network Error User Experience › should track network error metrics" classname="tests/03-error-scenarios/network-errors.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+</testsuite>
+<testsuite name="tests/03-error-scenarios/validation-errors.spec.js" timestamp="2025-09-16T07:04:53.736Z" hostname="error-scenarios" tests="24" failures="0" skipped="24" time="0" errors="0">
+<testcase name="Validation Error Scenarios › Authentication Validation Errors › should handle empty authentication fields" classname="tests/03-error-scenarios/validation-errors.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Validation Error Scenarios › Authentication Validation Errors › should handle invalid email format validation" classname="tests/03-error-scenarios/validation-errors.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Validation Error Scenarios › Authentication Validation Errors › should validate password strength requirements" classname="tests/03-error-scenarios/validation-errors.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Validation Error Scenarios › Authentication Validation Errors › should validate password confirmation mismatch" classname="tests/03-error-scenarios/validation-errors.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Validation Error Scenarios › Authentication Validation Errors › should handle duplicate username/email validation" classname="tests/03-error-scenarios/validation-errors.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Validation Error Scenarios › Vote Creation Validation Errors › should validate required vote fields" classname="tests/03-error-scenarios/validation-errors.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Validation Error Scenarios › Vote Creation Validation Errors › should validate vote title length constraints" classname="tests/03-error-scenarios/validation-errors.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Validation Error Scenarios › Vote Creation Validation Errors › should validate vote deadline constraints" classname="tests/03-error-scenarios/validation-errors.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Validation Error Scenarios › Vote Creation Validation Errors › should validate minimum vote options requirement" classname="tests/03-error-scenarios/validation-errors.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Validation Error Scenarios › Vote Creation Validation Errors › should validate vote option content requirements" classname="tests/03-error-scenarios/validation-errors.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Validation Error Scenarios › Vote Creation Validation Errors › should validate file upload constraints" classname="tests/03-error-scenarios/validation-errors.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Validation Error Scenarios › Voting Validation Errors › should validate vote value constraints" classname="tests/03-error-scenarios/validation-errors.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Validation Error Scenarios › Voting Validation Errors › should validate total vote allocation" classname="tests/03-error-scenarios/validation-errors.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Validation Error Scenarios › Voting Validation Errors › should validate voting deadline constraints" classname="tests/03-error-scenarios/validation-errors.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Validation Error Scenarios › Voting Validation Errors › should validate duplicate voting prevention" classname="tests/03-error-scenarios/validation-errors.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Validation Error Scenarios › Admin Validation Errors › should validate user management constraints" classname="tests/03-error-scenarios/validation-errors.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Validation Error Scenarios › Admin Validation Errors › should validate system settings constraints" classname="tests/03-error-scenarios/validation-errors.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Validation Error Scenarios › Admin Validation Errors › should validate backup/restore operations" classname="tests/03-error-scenarios/validation-errors.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Validation Error Scenarios › Performance Under Validation Load › should maintain performance during validation cascades" classname="tests/03-error-scenarios/validation-errors.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Validation Error Scenarios › Performance Under Validation Load › should handle validation with slow network" classname="tests/03-error-scenarios/validation-errors.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Validation Error Scenarios › Validation Error Recovery › should recover from validation errors gracefully" classname="tests/03-error-scenarios/validation-errors.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Validation Error Scenarios › Validation Error Recovery › should maintain form state during validation errors" classname="tests/03-error-scenarios/validation-errors.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Validation Error Scenarios › Cross-Field Validation › should validate interdependent fields correctly" classname="tests/03-error-scenarios/validation-errors.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Validation Error Scenarios › Cross-Field Validation › should validate allocation totals across vote options" classname="tests/03-error-scenarios/validation-errors.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+</testsuite>
+<testsuite name="sprint1-authentication-adapted.spec.js" timestamp="2025-09-16T07:04:53.736Z" hostname="legacy-adapted" tests="16" failures="0" skipped="16" time="0" errors="0">
+<testcase name="Sprint 1: Authentication System Validation (Adapted) › Material Design 3 Landing Page Structure › should display complete Material Design 3 landing page" classname="sprint1-authentication-adapted.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Sprint 1: Authentication System Validation (Adapted) › Material Design 3 Landing Page Structure › should have responsive design across breakpoints" classname="sprint1-authentication-adapted.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Sprint 1: Authentication System Validation (Adapted) › Material Design 3 Landing Page Structure › should have proper semantic HTML structure" classname="sprint1-authentication-adapted.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Sprint 1: Authentication System Validation (Adapted) › Authentication Modal Structure and Behavior › should have complete login modal HTML structure" classname="sprint1-authentication-adapted.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Sprint 1: Authentication System Validation (Adapted) › Authentication Modal Structure and Behavior › should have complete registration modal HTML structure" classname="sprint1-authentication-adapted.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Sprint 1: Authentication System Validation (Adapted) › Authentication Modal Structure and Behavior › should handle form field interactions" classname="sprint1-authentication-adapted.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Sprint 1: Authentication System Validation (Adapted) › Authentication Modal Structure and Behavior › should validate form field attributes and HTML5 validation" classname="sprint1-authentication-adapted.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Sprint 1: Authentication System Validation (Adapted) › Authentication API Integration › should have accessible authentication endpoints" classname="sprint1-authentication-adapted.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Sprint 1: Authentication System Validation (Adapted) › Authentication API Integration › should handle authentication API calls" classname="sprint1-authentication-adapted.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Sprint 1: Authentication System Validation (Adapted) › Authentication API Integration › should test registration API endpoint" classname="sprint1-authentication-adapted.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Sprint 1: Authentication System Validation (Adapted) › JWT Token and Session Management › should support sessionStorage for authentication state" classname="sprint1-authentication-adapted.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Sprint 1: Authentication System Validation (Adapted) › JWT Token and Session Management › should clear authentication state on logout" classname="sprint1-authentication-adapted.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Sprint 1: Authentication System Validation (Adapted) › Dashboard Access and Redirection › should attempt dashboard access" classname="sprint1-authentication-adapted.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Sprint 1: Authentication System Validation (Adapted) › Dashboard Access and Redirection › should handle authentication flow with mock token" classname="sprint1-authentication-adapted.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Sprint 1: Authentication System Validation (Adapted) › Performance and Error Handling › should meet performance thresholds" classname="sprint1-authentication-adapted.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Sprint 1: Authentication System Validation (Adapted) › Performance and Error Handling › should handle JavaScript errors gracefully" classname="sprint1-authentication-adapted.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+</testsuite>
+<testsuite name="sprint1-authentication.spec.js" timestamp="2025-09-16T07:04:53.736Z" hostname="legacy-adapted" tests="11" failures="0" skipped="11" time="0" errors="0">
+<testcase name="Sprint 1: Authentication System Validation › Landing Page Material Design Validation › should display Material Design 3 landing page correctly" classname="sprint1-authentication.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Sprint 1: Authentication System Validation › Landing Page Material Design Validation › should be responsive across different screen sizes" classname="sprint1-authentication.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Sprint 1: Authentication System Validation › Landing Page Material Design Validation › should handle navigation interactions correctly" classname="sprint1-authentication.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Sprint 1: Authentication System Validation › Authentication Flow Testing › should handle login attempt and token management" classname="sprint1-authentication.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Sprint 1: Authentication System Validation › Authentication Flow Testing › should validate JWT token format and persistence" classname="sprint1-authentication.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Sprint 1: Authentication System Validation › Authentication Flow Testing › should handle authentication API integration" classname="sprint1-authentication.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Sprint 1: Authentication System Validation › Dashboard Post-Authentication Validation › should redirect to dashboard after authentication" classname="sprint1-authentication.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Sprint 1: Authentication System Validation › Dashboard Post-Authentication Validation › should maintain session across navigation" classname="sprint1-authentication.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Sprint 1: Authentication System Validation › Dashboard Post-Authentication Validation › should measure authentication performance" classname="sprint1-authentication.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Sprint 1: Authentication System Validation › Error Handling and Edge Cases › should handle network errors gracefully" classname="sprint1-authentication.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Sprint 1: Authentication System Validation › Error Handling and Edge Cases › should validate form validation and error messages" classname="sprint1-authentication.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+</testsuite>
+<testsuite name="sprint2-vote-creation.spec.js" timestamp="2025-09-16T07:04:53.736Z" hostname="legacy-adapted" tests="14" failures="0" skipped="14" time="0" errors="0">
+<testcase name="Sprint 2: Vote Creation and Dashboard Enhancement Validation › Dashboard Enhancement Validation › should display enhanced dashboard with status cards and timeline" classname="sprint2-vote-creation.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Sprint 2: Vote Creation and Dashboard Enhancement Validation › Dashboard Enhancement Validation › should validate dashboard status cards structure" classname="sprint2-vote-creation.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Sprint 2: Vote Creation and Dashboard Enhancement Validation › Dashboard Enhancement Validation › should validate activity timeline structure" classname="sprint2-vote-creation.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Sprint 2: Vote Creation and Dashboard Enhancement Validation › Dashboard Enhancement Validation › should test dashboard navigation and user flow" classname="sprint2-vote-creation.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Sprint 2: Vote Creation and Dashboard Enhancement Validation › Vote Creation Interface Validation › should access vote creation interface" classname="sprint2-vote-creation.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Sprint 2: Vote Creation and Dashboard Enhancement Validation › Vote Creation Interface Validation › should validate vote creation form structure" classname="sprint2-vote-creation.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Sprint 2: Vote Creation and Dashboard Enhancement Validation › Vote Creation Interface Validation › should test dynamic option management simulation" classname="sprint2-vote-creation.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Sprint 2: Vote Creation and Dashboard Enhancement Validation › Vote Creation Interface Validation › should validate vote creation form submission simulation" classname="sprint2-vote-creation.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Sprint 2: Vote Creation and Dashboard Enhancement Validation › Vote Preview and Sharing Validation › should validate vote preview functionality structure" classname="sprint2-vote-creation.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Sprint 2: Vote Creation and Dashboard Enhancement Validation › Vote Preview and Sharing Validation › should test vote sharing link generation simulation" classname="sprint2-vote-creation.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Sprint 2: Vote Creation and Dashboard Enhancement Validation › Complete User Journey Flow Testing › should simulate complete user workflow" classname="sprint2-vote-creation.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Sprint 2: Vote Creation and Dashboard Enhancement Validation › Complete User Journey Flow Testing › should validate cross-component data flow" classname="sprint2-vote-creation.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Sprint 2: Vote Creation and Dashboard Enhancement Validation › Sprint 2 Performance and Integration Testing › should meet performance thresholds for vote creation workflow" classname="sprint2-vote-creation.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Sprint 2: Vote Creation and Dashboard Enhancement Validation › Sprint 2 Performance and Integration Testing › should validate Material Design 3 compliance in vote creation" classname="sprint2-vote-creation.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+</testsuite>
+<testsuite name="sprint3-vote-management.spec.js" timestamp="2025-09-16T07:04:53.736Z" hostname="legacy-adapted" tests="17" failures="0" skipped="17" time="0" errors="0">
+<testcase name="Sprint 3: Vote Management &amp; Analytics › Phase 1: Vote Management UI › should display vote management section with all components" classname="sprint3-vote-management.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Sprint 3: Vote Management &amp; Analytics › Phase 1: Vote Management UI › should filter votes correctly" classname="sprint3-vote-management.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Sprint 3: Vote Management &amp; Analytics › Phase 1: Vote Management UI › should handle sort dropdown changes" classname="sprint3-vote-management.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Sprint 3: Vote Management &amp; Analytics › Phase 1: Vote Management UI › should show vote cards with proper structure" classname="sprint3-vote-management.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Sprint 3: Vote Management &amp; Analytics › Phase 1: Vote Management UI › should handle pagination with load more" classname="sprint3-vote-management.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Sprint 3: Vote Management &amp; Analytics › Phase 2: Edit/Delete Operations › should open edit modal with vote data" classname="sprint3-vote-management.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Sprint 3: Vote Management &amp; Analytics › Phase 2: Edit/Delete Operations › should handle edit restrictions based on vote status" classname="sprint3-vote-management.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Sprint 3: Vote Management &amp; Analytics › Phase 2: Edit/Delete Operations › should save vote changes successfully" classname="sprint3-vote-management.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Sprint 3: Vote Management &amp; Analytics › Phase 2: Edit/Delete Operations › should open delete confirmation modal" classname="sprint3-vote-management.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Sprint 3: Vote Management &amp; Analytics › Phase 3: Results Visualization › should open results modal with charts" classname="sprint3-vote-management.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Sprint 3: Vote Management &amp; Analytics › Phase 3: Results Visualization › should display export buttons and refresh functionality" classname="sprint3-vote-management.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Sprint 3: Vote Management &amp; Analytics › Phase 3: Results Visualization › should handle responsive chart behavior" classname="sprint3-vote-management.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Sprint 3: Vote Management &amp; Analytics › Phase 4: Export Functionality › should handle CSV export download" classname="sprint3-vote-management.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Sprint 3: Vote Management &amp; Analytics › Phase 4: Export Functionality › should handle JSON export download" classname="sprint3-vote-management.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Sprint 3: Vote Management &amp; Analytics › Integration and Performance › should complete full vote management workflow" classname="sprint3-vote-management.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Sprint 3: Vote Management &amp; Analytics › Integration and Performance › should meet performance requirements" classname="sprint3-vote-management.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Sprint 3: Vote Management &amp; Analytics › Integration and Performance › should handle error conditions gracefully" classname="sprint3-vote-management.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+</testsuite>
+</testsuites>
