@@ -91,7 +91,7 @@ class TouchInteractionManager {
     }
   }
 
-  handleTouchCancel(event) {
+  handleTouchCancel(_event) {
     // Clean up any active touch states
     this.clearLongPressTimer()
     this.activeTouchTargets.forEach(target => {
@@ -310,7 +310,7 @@ class TouchInteractionManager {
     }
   }
 
-  showCardContextMenu(element, event) {
+  showCardContextMenu(element, _event) {
     // Example: Show context menu for vote cards
     console.log('Long press on card:', element.dataset.voteId)
 
@@ -319,7 +319,7 @@ class TouchInteractionManager {
     this.showTemporaryTooltip(element, 'Long press detected')
   }
 
-  showImageContextMenu(element, event) {
+  showImageContextMenu(element, _event) {
     // Example: Show image options
     console.log('Long press on image:', element.dataset.imageId)
 
@@ -474,7 +474,7 @@ class TouchInteractionManager {
   // PERFORMANCE OPTIMIZATIONS
   // ==========================================================================
 
-  handleTap(element, event) {
+  handleTap(element, _event) {
     // Optimize tap handling for performance
     if (element.matches('input, textarea, select')) {
       // Let native focus handling work for form elements
