@@ -15,6 +15,8 @@ class DashboardManager {
     const dashboard = new DashboardManager()
     dashboard.initializeElements()
     dashboard.initializeEventListeners()
+    // Ensure navigation drawer starts collapsed
+    dashboard.closeNavigationDrawer()
     dashboard.loadUserData()
     dashboard.loadDashboardData()
   }

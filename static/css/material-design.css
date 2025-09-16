@@ -902,6 +902,8 @@ body {
   border: none;
   color: inherit;
   font-size: 24px;
+  position: relative;
+  z-index: 201;
 }
 
 .md-top-app-bar-navigation-icon:hover,
@@ -923,10 +925,12 @@ body {
   transition: transform var(--md-sys-motion-duration-medium2) var(--md-sys-motion-easing-standard);
   z-index: 200;
   overflow-y: auto;
+  pointer-events: none;
 }
 
 .md-navigation-drawer-open {
   transform: translateX(0);
+  pointer-events: auto;
 }
 
 .md-navigation-drawer-scrim {

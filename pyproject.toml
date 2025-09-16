@@ -182,4 +182,5 @@ dev = [
     "types-ujson>=5.10.0.20250822",
     "playwright>=1.55.0",
     "pytest-playwright>=0.7.1",
+    "aiohttp>=3.12.15",
 ]
