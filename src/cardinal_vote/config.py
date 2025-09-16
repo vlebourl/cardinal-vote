@@ -16,6 +16,7 @@ class Settings:
     # Server settings
     HOST: str = os.getenv("HOST", "0.0.0.0")
     PORT: int = int(os.getenv("PORT", "8000"))
+    PUBLIC_URL: str = os.getenv("PUBLIC_URL", "http://localhost:8000")
 
     # Database settings
     DATABASE_URL: str = os.getenv(
@@ -204,6 +205,7 @@ class Settings:
             "app_version": cls.APP_VERSION,
             "environment": cls.ENVIRONMENT,
             "debug": cls.DEBUG,
+            "public_url": cls.PUBLIC_URL,
             "database_type": "PostgreSQL"
             if "postgresql" in cls.DATABASE_URL
             else "Unknown",

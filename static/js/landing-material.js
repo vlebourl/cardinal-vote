@@ -78,51 +78,8 @@ document.addEventListener('DOMContentLoaded', function () {
     element.addEventListener('click', createRipple)
   })
 
-  // Snackbar functionality
-  /* eslint-disable no-unused-vars */
-  function showSnackbar(message, action = null) {
-    const snackbar = document.getElementById('snackbar')
-    const snackbarMessage = document.getElementById('snackbar-message')
-    const snackbarAction = document.getElementById('snackbar-action')
-
-    if (snackbar && snackbarMessage && snackbarAction) {
-      snackbarMessage.textContent = message
-
-      if (action) {
-        snackbarAction.style.display = 'block'
-        snackbarAction.onclick = action
-      } else {
-        snackbarAction.style.display = 'none'
-      }
-
-      // Remove initial display: none and show the snackbar
-      snackbar.style.display = 'flex'
-      snackbar.classList.add('md-snackbar-visible')
-
-      setTimeout(() => {
-        snackbar.classList.remove('md-snackbar-visible')
-        // Hide again after animation completes
-        setTimeout(() => {
-          snackbar.style.display = 'none'
-        }, 300) // Wait for transition to complete
-      }, 4000)
-    }
-  }
-
-  // Dismiss snackbar
-  const snackbarAction = document.getElementById('snackbar-action')
-  if (snackbarAction) {
-    snackbarAction.addEventListener('click', () => {
-      const snackbar = document.getElementById('snackbar')
-      if (snackbar) {
-        snackbar.classList.remove('md-snackbar-visible')
-        // Hide after animation completes
-        setTimeout(() => {
-          snackbar.style.display = 'none'
-        }, 300)
-      }
-    })
-  }
+  // Setup snackbar dismiss functionality
+  setupSnackbarDismiss()
 
   // Removed automatic welcome popup - was causing unwanted black popup on page load
   // Users can still see CTAs and welcome messages in the hero section
@@ -803,6 +760,57 @@ function showAuthError(errorElementId, messageElementId, message) {
   if (errorElement && messageElement) {
     messageElement.textContent = message
     errorElement.style.display = 'flex'
+  }
+}
+
+/**
+ * Global snackbar function - accessible from any scope
+ */
+function showSnackbar(message, action = null) {
+  const snackbar = document.getElementById('snackbar')
+  const snackbarMessage = document.getElementById('snackbar-message')
+  const snackbarAction = document.getElementById('snackbar-action')
+
+  if (snackbar && snackbarMessage && snackbarAction) {
+    snackbarMessage.textContent = message
+
+    if (action) {
+      snackbarAction.style.display = 'block'
+      snackbarAction.onclick = action
+    } else {
+      snackbarAction.style.display = 'none'
+    }
+
+    // Remove initial display: none and show the snackbar
+    snackbar.style.display = 'flex'
+    snackbar.classList.add('md-snackbar-visible')
+
+    setTimeout(() => {
+      snackbar.classList.remove('md-snackbar-visible')
+      // Hide again after animation completes
+      setTimeout(() => {
+        snackbar.style.display = 'none'
+      }, 300) // Wait for transition to complete
+    }, 4000)
+  }
+}
+
+/**
+ * Setup snackbar dismiss functionality - called when DOM is ready
+ */
+function setupSnackbarDismiss() {
+  const snackbarAction = document.getElementById('snackbar-action')
+  if (snackbarAction) {
+    snackbarAction.addEventListener('click', () => {
+      const snackbar = document.getElementById('snackbar')
+      if (snackbar) {
+        snackbar.classList.remove('md-snackbar-visible')
+        // Hide after animation completes
+        setTimeout(() => {
+          snackbar.style.display = 'none'
+        }, 300)
+      }
+    })
   }
 }
 
