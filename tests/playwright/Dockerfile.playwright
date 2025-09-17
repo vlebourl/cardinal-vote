@@ -1,0 +1,185 @@
+# Playwright E2E Testing Dockerfile
+# Multi-stage build for optimized test environment
+
+# ============================================================================
+# Base stage with Node.js and system dependencies
+# ============================================================================
+FROM node:20-bullseye-slim AS base
+
+# Install system dependencies for Playwright browsers
+RUN apt-get update && apt-get install -y \
+    # Basic utilities
+    curl \
+    wget \
+    unzip \
+    gnupg \
+    # Browser dependencies
+    libnss3 \
+    libnspr4 \
+    libatk-bridge2.0-0 \
+    libdrm2 \
+    libxkbcommon0 \
+    libgtk-3-0 \
+    libatspi2.0-0 \
+    libasound2 \
+    # Fonts for consistent rendering
+    fonts-liberation \
+    fonts-noto-color-emoji \
+    # Additional dependencies for Chromium
+    libx11-6 \
+    libx11-xcb1 \
+    libxcb1 \
+    libxcomposite1 \
+    libxcursor1 \
+    libxdamage1 \
+    libxext6 \
+    libxfixes3 \
+    libxi6 \
+    libxrandr2 \
+    libxrender1 \
+    libxss1 \
+    libxtst6 \
+    # Additional dependencies for Firefox
+    libdbus-glib-1-2 \
+    libxt6 \
+    # Additional dependencies for WebKit
+    libwoff1 \
+    libopus0 \
+    libwebp6 \
+    libenchant-2-2 \
+    libgudev-1.0-0 \
+    libsecret-1-0 \
+    libhyphen0 \
+    libgdk-pixbuf2.0-0 \
+    libegl1 \
+    libnotify4 \
+    libxslt1.1 \
+    libevent-2.1-7 \
+    libgles2 \
+    libvpx6 \
+    libxss1 \
+    libasound2 \
+    # Cleanup
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
+# Set working directory
+WORKDIR /app
+
+# ============================================================================
+# Dependencies stage - Install Node.js dependencies
+# ============================================================================
+FROM base AS dependencies
+
+# Copy package files
+COPY package*.json ./
+
+# Install Node.js dependencies
+RUN npm ci --only=production && npm cache clean --force
+
+# Install Playwright
+RUN npx playwright install --with-deps
+
+# Install additional tools for testing
+RUN npm install -g wait-on concurrently
+
+# ============================================================================
+# Development stage - Include development dependencies
+# ============================================================================
+FROM dependencies AS development
+
+# Copy package files again for dev dependencies
+COPY package*.json ./
+
+# Install all dependencies (including dev)
+RUN npm ci && npm cache clean --force
+
+# Install Playwright with browsers (in development)
+RUN npx playwright install --with-deps chromium firefox webkit
+
+# Set environment variables for Playwright
+ENV PLAYWRIGHT_BROWSERS_PATH=/ms-playwright
+ENV PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=0
+
+# Create directories for test artifacts
+RUN mkdir -p \
+    /app/test-results \
+    /app/reports \
+    /app/screenshots \
+    /app/videos \
+    /app/traces \
+    /app/.auth
+
+# ============================================================================
+# Testing stage - Optimized for CI/CD environments
+# ============================================================================
+FROM dependencies AS testing
+
+# Set environment variables
+ENV NODE_ENV=test
+ENV PLAYWRIGHT_BROWSERS_PATH=/ms-playwright
+ENV PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1
+
+# Copy test configuration
+COPY playwright.config.js ./
+COPY tests/ ./tests/
+
+# Create test user for security
+RUN useradd -m -s /bin/bash playwright && \
+    chown -R playwright:playwright /app
+
+USER playwright
+
+# Set default command
+CMD ["npx", "playwright", "test"]
+
+# ============================================================================
+# CI stage - Minimal image for CI/CD pipelines
+# ============================================================================
+FROM base AS ci
+
+# Install only essential dependencies
+RUN npm install -g playwright@latest wait-on
+
+# Install browsers
+RUN npx playwright install --with-deps chromium firefox webkit
+
+# Set environment variables
+ENV NODE_ENV=test
+ENV CI=true
+ENV PLAYWRIGHT_BROWSERS_PATH=/ms-playwright
+
+# Copy only necessary files
+COPY playwright.config.js ./
+COPY tests/ ./tests/
+
+# Create test user
+RUN useradd -m -s /bin/bash playwright && \
+    chown -R playwright:playwright /app
+
+USER playwright
+
+# Default command for CI
+CMD ["npx", "playwright", "test", "--reporter=github"]
+
+# ============================================================================
+# Production testing stage - For production-like environments
+# ============================================================================
+FROM testing AS production
+
+# Remove development dependencies
+RUN npm prune --production
+
+# Optimize for production testing
+ENV NODE_ENV=production
+ENV PLAYWRIGHT_BROWSERS_PATH=/ms-playwright
+
+# Set secure defaults
+USER playwright
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+    CMD npx playwright --version || exit 1
+
+# Default command
+CMD ["npx", "playwright", "test", "--config=playwright.config.js"]

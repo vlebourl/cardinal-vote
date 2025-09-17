@@ -209,3 +209,5 @@ staticfiles/
 
 # Media files (uploads)
 media/
+
+.palywright-mcp/** */

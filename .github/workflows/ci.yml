@@ -323,6 +323,7 @@ jobs:
           export JWT_SECRET_KEY=test-jwt-secret-for-ci-extremely-long-key-64-chars-minimum
           export SUPER_ADMIN_PASSWORD=test-super-admin-password-32-chars-minimum
           export SUPER_ADMIN_EMAIL=test@admin.com
+          export PUBLIC_URL=http://localhost:8000
           export HOST=127.0.0.1
           export PORT=8000
           export DEBUG=false
@@ -502,13 +503,14 @@ jobs:
           POSTGRES_PASSWORD: test-postgres-password-for-ci-testing
           JWT_SECRET_KEY: test-jwt-secret-for-ci-extremely-long-key-64-chars-minimum
           SUPER_ADMIN_PASSWORD: test-super-admin-password-32-chars-minimum-for-ci
+          PUBLIC_URL: http://localhost:8000
         run: |
           # Test that docker-compose builds successfully
           docker compose build
           echo "✅ Docker Compose build successful"
 
-          # Test PostgreSQL service starts
-          docker compose up -d postgres
+          # Test PostgreSQL service starts with PUBLIC_URL for runtime
+          PUBLIC_URL=http://localhost:8000 docker compose up -d postgres
           sleep 10
 
           # Check PostgreSQL health

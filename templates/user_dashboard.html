@@ -7,8 +7,11 @@
     <meta name="description" content="Your voting dashboard - create, manage, and analyze votes.">
     <meta name="theme-color" content="#0061a4">
 
+    <!-- VERSION WATERMARK: DASHBOARD-FIXES-2025-09-16-v2.4.6 -->
+    <meta name="deployment-version" content="dashboard-fixes-feature-branch-2025-09-16-v2.4.6">
+
     <!-- Material Design 3 CSS -->
-    <link rel="stylesheet" href="/static/css/material-design.css">
+    <link rel="stylesheet" href="/static/css/material-design.css?v=dashboard-fixes-20250916-003">
 
     <!-- Google Fonts - Roboto -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -66,8 +69,30 @@
                 <span class="material-icons md-navigation-drawer-item-icon">settings</span>
                 <span class="md-navigation-drawer-item-label">Settings</span>
             </a>
+
+            <!-- Super Admin Section -->
+            <div class="admin-section" id="adminSection" style="display: none;">
+                <hr class="md-divider">
+                <div class="admin-section-header">
+                    <span class="material-icons admin-badge">admin_panel_settings</span>
+                    <span class="admin-label">Super Admin</span>
+                </div>
+                <a href="#user-management" class="md-navigation-drawer-item admin-item">
+                    <span class="material-icons md-navigation-drawer-item-icon">people</span>
+                    <span class="md-navigation-drawer-item-label">User Management</span>
+                </a>
+                <a href="#system-votes" class="md-navigation-drawer-item admin-item">
+                    <span class="material-icons md-navigation-drawer-item-icon">poll</span>
+                    <span class="md-navigation-drawer-item-label">All Votes</span>
+                </a>
+                <a href="#system-stats" class="md-navigation-drawer-item admin-item">
+                    <span class="material-icons md-navigation-drawer-item-icon">insights</span>
+                    <span class="md-navigation-drawer-item-label">System Statistics</span>
+                </a>
+            </div>
+
             <hr class="md-divider">
-            <button type="button" class="md-navigation-drawer-item" data-action="logout">
+            <button type="button" class="md-navigation-drawer-item sign-out-item" data-action="logout">
                 <span class="material-icons md-navigation-drawer-item-icon">logout</span>
                 <span class="md-navigation-drawer-item-label">Sign Out</span>
             </button>
@@ -887,7 +912,7 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
     <!-- Dashboard JavaScript -->
-    <script src="/static/js/dashboard.js"></script>
+    <script src="/static/js/dashboard.js?v=dashboard-fixes-20250916-003"></script>
     <script src="/static/js/profile-manager.js"></script>
     <script src="/static/js/vote-creation-manager.js"></script>
     <script src="/static/js/vote-management-manager.js"></script>

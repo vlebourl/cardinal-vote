@@ -1,0 +1,7 @@
+{
+  "timestamp": "2025-09-16T07:30:42.190Z",
+  "url": "http://localhost:8000/",
+  "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.7339.16 Safari/537.36",
+  "sessionKeys": ["auth_token", "user", "jwt"],
+  "localStorageKeys": ["backup_auth"]
+}

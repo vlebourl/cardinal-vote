@@ -78,47 +78,11 @@ document.addEventListener('DOMContentLoaded', function () {
     element.addEventListener('click', createRipple)
   })
 
-  // Snackbar functionality
-  function showSnackbar(message, action = null) {
-    const snackbar = document.getElementById('snackbar')
-    const snackbarMessage = document.getElementById('snackbar-message')
-    const snackbarAction = document.getElementById('snackbar-action')
+  // Setup snackbar dismiss functionality
+  setupSnackbarDismiss()
 
-    if (snackbar && snackbarMessage && snackbarAction) {
-      snackbarMessage.textContent = message
-
-      if (action) {
-        snackbarAction.style.display = 'block'
-        snackbarAction.onclick = action
-      } else {
-        snackbarAction.style.display = 'none'
-      }
-
-      snackbar.classList.add('md-snackbar-visible')
-
-      setTimeout(() => {
-        snackbar.classList.remove('md-snackbar-visible')
-      }, 4000)
-    }
-  }
-
-  // Dismiss snackbar
-  const snackbarAction = document.getElementById('snackbar-action')
-  if (snackbarAction) {
-    snackbarAction.addEventListener('click', () => {
-      const snackbar = document.getElementById('snackbar')
-      if (snackbar) {
-        snackbar.classList.remove('md-snackbar-visible')
-      }
-    })
-  }
-
-  // Show welcome message after page load
-  window.addEventListener('load', () => {
-    setTimeout(() => {
-      showSnackbar('Welcome to Generalized Voting Platform! Start your free trial today.')
-    }, 1000)
-  })
+  // Removed automatic welcome popup - was causing unwanted black popup on page load
+  // Users can still see CTAs and welcome messages in the hero section
 
   // Intersection Observer for animations
   const observerOptions = {
@@ -163,6 +127,7 @@ class AuthenticationManager {
     auth.initializeEventListeners()
     auth.initializeCaptcha()
     auth.checkAuthStatus()
+    auth.checkUrlParameters()
   }
 
   initializeElements() {
@@ -170,6 +135,24 @@ class AuthenticationManager {
     this.registerModal = document.getElementById('registerModalScrim')
     this.loginForm = document.getElementById('loginForm')
     this.registerForm = document.getElementById('registerForm')
+
+    // Initialize inert states for modals (they start hidden)
+    if (this.loginModal) {
+      this.loginModal.inert = true
+    }
+    if (this.registerModal) {
+      this.registerModal.inert = true
+    }
+
+    // Initialize other modal elements
+    const forgotPasswordModal = document.getElementById('forgotPasswordModalScrim')
+    const resetPasswordModal = document.getElementById('resetPasswordModalScrim')
+    if (forgotPasswordModal) {
+      forgotPasswordModal.inert = true
+    }
+    if (resetPasswordModal) {
+      resetPasswordModal.inert = true
+    }
   }
 
   initializeEventListeners() {
@@ -189,6 +172,17 @@ class AuthenticationManager {
 
     if (this.registerForm) {
       this.registerForm.addEventListener('submit', e => this.handleRegister(e))
+    }
+
+    // Password reset forms
+    const forgotPasswordForm = document.getElementById('forgotPasswordForm')
+    if (forgotPasswordForm) {
+      forgotPasswordForm.addEventListener('submit', handleForgotPassword)
+    }
+
+    const resetPasswordForm = document.getElementById('resetPasswordForm')
+    if (resetPasswordForm) {
+      resetPasswordForm.addEventListener('submit', handleResetPassword)
     }
 
     // Close modals on escape key
@@ -235,6 +229,9 @@ class AuthenticationManager {
       case 'switch-to-register':
         this.switchToRegister()
         break
+      case 'show-forgot-password':
+        showForgotPassword()
+        break
     }
   }
 
@@ -245,12 +242,15 @@ class AuthenticationManager {
     if (modal) {
       modal.classList.add('md-dialog-scrim-visible')
       modal.setAttribute('aria-hidden', 'false')
+      modal.inert = false
 
-      // Focus first input
-      const firstInput = modal.querySelector('input')
-      if (firstInput) {
-        setTimeout(() => firstInput.focus(), 100)
-      }
+      // Focus first input after ensuring aria-hidden is processed
+      requestAnimationFrame(() => {
+        const firstInput = modal.querySelector('input')
+        if (firstInput) {
+          firstInput.focus()
+        }
+      })
 
       // Clear any previous errors
       this.clearErrors(type)
@@ -260,8 +260,15 @@ class AuthenticationManager {
   closeModal(type) {
     const modal = type === 'login' ? this.loginModal : this.registerModal
     if (modal) {
+      // Remove focus from any focused elements in the modal first
+      const focusedElement = modal.querySelector(':focus')
+      if (focusedElement) {
+        focusedElement.blur()
+      }
+
       modal.classList.remove('md-dialog-scrim-visible')
       modal.setAttribute('aria-hidden', 'true')
+      modal.inert = true
       this.clearErrors(type)
     }
   }
@@ -354,7 +361,7 @@ class AuthenticationManager {
     }
 
     // CAPTCHA validation
-    const captchaResponse = this.validateCaptcha()
+    const captchaResponse = await this.validateCaptcha()
     if (captchaResponse === null) {
       return // CAPTCHA validation failed, error already shown
     }
@@ -459,6 +466,21 @@ class AuthenticationManager {
     }
   }
 
+  checkUrlParameters() {
+    // Check for password reset token in URL
+    const urlParams = new URLSearchParams(window.location.search)
+    const resetToken = urlParams.get('reset_token')
+
+    if (resetToken) {
+      // Show the reset password modal with the token
+      showResetPasswordModal(resetToken)
+
+      // Clean up URL without reloading the page
+      const newUrl = window.location.pathname
+      window.history.replaceState({}, document.title, newUrl)
+    }
+  }
+
   clearTokens() {
     sessionStorage.removeItem('access_token')
     sessionStorage.removeItem('refresh_token')
@@ -501,25 +523,16 @@ class AuthenticationManager {
     if (!container) return
 
     try {
-      container.innerHTML = '<div class="captcha-loading">Loading verification...</div>'
+      // reCAPTCHA v3 doesn't need a visible widget - it runs in the background
+      container.innerHTML = '<div class="captcha-info">🔒 Secured by reCAPTCHA</div>'
 
-      this.captchaWidgetId = grecaptcha.render(container, {
-        sitekey: this.captchaConfig.siteKey,
-        callback: response => {
-          this.captchaResponse = response
-          this.clearCaptchaError()
-        },
-        'expired-callback': () => {
-          this.captchaResponse = null
-          this.showCaptchaError('Verification expired. Please complete the CAPTCHA again.')
-        },
-        'error-callback': () => {
-          this.captchaResponse = null
-          this.showCaptchaError('Verification failed. Please try again.')
-        }
+      // Initialize reCAPTCHA v3 ready state
+      grecaptcha.ready(() => {
+        console.log('reCAPTCHA v3 ready')
+        this.clearCaptchaError()
       })
     } catch (error) {
-      console.error('reCAPTCHA render error:', error)
+      console.error('reCAPTCHA v3 setup error:', error)
       this.showCaptchaError('Failed to load verification. Please refresh the page.')
     }
   }
@@ -553,11 +566,12 @@ class AuthenticationManager {
   }
 
   resetCaptcha() {
-    if (!this.captchaConfig.enabled || !this.captchaWidgetId) return
+    if (!this.captchaConfig.enabled) return
 
     try {
-      if (this.captchaConfig.backend === 'recaptcha' && window.grecaptcha) {
-        grecaptcha.reset(this.captchaWidgetId)
+      // For reCAPTCHA v3, there's no widget to reset - it generates tokens on demand
+      if (this.captchaConfig.backend === 'recaptcha') {
+        console.log('reCAPTCHA v3 - no reset needed, tokens generated on demand')
       } else if (this.captchaConfig.backend === 'hcaptcha' && window.hcaptcha) {
         hcaptcha.reset(this.captchaWidgetId)
       }
@@ -569,21 +583,27 @@ class AuthenticationManager {
     }
   }
 
-  validateCaptcha() {
+  async validateCaptcha() {
     if (!this.captchaConfig.enabled) {
       // For mock/development, always return a mock response
       return 'mock-captcha-response'
     }
 
-    if (!this.captchaResponse) {
-      this.showCaptchaError('Please complete the verification to continue.')
+    try {
+      // For reCAPTCHA v3, we generate a token on demand
+      const token = await grecaptcha.execute(this.captchaConfig.siteKey, { action: 'register' })
+      return token
+    } catch (error) {
+      console.error('reCAPTCHA v3 execution error:', error)
+      this.showCaptchaError('Verification failed. Please try again.')
       return null
     }
-
-    return this.captchaResponse
   }
 
   showCaptchaError(message) {
+    // Only show CAPTCHA errors if CAPTCHA is enabled
+    if (!this.captchaConfig.enabled) return
+
     const errorElement = document.getElementById('registerCaptchaError')
     const container = document.getElementById('registerCaptcha')
 
@@ -598,6 +618,9 @@ class AuthenticationManager {
   }
 
   clearCaptchaError() {
+    // Only clear CAPTCHA errors if CAPTCHA is enabled
+    if (!this.captchaConfig.enabled) return
+
     const errorElement = document.getElementById('registerCaptchaError')
     const container = document.getElementById('registerCaptcha')
 
@@ -657,12 +680,324 @@ class AuthenticationManager {
 
       if (snackbar && snackbarMessage) {
         snackbarMessage.textContent = message
+        snackbar.style.display = 'flex'
         snackbar.classList.add('md-snackbar-visible')
 
         setTimeout(() => {
           snackbar.classList.remove('md-snackbar-visible')
+          setTimeout(() => {
+            snackbar.style.display = 'none'
+          }, 300)
         }, 4000)
       }
     }
+  }
+}
+
+/**
+ * Switch from login to register modal
+ */
+/* eslint-disable no-unused-vars, no-undef */
+function switchToRegister() {
+  closeModal('loginModal')
+  setTimeout(() => showRegisterModal(), 150)
+}
+
+/**
+ * Switch from register to login modal
+ */
+/* eslint-disable no-unused-vars, no-undef */
+function switchToLogin() {
+  closeModal('registerModal')
+  setTimeout(() => showLoginModal(), 150)
+}
+
+/**
+ * Show forgot password modal
+ */
+/* eslint-disable no-unused-vars */
+function showForgotPassword() {
+  // Close login modal first
+  const loginModal = document.getElementById('loginModalScrim')
+  if (loginModal) {
+    // Remove focus from any focused elements in the modal first
+    const focusedElement = loginModal.querySelector(':focus')
+    if (focusedElement) {
+      focusedElement.blur()
+    }
+
+    loginModal.classList.remove('md-dialog-scrim-visible')
+    loginModal.setAttribute('aria-hidden', 'true')
+    loginModal.inert = true
+  }
+
+  // Show forgot password modal after a delay
+  setTimeout(() => {
+    const forgotPasswordModal = document.getElementById('forgotPasswordModalScrim')
+    if (forgotPasswordModal) {
+      forgotPasswordModal.classList.add('md-dialog-scrim-visible')
+      forgotPasswordModal.setAttribute('aria-hidden', 'false')
+      forgotPasswordModal.inert = false
+
+      // Focus first input after ensuring aria-hidden is processed
+      requestAnimationFrame(() => {
+        const firstInput = forgotPasswordModal.querySelector('input')
+        if (firstInput) {
+          firstInput.focus()
+        }
+      })
+    }
+  }, 150)
+}
+
+/**
+ * Show authentication error message for standalone functions
+ */
+function showAuthError(errorElementId, messageElementId, message) {
+  const errorElement = document.getElementById(errorElementId)
+  const messageElement = document.getElementById(messageElementId)
+
+  if (errorElement && messageElement) {
+    messageElement.textContent = message
+    errorElement.style.display = 'flex'
+  }
+}
+
+/**
+ * Global snackbar function - accessible from any scope
+ */
+function showSnackbar(message, action = null) {
+  const snackbar = document.getElementById('snackbar')
+  const snackbarMessage = document.getElementById('snackbar-message')
+  const snackbarAction = document.getElementById('snackbar-action')
+
+  if (snackbar && snackbarMessage && snackbarAction) {
+    snackbarMessage.textContent = message
+
+    if (action) {
+      snackbarAction.style.display = 'block'
+      snackbarAction.onclick = action
+    } else {
+      snackbarAction.style.display = 'none'
+    }
+
+    // Remove initial display: none and show the snackbar
+    snackbar.style.display = 'flex'
+    snackbar.classList.add('md-snackbar-visible')
+
+    setTimeout(() => {
+      snackbar.classList.remove('md-snackbar-visible')
+      // Hide again after animation completes
+      setTimeout(() => {
+        snackbar.style.display = 'none'
+      }, 300) // Wait for transition to complete
+    }, 4000)
+  }
+}
+
+/**
+ * Setup snackbar dismiss functionality - called when DOM is ready
+ */
+function setupSnackbarDismiss() {
+  const snackbarAction = document.getElementById('snackbar-action')
+  if (snackbarAction) {
+    snackbarAction.addEventListener('click', () => {
+      const snackbar = document.getElementById('snackbar')
+      if (snackbar) {
+        snackbar.classList.remove('md-snackbar-visible')
+        // Hide after animation completes
+        setTimeout(() => {
+          snackbar.style.display = 'none'
+        }, 300)
+      }
+    })
+  }
+}
+
+/**
+ * Show toast/success message using the snackbar
+ */
+function showToast(type, title, message) {
+  showSnackbar(`${title}: ${message}`)
+}
+
+/**
+ * Standalone setButtonLoading function for password reset forms
+ */
+function setButtonLoading(button, loading) {
+  if (!button) {
+    console.warn('setButtonLoading called with null button')
+    return
+  }
+
+  const textElement = button.querySelector('.btn-text')
+  const loadingElement = button.querySelector('.btn-loading')
+
+  if (textElement && loadingElement) {
+    if (loading) {
+      button.disabled = true
+      button.classList.add('loading')
+      textElement.style.opacity = '0'
+      loadingElement.style.display = 'inline-block'
+    } else {
+      button.disabled = false
+      button.classList.remove('loading')
+      textElement.style.opacity = '1'
+      loadingElement.style.display = 'none'
+    }
+  }
+}
+
+/**
+ * Handle forgot password form submission
+ */
+/* eslint-disable no-undef */
+async function handleForgotPassword(e) {
+  e.preventDefault()
+
+  const form = e.target
+  const submitBtn = document.getElementById('forgotPasswordSubmitBtn')
+  const email = form.querySelector('#resetEmail').value
+
+  // Show loading state
+  if (submitBtn) {
+    setButtonLoading(submitBtn, true)
+  }
+
+  try {
+    const response = await fetch('/api/auth/request-password-reset', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        email
+      })
+    })
+
+    const data = await response.json()
+
+    if (response.ok) {
+      // Success - show message and close modal
+      showToast(
+        'success',
+        'Reset Link Sent',
+        data.message || 'If the email exists, a password reset link has been sent.'
+      )
+      const forgotPasswordModal = document.getElementById('forgotPasswordModalScrim')
+      if (forgotPasswordModal) {
+        // Remove focus from any focused elements in the modal first
+        const focusedElement = forgotPasswordModal.querySelector(':focus')
+        if (focusedElement) {
+          focusedElement.blur()
+        }
+
+        forgotPasswordModal.classList.remove('md-dialog-scrim-visible')
+        forgotPasswordModal.setAttribute('aria-hidden', 'true')
+        forgotPasswordModal.inert = true
+      }
+      form.reset()
+    } else {
+      // Error
+      showAuthError('forgotPasswordError', 'forgotPasswordErrorMessage', data.detail || 'Failed to send reset link')
+    }
+  } catch (error) {
+    console.error('Forgot password error:', error)
+    showAuthError('forgotPasswordError', 'forgotPasswordErrorMessage', 'Network error. Please try again.')
+  } finally {
+    // Hide loading state
+    if (submitBtn) {
+      setButtonLoading(submitBtn, false)
+    }
+  }
+}
+
+/**
+ * Show reset password modal (when user clicks email link)
+ */
+function showResetPasswordModal(token) {
+  // Set the token in the hidden field
+  document.getElementById('resetToken').value = token
+
+  // Show reset password modal
+  const resetPasswordModal = document.getElementById('resetPasswordModalScrim')
+  if (resetPasswordModal) {
+    resetPasswordModal.classList.add('md-dialog-scrim-visible')
+    resetPasswordModal.setAttribute('aria-hidden', 'false')
+    resetPasswordModal.inert = false
+
+    // Focus first input after ensuring aria-hidden is processed
+    requestAnimationFrame(() => {
+      const firstInput = resetPasswordModal.querySelector('input[type="password"]')
+      if (firstInput) {
+        firstInput.focus()
+      }
+    })
+  }
+}
+
+/**
+ * Handle reset password form submission
+ */
+/* eslint-disable no-undef */
+async function handleResetPassword(e) {
+  e.preventDefault()
+
+  const form = e.target
+  const submitBtn = form.querySelector('button[type="submit"]')
+  const token = form.querySelector('#resetToken').value
+  const newPassword = form.querySelector('#newPassword').value
+  const confirmPassword = form.querySelector('#confirmNewPassword').value
+
+  // Validate passwords match
+  if (newPassword !== confirmPassword) {
+    showAuthError('resetPasswordError', 'resetPasswordErrorMessage', 'Passwords do not match')
+    return
+  }
+
+  // Show loading state
+  setButtonLoading(submitBtn, true)
+
+  try {
+    const response = await fetch('/api/auth/reset-password', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        token,
+        new_password: newPassword
+      })
+    })
+
+    const data = await response.json()
+
+    if (response.ok) {
+      // Success - show message, close modal, and redirect to login
+      showToast('success', 'Password Reset', data.message || 'Your password has been reset successfully.')
+      const resetPasswordModal = document.getElementById('resetPasswordModalScrim')
+      if (resetPasswordModal) {
+        // Remove focus from any focused elements in the modal first
+        const focusedElement = resetPasswordModal.querySelector(':focus')
+        if (focusedElement) {
+          focusedElement.blur()
+        }
+
+        resetPasswordModal.classList.remove('md-dialog-scrim-visible')
+        resetPasswordModal.setAttribute('aria-hidden', 'true')
+        resetPasswordModal.inert = true
+      }
+      setTimeout(() => showLoginModal(), 1000)
+      form.reset()
+    } else {
+      // Error
+      showAuthError('resetPasswordError', 'resetPasswordErrorMessage', data.detail || 'Failed to reset password')
+    }
+  } catch (error) {
+    console.error('Reset password error:', error)
+    showAuthError('resetPasswordError', 'resetPasswordErrorMessage', 'Network error. Please try again.')
+  } finally {
+    // Hide loading state
+    setButtonLoading(submitBtn, false)
   }
 }

@@ -43,6 +43,7 @@ class MockEmailService(EmailServiceBase):
         self.from_email = getattr(
             settings, "FROM_EMAIL", "noreply@voting-platform.local"
         )
+        self.public_url = settings.PUBLIC_URL
         logger.info("Initialized Mock Email Service (Development Mode)")
 
     async def send_verification_email(
@@ -52,7 +53,7 @@ class MockEmailService(EmailServiceBase):
         try:
             # In development, we'll create a mock verification URL
             verification_url = (
-                f"http://localhost:8000/api/auth/verify?token={verification_token}"
+                f"{self.public_url}/api/auth/verify?token={verification_token}"
             )
 
             # Create email content
@@ -93,7 +94,7 @@ class MockEmailService(EmailServiceBase):
         """Send password reset email (mock - logs to console)."""
         try:
             # In development, we'll create a mock reset URL
-            reset_url = f"http://localhost:8000/auth/reset-password?token={reset_token}"
+            reset_url = f"{self.public_url}/?reset_token={reset_token}"
 
             # Create email content
             subject = "Reset your Voting Platform password"
@@ -149,7 +150,7 @@ class MockEmailService(EmailServiceBase):
 
             Get started by logging in and creating your first vote!
 
-            Visit: http://localhost:8000
+            Visit: {self.public_url}
             """
 
             # Log the email to console (development mode)
@@ -183,6 +184,7 @@ class SMTPEmailService(EmailServiceBase):
         self.from_email = getattr(
             settings, "FROM_EMAIL", "noreply@voting-platform.local"
         )
+        self.public_url = settings.PUBLIC_URL
         self.use_tls = True
 
         logger.info(
@@ -230,7 +232,7 @@ class SMTPEmailService(EmailServiceBase):
     ) -> bool:
         """Send email verification email via SMTP."""
         verification_url = (
-            f"http://voting-platform.local/api/auth/verify?token={verification_token}"
+            f"{self.public_url}/api/auth/verify?token={verification_token}"
         )
 
         subject = "Verify your Voting Platform account"
@@ -263,9 +265,7 @@ class SMTPEmailService(EmailServiceBase):
         self, email: str, user_name: str, reset_token: str
     ) -> bool:
         """Send password reset email via SMTP."""
-        reset_url = (
-            f"http://voting-platform.local/auth/reset-password?token={reset_token}"
-        )
+        reset_url = f"{self.public_url}/?reset_token={reset_token}"
 
         subject = "Reset your Voting Platform password"
         html_content = f"""
@@ -305,7 +305,7 @@ class SMTPEmailService(EmailServiceBase):
                 <h2>Welcome to the Voting Platform, {user_name}!</h2>
                 <p>Your email has been successfully verified.</p>
                 <p>You can now create voting campaigns and manage your votes!</p>
-                <p><a href="http://voting-platform.local">Login to Voting Platform</a></p>
+                <p><a href="{self.public_url}">Login to Voting Platform</a></p>
             </body>
         </html>
         """
@@ -317,7 +317,7 @@ class SMTPEmailService(EmailServiceBase):
 
         You can now create voting campaigns and manage your votes!
 
-        Visit: http://voting-platform.local
+        Visit: {self.public_url}
         """
 
         return await self._send_email(email, subject, html_content, text_content)

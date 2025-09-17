@@ -1,0 +1,293 @@
+# Playwright E2E Testing Environment
+# Usage: docker-compose -f docker-compose.playwright.yml up --build
+#
+# This configuration provides:
+# - Isolated test database with seeded test data
+# - Application service configured for E2E testing
+# - Playwright test runner with browser support
+# - Test data management and seeding
+# - Performance monitoring and reporting
+
+name: cardinal-vote-playwright
+
+services:
+  # PostgreSQL test database with seeded test data
+  postgres-playwright:
+    image: postgres:16-alpine
+    container_name: cardinal-vote-postgres-test
+    environment:
+      - POSTGRES_DB=playwright_test_db
+      - POSTGRES_USER=playwright_user
+      - POSTGRES_PASSWORD=playwright_test_password
+      - POSTGRES_INITDB_ARGS=--auth-host=scram-sha-256
+    ports:
+      - '5434:5432' # Different port to avoid conflicts
+    volumes:
+      # Use tmpfs for fast test database (ephemeral)
+      - type: tmpfs
+        target: /var/lib/postgresql/data
+        tmpfs:
+          size: 200M
+      # Custom initialization scripts for test data
+      - ./tests/playwright/fixtures/sql/init-test-db.sql:/docker-entrypoint-initdb.d/01-init.sql:ro
+      - ./tests/playwright/fixtures/sql/seed-test-data.sql:/docker-entrypoint-initdb.d/02-seed.sql:ro
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U playwright_user -d playwright_test_db']
+      interval: 3s
+      timeout: 2s
+      retries: 10
+      start_period: 5s
+    restart: 'no'
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+        reservations:
+          cpus: '0.1'
+          memory: 128M
+    labels:
+      - 'test.environment=playwright'
+      - 'test.service=postgresql'
+      - 'test.cleanup=true'
+    networks:
+      - playwright-network
+
+  # Application service configured for E2E testing
+  cardinal-vote-e2e:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: production
+    container_name: cardinal-vote-app-test
+    ports:
+      - '${TEST_PORT:-8000}:8000'
+    depends_on:
+      postgres-playwright:
+        condition: service_healthy
+    environment:
+      # Database configuration
+      - DATABASE_URL=postgresql+asyncpg://playwright_user:playwright_test_password@postgres-playwright:5432/playwright_test_db
+      - POSTGRES_USER=playwright_user
+      - POSTGRES_PASSWORD=playwright_test_password
+      - POSTGRES_DB=playwright_test_db
+
+      # Application configuration optimized for testing
+      - HOST=0.0.0.0
+      - PORT=8000
+      - DEBUG=true
+      - CARDINAL_ENV=e2e_testing
+
+      # Security configuration for testing
+      - JWT_SECRET_KEY=e2e_test_jwt_secret_key_for_playwright_testing_only_not_for_production
+      - JWT_ALGORITHM=HS256
+      - JWT_ACCESS_TOKEN_EXPIRE_MINUTES=60
+      - JWT_REFRESH_TOKEN_EXPIRE_DAYS=1
+
+      # Super admin test credentials
+      - SUPER_ADMIN_EMAIL=admin.test@cardinalvote.local
+      - SUPER_ADMIN_PASSWORD=AdminTest123!
+
+      # Email configuration for testing (mock)
+      - EMAIL_BACKEND=mock
+      - FROM_EMAIL=test@cardinalvote.local
+
+      # File storage configuration
+      - UPLOAD_PATH=/app/test-uploads
+      - MAX_FILE_SIZE_MB=50
+
+      # Performance and rate limiting (relaxed for testing)
+      - ENABLE_RATE_LIMITING=false
+      - MAX_VOTES_PER_IP_PER_HOUR=10000
+
+      # CORS configuration for testing
+      - ALLOWED_ORIGINS=http://localhost:8000,http://cardinal-vote-e2e:8000,http://127.0.0.1:8000
+
+      # Logging configuration
+      - LOG_LEVEL=info
+      - LOG_FORMAT=json
+
+      # Feature flags for testing
+      - ENABLE_REGISTRATION=true
+      - ENABLE_EMAIL_VERIFICATION=false
+      - ENABLE_CAPTCHA=false
+      - ENABLE_ANALYTICS=false
+
+    volumes:
+      - ./tests/playwright/fixtures/uploads:/app/test-uploads
+      - ./tests/playwright/logs:/app/logs
+      # Development mounts for real-time updates
+      - ./src:/app/src:ro
+      - ./templates:/app/templates:ro
+      - ./static:/app/static:ro
+
+    healthcheck:
+      test:
+        ['CMD', 'curl', '--fail', '--silent', '--max-time', '3', 'http://localhost:8000/api/health']
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+
+    restart: 'no'
+    labels:
+      - 'test.environment=playwright'
+      - 'test.service=application'
+      - 'test.url=http://localhost:8000'
+    networks:
+      - playwright-network
+
+  # Test data seeding service
+  test-data-seeder:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: production
+    container_name: cardinal-vote-seeder
+    depends_on:
+      cardinal-vote-e2e:
+        condition: service_healthy
+    environment:
+      - DATABASE_URL=postgresql+asyncpg://playwright_user:playwright_test_password@postgres-playwright:5432/playwright_test_db
+      - CARDINAL_ENV=e2e_testing
+      - SUPER_ADMIN_EMAIL=admin.test@cardinalvote.local
+      - SUPER_ADMIN_PASSWORD=AdminTest123!
+    volumes:
+      - ./tests/playwright/fixtures:/app/fixtures:ro
+      - ./scripts:/app/scripts:ro
+    working_dir: /app
+    command: >
+      sh -c "
+        echo '🌱 Seeding test data for Playwright tests...' &&
+        python -m scripts.seed_test_data --environment=e2e_testing &&
+        echo '✅ Test data seeding completed'
+      "
+    restart: 'no'
+    profiles:
+      - seed
+    labels:
+      - 'test.environment=playwright'
+      - 'test.service=seeder'
+    networks:
+      - playwright-network
+
+  # Playwright test runner service
+  playwright-runner:
+    build:
+      context: ./tests/playwright
+      dockerfile: Dockerfile.playwright
+    container_name: cardinal-vote-playwright
+    depends_on:
+      cardinal-vote-e2e:
+        condition: service_healthy
+    environment:
+      # Test configuration
+      - BASE_URL=http://cardinal-vote-e2e:8000
+      - TEST_ENV=docker
+      - CI=false
+      - HEADLESS=true
+
+      # Playwright configuration
+      - PLAYWRIGHT_BROWSERS_PATH=/ms-playwright
+      - PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1
+
+      # Test data configuration
+      - TEST_DATABASE_URL=postgresql+asyncpg://playwright_user:playwright_test_password@postgres-playwright:5432/playwright_test_db
+
+      # Test user credentials
+      - TEST_ADMIN_EMAIL=admin.test@cardinalvote.local
+      - TEST_ADMIN_PASSWORD=AdminTest123!
+      - TEST_USER_EMAIL=user1.test@cardinalvote.local
+      - TEST_USER_PASSWORD=UserTest123!
+
+      # Performance and timeout settings
+      - TEST_TIMEOUT=60000
+      - TEST_ACTION_TIMEOUT=15000
+      - TEST_NAVIGATION_TIMEOUT=30000
+
+      # Debugging and reporting
+      - DEBUG_MODE=false
+      - CAPTURE_SCREENSHOTS=on-failure
+      - CAPTURE_VIDEO=on-failure
+      - CAPTURE_TRACE=on-failure
+
+    volumes:
+      # Test code and configuration
+      - ./tests/playwright:/app/tests:ro
+      - ./playwright.config.js:/app/playwright.config.js:ro
+
+      # Test results and artifacts
+      - ./tests/playwright/test-results:/app/test-results
+      - ./tests/playwright/reports:/app/reports
+      - ./tests/playwright/screenshots:/app/screenshots
+      - ./tests/playwright/videos:/app/videos
+      - ./tests/playwright/traces:/app/traces
+
+      # Authentication state persistence
+      - ./tests/playwright/.auth:/app/.auth
+
+    working_dir: /app
+    command: >
+      sh -c "
+        echo '🎭 Starting Playwright E2E tests...' &&
+        echo 'Waiting for application to be ready...' &&
+        npx wait-on http://cardinal-vote-e2e:8000/api/health --timeout 60000 &&
+        echo 'Running Playwright tests...' &&
+        npx playwright test --config=playwright.config.js &&
+        echo '✅ Playwright tests completed'
+      "
+
+    restart: 'no'
+    profiles:
+      - test
+    labels:
+      - 'test.environment=playwright'
+      - 'test.service=playwright'
+      - 'test.browser=chromium,firefox,webkit'
+    networks:
+      - playwright-network
+
+  # Performance monitoring service (optional)
+  test-monitor:
+    image: prom/prometheus:latest
+    container_name: cardinal-vote-monitor
+    ports:
+      - '9090:9090'
+    volumes:
+      - ./tests/playwright/config/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+      - '--storage.tsdb.retention.time=1h'
+      - '--web.enable-lifecycle'
+    restart: 'no'
+    profiles:
+      - monitoring
+    labels:
+      - 'test.environment=playwright'
+      - 'test.service=monitoring'
+    networks:
+      - playwright-network
+
+volumes:
+  # Temporary volumes for test data
+  playwright_postgres_data:
+    driver: local
+    labels:
+      - 'test.volume=true'
+      - 'test.cleanup=true'
+
+  playwright_uploads:
+    driver: local
+    labels:
+      - 'test.volume=true'
+      - 'test.cleanup=true'
+
+networks:
+  playwright-network:
+    driver: bridge
+    labels:
+      - 'test.network=true'
+      - 'test.cleanup=true'
