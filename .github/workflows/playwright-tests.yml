@@ -126,7 +126,7 @@ jobs:
 
       - name: Start test environment
         run: |
-          docker compose -f docker-compose.playwright.yml up -d --wait postgres-playwright cardinal-vote-e2e postgres-playwright cardinal-vote-e2e
+          docker compose -f docker-compose.playwright.yml up -d --wait postgres-playwright cardinal-vote-e2e
           docker compose -f docker-compose.playwright.yml logs cardinal-vote-e2e
 
       - name: Wait for application to be ready
