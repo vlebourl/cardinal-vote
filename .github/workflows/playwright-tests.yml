@@ -136,7 +136,7 @@ jobs:
       - name: Run Core Flow Tests
         run: |
           npx playwright test tests/playwright/tests/01-core-flows/ \
-            --project=${{ matrix.browser }} \
+            --project=core-${{ matrix.browser }} \
             --shard=${{ matrix.shard }} \
             --reporter=html,json
         env:
@@ -195,7 +195,7 @@ jobs:
       - name: Run Advanced Scenario Tests
         run: |
           npx playwright test tests/playwright/tests/02-advanced-scenarios/${{ matrix.test-group }}.spec.js \
-            --project=${{ matrix.browser }} \
+            --project=advanced-${{ matrix.browser }} \
             --reporter=html,json
         env:
           PLAYWRIGHT_WORKERS: 1
@@ -252,7 +252,7 @@ jobs:
       - name: Run Error Scenario Tests
         run: |
           npx playwright test tests/playwright/tests/03-error-scenarios/${{ matrix.test-group }}.spec.js \
-            --project=${{ matrix.browser }} \
+            --project=error-scenarios \
             --reporter=html,json
         env:
           PLAYWRIGHT_WORKERS: 1
@@ -308,7 +308,7 @@ jobs:
       - name: Run Mobile Device Tests
         run: |
           npx playwright test tests/playwright/tests/01-core-flows/ \
-            --project=Mobile-${{ matrix.device }} \
+            --project=mobile-chrome \
             --reporter=html,json
         env:
           PLAYWRIGHT_WORKERS: 1
