@@ -104,11 +104,17 @@ class Settings:
     UPLOAD_TEMP_DIR: Path = BASE_DIR / "temp_uploads"
 
     # Dashboard-specific settings
-    DASHBOARD_LOAD_TIMEOUT_SECONDS: int = int(os.getenv("DASHBOARD_LOAD_TIMEOUT_SECONDS", "3"))
+    DASHBOARD_LOAD_TIMEOUT_SECONDS: int = int(
+        os.getenv("DASHBOARD_LOAD_TIMEOUT_SECONDS", "3")
+    )
     VOTE_IMAGE_MAX_SIZE_MB: int = int(os.getenv("VOTE_IMAGE_MAX_SIZE_MB", "5"))
     VOTE_IMAGE_MAX_DIMENSIONS: tuple[int, int] = (2048, 2048)
-    DASHBOARD_PAGINATION_THRESHOLD: int = int(os.getenv("DASHBOARD_PAGINATION_THRESHOLD", "50"))
-    DASHBOARD_AUTO_REFRESH_SECONDS: int = int(os.getenv("DASHBOARD_AUTO_REFRESH_SECONDS", "60"))
+    DASHBOARD_PAGINATION_THRESHOLD: int = int(
+        os.getenv("DASHBOARD_PAGINATION_THRESHOLD", "50")
+    )
+    DASHBOARD_AUTO_REFRESH_SECONDS: int = int(
+        os.getenv("DASHBOARD_AUTO_REFRESH_SECONDS", "60")
+    )
     DRAFT_VOTE_RETENTION_DAYS: int = int(os.getenv("DRAFT_VOTE_RETENTION_DAYS", "30"))
     MAX_VOTE_CHOICES: int = int(os.getenv("MAX_VOTE_CHOICES", "20"))
 

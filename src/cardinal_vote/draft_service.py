@@ -3,17 +3,15 @@
 import logging
 import re
 import uuid
-from datetime import datetime, timedelta, timezone
-from typing import Optional, List, Dict, Any
-from uuid import UUID
+from datetime import UTC, datetime, timedelta
+from typing import Any
 
-from sqlalchemy import select, and_, or_, update
+from sqlalchemy import and_, delete, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.exc import IntegrityError
 
-from .models import Vote, VoteOption, VoterResponse
-from .database_manager import GeneralizedDatabaseManager
 from .config import settings
+from .database_manager import GeneralizedDatabaseManager
+from .models import Vote, VoteOption
 
 logger = logging.getLogger(__name__)
 
@@ -60,7 +58,7 @@ class DraftService:
     def __init__(self, db_manager: GeneralizedDatabaseManager) -> None:
         """Initialize draft service with database manager."""
         self.db_manager = db_manager
-        self.draft_expiry_days = getattr(settings, 'DRAFT_EXPIRY_DAYS', 30)
+        self.draft_expiry_days = getattr(settings, "DRAFT_EXPIRY_DAYS", 30)
 
     async def _get_existing_slugs(self, session: AsyncSession) -> set[str]:
         """Get all existing vote slugs to ensure uniqueness."""
@@ -68,11 +66,8 @@ class DraftService:
         return {row[0] for row in result.fetchall() if row[0] is not None}
 
     async def create_draft_vote(
-        self,
-        user_id: str,
-        title: str,
-        description: Optional[str] = None
-    ) -> Dict[str, Any]:
+        self, user_id: str, title: str, description: str | None = None
+    ) -> dict[str, Any]:
         """
         Create a new draft vote for a user.
 
@@ -90,7 +85,9 @@ class DraftService:
         try:
             async with self.db_manager.get_session() as session:
                 # Calculate draft expiry date
-                draft_expires_at = datetime.now(timezone.utc) + timedelta(days=self.draft_expiry_days)
+                draft_expires_at = datetime.now(UTC) + timedelta(
+                    days=self.draft_expiry_days
+                )
 
                 # Generate unique slug
                 existing_slugs = await self._get_existing_slugs(session)
@@ -98,7 +95,7 @@ class DraftService:
 
                 # Create draft vote
                 new_vote = Vote(
-                    creator_id=user_id,
+                    creator_id=user_id,  # type: ignore[arg-type]
                     title=title,
                     description=description,
                     slug=slug,
@@ -106,7 +103,7 @@ class DraftService:
                     is_draft=True,
                     is_active=False,
                     draft_expires_at=draft_expires_at,
-                    choice_count=0
+                    choice_count=0,
                 )
 
                 session.add(new_vote)
@@ -121,21 +118,27 @@ class DraftService:
                     "status": new_vote.status,
                     "is_draft": new_vote.is_draft,
                     "is_active": new_vote.is_active,
-                    "created_at": new_vote.created_at.isoformat(),
-                    "published_at": new_vote.published_at.isoformat() if new_vote.published_at else None,
-                    "closed_at": new_vote.closed_at.isoformat() if new_vote.closed_at else None,
-                    "draft_expires_at": new_vote.draft_expires_at.isoformat() if new_vote.draft_expires_at else None,
-                    "choice_count": new_vote.choice_count
+                    "created_at": new_vote.created_at.isoformat()
+                    if new_vote.created_at
+                    else None,
+                    "published_at": new_vote.published_at.isoformat()
+                    if new_vote.published_at
+                    else None,
+                    "closed_at": new_vote.closed_at.isoformat()
+                    if new_vote.closed_at
+                    else None,
+                    "draft_expires_at": new_vote.draft_expires_at.isoformat()
+                    if new_vote.draft_expires_at
+                    else None,
+                    "choice_count": new_vote.choice_count,
                 }
         except Exception as e:
             logger.error(f"Failed to create draft vote for user {user_id}: {str(e)}")
             raise DraftServiceError(f"Unable to create draft vote: {str(e)}") from e
 
     async def get_user_drafts(
-        self,
-        user_id: str,
-        include_expired: bool = False
-    ) -> List[Dict[str, Any]]:
+        self, user_id: str, include_expired: bool = False
+    ) -> list[dict[str, Any]]:
         """
         Get all draft votes for a user.
 
@@ -151,7 +154,7 @@ class DraftService:
                 query = select(Vote).where(
                     and_(
                         Vote.creator_id == user_id,
-                        Vote.is_draft == True  # noqa: E712
+                        Vote.is_draft == True,  # noqa: E712
                     )
                 )
 
@@ -159,7 +162,7 @@ class DraftService:
                     query = query.where(
                         or_(
                             Vote.draft_expires_at.is_(None),
-                            Vote.draft_expires_at > datetime.now(timezone.utc)
+                            Vote.draft_expires_at > datetime.now(UTC),
                         )
                     )
 
@@ -175,10 +178,15 @@ class DraftService:
                         "description": draft.description,
                         "is_draft": draft.is_draft,
                         "is_active": draft.is_active,
-                        "created_at": draft.created_at.isoformat(),
-                        "draft_expires_at": draft.draft_expires_at.isoformat() if draft.draft_expires_at else None,
+                        "created_at": draft.created_at.isoformat()
+                        if draft.created_at
+                        else None,
+                        "draft_expires_at": draft.draft_expires_at.isoformat()
+                        if draft.draft_expires_at
+                        else None,
                         "choice_count": draft.choice_count,
-                        "is_expired": draft.draft_expires_at and draft.draft_expires_at < datetime.now(timezone.utc)
+                        "is_expired": draft.draft_expires_at
+                        and draft.draft_expires_at < datetime.now(UTC),
                     }
                     for draft in drafts
                 ]
@@ -190,9 +198,9 @@ class DraftService:
         self,
         vote_id: str,
         user_id: str,
-        title: Optional[str] = None,
-        description: Optional[str] = None
-    ) -> Dict[str, Any]:
+        title: str | None = None,
+        description: str | None = None,
+    ) -> dict[str, Any]:
         """
         Update a draft vote if it belongs to the user and is still a draft.
 
@@ -215,7 +223,7 @@ class DraftService:
                     and_(
                         Vote.id == vote_id,
                         Vote.creator_id == user_id,
-                        Vote.is_draft == True  # noqa: E712
+                        Vote.is_draft == True,  # noqa: E712
                     )
                 )
 
@@ -226,8 +234,10 @@ class DraftService:
                     raise DraftServiceError("Draft vote not found or not editable")
 
                 # Check if draft has expired
-                if vote.draft_expires_at and vote.draft_expires_at < datetime.now(timezone.utc):
-                    raise DraftServiceError("Draft vote has expired and cannot be edited")
+                if vote.draft_expires_at and vote.draft_expires_at < datetime.now(UTC):
+                    raise DraftServiceError(
+                        "Draft vote has expired and cannot be edited"
+                    )
 
                 # Update fields if provided
                 if title is not None:
@@ -236,7 +246,7 @@ class DraftService:
                     vote.description = description
 
                 # Update last modified timestamp
-                vote.updated_at = datetime.now(timezone.utc)
+                vote.updated_at = datetime.now(UTC)
 
                 await session.commit()
                 await session.refresh(vote)
@@ -247,10 +257,16 @@ class DraftService:
                     "description": vote.description,
                     "is_draft": vote.is_draft,
                     "is_active": vote.is_active,
-                    "created_at": vote.created_at.isoformat(),
-                    "updated_at": vote.updated_at.isoformat() if vote.updated_at else None,
-                    "draft_expires_at": vote.draft_expires_at.isoformat() if vote.draft_expires_at else None,
-                    "choice_count": vote.choice_count
+                    "created_at": vote.created_at.isoformat()
+                    if vote.created_at
+                    else None,
+                    "updated_at": vote.updated_at.isoformat()
+                    if vote.updated_at
+                    else None,
+                    "draft_expires_at": vote.draft_expires_at.isoformat()
+                    if vote.draft_expires_at
+                    else None,
+                    "choice_count": vote.choice_count,
                 }
         except DraftServiceError:
             raise
@@ -258,7 +274,7 @@ class DraftService:
             logger.error(f"Failed to update draft vote {vote_id}: {str(e)}")
             raise DraftServiceError(f"Unable to update draft vote: {str(e)}") from e
 
-    async def publish_draft_vote(self, vote_id: str, user_id: str) -> Dict[str, Any]:
+    async def publish_draft_vote(self, vote_id: str, user_id: str) -> dict[str, Any]:
         """
         Publish a draft vote, making it active and available for voting.
 
@@ -279,7 +295,7 @@ class DraftService:
                     and_(
                         Vote.id == vote_id,
                         Vote.creator_id == user_id,
-                        Vote.is_draft == True  # noqa: E712
+                        Vote.is_draft == True,  # noqa: E712
                     )
                 )
 
@@ -290,17 +306,21 @@ class DraftService:
                     raise DraftServiceError("Draft vote not found or not publishable")
 
                 # Check if draft has expired
-                if vote.draft_expires_at and vote.draft_expires_at < datetime.now(timezone.utc):
-                    raise DraftServiceError("Draft vote has expired and cannot be published")
+                if vote.draft_expires_at and vote.draft_expires_at < datetime.now(UTC):
+                    raise DraftServiceError(
+                        "Draft vote has expired and cannot be published"
+                    )
 
                 # Validate vote has at least 2 choices
-                if vote.choice_count < 2:
-                    raise DraftServiceError("Vote must have at least 2 choices before publishing")
+                if vote.choice_count is None or vote.choice_count < 2:
+                    raise DraftServiceError(
+                        "Vote must have at least 2 choices before publishing"
+                    )
 
                 # Update vote to published state
                 vote.is_draft = False
                 vote.is_active = True
-                vote.published_at = datetime.now(timezone.utc)
+                vote.published_at = datetime.now(UTC)
                 vote.draft_expires_at = None  # Clear expiry since it's now published
 
                 await session.commit()
@@ -312,9 +332,13 @@ class DraftService:
                     "description": vote.description,
                     "is_draft": vote.is_draft,
                     "is_active": vote.is_active,
-                    "created_at": vote.created_at.isoformat(),
-                    "published_at": vote.published_at.isoformat() if vote.published_at else None,
-                    "choice_count": vote.choice_count
+                    "created_at": vote.created_at.isoformat()
+                    if vote.created_at
+                    else None,
+                    "published_at": vote.published_at.isoformat()
+                    if vote.published_at
+                    else None,
+                    "choice_count": vote.choice_count,
                 }
         except DraftServiceError:
             raise
@@ -343,7 +367,7 @@ class DraftService:
                     and_(
                         Vote.id == vote_id,
                         Vote.creator_id == user_id,
-                        Vote.is_draft == True  # noqa: E712
+                        Vote.is_draft == True,  # noqa: E712
                     )
                 )
 
@@ -355,7 +379,7 @@ class DraftService:
 
                 # Delete associated vote options first (if any)
                 await session.execute(
-                    select(VoteOption).where(VoteOption.vote_id == vote_id).delete()
+                    delete(VoteOption).where(VoteOption.vote_id == vote_id)
                 )
 
                 # Delete the vote
@@ -383,13 +407,17 @@ class DraftService:
             cleaned_count = 0
             async with self.db_manager.get_session() as session:
                 # Find expired drafts
-                expired_query = select(Vote.id).where(
-                    and_(
-                        Vote.is_draft == True,  # noqa: E712
-                        Vote.draft_expires_at.is_not(None),
-                        Vote.draft_expires_at < datetime.now(timezone.utc)
+                expired_query = (
+                    select(Vote.id)
+                    .where(
+                        and_(
+                            Vote.is_draft == True,  # noqa: E712
+                            Vote.draft_expires_at.is_not(None),
+                            Vote.draft_expires_at < datetime.now(UTC),
+                        )
                     )
-                ).limit(batch_size)
+                    .limit(batch_size)
+                )
 
                 result = await session.execute(expired_query)
                 expired_ids = [row[0] for row in result.fetchall()]
@@ -397,13 +425,11 @@ class DraftService:
                 if expired_ids:
                     # Delete associated vote options
                     await session.execute(
-                        select(VoteOption).where(VoteOption.vote_id.in_(expired_ids)).delete()
+                        delete(VoteOption).where(VoteOption.vote_id.in_(expired_ids))
                     )
 
                     # Delete expired votes
-                    await session.execute(
-                        select(Vote).where(Vote.id.in_(expired_ids)).delete()
-                    )
+                    await session.execute(delete(Vote).where(Vote.id.in_(expired_ids)))
 
                     await session.commit()
                     cleaned_count = len(expired_ids)
@@ -412,4 +438,6 @@ class DraftService:
                 return cleaned_count
         except Exception as e:
             logger.error(f"Failed to cleanup expired drafts: {str(e)}")
-            raise DraftServiceError(f"Unable to cleanup expired drafts: {str(e)}") from e
+            raise DraftServiceError(
+                f"Unable to cleanup expired drafts: {str(e)}"
+            ) from e

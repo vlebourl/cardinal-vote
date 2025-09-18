@@ -19,10 +19,9 @@ from starlette.middleware.base import BaseHTTPMiddleware
 # Generalized platform imports
 from .auth_manager import GeneralizedAuthManager
 from .auth_routes import auth_router
-from .dashboard_routes import dashboard_router
-from .vote_management_routes import vote_management_router
 from .choice_management_routes import choice_management_router
 from .config import settings
+from .dashboard_routes import dashboard_router
 
 # DatabaseError now imported from models with other exceptions
 from .database_manager import GeneralizedDatabaseManager
@@ -36,6 +35,7 @@ from .models import (
 )
 from .rate_limiting import RateLimitMiddleware, get_rate_limiter
 from .super_admin_routes import setup_super_admin_templates, super_admin_router
+from .vote_management_routes import vote_management_router
 from .vote_routes import vote_router
 
 # Configure logging

@@ -1,19 +1,17 @@
 """Vote choice management service with image support for the generalized voting platform."""
 
 import logging
-from typing import Optional, List, Dict, Any, Union
+from typing import Any
 from uuid import UUID
-from pathlib import Path
 
-from sqlalchemy import select, and_, func, update
+from fastapi import UploadFile
+from sqlalchemy import and_, func, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.exc import IntegrityError
-from fastapi import UploadFile, HTTPException, status
 
-from .models import Vote, VoteOption
-from .database_manager import GeneralizedDatabaseManager
-from .image_service import ImageService, ImageProcessingError
 from .config import settings
+from .database_manager import GeneralizedDatabaseManager
+from .image_service import ImageProcessingError, ImageService
+from .models import Vote, VoteOption
 
 logger = logging.getLogger(__name__)
 
@@ -25,20 +23,22 @@ class ChoiceServiceError(Exception):
 class ChoiceService:
     """Service for managing vote choices with image and text content support."""
 
-    def __init__(self, db_manager: GeneralizedDatabaseManager, image_service: ImageService) -> None:
+    def __init__(
+        self, db_manager: GeneralizedDatabaseManager, image_service: ImageService
+    ) -> None:
         """Initialize choice service with database manager and image service."""
         self.db_manager = db_manager
         self.image_service = image_service
-        self.max_choices_per_vote = getattr(settings, 'MAX_VOTE_CHOICES', 20)
+        self.max_choices_per_vote = getattr(settings, "MAX_VOTE_CHOICES", 20)
 
     async def create_choice(
         self,
         vote_id: str,
         user_id: str,
-        text_content: Optional[str] = None,
-        image_file: Optional[UploadFile] = None,
-        display_order: Optional[int] = None
-    ) -> Dict[str, Any]:
+        text_content: str | None = None,
+        image_file: UploadFile | None = None,
+        display_order: int | None = None,
+    ) -> dict[str, Any]:
         """
         Create a new choice for a vote with text and/or image content.
 
@@ -64,16 +64,23 @@ class ChoiceService:
                 vote = await self._verify_vote_editable(session, vote_id, user_id)
 
                 # Check choice limit
-                if vote.choice_count >= self.max_choices_per_vote:
-                    raise ChoiceServiceError(f"Vote cannot have more than {self.max_choices_per_vote} choices")
+                if (
+                    vote.choice_count is not None
+                    and vote.choice_count >= self.max_choices_per_vote
+                ):
+                    raise ChoiceServiceError(
+                        f"Vote cannot have more than {self.max_choices_per_vote} choices"
+                    )
 
                 # Handle image upload if provided
                 image_path = None
                 if image_file:
                     try:
-                        image_path = await self.image_service.save_upload(image_file, f"vote_{vote_id}")
+                        image_path = await self.image_service.upload_image(image_file)
                     except ImageProcessingError as e:
-                        raise ChoiceServiceError(f"Image processing failed: {str(e)}") from e
+                        raise ChoiceServiceError(
+                            f"Image processing failed: {str(e)}"
+                        ) from e
 
                 # Determine display order
                 if display_order is None:
@@ -81,13 +88,19 @@ class ChoiceService:
                 else:
                     # Validate display order is within acceptable range
                     if display_order < 1 or display_order > self.max_choices_per_vote:
-                        raise ChoiceServiceError(f"Display order must be between 1 and {self.max_choices_per_vote}")
+                        raise ChoiceServiceError(
+                            f"Display order must be between 1 and {self.max_choices_per_vote}"
+                        )
 
                     # Check for duplicate display order and handle appropriately
-                    existing_choice = await self._get_choice_by_display_order(session, vote_id, display_order)
+                    existing_choice = await self._get_choice_by_display_order(
+                        session, vote_id, display_order
+                    )
                     if existing_choice:
                         # Auto-adjust display order to avoid conflict
-                        display_order = await self._get_next_display_order(session, vote_id)
+                        display_order = await self._get_next_display_order(
+                            session, vote_id
+                        )
 
                 # Create the choice
                 # Determine option type based on content
@@ -102,11 +115,11 @@ class ChoiceService:
                     content = image_path
 
                 new_choice = VoteOption(
-                    vote_id=vote_id,
+                    vote_id=vote_id,  # type: ignore[arg-type]
                     option_type=option_type,
                     title=title,
                     content=content,
-                    display_order=display_order
+                    display_order=display_order,
                 )
 
                 session.add(new_choice)
@@ -114,7 +127,7 @@ class ChoiceService:
                 # Update vote choice count
                 await session.execute(
                     update(Vote)
-                    .where(Vote.id == vote_id)
+                    .where(Vote.id == UUID(vote_id))
                     .values(choice_count=Vote.choice_count + 1)
                 )
 
@@ -128,27 +141,35 @@ class ChoiceService:
                     "content": new_choice.content,
                     "display_order": new_choice.display_order,
                     "created_at": new_choice.created_at.isoformat()
+                    if new_choice.created_at
+                    else None,
                 }
 
         except ChoiceServiceError:
             # Clean up uploaded image if choice creation failed
             if image_path:
                 try:
-                    await self.image_service.delete_image(image_path)
+                    self.image_service.delete_image(image_path)
                 except Exception as cleanup_error:
-                    logger.error(f"Failed to cleanup image after choice creation failure: {cleanup_error}")
+                    logger.error(
+                        f"Failed to cleanup image after choice creation failure: {cleanup_error}"
+                    )
             raise
         except Exception as e:
             # Clean up uploaded image if choice creation failed
             if image_path:
                 try:
-                    await self.image_service.delete_image(image_path)
+                    self.image_service.delete_image(image_path)
                 except Exception as cleanup_error:
-                    logger.error(f"Failed to cleanup image after choice creation failure: {cleanup_error}")
+                    logger.error(
+                        f"Failed to cleanup image after choice creation failure: {cleanup_error}"
+                    )
             logger.error(f"Failed to create choice for vote {vote_id}: {str(e)}")
             raise ChoiceServiceError(f"Unable to create choice: {str(e)}") from e
 
-    async def get_vote_choices(self, vote_id: str, user_id: Optional[str] = None) -> List[Dict[str, Any]]:
+    async def get_vote_choices(
+        self, vote_id: str, user_id: str | None = None
+    ) -> list[dict[str, Any]]:
         """
         Get all choices for a vote.
 
@@ -166,9 +187,11 @@ class ChoiceService:
                     await self._verify_vote_access(session, vote_id, user_id)
 
                 # Get all choices for the vote
-                choices_query = select(VoteOption).where(
-                    VoteOption.vote_id == vote_id
-                ).order_by(VoteOption.display_order)
+                choices_query = (
+                    select(VoteOption)
+                    .where(VoteOption.vote_id == UUID(vote_id))
+                    .order_by(VoteOption.display_order)
+                )
 
                 result = await session.execute(choices_query)
                 choices = result.scalars().all()
@@ -180,6 +203,8 @@ class ChoiceService:
                         "image_path": choice.image_path,
                         "display_order": choice.display_order,
                         "created_at": choice.created_at.isoformat()
+                        if choice.created_at
+                        else None,
                     }
                     for choice in choices
                 ]
@@ -192,10 +217,10 @@ class ChoiceService:
         choice_id: str,
         vote_id: str,
         user_id: str,
-        text_content: Optional[str] = None,
-        image_file: Optional[UploadFile] = None,
-        display_order: Optional[int] = None
-    ) -> Dict[str, Any]:
+        text_content: str | None = None,
+        image_file: UploadFile | None = None,
+        display_order: int | None = None,
+    ) -> dict[str, Any]:
         """
         Update an existing choice.
 
@@ -221,8 +246,8 @@ class ChoiceService:
                 # Get existing choice
                 choice_query = select(VoteOption).where(
                     and_(
-                        VoteOption.id == choice_id,
-                        VoteOption.vote_id == vote_id
+                        VoteOption.id == UUID(choice_id),
+                        VoteOption.vote_id == UUID(vote_id),
                     )
                 )
                 result = await session.execute(choice_query)
@@ -237,9 +262,13 @@ class ChoiceService:
                 new_image_path = old_image_path
                 if image_file:
                     try:
-                        new_image_path = await self.image_service.save_upload(image_file, f"vote_{vote_id}")
+                        new_image_path = await self.image_service.upload_image(
+                            image_file
+                        )
                     except ImageProcessingError as e:
-                        raise ChoiceServiceError(f"Image processing failed: {str(e)}") from e
+                        raise ChoiceServiceError(
+                            f"Image processing failed: {str(e)}"
+                        ) from e
 
                 # Update fields
                 if text_content is not None:
@@ -248,12 +277,16 @@ class ChoiceService:
                     choice.image_path = new_image_path
                 if display_order is not None:
                     if display_order < 1 or display_order > self.max_choices_per_vote:
-                        raise ChoiceServiceError(f"Display order must be between 1 and {self.max_choices_per_vote}")
+                        raise ChoiceServiceError(
+                            f"Display order must be between 1 and {self.max_choices_per_vote}"
+                        )
                     choice.display_order = display_order
 
                 # Validate that choice still has content
                 if not choice.text_content and not choice.image_path:
-                    raise ChoiceServiceError("Choice must have either text content or an image")
+                    raise ChoiceServiceError(
+                        "Choice must have either text content or an image"
+                    )
 
                 await session.commit()
                 await session.refresh(choice)
@@ -261,9 +294,11 @@ class ChoiceService:
                 # Clean up old image if it was replaced
                 if old_image_path and new_image_path != old_image_path:
                     try:
-                        await self.image_service.delete_image(old_image_path)
+                        self.image_service.delete_image(old_image_path)
                     except Exception as cleanup_error:
-                        logger.warning(f"Failed to cleanup old image {old_image_path}: {cleanup_error}")
+                        logger.warning(
+                            f"Failed to cleanup old image {old_image_path}: {cleanup_error}"
+                        )
 
                 return {
                     "id": str(choice.id),
@@ -271,6 +306,8 @@ class ChoiceService:
                     "image_path": choice.image_path,
                     "display_order": choice.display_order,
                     "created_at": choice.created_at.isoformat()
+                    if choice.created_at
+                    else None,
                 }
 
         except ChoiceServiceError:
@@ -302,8 +339,8 @@ class ChoiceService:
                 # Get the choice to delete
                 choice_query = select(VoteOption).where(
                     and_(
-                        VoteOption.id == choice_id,
-                        VoteOption.vote_id == vote_id
+                        VoteOption.id == UUID(choice_id),
+                        VoteOption.vote_id == UUID(vote_id),
                     )
                 )
                 result = await session.execute(choice_query)
@@ -313,8 +350,10 @@ class ChoiceService:
                     raise ChoiceServiceError("Choice not found")
 
                 # Verify minimum choice requirement (at least 2 choices needed for publication)
-                if vote.choice_count <= 2:
-                    raise ChoiceServiceError("Cannot delete choice: vote must have at least 2 choices")
+                if vote.choice_count is not None and vote.choice_count <= 2:
+                    raise ChoiceServiceError(
+                        "Cannot delete choice: vote must have at least 2 choices"
+                    )
 
                 image_path = choice.image_path
 
@@ -324,7 +363,7 @@ class ChoiceService:
                 # Update vote choice count
                 await session.execute(
                     update(Vote)
-                    .where(Vote.id == vote_id)
+                    .where(Vote.id == UUID(vote_id))
                     .values(choice_count=Vote.choice_count - 1)
                 )
 
@@ -333,9 +372,11 @@ class ChoiceService:
                 # Clean up associated image
                 if image_path:
                     try:
-                        await self.image_service.delete_image(image_path)
+                        self.image_service.delete_image(image_path)
                     except Exception as cleanup_error:
-                        logger.warning(f"Failed to cleanup image {image_path}: {cleanup_error}")
+                        logger.warning(
+                            f"Failed to cleanup image {image_path}: {cleanup_error}"
+                        )
 
                 return True
 
@@ -345,7 +386,9 @@ class ChoiceService:
             logger.error(f"Failed to delete choice {choice_id}: {str(e)}")
             raise ChoiceServiceError(f"Unable to delete choice: {str(e)}") from e
 
-    async def reorder_choices(self, vote_id: str, user_id: str, choice_orders: List[Dict[str, int]]) -> List[Dict[str, Any]]:
+    async def reorder_choices(
+        self, vote_id: str, user_id: str, choice_orders: list[dict[str, Any]]
+    ) -> list[dict[str, Any]]:
         """
         Reorder choices for a vote.
 
@@ -371,14 +414,18 @@ class ChoiceService:
                     display_order = item["display_order"]
 
                     if display_order < 1 or display_order > self.max_choices_per_vote:
-                        raise ChoiceServiceError(f"Display order must be between 1 and {self.max_choices_per_vote}")
+                        raise ChoiceServiceError(
+                            f"Display order must be between 1 and {self.max_choices_per_vote}"
+                        )
 
                     await session.execute(
                         update(VoteOption)
-                        .where(and_(
-                            VoteOption.id == choice_id,
-                            VoteOption.vote_id == vote_id
-                        ))
+                        .where(
+                            and_(
+                                VoteOption.id == UUID(choice_id),
+                                VoteOption.vote_id == UUID(vote_id),
+                            )
+                        )
                         .values(display_order=display_order)
                     )
 
@@ -393,13 +440,15 @@ class ChoiceService:
             logger.error(f"Failed to reorder choices for vote {vote_id}: {str(e)}")
             raise ChoiceServiceError(f"Unable to reorder choices: {str(e)}") from e
 
-    async def _verify_vote_editable(self, session: AsyncSession, vote_id: str, user_id: str) -> Vote:
+    async def _verify_vote_editable(
+        self, session: AsyncSession, vote_id: str, user_id: str
+    ) -> Vote:
         """Verify that a vote exists, belongs to the user, and is still editable."""
         vote_query = select(Vote).where(
             and_(
-                Vote.id == vote_id,
-                Vote.creator_id == user_id,
-                Vote.is_draft == True  # noqa: E712
+                Vote.id == UUID(vote_id),
+                Vote.creator_id == UUID(user_id),
+                Vote.is_draft == True,  # noqa: E712
             )
         )
         result = await session.execute(vote_query)
@@ -410,13 +459,12 @@ class ChoiceService:
 
         return vote
 
-    async def _verify_vote_access(self, session: AsyncSession, vote_id: str, user_id: str) -> Vote:
+    async def _verify_vote_access(
+        self, session: AsyncSession, vote_id: str, user_id: str
+    ) -> Vote:
         """Verify that a vote exists and the user can access it."""
         vote_query = select(Vote).where(
-            and_(
-                Vote.id == vote_id,
-                Vote.creator_id == user_id
-            )
+            and_(Vote.id == UUID(vote_id), Vote.creator_id == UUID(user_id))
         )
         result = await session.execute(vote_query)
         vote = result.scalar_one_or_none()
@@ -429,19 +477,21 @@ class ChoiceService:
     async def _get_next_display_order(self, session: AsyncSession, vote_id: str) -> int:
         """Get the next available display order for a vote."""
         max_order_query = select(func.max(VoteOption.display_order)).where(
-            VoteOption.vote_id == vote_id
+            VoteOption.vote_id == UUID(vote_id)
         )
         result = await session.execute(max_order_query)
         max_order = result.scalar()
 
         return (max_order or 0) + 1
 
-    async def _get_choice_by_display_order(self, session: AsyncSession, vote_id: str, display_order: int) -> Optional[VoteOption]:
+    async def _get_choice_by_display_order(
+        self, session: AsyncSession, vote_id: str, display_order: int
+    ) -> VoteOption | None:
         """Get a choice by its display order."""
         choice_query = select(VoteOption).where(
             and_(
-                VoteOption.vote_id == vote_id,
-                VoteOption.display_order == display_order
+                VoteOption.vote_id == UUID(vote_id),
+                VoteOption.display_order == display_order,
             )
         )
         result = await session.execute(choice_query)
