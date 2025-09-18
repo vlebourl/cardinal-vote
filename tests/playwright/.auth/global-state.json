@@ -1,0 +1,7 @@
+{
+  "setupTimestamp": "2025-09-16T07:31:51.216Z",
+  "environment": "development",
+  "baseURL": "http://localhost:8000",
+  "isCI": false,
+  "testRunId": "test-1758007911216"
+}

@@ -1,0 +1,98 @@
+{
+  "name": "cardinal-vote-playwright-tests",
+  "version": "1.0.0",
+  "description": "Comprehensive Playwright E2E tests for Cardinal Vote platform",
+  "type": "module",
+  "scripts": {
+    "test": "playwright test",
+    "test:headed": "playwright test --headed",
+    "test:debug": "playwright test --debug",
+    "test:ui": "playwright test --ui",
+    "test:smoke": "playwright test --grep='@smoke'",
+    "test:core": "playwright test --grep='@core'",
+    "test:mobile": "playwright test --project='mobile-*'",
+    "test:responsive": "playwright test --grep='responsive'",
+    "test:accessibility": "playwright test --project='accessibility'",
+    "test:performance": "playwright test --project='performance'",
+    "test:error": "playwright test --grep='error'",
+    "test:ci": "playwright test --reporter=github",
+    "test:docker": "TEST_ENV=docker playwright test",
+    "test:parallel": "playwright test --workers=4",
+    "test:serial": "playwright test --workers=1",
+    "install": "npx playwright install --with-deps",
+    "install:browsers": "npx playwright install chromium firefox webkit",
+    "codegen": "playwright codegen",
+    "show-report": "playwright show-report",
+    "clean": "rm -rf test-results reports screenshots videos traces",
+    "setup": "npm run install && npm run clean",
+    "lint": "eslint . --ext .js",
+    "format": "prettier --write .",
+    "validate": "npm run lint && npm run format"
+  },
+  "dependencies": {
+    "@playwright/test": "^1.55.0",
+    "wait-on": "^8.0.1",
+    "concurrently": "^9.1.0",
+    "@faker-js/faker": "^9.3.0"
+  },
+  "devDependencies": {
+    "eslint": "^9.15.0",
+    "prettier": "^3.3.3",
+    "@typescript-eslint/eslint-plugin": "^8.15.0",
+    "@typescript-eslint/parser": "^8.15.0"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=8.0.0"
+  },
+  "keywords": [
+    "playwright",
+    "e2e",
+    "testing",
+    "cardinal-vote",
+    "automation",
+    "browser-testing",
+    "ci-cd"
+  ],
+  "author": "Cardinal Vote Team",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/your-org/cardinal-vote.git",
+    "directory": "tests/playwright"
+  },
+  "bugs": {
+    "url": "https://github.com/your-org/cardinal-vote/issues"
+  },
+  "homepage": "https://github.com/your-org/cardinal-vote#readme",
+  "browserslist": [
+    "last 2 versions",
+    "> 1%",
+    "not dead"
+  ],
+  "eslintConfig": {
+    "env": {
+      "node": true,
+      "es2022": true
+    },
+    "extends": [
+      "eslint:recommended"
+    ],
+    "parserOptions": {
+      "ecmaVersion": 2022,
+      "sourceType": "module"
+    },
+    "rules": {
+      "no-console": "warn",
+      "no-unused-vars": "error",
+      "prefer-const": "error"
+    }
+  },
+  "prettier": {
+    "semi": true,
+    "trailingComma": "es5",
+    "singleQuote": true,
+    "printWidth": 100,
+    "tabWidth": 2
+  }
+}
