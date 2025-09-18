@@ -203,7 +203,7 @@ class DashboardManager {
         break
 
       // Draft vote management actions
-      case 'edit-vote':
+      case 'edit-draft-vote':
         if (voteId) {
           this.editVote(voteId)
         }
@@ -213,7 +213,7 @@ class DashboardManager {
           this.publishVote(voteId)
         }
         break
-      case 'delete-vote':
+      case 'delete-draft-vote':
         if (voteId) {
           this.deleteVote(voteId)
         }
@@ -689,7 +689,7 @@ class DashboardManager {
     this.showSnackbar(message)
   }
 
-  async editVote(voteId) {
+  async editVote(_voteId) {
     try {
       const token = this.getAccessToken()
       if (!token) {
