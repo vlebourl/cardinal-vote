@@ -73,6 +73,8 @@ class User(Base):
         DateTime(timezone=True), server_default=func.now(), onupdate=func.now()
     )
     last_login = Column(DateTime(timezone=True))
+    # Dashboard activity tracking (already exists but adding comment for clarity)
+    # last_login is used for dashboard user activity analytics
 
     # Relationships
     votes: Mapped["list[Vote]"] = relationship(
@@ -124,6 +126,14 @@ class Vote(Base):
     require_auth = Column(Boolean, default=False, nullable=False)
     access_code = Column(String(50), nullable=True)
 
+    # Dashboard draft support fields
+    is_draft = Column(Boolean, default=True, nullable=False)
+    is_active = Column(Boolean, default=False, nullable=False)
+    published_at = Column(DateTime(timezone=True), nullable=True)
+    closed_at = Column(DateTime(timezone=True), nullable=True)
+    draft_expires_at = Column(DateTime(timezone=True), nullable=True)
+    choice_count = Column(Integer, default=0, nullable=False)
+
     # Relationships
     creator: Mapped["User"] = relationship("User", back_populates="votes")
     options: Mapped["list[VoteOption]"] = relationship(
@@ -143,6 +153,10 @@ class Vote(Base):
         Index("idx_votes_slug", "slug"),
         Index("idx_votes_status", "status"),
         Index("idx_votes_created_at", "created_at"),
+        # Dashboard-specific indexes
+        Index("idx_votes_draft_status", "is_draft", "is_active"),
+        Index("idx_votes_creator_status", "creator_id", "is_draft", "is_active"),
+        Index("idx_votes_draft_expires", "draft_expires_at"),
     )
 
     def __repr__(self) -> str:
@@ -171,6 +185,10 @@ class VoteOption(Base):
     created_at = Column(
         DateTime(timezone=True), server_default=func.now(), nullable=False
     )
+
+    # Dashboard image upload support
+    image_path = Column(String(500), nullable=True)
+    text_content = Column(Text, nullable=True)  # Clearer field name for text content
 
     # Relationships
     vote: Mapped["Vote"] = relationship("Vote", back_populates="options")

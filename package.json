@@ -51,6 +51,7 @@
     "testMatch": [
       "<rootDir>/tests/**/*.test.js"
     ],
+    "passWithNoTests": true,
     "collectCoverageFrom": [
       "static/**/*.js",
       "!static/**/*.min.js"

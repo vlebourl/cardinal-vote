@@ -210,4 +210,23 @@ staticfiles/
 # Media files (uploads)
 media/
 
-.palywright-mcp/** */
+# Playwright and testing artifacts
+.playwright-mcp/
+tests/contract/
+tests/integration/
+tests/playwright/
+test_*.py
+*.test.js
+auth-modals.test.js
+
+# Generated content and specifications
+.specify/
+specs/
+.claude/settings.local.json
+
+# Screenshots and temporary media files (but keep important assets)
+screenshots/
+.playwright-mcp/*.png
+.playwright-mcp/*.jpg
+.playwright-mcp/*.jpeg
+.playwright-mcp/*.gif

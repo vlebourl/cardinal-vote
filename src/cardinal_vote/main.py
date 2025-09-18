@@ -19,7 +19,9 @@ from starlette.middleware.base import BaseHTTPMiddleware
 # Generalized platform imports
 from .auth_manager import GeneralizedAuthManager
 from .auth_routes import auth_router
+from .choice_management_routes import choice_management_router
 from .config import settings
+from .dashboard_routes import dashboard_router
 
 # DatabaseError now imported from models with other exceptions
 from .database_manager import GeneralizedDatabaseManager
@@ -33,6 +35,7 @@ from .models import (
 )
 from .rate_limiting import RateLimitMiddleware, get_rate_limiter
 from .super_admin_routes import setup_super_admin_templates, super_admin_router
+from .vote_management_routes import vote_management_router
 from .vote_routes import vote_router
 
 # Configure logging
@@ -196,6 +199,9 @@ templates = Jinja2Templates(directory=settings.TEMPLATES_DIR)
 # Admin router is only included in legacy mode (will be conditionally added in lifespan)
 app.include_router(auth_router)  # Generalized platform auth
 app.include_router(vote_router)  # Generalized platform votes
+app.include_router(dashboard_router)  # Dashboard API
+app.include_router(vote_management_router)  # Vote management (drafts)
+app.include_router(choice_management_router)  # Choice management with images
 
 
 @app.exception_handler(RequestValidationError)
