@@ -14,6 +14,10 @@ class DashboardManager {
   static init() {
     const dashboard = new DashboardManager()
     dashboard.initializeElements()
+
+    // Force drawer to be hidden immediately (before any CSS transitions)
+    dashboard.forceCloseDrawer()
+
     dashboard.initializeEventListeners()
     dashboard.loadUserData()
     dashboard.loadDashboardData()
@@ -198,6 +202,23 @@ class DashboardManager {
         }
         break
 
+      // Draft vote management actions
+      case 'edit-vote':
+        if (voteId) {
+          this.editVote(voteId)
+        }
+        break
+      case 'publish-vote':
+        if (voteId) {
+          this.publishVote(voteId)
+        }
+        break
+      case 'delete-vote':
+        if (voteId) {
+          this.deleteVote(voteId)
+        }
+        break
+
       default:
         console.log('Unhandled action:', action)
     }
@@ -214,6 +235,24 @@ class DashboardManager {
     if (this.navigationDrawer && this.navigationScrim) {
       this.navigationDrawer.classList.remove('md-navigation-drawer-open')
       this.navigationScrim.classList.remove('md-navigation-drawer-scrim-visible')
+    }
+  }
+
+  forceCloseDrawer() {
+    // Immediately hide drawer without waiting for DOM ready
+    const drawer = document.getElementById('navigationDrawer')
+    const scrim = document.getElementById('navigationScrim')
+
+    if (drawer) {
+      drawer.classList.remove('md-navigation-drawer-open')
+      drawer.style.transform = 'translateX(-100%)'
+      drawer.style.pointerEvents = 'none'
+    }
+
+    if (scrim) {
+      scrim.classList.remove('md-navigation-drawer-scrim-visible')
+      scrim.style.opacity = '0'
+      scrim.style.pointerEvents = 'none'
     }
   }
 
@@ -279,6 +318,12 @@ class DashboardManager {
       if (displayName) {
         displayName.textContent = `${this.user.first_name} ${this.user.last_name}`
       }
+
+      // Show admin section for super admin users
+      const adminSection = document.getElementById('adminSection')
+      if (adminSection && this.user.is_super_admin) {
+        adminSection.style.display = 'block'
+      }
     }
   }
 
@@ -287,8 +332,8 @@ class DashboardManager {
     if (!token) return
 
     try {
-      // Load enhanced dashboard statistics
-      const statsResponse = await fetch(`${this.API_BASE}/votes/dashboard/stats`, {
+      // Load dashboard statistics from new API endpoint
+      const statsResponse = await fetch(`${this.API_BASE}/dashboard/stats`, {
         headers: {
           Authorization: `Bearer ${token}`
         }
@@ -296,55 +341,62 @@ class DashboardManager {
 
       if (statsResponse.ok) {
         const statsData = await statsResponse.json()
-        this.updateEnhancedStats(statsData)
-        this.updateRecentVotes(statsData.recent_votes)
+        this.updateDashboardStats(statsData)
       }
 
-      // Load activity timeline
-      const activityResponse = await fetch(`${this.API_BASE}/votes/dashboard/activity?days=7&limit=10`, {
+      // Load recent votes summary
+      const voteSummaryResponse = await fetch(`${this.API_BASE}/dashboard/votes/summary?limit=10`, {
         headers: {
           Authorization: `Bearer ${token}`
         }
       })
 
-      if (activityResponse.ok) {
-        const activityData = await activityResponse.json()
-        this.updateActivityTimeline(activityData)
+      if (voteSummaryResponse.ok) {
+        const summaryData = await voteSummaryResponse.json()
+        this.updateRecentVotes(summaryData.recent_votes)
+      }
+
+      // Load user's votes list
+      const votesResponse = await fetch(`${this.API_BASE}/votes?limit=5&sort=created_at`, {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      })
+
+      if (votesResponse.ok) {
+        const votesData = await votesResponse.json()
+        this.updateVotesList(votesData.votes)
       }
     } catch (error) {
       console.error('Failed to load dashboard data:', error)
-      // Don't show error for data loading - user can still use the interface
+      this.showErrorToast('Failed to load dashboard data. Please refresh the page.')
     }
   }
 
-  updateEnhancedStats(statsData) {
-    const statusCards = statsData.status_cards || {}
-
-    // Update all 6 status card metrics
+  updateDashboardStats(statsData) {
+    // Update dashboard statistics with new API format
     const totalVotesEl = document.getElementById('totalVotes')
     const activeVotesEl = document.getElementById('activeVotes')
     const totalResponsesEl = document.getElementById('totalResponses')
     const recentActivityEl = document.getElementById('recentActivity')
 
-    if (totalVotesEl) totalVotesEl.textContent = statusCards.total_votes || 0
-    if (activeVotesEl) activeVotesEl.textContent = statusCards.active_votes || 0
-    if (totalResponsesEl) totalResponsesEl.textContent = statusCards.total_responses || 0
-    if (recentActivityEl) recentActivityEl.textContent = statusCards.weekly_activity || 0
+    if (totalVotesEl) totalVotesEl.textContent = statsData.total_votes_created || 0
+    if (activeVotesEl) activeVotesEl.textContent = statsData.active_votes_count || 0
+    if (totalResponsesEl) totalResponsesEl.textContent = statsData.total_responses_received || 0
+    if (recentActivityEl) recentActivityEl.textContent = statsData.recent_activity_count || 0
 
-    // Add additional status cards if they exist in the DOM
+    // Additional status cards can be added as needed
     const draftVotesEl = document.getElementById('draftVotes')
     const closedVotesEl = document.getElementById('closedVotes')
 
-    if (draftVotesEl) draftVotesEl.textContent = statusCards.draft_votes || 0
-    if (closedVotesEl) closedVotesEl.textContent = statusCards.closed_votes || 0
-
-    // Update user display if available
-    if (statsData.user) {
-      const userDisplayName = document.getElementById('userDisplayName')
-      if (userDisplayName && statsData.user.full_name) {
-        userDisplayName.textContent = statsData.user.full_name
-      }
+    // Draft votes would be total_votes_created - active_votes_count (approximately)
+    if (draftVotesEl) {
+      const draftVotes = Math.max(0, (statsData.total_votes_created || 0) - (statsData.active_votes_count || 0))
+      draftVotesEl.textContent = draftVotes
     }
+
+    // Closed votes would need separate endpoint or calculation
+    if (closedVotesEl) closedVotesEl.textContent = 0
   }
 
   updateRecentVotes(votes) {
@@ -566,6 +618,166 @@ class DashboardManager {
     const snackbar = document.getElementById('snackbar')
     if (snackbar) {
       snackbar.classList.remove('md-snackbar-visible')
+    }
+  }
+
+  updateVotesList(votes) {
+    const votesList = document.getElementById('voteList')
+    if (!votesList) return
+
+    if (!votes || votes.length === 0) {
+      votesList.innerHTML = `
+        <div class="empty-state">
+          <span class="material-icons">ballot</span>
+          <p class="md-body-large">No votes yet</p>
+          <button class="md-button md-button-filled" data-action="create-vote">
+            <span class="material-icons">add</span>
+            Create Your First Vote
+          </button>
+        </div>
+      `
+      return
+    }
+
+    const votesHtml = votes
+      .map(
+        vote => `
+      <div class="vote-card md-card md-card-outlined" data-vote-id="${vote.id}">
+        <div class="vote-card-content">
+          <h3 class="md-title-medium">${this.escapeHtml(vote.title)}</h3>
+          <p class="md-body-medium md-on-surface-variant vote-description">
+            ${vote.description ? this.escapeHtml(vote.description) : 'No description'}
+          </p>
+          <div class="vote-meta">
+            <span class="vote-status ${vote.is_draft ? 'draft' : vote.is_active ? 'active' : 'closed'}">
+              ${vote.is_draft ? 'Draft' : vote.is_active ? 'Active' : 'Closed'}
+            </span>
+            <span class="vote-choices">${vote.choice_count || 0} choices</span>
+            <span class="vote-responses">${vote.response_count || 0} responses</span>
+          </div>
+          <div class="vote-actions">
+            ${
+              vote.is_draft
+                ? `
+              <button class="md-button md-button-text" data-action="edit-vote" data-vote-id="${vote.id}">
+                <span class="material-icons">edit</span>
+                Edit
+              </button>
+              <button class="md-button md-button-filled" data-action="publish-vote" data-vote-id="${vote.id}">
+                <span class="material-icons">publish</span>
+                Publish
+              </button>
+            `
+                : `
+              <button class="md-button md-button-text" data-action="view-results" data-vote-id="${vote.id}">
+                <span class="material-icons">analytics</span>
+                Results
+              </button>
+            `
+            }
+          </div>
+        </div>
+      </div>
+    `
+      )
+      .join('')
+
+    votesList.innerHTML = votesHtml
+  }
+
+  showErrorToast(message) {
+    this.showSnackbar(message)
+  }
+
+  async editVote(voteId) {
+    try {
+      const token = this.getAccessToken()
+      if (!token) {
+        this.redirectToLogin()
+        return
+      }
+
+      // For now, redirect to a vote editor or show a modal
+      // This could be extended to use an edit modal
+      this.showSnackbar('Edit functionality coming soon!')
+
+      // In a full implementation, you might:
+      // 1. Open a modal with vote edit form
+      // 2. Load vote details via API
+      // 3. Allow editing title, description, choices
+      // 4. Save changes via PUT /api/votes/{vote_id}
+    } catch (error) {
+      console.error('Failed to edit vote:', error)
+      this.showErrorToast('Failed to edit vote')
+    }
+  }
+
+  async publishVote(voteId) {
+    try {
+      const token = this.getAccessToken()
+      if (!token) {
+        this.redirectToLogin()
+        return
+      }
+
+      // Show confirmation dialog
+      const confirmed = confirm(
+        'Are you sure you want to publish this vote? Once published, you cannot edit it further.'
+      )
+      if (!confirmed) return
+
+      const response = await fetch(`${this.API_BASE}/votes/${voteId}/publish`, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      })
+
+      if (response.ok) {
+        this.showSnackbar('Vote published successfully!')
+        // Reload dashboard data to reflect changes
+        this.loadDashboardData()
+      } else {
+        const errorData = await response.json()
+        this.showErrorToast(errorData.message || 'Failed to publish vote')
+      }
+    } catch (error) {
+      console.error('Failed to publish vote:', error)
+      this.showErrorToast('Failed to publish vote')
+    }
+  }
+
+  async deleteVote(voteId) {
+    try {
+      const token = this.getAccessToken()
+      if (!token) {
+        this.redirectToLogin()
+        return
+      }
+
+      // Show confirmation dialog
+      const confirmed = confirm('Are you sure you want to delete this vote? This action cannot be undone.')
+      if (!confirmed) return
+
+      const response = await fetch(`${this.API_BASE}/votes/${voteId}`, {
+        method: 'DELETE',
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      })
+
+      if (response.ok) {
+        this.showSnackbar('Vote deleted successfully!')
+        // Reload dashboard data to reflect changes
+        this.loadDashboardData()
+      } else {
+        const errorData = await response.json()
+        this.showErrorToast(errorData.message || 'Failed to delete vote')
+      }
+    } catch (error) {
+      console.error('Failed to delete vote:', error)
+      this.showErrorToast('Failed to delete vote')
     }
   }
 

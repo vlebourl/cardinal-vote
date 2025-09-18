@@ -16,6 +16,7 @@ class Settings:
     # Server settings
     HOST: str = os.getenv("HOST", "0.0.0.0")
     PORT: int = int(os.getenv("PORT", "8000"))
+    PUBLIC_URL: str = os.getenv("PUBLIC_URL", "")  # Must be set - no default fallback
 
     # Database settings
     DATABASE_URL: str = os.getenv(
@@ -102,6 +103,18 @@ class Settings:
     ALLOWED_UPLOAD_EXTENSIONS: set[str] = {".png", ".jpg", ".jpeg", ".gif", ".webp"}
     UPLOAD_TEMP_DIR: Path = BASE_DIR / "temp_uploads"
 
+    # Dashboard-specific settings
+    DASHBOARD_LOAD_TIMEOUT_SECONDS: int = int(os.getenv("DASHBOARD_LOAD_TIMEOUT_SECONDS", "3"))
+    VOTE_IMAGE_MAX_SIZE_MB: int = int(os.getenv("VOTE_IMAGE_MAX_SIZE_MB", "5"))
+    VOTE_IMAGE_MAX_DIMENSIONS: tuple[int, int] = (2048, 2048)
+    DASHBOARD_PAGINATION_THRESHOLD: int = int(os.getenv("DASHBOARD_PAGINATION_THRESHOLD", "50"))
+    DASHBOARD_AUTO_REFRESH_SECONDS: int = int(os.getenv("DASHBOARD_AUTO_REFRESH_SECONDS", "60"))
+    DRAFT_VOTE_RETENTION_DAYS: int = int(os.getenv("DRAFT_VOTE_RETENTION_DAYS", "30"))
+    MAX_VOTE_CHOICES: int = int(os.getenv("MAX_VOTE_CHOICES", "20"))
+
+    # Image storage paths
+    VOTE_IMAGES_DIR: Path = UPLOADS_DIR / "vote_images"
+
     @property
     def UPLOAD_DIR(self) -> Path:
         """Get upload directory path."""
@@ -128,6 +141,8 @@ class Settings:
             cls.UPLOADS_DIR.mkdir(parents=True, exist_ok=True)
         if not cls.UPLOAD_TEMP_DIR.exists():
             cls.UPLOAD_TEMP_DIR.mkdir(parents=True, exist_ok=True)
+        if not cls.VOTE_IMAGES_DIR.exists():
+            cls.VOTE_IMAGES_DIR.mkdir(parents=True, exist_ok=True)
 
     @classmethod
     def validate_security(cls) -> None:
@@ -184,12 +199,35 @@ class Settings:
                 )
 
     @classmethod
+    def validate_public_url(cls) -> None:
+        """Validate PUBLIC_URL configuration."""
+        if not cls.PUBLIC_URL:
+            raise ValueError(
+                "PUBLIC_URL environment variable is required. "
+                "This must be set to the full URL where the application is accessible "
+                "(e.g., https://yourdomain.com or http://192.168.1.100:8000 for local development). "
+                "This URL is used in password reset emails and other user-facing links."
+            )
+
+        if not cls.PUBLIC_URL.startswith(("http://", "https://")):
+            raise ValueError(
+                f"PUBLIC_URL must start with http:// or https://, got: {cls.PUBLIC_URL}"
+            )
+
+        # Additional validation for common mistakes
+        if cls.PUBLIC_URL.endswith("/"):
+            raise ValueError(
+                f"PUBLIC_URL should not end with a trailing slash, got: {cls.PUBLIC_URL}"
+            )
+
+    @classmethod
     def validate_all(cls) -> None:
         """Validate all configuration settings."""
         cls.validate_directories()
         cls.validate_database()
         cls.validate_security()
         cls.validate_email()
+        cls.validate_public_url()
 
         # Create upload directory if it doesn't exist
         upload_dir = Path(cls.UPLOAD_PATH)
@@ -204,6 +242,7 @@ class Settings:
             "app_version": cls.APP_VERSION,
             "environment": cls.ENVIRONMENT,
             "debug": cls.DEBUG,
+            "public_url": cls.PUBLIC_URL,
             "database_type": "PostgreSQL"
             if "postgresql" in cls.DATABASE_URL
             else "Unknown",
