@@ -59,6 +59,7 @@ services:
       - PORT=${PORT:-8000}
       - DEBUG=${DEBUG:-false}
       - CARDINAL_ENV=${CARDINAL_ENV:-development}
+      - PUBLIC_URL=${PUBLIC_URL:?PUBLIC_URL environment variable is required for generating user-facing links}
       # Security Configuration - Use environment variables or fallbacks
       - JWT_SECRET_KEY=${JWT_SECRET_KEY:?JWT_SECRET_KEY environment variable is required for security}
       - JWT_ALGORITHM=${JWT_ALGORITHM:-HS256}
@@ -91,12 +92,7 @@ services:
       # - ./static:/app/static:ro
     healthcheck:
       test:
-        [
-          'CMD',
-          'python',
-          '-c',
-          "import requests; requests.get('http://localhost:8000/api/health', timeout=5)"
-        ]
+        ['CMD', 'curl', '--fail', '--silent', '--max-time', '5', 'http://localhost:8000/api/health']
       interval: 30s
       timeout: 10s
       retries: 3

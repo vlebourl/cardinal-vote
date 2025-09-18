@@ -2607,8 +2607,7 @@ input[type='text']::placeholder {
 
 .form-input:focus {
   outline: none;
-  border-color: var(--primary-color);
-  box-shadow: 0 0 0 3px rgba(45, 88, 32, 0.1);
+  box-shadow: 0 0 0 2px rgba(45, 88, 32, 0.2);
   background: var(--surface-color);
 }
 
@@ -2619,6 +2618,16 @@ input[type='text']::placeholder {
 .form-help {
   font-size: var(--text-label-medium);
   color: var(--on-surface-variant);
+}
+
+.captcha-info {
+  font-size: var(--text-body-small);
+  color: var(--on-surface-variant);
+  text-align: center;
+  padding: var(--space-2);
+  background: var(--surface-variant);
+  border-radius: var(--radius-sm);
+  margin-top: var(--space-1);
 }
 
 .form-actions {

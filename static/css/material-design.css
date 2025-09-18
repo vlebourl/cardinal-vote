@@ -580,7 +580,27 @@ body {
 /* Text Fields */
 .md-text-field {
   position: relative;
-  margin-bottom: 20px;
+  margin-bottom: 24px;
+}
+
+/* Form layout improvements */
+.auth-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+@media (max-width: 480px) {
+  .form-row {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
 }
 
 .md-text-field-input {
@@ -628,6 +648,8 @@ body {
   font-size: var(--md-sys-typescale-body-small-size);
   color: var(--md-sys-color-primary);
   z-index: 1;
+  opacity: 0.8;
+  transition: opacity var(--md-sys-motion-duration-short3) var(--md-sys-motion-easing-standard);
 }
 
 .md-text-field-input:not(:focus):not(:placeholder-shown) + .md-text-field-label {
@@ -635,24 +657,36 @@ body {
 }
 
 .md-text-field-outlined .md-text-field-input {
-  background-color: transparent;
+  background-color: var(--md-sys-color-surface);
   border: 1px solid var(--md-sys-color-outline);
-  border-radius: var(--md-sys-shape-corner-extra-small);
+  border-radius: 12px;
   padding: 16px;
+  font-weight: 400;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  transition: all var(--md-sys-motion-duration-short3) cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .md-text-field-outlined .md-text-field-input:hover {
-  border-color: var(--md-sys-color-on-surface);
-  background-color: transparent;
+  border-color: var(--md-sys-color-primary);
+  background-color: var(--md-sys-color-surface);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 }
 
 .md-text-field-outlined .md-text-field-input:focus {
   border: 2px solid var(--md-sys-color-primary);
   padding: 15px;
+  box-shadow: 0 4px 12px rgba(26, 115, 232, 0.15);
+  background-color: var(--md-sys-color-surface);
 }
 
 .md-text-field-outlined .md-text-field-label {
-  background-color: var(--md-sys-color-background);
+  background: linear-gradient(
+    to right,
+    transparent 0%,
+    var(--md-sys-color-background) 10%,
+    var(--md-sys-color-background) 90%,
+    transparent 100%
+  );
   margin: 0 -4px;
   padding: 0 8px;
 }
@@ -662,17 +696,61 @@ body {
 .md-text-field-outlined .md-text-field-input:not(:placeholder-shown) + .md-text-field-label {
   top: 0px;
   transform: translateY(-50%);
-  background-color: var(--md-sys-color-background);
+  background: linear-gradient(
+    to right,
+    transparent 0%,
+    var(--md-sys-color-background) 10%,
+    var(--md-sys-color-background) 90%,
+    transparent 100%
+  );
   padding: 0 8px;
   margin: 0 -4px;
   z-index: 2;
+  opacity: 0.9;
+  transition: opacity var(--md-sys-motion-duration-short3) var(--md-sys-motion-easing-standard);
 }
 
 .md-text-field-helper {
   font-size: var(--md-sys-typescale-body-small-size);
   color: var(--md-sys-color-on-surface-variant);
-  margin-top: 4px;
-  padding: 0 16px;
+  margin-top: -2px;
+  margin-bottom: 20px;
+  padding: 8px 16px;
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.9) 0%,
+    rgba(255, 255, 255, 0.6) 50%,
+    rgba(255, 255, 255, 0.3) 100%
+  );
+  border-radius: 8px;
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  user-select: none;
+  pointer-events: none;
+  outline: none !important;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  -webkit-touch-callout: none;
+  -webkit-tap-highlight-color: transparent;
+  tabindex: -1;
+}
+
+.md-text-field-helper:focus,
+.md-text-field-helper:active,
+.md-text-field-helper:hover {
+  outline: none !important;
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05) !important;
+}
+
+.md-text-field-helper::selection {
+  background: transparent;
+}
+
+.md-text-field-helper::-moz-selection {
+  background: transparent;
 }
 
 .md-text-field-error .md-text-field-input {
@@ -824,6 +902,8 @@ body {
   border: none;
   color: inherit;
   font-size: 24px;
+  position: relative;
+  z-index: 300;
 }
 
 .md-top-app-bar-navigation-icon:hover,
@@ -845,10 +925,12 @@ body {
   transition: transform var(--md-sys-motion-duration-medium2) var(--md-sys-motion-easing-standard);
   z-index: 200;
   overflow-y: auto;
+  pointer-events: none;
 }
 
 .md-navigation-drawer-open {
   transform: translateX(0);
+  pointer-events: auto;
 }
 
 .md-navigation-drawer-scrim {
@@ -914,6 +996,50 @@ body {
   font-size: var(--md-sys-typescale-label-large-size);
   font-weight: var(--md-sys-typescale-label-large-weight);
   flex: 1;
+}
+
+/* Admin Section Styling */
+.admin-section {
+  margin-top: 16px;
+}
+
+.admin-section-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 28px 8px;
+  color: var(--md-sys-color-primary);
+  font-size: var(--md-sys-typescale-title-small-size);
+  font-weight: var(--md-sys-typescale-title-small-weight);
+}
+
+.admin-badge {
+  font-size: 20px !important;
+  color: var(--md-sys-color-primary);
+}
+
+.admin-label {
+  font-weight: 600;
+}
+
+.admin-item {
+  background-color: rgba(var(--md-sys-color-primary-rgb), 0.05);
+  border-left: 4px solid var(--md-sys-color-primary);
+  margin-left: 12px;
+  width: calc(100% - 12px);
+}
+
+.admin-item:hover {
+  background-color: rgba(var(--md-sys-color-primary-rgb), 0.1);
+}
+
+.sign-out-item {
+  margin-top: 8px;
+  color: var(--md-sys-color-error);
+}
+
+.sign-out-item:hover {
+  background-color: rgba(var(--md-sys-color-error-rgb), 0.1);
 }
 
 /* Snackbar */
@@ -982,15 +1108,18 @@ body {
 
 .md-dialog {
   background-color: var(--md-sys-color-surface-container-high);
-  border-radius: var(--md-sys-shape-corner-extra-large);
-  box-shadow: var(--md-elevation-level3);
-  max-width: 560px;
-  width: calc(100% - 48px);
-  max-height: calc(100vh - 48px);
+  border-radius: 20px;
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.12),
+    0 2px 8px rgba(0, 0, 0, 0.08);
+  max-width: 480px;
+  width: calc(100% - 32px);
+  max-height: calc(100vh - 64px);
   overflow: hidden;
   display: flex;
   flex-direction: column;
   transform: scale(0.8);
+  backdrop-filter: blur(10px);
   opacity: 0;
   transition: all var(--md-sys-motion-duration-medium2) var(--md-sys-motion-easing-emphasized-decelerate);
 }
