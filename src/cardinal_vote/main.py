@@ -17,11 +17,13 @@ from sqlalchemy import select
 from starlette.middleware.base import BaseHTTPMiddleware
 
 # Generalized platform imports
+from .admin_routes import admin_router
 from .auth_manager import GeneralizedAuthManager
 from .auth_routes import auth_router
 from .choice_management_routes import choice_management_router
 from .config import settings
 from .dashboard_routes import dashboard_router
+from .sse_routes import sse_router
 
 # DatabaseError now imported from models with other exceptions
 from .database_manager import GeneralizedDatabaseManager
@@ -200,6 +202,8 @@ templates = Jinja2Templates(directory=settings.TEMPLATES_DIR)
 app.include_router(auth_router)  # Generalized platform auth
 app.include_router(vote_router)  # Generalized platform votes
 app.include_router(dashboard_router)  # Dashboard API
+app.include_router(admin_router)  # Admin API
+app.include_router(sse_router)  # Server-Sent Events
 app.include_router(vote_management_router)  # Vote management (drafts)
 app.include_router(choice_management_router)  # Choice management with images
 
@@ -309,7 +313,7 @@ async def dashboard(request: Request) -> HTMLResponse:
     """Serve the user dashboard page."""
     try:
         return templates.TemplateResponse(
-            "user_dashboard.html",
+            "dashboard/user_dashboard.html",
             {
                 "request": request,
                 "app_name": settings.APP_NAME,

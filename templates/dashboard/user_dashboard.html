@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Dashboard{% endblock %} - {{ app_name or 'Cardinal Vote' }}</title>
+    <meta name="description" content="Your personal voting dashboard - create, manage, and analyze votes.">
+    <meta name="theme-color" content="#0061a4">
+
+    <!-- VERSION WATERMARK: DASHBOARD-v3.4.0-2025-09-18 -->
+    <meta name="deployment-version" content="dashboard-feature-v3.4.0-2025-09-18">
+
+    <!-- Security Headers -->
+    <meta http-equiv="X-Frame-Options" content="DENY">
+    <meta http-equiv="X-Content-Type-Options" content="nosniff">
+
+    <!-- Material Design CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', path='/css/material-design.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', path='/css/dashboard.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', path='/css/mobile-responsive.css') }}">
+
+    <!-- Google Fonts - Roboto -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+
+    <!-- Material Icons -->
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+
+    {% block extra_css %}{% endblock %}
+</head>
+<body class="dashboard-body">
+    <!-- Top App Bar -->
+    <header class="md-top-app-bar md-top-app-bar-elevated">
+        <div class="md-top-app-bar-content">
+            <button class="md-top-app-bar-navigation-icon" aria-label="Open navigation menu" id="navigationToggle">
+                <span class="material-icons">menu</span>
+            </button>
+            <div class="md-top-app-bar-title">{{ app_name or 'Cardinal Vote' }} Dashboard</div>
+            <div class="md-top-app-bar-actions">
+                <button class="md-top-app-bar-action" aria-label="Refresh dashboard" id="refreshDashboard">
+                    <span class="material-icons">refresh</span>
+                </button>
+                <button class="md-top-app-bar-action" aria-label="Create new vote" id="createVoteBtn">
+                    <span class="material-icons">add</span>
+                </button>
+                <button class="md-top-app-bar-action" aria-label="User menu" id="userMenuBtn">
+                    <span class="material-icons">account_circle</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Navigation Drawer -->
+    <nav class="md-navigation-drawer" id="navigationDrawer">
+        <div class="md-navigation-drawer-header">
+            <div class="user-avatar">
+                <span class="material-icons">person</span>
+            </div>
+            <div class="user-info">
+                <h3 class="md-headline-small" id="userDisplayName">Welcome!</h3>
+                <p class="md-body-medium md-on-surface-variant" id="userEmail">Loading...</p>
+            </div>
+        </div>
+
+        <div class="md-navigation-drawer-content">
+            <!-- Main Navigation -->
+            <div class="nav-section">
+                <a href="#overview" class="md-navigation-drawer-item md-navigation-drawer-item-selected" data-section="overview">
+                    <span class="material-icons md-navigation-drawer-item-icon">dashboard</span>
+                    <span class="md-navigation-drawer-item-label">Overview</span>
+                </a>
+                <a href="#my-votes" class="md-navigation-drawer-item" data-section="my-votes">
+                    <span class="material-icons md-navigation-drawer-item-icon">how_to_vote</span>
+                    <span class="md-navigation-drawer-item-label">My Votes</span>
+                    <span class="nav-badge" id="myVotesBadge">0</span>
+                </a>
+                <a href="#available-votes" class="md-navigation-drawer-item" data-section="available-votes">
+                    <span class="material-icons md-navigation-drawer-item-icon">ballot</span>
+                    <span class="md-navigation-drawer-item-label">Available Votes</span>
+                    <span class="nav-badge" id="availableVotesBadge">0</span>
+                </a>
+                <a href="#analytics" class="md-navigation-drawer-item" data-section="analytics">
+                    <span class="material-icons md-navigation-drawer-item-icon">analytics</span>
+                    <span class="md-navigation-drawer-item-label">Analytics</span>
+                </a>
+            </div>
+
+            <!-- Super Admin Section (conditionally shown) -->
+            <div class="nav-section admin-section" id="adminSection" style="display: none;">
+                <div class="nav-section-header">
+                    <span class="material-icons admin-badge">admin_panel_settings</span>
+                    <span class="admin-label">Super Admin</span>
+                </div>
+                <a href="#user-management" class="md-navigation-drawer-item admin-item" data-section="user-management">
+                    <span class="material-icons md-navigation-drawer-item-icon">people</span>
+                    <span class="md-navigation-drawer-item-label">User Management</span>
+                </a>
+                <a href="#system-votes" class="md-navigation-drawer-item admin-item" data-section="system-votes">
+                    <span class="material-icons md-navigation-drawer-item-icon">poll</span>
+                    <span class="md-navigation-drawer-item-label">All Votes</span>
+                </a>
+                <a href="#system-stats" class="md-navigation-drawer-item admin-item" data-section="system-stats">
+                    <span class="material-icons md-navigation-drawer-item-icon">insights</span>
+                    <span class="md-navigation-drawer-item-label">System Statistics</span>
+                </a>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="nav-section">
+                <div class="nav-section-divider"></div>
+                <button type="button" class="md-navigation-drawer-item" id="notificationsBtn">
+                    <span class="material-icons md-navigation-drawer-item-icon">notifications</span>
+                    <span class="md-navigation-drawer-item-label">Notifications</span>
+                    <span class="notification-badge" id="notificationBadge" style="display: none;">0</span>
+                </button>
+                <button type="button" class="md-navigation-drawer-item" id="settingsBtn">
+                    <span class="material-icons md-navigation-drawer-item-icon">settings</span>
+                    <span class="md-navigation-drawer-item-label">Settings</span>
+                </button>
+                <button type="button" class="md-navigation-drawer-item sign-out-item" id="logoutBtn">
+                    <span class="material-icons md-navigation-drawer-item-icon">logout</span>
+                    <span class="md-navigation-drawer-item-label">Sign Out</span>
+                </button>
+            </div>
+        </div>
+    </nav>
+    <div class="md-navigation-drawer-scrim" id="navigationScrim"></div>
+
+    <!-- Main Content -->
+    <main class="dashboard-main-content">
+        <!-- Overview Section -->
+        <section class="dashboard-section" id="overviewSection">
+            <!-- Welcome Card -->
+            <div class="welcome-section">
+                <div class="md-container">
+                    <div class="welcome-card md-card md-card-elevated">
+                        <div class="welcome-content">
+                            <h1 class="md-display-small">Welcome to Your Dashboard</h1>
+                            <p class="md-body-large md-on-surface-variant" id="welcomeMessage">
+                                Create engaging votes and gather valuable insights from your community.
+                            </p>
+                            <div class="welcome-actions">
+                                <button class="md-button md-button-filled" id="createFirstVote">
+                                    <span class="material-icons">add</span>
+                                    Create Your First Vote
+                                </button>
+                                <button class="md-button md-button-outlined" id="helpBtn">
+                                    <span class="material-icons">help_outline</span>
+                                    View Tutorial
+                                </button>
+                            </div>
+                        </div>
+                        <div class="welcome-illustration">
+                            <span class="material-icons">poll</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Stats -->
+            <div class="stats-section">
+                <div class="md-container">
+                    <h2 class="md-headline-medium section-title">Quick Overview</h2>
+                    <div class="stats-grid">
+                        <div class="stat-card md-card md-card-elevated">
+                            <div class="stat-icon">
+                                <span class="material-icons">how_to_vote</span>
+                            </div>
+                            <div class="stat-content">
+                                <h3 class="md-title-large" id="totalVotes">0</h3>
+                                <p class="md-body-medium md-on-surface-variant">Votes Created</p>
+                                <div class="stat-trend" id="votesTrend">
+                                    <span class="material-icons trend-icon">trending_up</span>
+                                    <span class="trend-text">+0 this week</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="stat-card md-card md-card-elevated">
+                            <div class="stat-icon active">
+                                <span class="material-icons">trending_up</span>
+                            </div>
+                            <div class="stat-content">
+                                <h3 class="md-title-large" id="activeVotes">0</h3>
+                                <p class="md-body-medium md-on-surface-variant">Active Votes</p>
+                                <div class="stat-trend" id="activeTrend">
+                                    <span class="material-icons trend-icon">schedule</span>
+                                    <span class="trend-text">Currently running</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="stat-card md-card md-card-elevated">
+                            <div class="stat-icon responses">
+                                <span class="material-icons">people</span>
+                            </div>
+                            <div class="stat-content">
+                                <h3 class="md-title-large" id="totalResponses">0</h3>
+                                <p class="md-body-medium md-on-surface-variant">Total Responses</p>
+                                <div class="stat-trend" id="responsesTrend">
+                                    <span class="material-icons trend-icon">trending_up</span>
+                                    <span class="trend-text">+0 this week</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="stat-card md-card md-card-elevated">
+                            <div class="stat-icon participation">
+                                <span class="material-icons">insights</span>
+                            </div>
+                            <div class="stat-content">
+                                <h3 class="md-title-large" id="participationRate">0%</h3>
+                                <p class="md-body-medium md-on-surface-variant">Participation Rate</p>
+                                <div class="stat-trend" id="participationTrend">
+                                    <span class="material-icons trend-icon">trending_up</span>
+                                    <span class="trend-text">Average across votes</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Activity -->
+            <div class="activity-section">
+                <div class="md-container">
+                    <div class="section-header">
+                        <h2 class="md-headline-medium">Recent Activity</h2>
+                        <button class="md-button md-button-text" id="viewAllActivity">
+                            View All
+                            <span class="material-icons">arrow_forward</span>
+                        </button>
+                    </div>
+
+                    <div class="activity-list" id="recentActivityList">
+                        <!-- Activity items will be loaded here -->
+                        <div class="loading-state">
+                            <div class="loading-skeleton">
+                                <div class="skeleton-item"></div>
+                                <div class="skeleton-item"></div>
+                                <div class="skeleton-item"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- My Votes Section -->
+        <section class="dashboard-section" id="myVotesSection" style="display: none;">
+            <!-- Include vote management widgets -->
+            {% include 'dashboard/vote_widgets.html' %}
+        </section>
+
+        <!-- Available Votes Section -->
+        <section class="dashboard-section" id="availableVotesSection" style="display: none;">
+            <div class="md-container">
+                <div class="section-header">
+                    <h2 class="md-headline-medium">Available Votes</h2>
+                    <div class="filter-actions">
+                        <div class="md-chip-set">
+                            <div class="md-chip md-chip-filter md-chip-selected" data-filter="all">
+                                <span class="md-chip-text">All</span>
+                            </div>
+                            <div class="md-chip md-chip-filter" data-filter="recent">
+                                <span class="md-chip-text">Recent</span>
+                            </div>
+                            <div class="md-chip md-chip-filter" data-filter="trending">
+                                <span class="md-chip-text">Trending</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="available-votes-container">
+                    <div class="vote-grid" id="availableVotesList">
+                        <!-- Available votes will be populated by JavaScript -->
+                        <div class="loading-state" id="availableVotesLoading">
+                            <div class="loading-skeleton">
+                                <div class="skeleton-card"></div>
+                                <div class="skeleton-card"></div>
+                                <div class="skeleton-card"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Load More Button -->
+                    <div class="load-more-container" id="loadMoreAvailableContainer" style="display: none;">
+                        <button class="md-button md-button-outlined" id="loadMoreAvailableBtn">
+                            <span class="btn-text">Load More</span>
+                            <span class="material-icons btn-loading" style="display: none;">refresh</span>
+                        </button>
+                    </div>
+
+                    <!-- Empty State -->
+                    <div class="empty-state" id="availableVotesEmpty" style="display: none;">
+                        <div class="empty-state-icon">
+                            <span class="material-icons">ballot</span>
+                        </div>
+                        <h3 class="md-headline-small">No available votes</h3>
+                        <p class="md-body-medium md-on-surface-variant">
+                            Check back later for new voting opportunities.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Analytics Section -->
+        <section class="dashboard-section" id="analyticsSection" style="display: none;">
+            <div class="md-container">
+                <div class="section-header">
+                    <h2 class="md-headline-medium">Analytics</h2>
+                    <div class="analytics-controls">
+                        <select class="md-select" id="analyticsTimeframe">
+                            <option value="7d">Last 7 days</option>
+                            <option value="30d" selected>Last 30 days</option>
+                            <option value="90d">Last 90 days</option>
+                            <option value="1y">Last year</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="analytics-grid">
+                    <!-- Performance Chart -->
+                    <div class="analytics-card md-card md-card-elevated">
+                        <div class="analytics-card-header">
+                            <h3 class="md-title-large">Vote Performance</h3>
+                            <button class="md-button md-button-text" id="exportAnalytics">
+                                <span class="material-icons">download</span>
+                                Export
+                            </button>
+                        </div>
+                        <div class="analytics-card-content">
+                            <canvas id="performanceChart" width="400" height="200"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- Response Rate Chart -->
+                    <div class="analytics-card md-card md-card-elevated">
+                        <div class="analytics-card-header">
+                            <h3 class="md-title-large">Response Rates</h3>
+                        </div>
+                        <div class="analytics-card-content">
+                            <canvas id="responseRateChart" width="300" height="200"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- Top Performing Votes -->
+                    <div class="analytics-card md-card md-card-elevated">
+                        <div class="analytics-card-header">
+                            <h3 class="md-title-large">Top Performing Votes</h3>
+                        </div>
+                        <div class="analytics-card-content">
+                            <div class="top-votes-list" id="topVotesList">
+                                <!-- Populated by JavaScript -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Admin Sections (conditionally shown) -->
+        <section class="dashboard-section admin-section" id="userManagementSection" style="display: none;">
+            <div class="md-container">
+                <h2 class="md-headline-medium">User Management</h2>
+                <!-- Admin user management content -->
+                <div class="admin-placeholder">
+                    <span class="material-icons">construction</span>
+                    <p>Admin interface will be rendered here</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="dashboard-section admin-section" id="systemVotesSection" style="display: none;">
+            <div class="md-container">
+                <h2 class="md-headline-medium">All System Votes</h2>
+                <!-- Admin votes management content -->
+                <div class="admin-placeholder">
+                    <span class="material-icons">construction</span>
+                    <p>System votes interface will be rendered here</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="dashboard-section admin-section" id="systemStatsSection" style="display: none;">
+            <div class="md-container">
+                <h2 class="md-headline-medium">System Statistics</h2>
+                <!-- Admin system stats content -->
+                <div class="admin-placeholder">
+                    <span class="material-icons">construction</span>
+                    <p>System statistics interface will be rendered here</p>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- User Menu -->
+    <div class="md-menu" id="userMenu" style="display: none;">
+        <div class="md-menu-item" id="profileBtn">
+            <span class="material-icons">person</span>
+            <span>Profile</span>
+        </div>
+        <div class="md-menu-item" id="preferencesBtn">
+            <span class="material-icons">tune</span>
+            <span>Preferences</span>
+        </div>
+        <hr class="md-divider">
+        <div class="md-menu-item" id="menuLogoutBtn">
+            <span class="material-icons">logout</span>
+            <span>Sign Out</span>
+        </div>
+    </div>
+
+    <!-- Notifications Panel -->
+    <div class="notifications-panel" id="notificationsPanel" style="display: none;">
+        <div class="notifications-header">
+            <h3>Notifications</h3>
+            <button class="md-button md-button-text" id="markAllReadBtn">Mark all read</button>
+        </div>
+        <div class="notifications-list" id="notificationsList">
+            <!-- Notifications populated by JavaScript -->
+        </div>
+    </div>
+
+    <!-- Snackbar for notifications -->
+    <div class="md-snackbar" id="snackbar">
+        <span id="snackbar-message">Ready to create amazing votes!</span>
+        <button class="md-snackbar-action" id="snackbar-action">DISMISS</button>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" id="loadingOverlay" style="display: none;">
+        <div class="loading-spinner">
+            <div class="spinner"></div>
+            <p>Loading dashboard...</p>
+        </div>
+    </div>
+
+    <!-- JavaScript -->
+    <script src="{{ url_for('static', path='/js/dashboard_controller.js') }}"></script>
+    <script src="{{ url_for('static', path='/js/realtime_client.js') }}"></script>
+    <script src="{{ url_for('static', path='/js/vote_manager.js') }}"></script>
+
+    <!-- Chart.js for analytics -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    {% block extra_js %}{% endblock %}
+
+    <script>
+        // Initialize dashboard when DOM is loaded
+        document.addEventListener('DOMContentLoaded', () => {
+            // Initialize dashboard controller
+            window.dashboardController = new DashboardController();
+            window.realtimeClient = new RealtimeClient();
+            window.voteManager = new VoteManager();
+
+            // Start the dashboard
+            window.dashboardController.init();
+        });
+    </script>
+</body>
+</html>

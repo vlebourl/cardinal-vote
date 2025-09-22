@@ -72,6 +72,14 @@ class GeneralizedDatabaseManager:
                 await conn.execute(text('CREATE EXTENSION IF NOT EXISTS "uuid-ossp"'))
                 logger.info("PostgreSQL extensions enabled (citext, uuid-ossp)")
 
+                # Create required enum types for the enhanced User model
+                await conn.execute(
+                    text(
+                        "DO $$ BEGIN CREATE TYPE user_role_enum AS ENUM ('user', 'super_admin'); EXCEPTION WHEN duplicate_object THEN null; END $$;"
+                    )
+                )
+                logger.info("PostgreSQL enum types created (user_role_enum)")
+
                 # Now create all tables
                 await conn.run_sync(Base.metadata.create_all)
             logger.info("Database initialized with generalized platform tables")

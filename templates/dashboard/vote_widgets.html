@@ -1,0 +1,600 @@
+<!-- Vote Management Widget Components -->
+<!-- This file contains reusable widget components for vote management -->
+
+<!-- Vote Management Header -->
+<div class="vote-management-header">
+    <div class="md-container">
+        <div class="section-header">
+            <h2 class="md-headline-medium">My Votes</h2>
+            <div class="vote-actions">
+                <button class="md-button md-button-filled" id="createNewVoteBtn">
+                    <span class="material-icons">add</span>
+                    Create Vote
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Vote Filters and Search -->
+<div class="vote-filters-section">
+    <div class="md-container">
+        <div class="filters-container">
+            <!-- Search Bar -->
+            <div class="search-container">
+                <div class="md-text-field md-text-field-outlined search-field">
+                    <input type="text" id="voteSearchInput" class="md-text-field-input" placeholder=" ">
+                    <label for="voteSearchInput" class="md-text-field-label">Search votes...</label>
+                    <span class="material-icons search-icon">search</span>
+                </div>
+            </div>
+
+            <!-- Filter Chips -->
+            <div class="filter-chips">
+                <div class="md-chip-set">
+                    <div class="md-chip md-chip-filter md-chip-selected" data-filter="all">
+                        <span class="md-chip-text">All</span>
+                        <span class="chip-count" id="allVotesCount">0</span>
+                    </div>
+                    <div class="md-chip md-chip-filter" data-filter="draft">
+                        <span class="material-icons md-chip-icon">edit</span>
+                        <span class="md-chip-text">Drafts</span>
+                        <span class="chip-count" id="draftVotesCount">0</span>
+                    </div>
+                    <div class="md-chip md-chip-filter" data-filter="active">
+                        <span class="material-icons md-chip-icon">trending_up</span>
+                        <span class="md-chip-text">Active</span>
+                        <span class="chip-count" id="activeVotesCount">0</span>
+                    </div>
+                    <div class="md-chip md-chip-filter" data-filter="closed">
+                        <span class="material-icons md-chip-icon">archive</span>
+                        <span class="md-chip-text">Closed</span>
+                        <span class="chip-count" id="closedVotesCount">0</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sort Options -->
+            <div class="sort-container">
+                <select class="md-select" id="voteSortSelect">
+                    <option value="created_at_desc">Newest First</option>
+                    <option value="created_at_asc">Oldest First</option>
+                    <option value="title_asc">Title A-Z</option>
+                    <option value="title_desc">Title Z-A</option>
+                    <option value="responses_desc">Most Responses</option>
+                    <option value="responses_asc">Least Responses</option>
+                </select>
+            </div>
+
+            <!-- View Toggle -->
+            <div class="view-toggle">
+                <div class="md-segmented-button-set">
+                    <button class="md-segmented-button md-segmented-button-selected" data-view="grid" aria-label="Grid view">
+                        <span class="material-icons">grid_view</span>
+                    </button>
+                    <button class="md-segmented-button" data-view="list" aria-label="List view">
+                        <span class="material-icons">view_list</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Vote List Container -->
+<div class="vote-list-container">
+    <div class="md-container">
+        <!-- Vote Grid/List -->
+        <div class="vote-grid" id="voteListContainer">
+            <!-- Vote cards will be populated by JavaScript -->
+            <div class="loading-state" id="voteListLoading">
+                <div class="loading-skeleton">
+                    <div class="skeleton-vote-card"></div>
+                    <div class="skeleton-vote-card"></div>
+                    <div class="skeleton-vote-card"></div>
+                    <div class="skeleton-vote-card"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Load More Button -->
+        <div class="load-more-container" id="loadMoreVotesContainer" style="display: none;">
+            <button class="md-button md-button-outlined" id="loadMoreVotesBtn">
+                <span class="btn-text">Load More Votes</span>
+                <span class="material-icons btn-loading" style="display: none;">refresh</span>
+            </button>
+        </div>
+
+        <!-- Empty State -->
+        <div class="empty-state" id="voteListEmpty" style="display: none;">
+            <div class="empty-state-content">
+                <div class="empty-state-icon">
+                    <span class="material-icons">ballot</span>
+                </div>
+                <h3 class="md-headline-small">No votes found</h3>
+                <p class="md-body-medium md-on-surface-variant" id="emptyStateMessage">
+                    Create your first vote to start gathering insights from your community.
+                </p>
+                <button class="md-button md-button-filled" id="createFirstVoteBtn">
+                    <span class="material-icons">add</span>
+                    Create Your First Vote
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Vote Card Template (will be cloned by JavaScript) -->
+<template id="voteCardTemplate">
+    <div class="vote-card md-card md-card-elevated" data-vote-id="">
+        <div class="vote-card-header">
+            <div class="vote-status-badge" data-status="">
+                <span class="status-dot"></span>
+                <span class="status-text"></span>
+            </div>
+            <div class="vote-menu">
+                <button class="md-icon-button vote-menu-btn" aria-label="Vote options">
+                    <span class="material-icons">more_vert</span>
+                </button>
+            </div>
+        </div>
+
+        <div class="vote-card-content">
+            <h3 class="vote-title md-title-large"></h3>
+            <p class="vote-description md-body-medium md-on-surface-variant"></p>
+
+            <div class="vote-metadata">
+                <div class="metadata-item">
+                    <span class="material-icons">event</span>
+                    <span class="metadata-text created-date"></span>
+                </div>
+                <div class="metadata-item" data-field="choices">
+                    <span class="material-icons">ballot</span>
+                    <span class="metadata-text choice-count">0 choices</span>
+                </div>
+                <div class="metadata-item" data-field="responses">
+                    <span class="material-icons">people</span>
+                    <span class="metadata-text response-count">0 responses</span>
+                </div>
+            </div>
+
+            <!-- Vote Statistics -->
+            <div class="vote-stats" style="display: none;">
+                <div class="stat-item">
+                    <div class="stat-value participation-rate">0%</div>
+                    <div class="stat-label">Participation</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value avg-rating">0.0</div>
+                    <div class="stat-label">Avg Rating</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value completion-rate">0%</div>
+                    <div class="stat-label">Completion</div>
+                </div>
+            </div>
+
+            <!-- Progress Bar for Active Votes -->
+            <div class="vote-progress" style="display: none;">
+                <div class="progress-info">
+                    <span class="progress-label">Progress</span>
+                    <span class="progress-percentage">0%</span>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: 0%"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="vote-card-actions">
+            <!-- Primary Action (status-dependent) -->
+            <button class="md-button md-button-filled primary-action" data-action="">
+                <span class="material-icons action-icon"></span>
+                <span class="action-text"></span>
+            </button>
+
+            <!-- Secondary Actions -->
+            <div class="secondary-actions">
+                <button class="md-icon-button" data-action="view" aria-label="View vote">
+                    <span class="material-icons">visibility</span>
+                </button>
+                <button class="md-icon-button" data-action="edit" aria-label="Edit vote" style="display: none;">
+                    <span class="material-icons">edit</span>
+                </button>
+                <button class="md-icon-button" data-action="analytics" aria-label="View analytics">
+                    <span class="material-icons">analytics</span>
+                </button>
+                <button class="md-icon-button" data-action="share" aria-label="Share vote">
+                    <span class="material-icons">share</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Vote Menu Dropdown -->
+        <div class="vote-menu-dropdown" style="display: none;">
+            <div class="menu-item" data-action="duplicate">
+                <span class="material-icons">content_copy</span>
+                <span>Duplicate</span>
+            </div>
+            <div class="menu-item" data-action="export">
+                <span class="material-icons">download</span>
+                <span>Export Results</span>
+            </div>
+            <div class="menu-divider"></div>
+            <div class="menu-item" data-action="archive">
+                <span class="material-icons">archive</span>
+                <span>Archive</span>
+            </div>
+            <div class="menu-item danger" data-action="delete">
+                <span class="material-icons">delete</span>
+                <span>Delete</span>
+            </div>
+        </div>
+    </div>
+</template>
+
+<!-- Vote List Item Template (for list view) -->
+<template id="voteListItemTemplate">
+    <div class="vote-list-item" data-vote-id="">
+        <div class="vote-list-content">
+            <div class="vote-list-main">
+                <div class="vote-status-indicator" data-status="">
+                    <span class="status-dot"></span>
+                </div>
+                <div class="vote-info">
+                    <h4 class="vote-title md-title-medium"></h4>
+                    <p class="vote-description md-body-small md-on-surface-variant"></p>
+                    <div class="vote-metadata-inline">
+                        <span class="metadata-item created-date"></span>
+                        <span class="metadata-separator">•</span>
+                        <span class="metadata-item choice-count">0 choices</span>
+                        <span class="metadata-separator">•</span>
+                        <span class="metadata-item response-count">0 responses</span>
+                    </div>
+                </div>
+            </div>
+            <div class="vote-list-stats">
+                <div class="quick-stat">
+                    <div class="stat-value participation-rate">0%</div>
+                    <div class="stat-label">Participation</div>
+                </div>
+                <div class="quick-stat">
+                    <div class="stat-value avg-rating">0.0</div>
+                    <div class="stat-label">Rating</div>
+                </div>
+            </div>
+            <div class="vote-list-actions">
+                <button class="md-button md-button-text primary-action" data-action="">
+                    <span class="material-icons action-icon"></span>
+                    <span class="action-text"></span>
+                </button>
+                <button class="md-icon-button" data-action="menu" aria-label="More options">
+                    <span class="material-icons">more_vert</span>
+                </button>
+            </div>
+        </div>
+    </div>
+</template>
+
+<!-- Quick Stats Widget -->
+<div class="quick-stats-widget">
+    <div class="md-container">
+        <div class="quick-stats-grid">
+            <div class="quick-stat-card md-card">
+                <div class="stat-icon">
+                    <span class="material-icons">how_to_vote</span>
+                </div>
+                <div class="stat-content">
+                    <div class="stat-value" id="quickStatsTotal">0</div>
+                    <div class="stat-label">Total Votes</div>
+                </div>
+            </div>
+
+            <div class="quick-stat-card md-card">
+                <div class="stat-icon active">
+                    <span class="material-icons">trending_up</span>
+                </div>
+                <div class="stat-content">
+                    <div class="stat-value" id="quickStatsActive">0</div>
+                    <div class="stat-label">Active</div>
+                </div>
+            </div>
+
+            <div class="quick-stat-card md-card">
+                <div class="stat-icon">
+                    <span class="material-icons">people</span>
+                </div>
+                <div class="stat-content">
+                    <div class="stat-value" id="quickStatsResponses">0</div>
+                    <div class="stat-label">Responses</div>
+                </div>
+            </div>
+
+            <div class="quick-stat-card md-card">
+                <div class="stat-icon">
+                    <span class="material-icons">schedule</span>
+                </div>
+                <div class="stat-content">
+                    <div class="stat-value" id="quickStatsThisWeek">0</div>
+                    <div class="stat-label">This Week</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Vote Creation Modal -->
+<div class="md-dialog-scrim" id="voteCreationModalScrim" style="display: none;" role="dialog" aria-labelledby="vote-creation-modal-title" aria-hidden="true">
+    <div class="md-dialog vote-creation-dialog" id="voteCreationModal">
+        <div class="md-dialog-header">
+            <h2 class="md-dialog-headline" id="vote-creation-modal-title">Create New Vote</h2>
+            <button class="md-icon-button dialog-close" aria-label="Close dialog">
+                <span class="material-icons">close</span>
+            </button>
+        </div>
+
+        <div class="md-dialog-content">
+            <form id="voteCreationForm" class="vote-creation-form">
+                <!-- Basic Information -->
+                <div class="form-section">
+                    <h3 class="form-section-title">Basic Information</h3>
+
+                    <div class="form-field">
+                        <div class="md-text-field md-text-field-outlined">
+                            <input type="text" id="newVoteTitle" class="md-text-field-input" placeholder=" " required maxlength="200">
+                            <label for="newVoteTitle" class="md-text-field-label">Vote Title</label>
+                        </div>
+                        <div class="form-helper">Enter a clear, descriptive title for your vote</div>
+                    </div>
+
+                    <div class="form-field">
+                        <div class="md-text-field md-text-field-outlined">
+                            <textarea id="newVoteDescription" class="md-text-field-input" placeholder=" " rows="3" maxlength="1000"></textarea>
+                            <label for="newVoteDescription" class="md-text-field-label">Description (Optional)</label>
+                        </div>
+                        <div class="form-helper">Provide context or instructions for voters</div>
+                    </div>
+                </div>
+
+                <!-- Vote Options -->
+                <div class="form-section">
+                    <h3 class="form-section-title">Vote Options</h3>
+
+                    <div class="vote-options-container">
+                        <div id="voteOptionsContainer" class="options-list">
+                            <!-- Dynamic option fields will be inserted here -->
+                        </div>
+
+                        <div class="option-controls">
+                            <button type="button" class="md-button md-button-outlined" id="addOptionBtn">
+                                <span class="material-icons">add</span>
+                                Add Option
+                            </button>
+                            <span class="option-counter">
+                                <span id="optionCount">2</span> of <span id="maxOptions">20</span> options
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Vote Settings -->
+                <div class="form-section">
+                    <h3 class="form-section-title">Vote Settings</h3>
+
+                    <div class="settings-grid">
+                        <div class="setting-item">
+                            <label class="md-switch">
+                                <input type="checkbox" id="allowMultipleChoices" class="md-switch-input">
+                                <div class="md-switch-track">
+                                    <div class="md-switch-thumb"></div>
+                                </div>
+                            </label>
+                            <div class="setting-content">
+                                <div class="setting-title">Allow Multiple Choices</div>
+                                <div class="setting-description">Voters can select multiple options</div>
+                            </div>
+                        </div>
+
+                        <div class="setting-item">
+                            <label class="md-switch">
+                                <input type="checkbox" id="requireAuth" class="md-switch-input">
+                                <div class="md-switch-track">
+                                    <div class="md-switch-thumb"></div>
+                                </div>
+                            </label>
+                            <div class="setting-content">
+                                <div class="setting-title">Require Authentication</div>
+                                <div class="setting-description">Only registered users can vote</div>
+                            </div>
+                        </div>
+
+                        <div class="setting-item">
+                            <label class="md-switch">
+                                <input type="checkbox" id="showResults" class="md-switch-input" checked>
+                                <div class="md-switch-track">
+                                    <div class="md-switch-thumb"></div>
+                                </div>
+                            </label>
+                            <div class="setting-content">
+                                <div class="setting-title">Show Results</div>
+                                <div class="setting-description">Display results to voters after voting</div>
+                            </div>
+                        </div>
+
+                        <div class="setting-item">
+                            <label class="md-switch">
+                                <input type="checkbox" id="allowComments" class="md-switch-input">
+                                <div class="md-switch-track">
+                                    <div class="md-switch-thumb"></div>
+                                </div>
+                            </label>
+                            <div class="setting-content">
+                                <div class="setting-title">Allow Comments</div>
+                                <div class="setting-description">Voters can leave comments</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Advanced Settings Collapsible -->
+                    <div class="advanced-settings">
+                        <button type="button" class="advanced-toggle" id="advancedToggle">
+                            <span class="material-icons">expand_more</span>
+                            <span>Advanced Settings</span>
+                        </button>
+
+                        <div class="advanced-content" id="advancedContent" style="display: none;">
+                            <div class="form-field">
+                                <div class="md-text-field md-text-field-outlined">
+                                    <input type="datetime-local" id="voteCloseDate" class="md-text-field-input">
+                                    <label for="voteCloseDate" class="md-text-field-label">Auto-close Date (Optional)</label>
+                                </div>
+                                <div class="form-helper">Vote will automatically close on this date</div>
+                            </div>
+
+                            <div class="form-field">
+                                <div class="md-text-field md-text-field-outlined">
+                                    <input type="text" id="accessCode" class="md-text-field-input" placeholder=" " maxlength="50">
+                                    <label for="accessCode" class="md-text-field-label">Access Code (Optional)</label>
+                                </div>
+                                <div class="form-helper">Protect vote with an access code</div>
+                            </div>
+
+                            <div class="form-field">
+                                <div class="md-text-field md-text-field-outlined">
+                                    <input type="number" id="maxResponses" class="md-text-field-input" placeholder=" " min="1">
+                                    <label for="maxResponses" class="md-text-field-label">Max Responses (Optional)</label>
+                                </div>
+                                <div class="form-helper">Limit the number of responses</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Form Errors -->
+                <div class="form-errors" id="voteCreationErrors" style="display: none;">
+                    <div class="error-icon">
+                        <span class="material-icons">error</span>
+                    </div>
+                    <div class="error-messages" id="errorMessagesList">
+                        <!-- Error messages will be populated here -->
+                    </div>
+                </div>
+            </form>
+        </div>
+
+        <div class="md-dialog-actions">
+            <button type="button" class="md-button md-button-text" id="cancelVoteCreation">
+                Cancel
+            </button>
+            <button type="button" class="md-button md-button-outlined" id="saveDraftBtn">
+                <span class="material-icons">save</span>
+                Save as Draft
+            </button>
+            <button type="submit" form="voteCreationForm" class="md-button md-button-filled" id="createVoteBtn">
+                <span class="btn-text">Create Vote</span>
+                <span class="material-icons btn-loading" style="display: none;">refresh</span>
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Vote Option Template -->
+<template id="voteOptionTemplate">
+    <div class="vote-option-field">
+        <div class="option-input-container">
+            <div class="md-text-field md-text-field-outlined">
+                <input type="text" class="md-text-field-input option-text" placeholder=" " required maxlength="200">
+                <label class="md-text-field-label">Option Text</label>
+            </div>
+            <button type="button" class="md-icon-button remove-option" aria-label="Remove option">
+                <span class="material-icons">close</span>
+            </button>
+        </div>
+
+        <!-- Optional: Image upload for option -->
+        <div class="option-image-upload" style="display: none;">
+            <input type="file" class="option-image-input" accept="image/*">
+            <button type="button" class="md-button md-button-text upload-image">
+                <span class="material-icons">image</span>
+                Add Image
+            </button>
+        </div>
+    </div>
+</template>
+
+<!-- Vote Actions Menu Template -->
+<template id="voteActionsMenuTemplate">
+    <div class="vote-actions-menu">
+        <div class="menu-item" data-action="view">
+            <span class="material-icons">visibility</span>
+            <span>View Vote</span>
+        </div>
+        <div class="menu-item" data-action="edit">
+            <span class="material-icons">edit</span>
+            <span>Edit</span>
+        </div>
+        <div class="menu-item" data-action="duplicate">
+            <span class="material-icons">content_copy</span>
+            <span>Duplicate</span>
+        </div>
+        <div class="menu-item" data-action="share">
+            <span class="material-icons">share</span>
+            <span>Share</span>
+        </div>
+        <div class="menu-divider"></div>
+        <div class="menu-item" data-action="results">
+            <span class="material-icons">analytics</span>
+            <span>View Results</span>
+        </div>
+        <div class="menu-item" data-action="export">
+            <span class="material-icons">download</span>
+            <span>Export Data</span>
+        </div>
+        <div class="menu-divider"></div>
+        <div class="menu-item" data-action="close" data-status-dependent="active">
+            <span class="material-icons">archive</span>
+            <span>Close Vote</span>
+        </div>
+        <div class="menu-item" data-action="publish" data-status-dependent="draft">
+            <span class="material-icons">publish</span>
+            <span>Publish</span>
+        </div>
+        <div class="menu-divider"></div>
+        <div class="menu-item danger" data-action="delete">
+            <span class="material-icons">delete</span>
+            <span>Delete</span>
+        </div>
+    </div>
+</template>
+
+<!-- Pagination Widget -->
+<div class="pagination-widget" id="votePagination" style="display: none;">
+    <div class="pagination-info">
+        <span id="paginationInfo">Showing 1-10 of 25 votes</span>
+    </div>
+    <div class="pagination-controls">
+        <button class="md-icon-button" id="firstPageBtn" aria-label="First page" disabled>
+            <span class="material-icons">first_page</span>
+        </button>
+        <button class="md-icon-button" id="prevPageBtn" aria-label="Previous page" disabled>
+            <span class="material-icons">chevron_left</span>
+        </button>
+        <div class="page-numbers" id="pageNumbers">
+            <!-- Page numbers will be populated by JavaScript -->
+        </div>
+        <button class="md-icon-button" id="nextPageBtn" aria-label="Next page">
+            <span class="material-icons">chevron_right</span>
+        </button>
+        <button class="md-icon-button" id="lastPageBtn" aria-label="Last page">
+            <span class="material-icons">last_page</span>
+        </button>
+    </div>
+</div>
+
+<!-- Loading States -->
+<div class="loading-overlay vote-loading" id="voteActionLoading" style="display: none;">
+    <div class="loading-spinner">
+        <div class="spinner"></div>
+        <p id="loadingMessage">Processing...</p>
+    </div>
+</div>

@@ -65,7 +65,7 @@ function initializeEventListeners() {
  */
 async function checkAuthStatus() {
   try {
-    const token = localStorage.getItem('authToken')
+    const token = localStorage.getItem('access_token')
     if (!token) return
 
     const response = await fetch(`${API_BASE}/me`, {
@@ -80,11 +80,11 @@ async function checkAuthStatus() {
       updateUIForAuthenticatedUser(userData)
     } else {
       // Token is invalid, remove it
-      localStorage.removeItem('authToken')
+      localStorage.removeItem('access_token')
     }
   } catch (error) {
     console.log('Auth check failed:', error)
-    localStorage.removeItem('authToken')
+    localStorage.removeItem('access_token')
   }
 }
 
@@ -217,7 +217,7 @@ async function handleLogin(e) {
 
     if (response.ok) {
       // Success
-      localStorage.setItem('authToken', data.access_token)
+      localStorage.setItem('access_token', data.access_token)
 
       showToast('success', 'Welcome back!', 'You have been signed in successfully.')
       closeModal('loginModal')
@@ -278,7 +278,7 @@ async function handleRegister(e) {
 
     if (response.ok) {
       // Success
-      localStorage.setItem('authToken', data.access_token)
+      localStorage.setItem('access_token', data.access_token)
 
       showToast('success', 'Account Created!', 'Welcome to the platform. You can now create your first vote.')
       closeModal('registerModal')
@@ -303,7 +303,7 @@ async function handleRegister(e) {
  * Handle logout
  */
 function handleLogout() {
-  localStorage.removeItem('authToken')
+  localStorage.removeItem('access_token')
   showToast('success', 'Signed Out', 'You have been signed out successfully.')
 
   setTimeout(() => {
