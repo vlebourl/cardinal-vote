@@ -1,0 +1,872 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Super Admin Dashboard{% endblock %} - {{ app_name or 'Cardinal Vote' }}</title>
+    <meta name="description" content="Super administrator dashboard - manage users, votes, and system statistics.">
+    <meta name="theme-color" content="#d63031">
+
+    <!-- VERSION WATERMARK: ADMIN-DASHBOARD-v3.4.0-2025-09-18 -->
+    <meta name="deployment-version" content="admin-dashboard-feature-v3.4.0-2025-09-18">
+
+    <!-- Security Headers -->
+    <meta http-equiv="X-Frame-Options" content="DENY">
+    <meta http-equiv="X-Content-Type-Options" content="nosniff">
+
+    <!-- Material Design CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', path='/css/material-design.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', path='/css/dashboard.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', path='/css/super-admin.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', path='/css/mobile-responsive.css') }}">
+
+    <!-- Google Fonts - Roboto -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+
+    <!-- Material Icons -->
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+
+    {% block extra_css %}{% endblock %}
+</head>
+<body class="dashboard-body admin-body">
+    <!-- Admin Top App Bar -->
+    <header class="md-top-app-bar md-top-app-bar-elevated admin-app-bar">
+        <div class="md-top-app-bar-content">
+            <button class="md-top-app-bar-navigation-icon" aria-label="Open navigation menu" id="navigationToggle">
+                <span class="material-icons">menu</span>
+            </button>
+            <div class="admin-title-section">
+                <span class="material-icons admin-shield">admin_panel_settings</span>
+                <div class="admin-title-text">
+                    <div class="md-top-app-bar-title">Super Admin</div>
+                    <div class="admin-subtitle">{{ app_name or 'Cardinal Vote' }} System</div>
+                </div>
+            </div>
+            <div class="md-top-app-bar-actions">
+                <button class="md-top-app-bar-action" aria-label="System health" id="systemHealthBtn">
+                    <span class="material-icons health-indicator" id="healthIcon">favorite</span>
+                </button>
+                <button class="md-top-app-bar-action" aria-label="System alerts" id="alertsBtn">
+                    <span class="material-icons">warning</span>
+                    <span class="alert-badge" id="alertBadge" style="display: none;">0</span>
+                </button>
+                <button class="md-top-app-bar-action" aria-label="Refresh all data" id="refreshAllBtn">
+                    <span class="material-icons">refresh</span>
+                </button>
+                <button class="md-top-app-bar-action" aria-label="Admin menu" id="adminMenuBtn">
+                    <span class="material-icons">more_vert</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Admin Navigation Drawer -->
+    <nav class="md-navigation-drawer admin-drawer" id="navigationDrawer">
+        <div class="md-navigation-drawer-header admin-header">
+            <div class="admin-avatar">
+                <span class="material-icons">shield</span>
+            </div>
+            <div class="admin-info">
+                <h3 class="md-headline-small" id="adminDisplayName">System Administrator</h3>
+                <p class="md-body-medium md-on-surface-variant" id="adminEmail">Loading...</p>
+                <div class="admin-level">
+                    <span class="admin-badge">SUPER ADMIN</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="md-navigation-drawer-content">
+            <!-- Admin Dashboard Navigation -->
+            <div class="nav-section">
+                <div class="nav-section-header">
+                    <span class="material-icons">dashboard</span>
+                    <span>System Overview</span>
+                </div>
+                <a href="#admin-overview" class="md-navigation-drawer-item md-navigation-drawer-item-selected" data-section="admin-overview">
+                    <span class="material-icons md-navigation-drawer-item-icon">insights</span>
+                    <span class="md-navigation-drawer-item-label">Dashboard</span>
+                </a>
+                <a href="#system-health" class="md-navigation-drawer-item" data-section="system-health">
+                    <span class="material-icons md-navigation-drawer-item-icon">monitor_heart</span>
+                    <span class="md-navigation-drawer-item-label">System Health</span>
+                    <span class="health-status-dot" id="navHealthDot"></span>
+                </a>
+            </div>
+
+            <!-- User Management -->
+            <div class="nav-section">
+                <div class="nav-section-header">
+                    <span class="material-icons">people</span>
+                    <span>User Management</span>
+                </div>
+                <a href="#user-overview" class="md-navigation-drawer-item" data-section="user-overview">
+                    <span class="material-icons md-navigation-drawer-item-icon">group</span>
+                    <span class="md-navigation-drawer-item-label">All Users</span>
+                    <span class="nav-badge" id="totalUsersBadge">0</span>
+                </a>
+                <a href="#user-activity" class="md-navigation-drawer-item" data-section="user-activity">
+                    <span class="material-icons md-navigation-drawer-item-icon">timeline</span>
+                    <span class="md-navigation-drawer-item-label">User Activity</span>
+                </a>
+                <a href="#user-roles" class="md-navigation-drawer-item" data-section="user-roles">
+                    <span class="material-icons md-navigation-drawer-item-icon">security</span>
+                    <span class="md-navigation-drawer-item-label">Roles & Permissions</span>
+                </a>
+            </div>
+
+            <!-- Vote Management -->
+            <div class="nav-section">
+                <div class="nav-section-header">
+                    <span class="material-icons">how_to_vote</span>
+                    <span>Vote Management</span>
+                </div>
+                <a href="#all-votes" class="md-navigation-drawer-item" data-section="all-votes">
+                    <span class="material-icons md-navigation-drawer-item-icon">ballot</span>
+                    <span class="md-navigation-drawer-item-label">All Votes</span>
+                    <span class="nav-badge" id="totalVotesBadge">0</span>
+                </a>
+                <a href="#vote-moderation" class="md-navigation-drawer-item" data-section="vote-moderation">
+                    <span class="material-icons md-navigation-drawer-item-icon">gavel</span>
+                    <span class="md-navigation-drawer-item-label">Moderation</span>
+                    <span class="alert-badge" id="moderationBadge" style="display: none;">0</span>
+                </a>
+                <a href="#vote-analytics" class="md-navigation-drawer-item" data-section="vote-analytics">
+                    <span class="material-icons md-navigation-drawer-item-icon">analytics</span>
+                    <span class="md-navigation-drawer-item-label">Vote Analytics</span>
+                </a>
+            </div>
+
+            <!-- System Administration -->
+            <div class="nav-section">
+                <div class="nav-section-header">
+                    <span class="material-icons">settings</span>
+                    <span>System Administration</span>
+                </div>
+                <a href="#system-config" class="md-navigation-drawer-item" data-section="system-config">
+                    <span class="material-icons md-navigation-drawer-item-icon">tune</span>
+                    <span class="md-navigation-drawer-item-label">Configuration</span>
+                </a>
+                <a href="#audit-logs" class="md-navigation-drawer-item" data-section="audit-logs">
+                    <span class="material-icons md-navigation-drawer-item-icon">history</span>
+                    <span class="md-navigation-drawer-item-label">Audit Logs</span>
+                </a>
+                <a href="#backup-restore" class="md-navigation-drawer-item" data-section="backup-restore">
+                    <span class="material-icons md-navigation-drawer-item-icon">backup</span>
+                    <span class="md-navigation-drawer-item-label">Backup & Restore</span>
+                </a>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="nav-section">
+                <div class="nav-section-divider"></div>
+                <button type="button" class="md-navigation-drawer-item" id="broadcastBtn">
+                    <span class="material-icons md-navigation-drawer-item-icon">campaign</span>
+                    <span class="md-navigation-drawer-item-label">Broadcast Message</span>
+                </button>
+                <button type="button" class="md-navigation-drawer-item" id="maintenanceBtn">
+                    <span class="material-icons md-navigation-drawer-item-icon">build</span>
+                    <span class="md-navigation-drawer-item-label">Maintenance Mode</span>
+                </button>
+                <div class="nav-section-divider"></div>
+                <a href="/" class="md-navigation-drawer-item" target="_blank">
+                    <span class="material-icons md-navigation-drawer-item-icon">launch</span>
+                    <span class="md-navigation-drawer-item-label">View Public Site</span>
+                </a>
+                <button type="button" class="md-navigation-drawer-item sign-out-item" id="logoutBtn">
+                    <span class="material-icons md-navigation-drawer-item-icon">logout</span>
+                    <span class="md-navigation-drawer-item-label">Sign Out</span>
+                </button>
+            </div>
+        </div>
+    </nav>
+    <div class="md-navigation-drawer-scrim" id="navigationScrim"></div>
+
+    <!-- Admin Main Content -->
+    <main class="dashboard-main-content admin-main">
+        <!-- Admin Overview Section -->
+        <section class="dashboard-section" id="adminOverviewSection">
+            <!-- System Status Banner -->
+            <div class="system-status-banner" id="systemStatusBanner">
+                <div class="md-container">
+                    <div class="status-content">
+                        <div class="status-icon">
+                            <span class="material-icons" id="systemStatusIcon">check_circle</span>
+                        </div>
+                        <div class="status-text">
+                            <h3 id="systemStatusTitle">System Operating Normally</h3>
+                            <p id="systemStatusMessage">All services are running smoothly. Last updated: <span id="lastUpdated">Just now</span></p>
+                        </div>
+                        <div class="status-actions">
+                            <button class="md-button md-button-text" id="viewSystemHealth">
+                                View Details
+                                <span class="material-icons">arrow_forward</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Key Metrics -->
+            <div class="admin-stats-section">
+                <div class="md-container">
+                    <h2 class="md-headline-medium section-title">System Metrics</h2>
+                    <div class="admin-stats-grid">
+                        <div class="admin-stat-card md-card md-card-elevated">
+                            <div class="stat-header">
+                                <div class="stat-icon users">
+                                    <span class="material-icons">people</span>
+                                </div>
+                                <div class="stat-actions">
+                                    <button class="md-button md-button-text" data-action="view-users">
+                                        <span class="material-icons">arrow_forward</span>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="stat-content">
+                                <h3 class="md-display-small" id="totalUsers">0</h3>
+                                <p class="md-body-medium md-on-surface-variant">Total Users</p>
+                                <div class="stat-details">
+                                    <div class="detail-item">
+                                        <span class="detail-label">Active:</span>
+                                        <span class="detail-value" id="activeUsers">0</span>
+                                    </div>
+                                    <div class="detail-item">
+                                        <span class="detail-label">New today:</span>
+                                        <span class="detail-value" id="newUsersToday">0</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="admin-stat-card md-card md-card-elevated">
+                            <div class="stat-header">
+                                <div class="stat-icon votes">
+                                    <span class="material-icons">how_to_vote</span>
+                                </div>
+                                <div class="stat-actions">
+                                    <button class="md-button md-button-text" data-action="view-votes">
+                                        <span class="material-icons">arrow_forward</span>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="stat-content">
+                                <h3 class="md-display-small" id="totalSystemVotes">0</h3>
+                                <p class="md-body-medium md-on-surface-variant">Total Votes</p>
+                                <div class="stat-details">
+                                    <div class="detail-item">
+                                        <span class="detail-label">Active:</span>
+                                        <span class="detail-value" id="activeSystemVotes">0</span>
+                                    </div>
+                                    <div class="detail-item">
+                                        <span class="detail-label">Today:</span>
+                                        <span class="detail-value" id="votesToday">0</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="admin-stat-card md-card md-card-elevated">
+                            <div class="stat-header">
+                                <div class="stat-icon responses">
+                                    <span class="material-icons">poll</span>
+                                </div>
+                                <div class="stat-actions">
+                                    <button class="md-button md-button-text" data-action="view-analytics">
+                                        <span class="material-icons">arrow_forward</span>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="stat-content">
+                                <h3 class="md-display-small" id="totalSystemResponses">0</h3>
+                                <p class="md-body-medium md-on-surface-variant">Total Responses</p>
+                                <div class="stat-details">
+                                    <div class="detail-item">
+                                        <span class="detail-label">Today:</span>
+                                        <span class="detail-value" id="responsesToday">0</span>
+                                    </div>
+                                    <div class="detail-item">
+                                        <span class="detail-label">Avg/Vote:</span>
+                                        <span class="detail-value" id="avgResponsesPerVote">0</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="admin-stat-card md-card md-card-elevated">
+                            <div class="stat-header">
+                                <div class="stat-icon performance">
+                                    <span class="material-icons">speed</span>
+                                </div>
+                                <div class="stat-actions">
+                                    <button class="md-button md-button-text" data-action="view-performance">
+                                        <span class="material-icons">arrow_forward</span>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="stat-content">
+                                <h3 class="md-display-small" id="systemPerformance">98%</h3>
+                                <p class="md-body-medium md-on-surface-variant">System Performance</p>
+                                <div class="stat-details">
+                                    <div class="detail-item">
+                                        <span class="detail-label">Uptime:</span>
+                                        <span class="detail-value" id="systemUptime">99.9%</span>
+                                    </div>
+                                    <div class="detail-item">
+                                        <span class="detail-label">Response:</span>
+                                        <span class="detail-value" id="avgResponseTime">< 200ms</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Real-time Activity Feed -->
+            <div class="admin-activity-section">
+                <div class="md-container">
+                    <div class="section-header">
+                        <h2 class="md-headline-medium">Real-time Activity</h2>
+                        <div class="activity-controls">
+                            <button class="md-button md-button-text" id="pauseActivityBtn">
+                                <span class="material-icons">pause</span>
+                                Pause
+                            </button>
+                            <button class="md-button md-button-outlined" id="exportActivityBtn">
+                                <span class="material-icons">download</span>
+                                Export
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="activity-feed-container">
+                        <div class="activity-filters">
+                            <div class="md-chip-set">
+                                <div class="md-chip md-chip-filter md-chip-selected" data-filter="all">
+                                    <span class="md-chip-text">All Activity</span>
+                                </div>
+                                <div class="md-chip md-chip-filter" data-filter="users">
+                                    <span class="md-chip-text">User Actions</span>
+                                </div>
+                                <div class="md-chip md-chip-filter" data-filter="votes">
+                                    <span class="md-chip-text">Vote Activity</span>
+                                </div>
+                                <div class="md-chip md-chip-filter" data-filter="system">
+                                    <span class="md-chip-text">System Events</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="activity-feed" id="adminActivityFeed">
+                            <!-- Real-time activity items will be populated here -->
+                            <div class="loading-state">
+                                <div class="loading-skeleton">
+                                    <div class="skeleton-activity"></div>
+                                    <div class="skeleton-activity"></div>
+                                    <div class="skeleton-activity"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- System Alerts -->
+            <div class="admin-alerts-section" id="adminAlertsSection" style="display: none;">
+                <div class="md-container">
+                    <div class="section-header">
+                        <h2 class="md-headline-medium">System Alerts</h2>
+                        <button class="md-button md-button-text" id="clearAllAlertsBtn">
+                            Clear All
+                        </button>
+                    </div>
+
+                    <div class="alerts-container" id="systemAlerts">
+                        <!-- System alerts will be populated here -->
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- System Health Section -->
+        <section class="dashboard-section" id="systemHealthSection" style="display: none;">
+            <div class="md-container">
+                <div class="section-header">
+                    <h2 class="md-headline-medium">System Health</h2>
+                    <div class="health-controls">
+                        <button class="md-button md-button-outlined" id="runDiagnosticsBtn">
+                            <span class="material-icons">health_and_safety</span>
+                            Run Diagnostics
+                        </button>
+                    </div>
+                </div>
+
+                <div class="health-grid">
+                    <!-- Service Status Cards -->
+                    <div class="health-card md-card md-card-elevated" data-service="database">
+                        <div class="health-card-header">
+                            <div class="service-info">
+                                <span class="material-icons">storage</span>
+                                <span class="service-name">Database</span>
+                            </div>
+                            <div class="service-status" id="databaseStatus">
+                                <span class="status-dot healthy"></span>
+                                <span class="status-text">Healthy</span>
+                            </div>
+                        </div>
+                        <div class="health-card-metrics">
+                            <div class="metric-item">
+                                <span class="metric-label">Connections:</span>
+                                <span class="metric-value" id="dbConnections">12/100</span>
+                            </div>
+                            <div class="metric-item">
+                                <span class="metric-label">Response Time:</span>
+                                <span class="metric-value" id="dbResponseTime">< 5ms</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="health-card md-card md-card-elevated" data-service="api">
+                        <div class="health-card-header">
+                            <div class="service-info">
+                                <span class="material-icons">api</span>
+                                <span class="service-name">API Server</span>
+                            </div>
+                            <div class="service-status" id="apiStatus">
+                                <span class="status-dot healthy"></span>
+                                <span class="status-text">Healthy</span>
+                            </div>
+                        </div>
+                        <div class="health-card-metrics">
+                            <div class="metric-item">
+                                <span class="metric-label">Requests/min:</span>
+                                <span class="metric-value" id="apiRequests">45</span>
+                            </div>
+                            <div class="metric-item">
+                                <span class="metric-label">Success Rate:</span>
+                                <span class="metric-value" id="apiSuccessRate">99.8%</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="health-card md-card md-card-elevated" data-service="storage">
+                        <div class="health-card-header">
+                            <div class="service-info">
+                                <span class="material-icons">folder</span>
+                                <span class="service-name">File Storage</span>
+                            </div>
+                            <div class="service-status" id="storageStatus">
+                                <span class="status-dot healthy"></span>
+                                <span class="status-text">Healthy</span>
+                            </div>
+                        </div>
+                        <div class="health-card-metrics">
+                            <div class="metric-item">
+                                <span class="metric-label">Usage:</span>
+                                <span class="metric-value" id="storageUsage">2.1GB / 50GB</span>
+                            </div>
+                            <div class="metric-item">
+                                <span class="metric-label">Free Space:</span>
+                                <span class="metric-value" id="storageSpace">47.9GB</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- System Performance Chart -->
+                <div class="performance-chart-section">
+                    <div class="chart-card md-card md-card-elevated">
+                        <div class="chart-header">
+                            <h3 class="md-title-large">System Performance (Last 24 Hours)</h3>
+                            <div class="chart-controls">
+                                <select class="md-select" id="performanceMetric">
+                                    <option value="cpu">CPU Usage</option>
+                                    <option value="memory">Memory Usage</option>
+                                    <option value="disk">Disk I/O</option>
+                                    <option value="network">Network</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="chart-content">
+                            <canvas id="systemPerformanceChart" width="800" height="300"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- User Management Sections -->
+        <section class="dashboard-section" id="userOverviewSection" style="display: none;">
+            <div class="md-container">
+                <h2 class="md-headline-medium">User Management</h2>
+                <!-- User management interface will be populated by JavaScript -->
+                <div class="admin-interface-placeholder">
+                    <span class="material-icons">construction</span>
+                    <p>User management interface will be rendered here by JavaScript</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Vote Management Sections -->
+        <section class="dashboard-section" id="allVotesSection" style="display: none;">
+            <div class="md-container">
+                <h2 class="md-headline-medium">All System Votes</h2>
+                <!-- Vote management interface -->
+                {% include 'dashboard/vote_widgets.html' %}
+            </div>
+        </section>
+
+        <!-- Other admin sections would follow similar pattern -->
+        <section class="dashboard-section" id="systemConfigSection" style="display: none;">
+            <div class="md-container">
+                <h2 class="md-headline-medium">System Configuration</h2>
+                <div class="admin-interface-placeholder">
+                    <span class="material-icons">settings</span>
+                    <p>System configuration interface will be rendered here</p>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Admin Menu -->
+    <div class="md-menu admin-menu" id="adminMenu" style="display: none;">
+        <div class="md-menu-item" id="adminProfileBtn">
+            <span class="material-icons">admin_panel_settings</span>
+            <span>Admin Profile</span>
+        </div>
+        <div class="md-menu-item" id="systemSettingsBtn">
+            <span class="material-icons">settings_applications</span>
+            <span>System Settings</span>
+        </div>
+        <hr class="md-divider">
+        <div class="md-menu-item" id="viewLogsBtn">
+            <span class="material-icons">description</span>
+            <span>View Logs</span>
+        </div>
+        <div class="md-menu-item" id="exportDataBtn">
+            <span class="material-icons">download</span>
+            <span>Export Data</span>
+        </div>
+        <hr class="md-divider">
+        <div class="md-menu-item" id="menuLogoutBtn">
+            <span class="material-icons">logout</span>
+            <span>Sign Out</span>
+        </div>
+    </div>
+
+    <!-- System Alerts Panel -->
+    <div class="alerts-panel" id="alertsPanel" style="display: none;">
+        <div class="alerts-header">
+            <h3>System Alerts</h3>
+            <button class="md-button md-button-text" id="dismissAllAlertsBtn">Dismiss All</button>
+        </div>
+        <div class="alerts-list" id="alertsList">
+            <!-- Alerts populated by JavaScript -->
+        </div>
+    </div>
+
+    <!-- Snackbar for admin notifications -->
+    <div class="md-snackbar admin-snackbar" id="adminSnackbar">
+        <span id="admin-snackbar-message">Admin dashboard ready</span>
+        <button class="md-snackbar-action" id="admin-snackbar-action">DISMISS</button>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div class="loading-overlay admin-loading" id="loadingOverlay" style="display: none;">
+        <div class="loading-spinner">
+            <div class="spinner admin-spinner"></div>
+            <p>Loading admin dashboard...</p>
+        </div>
+    </div>
+
+    <!-- Maintenance Mode Modal -->
+    <div class="md-dialog-scrim" id="maintenanceModeModalScrim" style="display: none;">
+        <div class="md-dialog maintenance-dialog">
+            <div class="md-dialog-icon">
+                <span class="material-icons">build</span>
+            </div>
+            <h2 class="md-dialog-headline">Maintenance Mode</h2>
+            <div class="md-dialog-supporting-text">
+                <p>Enable maintenance mode to prevent users from accessing the system while you perform updates.</p>
+                <div class="maintenance-options">
+                    <label class="md-checkbox">
+                        <input type="checkbox" id="allowAdminAccess">
+                        <span class="md-checkbox-icon"></span>
+                        <span>Allow admin access during maintenance</span>
+                    </label>
+                </div>
+                <div class="md-text-field md-text-field-outlined">
+                    <textarea id="maintenanceMessage" class="md-text-field-input" placeholder=" " rows="3"></textarea>
+                    <label for="maintenanceMessage" class="md-text-field-label">Maintenance Message (Optional)</label>
+                </div>
+            </div>
+            <div class="md-dialog-actions">
+                <button type="button" class="md-button md-button-text" id="cancelMaintenanceBtn">Cancel</button>
+                <button type="button" class="md-button md-button-filled" id="enableMaintenanceBtn">Enable Maintenance</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript -->
+    <script src="{{ url_for('static', path='/js/dashboard_controller.js') }}"></script>
+    <script src="{{ url_for('static', path='/js/realtime_client.js') }}"></script>
+    <script src="{{ url_for('static', path='/js/vote_manager.js') }}"></script>
+
+    <!-- Chart.js for admin analytics -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    {% block extra_js %}{% endblock %}
+
+    <script>
+        // Initialize admin dashboard when DOM is loaded
+        document.addEventListener('DOMContentLoaded', () => {
+            // Initialize admin dashboard controller
+            window.adminDashboard = new AdminDashboardController();
+            window.realtimeClient = new RealtimeClient();
+            window.voteManager = new VoteManager();
+
+            // Start the admin dashboard
+            window.adminDashboard.init();
+        });
+
+        // Admin Dashboard Controller (extended version)
+        class AdminDashboardController extends DashboardController {
+            constructor() {
+                super();
+                this.isAdmin = true;
+                this.adminApiBase = '/api/admin';
+                this.alertsInterval = null;
+                this.healthCheckInterval = null;
+            }
+
+            async init() {
+                await super.init();
+                this.setupAdminEventListeners();
+                this.startAdminMonitoring();
+                this.loadAdminData();
+            }
+
+            setupAdminEventListeners() {
+                // Admin-specific event listeners
+                document.getElementById('systemHealthBtn')?.addEventListener('click', () => {
+                    this.showSection('system-health');
+                });
+
+                document.getElementById('alertsBtn')?.addEventListener('click', () => {
+                    this.toggleAlertsPanel();
+                });
+
+                document.getElementById('maintenanceBtn')?.addEventListener('click', () => {
+                    this.showMaintenanceModal();
+                });
+
+                document.getElementById('broadcastBtn')?.addEventListener('click', () => {
+                    this.showBroadcastModal();
+                });
+
+                // Maintenance mode modal
+                document.getElementById('enableMaintenanceBtn')?.addEventListener('click', () => {
+                    this.enableMaintenanceMode();
+                });
+
+                document.getElementById('cancelMaintenanceBtn')?.addEventListener('click', () => {
+                    this.hideMaintenanceModal();
+                });
+            }
+
+            async loadAdminData() {
+                try {
+                    this.showLoadingState();
+
+                    // Load admin-specific data
+                    const [adminStats, systemHealth, recentActivity] = await Promise.all([
+                        this.loadAdminStats(),
+                        this.loadSystemHealth(),
+                        this.loadAdminActivity()
+                    ]);
+
+                    this.updateAdminUI(adminStats, systemHealth, recentActivity);
+
+                } catch (error) {
+                    console.error('Failed to load admin data:', error);
+                    this.showSnackbar('Failed to load admin data', 'error');
+                } finally {
+                    this.hideLoadingState();
+                }
+            }
+
+            async loadAdminStats() {
+                const response = await fetch(`${this.adminApiBase}/dashboard`, {
+                    headers: { 'Authorization': `Bearer ${this.getToken()}` }
+                });
+
+                if (!response.ok) throw new Error('Failed to load admin stats');
+                return await response.json();
+            }
+
+            async loadSystemHealth() {
+                const response = await fetch(`${this.API_BASE}/dashboard/health`);
+                if (!response.ok) throw new Error('Failed to load system health');
+                return await response.json();
+            }
+
+            async loadAdminActivity() {
+                // Mock admin activity for now
+                return {
+                    recent_activity: [
+                        { type: 'user_login', message: 'User admin@example.com logged in', timestamp: new Date().toISOString() },
+                        { type: 'vote_created', message: 'New vote created: "Sample Vote"', timestamp: new Date().toISOString() },
+                        { type: 'system_event', message: 'System health check completed', timestamp: new Date().toISOString() }
+                    ]
+                };
+            }
+
+            updateAdminUI(stats, health, activity) {
+                // Update system metrics
+                if (stats.system_stats) {
+                    this.updateSystemStats(stats.system_stats);
+                }
+
+                // Update system health indicators
+                this.updateHealthIndicators(health);
+
+                // Update activity feed
+                this.updateActivityFeed(activity.recent_activity);
+
+                // Update navigation badges
+                this.updateNavigationBadges(stats);
+            }
+
+            updateSystemStats(stats) {
+                // Update user metrics
+                document.getElementById('totalUsers').textContent = stats.total_users || 0;
+                document.getElementById('activeUsers').textContent = stats.active_users || 0;
+                document.getElementById('newUsersToday').textContent = stats.new_users_today || 0;
+
+                // Update vote metrics
+                document.getElementById('totalSystemVotes').textContent = stats.total_votes || 0;
+                document.getElementById('activeSystemVotes').textContent = stats.active_votes || 0;
+                document.getElementById('votesToday').textContent = stats.votes_today || 0;
+
+                // Update response metrics
+                document.getElementById('totalSystemResponses').textContent = stats.total_responses || 0;
+                document.getElementById('responsesToday').textContent = stats.responses_today || 0;
+                document.getElementById('avgResponsesPerVote').textContent = stats.avg_responses_per_vote || 0;
+            }
+
+            updateHealthIndicators(health) {
+                const isHealthy = health.status === 'healthy';
+                const statusIcon = document.getElementById('systemStatusIcon');
+                const statusTitle = document.getElementById('systemStatusTitle');
+                const statusMessage = document.getElementById('systemStatusMessage');
+                const healthIcon = document.getElementById('healthIcon');
+
+                if (isHealthy) {
+                    statusIcon.textContent = 'check_circle';
+                    statusIcon.className = 'material-icons status-healthy';
+                    statusTitle.textContent = 'System Operating Normally';
+                    statusMessage.textContent = 'All services are running smoothly. Last updated: Just now';
+                    healthIcon.textContent = 'favorite';
+                    healthIcon.className = 'material-icons health-indicator healthy';
+                } else {
+                    statusIcon.textContent = 'warning';
+                    statusIcon.className = 'material-icons status-warning';
+                    statusTitle.textContent = 'System Issues Detected';
+                    statusMessage.textContent = 'Some services may be experiencing problems. Check system health for details.';
+                    healthIcon.textContent = 'warning';
+                    healthIcon.className = 'material-icons health-indicator warning';
+                }
+            }
+
+            updateActivityFeed(activities) {
+                const feedContainer = document.getElementById('adminActivityFeed');
+                if (!activities || activities.length === 0) {
+                    feedContainer.innerHTML = '<div class="empty-state">No recent activity</div>';
+                    return;
+                }
+
+                const activityHTML = activities.map(activity => `
+                    <div class="activity-item ${activity.type}">
+                        <div class="activity-icon">
+                            <span class="material-icons">${this.getActivityIcon(activity.type)}</span>
+                        </div>
+                        <div class="activity-content">
+                            <div class="activity-message">${activity.message}</div>
+                            <div class="activity-time">${this.formatTime(activity.timestamp)}</div>
+                        </div>
+                    </div>
+                `).join('');
+
+                feedContainer.innerHTML = activityHTML;
+            }
+
+            getActivityIcon(type) {
+                const icons = {
+                    'user_login': 'login',
+                    'user_logout': 'logout',
+                    'vote_created': 'how_to_vote',
+                    'vote_closed': 'archive',
+                    'system_event': 'settings',
+                    'error': 'error',
+                    'warning': 'warning'
+                };
+                return icons[type] || 'info';
+            }
+
+            startAdminMonitoring() {
+                // Start real-time monitoring
+                this.healthCheckInterval = setInterval(() => {
+                    this.loadSystemHealth().then(health => {
+                        this.updateHealthIndicators(health);
+                    }).catch(console.error);
+                }, 30000); // Check every 30 seconds
+
+                // Start activity monitoring
+                this.alertsInterval = setInterval(() => {
+                    this.checkForAlerts();
+                }, 60000); // Check every minute
+            }
+
+            async checkForAlerts() {
+                // Implementation would check for system alerts
+                // For now, this is a placeholder
+            }
+
+            showMaintenanceModal() {
+                document.getElementById('maintenanceModeModalScrim').style.display = 'flex';
+            }
+
+            hideMaintenanceModal() {
+                document.getElementById('maintenanceModeModalScrim').style.display = 'none';
+            }
+
+            async enableMaintenanceMode() {
+                const allowAdminAccess = document.getElementById('allowAdminAccess').checked;
+                const message = document.getElementById('maintenanceMessage').value;
+
+                try {
+                    // Implementation would enable maintenance mode
+                    this.showSnackbar('Maintenance mode enabled', 'success');
+                    this.hideMaintenanceModal();
+                } catch (error) {
+                    this.showSnackbar('Failed to enable maintenance mode', 'error');
+                }
+            }
+
+            toggleAlertsPanel() {
+                const panel = document.getElementById('alertsPanel');
+                const isVisible = panel.style.display !== 'none';
+                panel.style.display = isVisible ? 'none' : 'block';
+            }
+
+            cleanup() {
+                super.cleanup();
+                if (this.healthCheckInterval) clearInterval(this.healthCheckInterval);
+                if (this.alertsInterval) clearInterval(this.alertsInterval);
+            }
+        }
+    </script>
+</body>
+</html>

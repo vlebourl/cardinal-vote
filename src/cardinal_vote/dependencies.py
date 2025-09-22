@@ -113,13 +113,89 @@ async def get_current_super_admin(
 ) -> User:
     """
     Dependency to get the current user and verify they are a super admin.
+    Supports both legacy is_super_admin field and new role field.
     Raises HTTPException if user is not a super admin.
     """
-    if not current_user.is_super_admin:
+    # Check both new role field and legacy is_super_admin field for backward compatibility
+    is_admin = current_user.is_super_admin or (
+        hasattr(current_user, "role") and current_user.role == "super_admin"
+    )
+
+    if not is_admin:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN, detail="Super admin access required"
         )
     return current_user
+
+
+async def get_user_with_role(
+    current_user: Annotated[User, Depends(get_current_active_user)],
+    required_role: str,
+) -> User:
+    """
+    Helper function to check if user has the required role.
+    Supports both legacy is_super_admin field and new role field.
+    """
+    user_role = getattr(
+        current_user, "role", "user"
+    )  # Default to 'user' for backward compatibility
+
+    # Handle legacy super admin field
+    if current_user.is_super_admin and required_role == "super_admin":
+        return current_user
+
+    # Handle new role-based system
+    if user_role == required_role:
+        return current_user
+
+    # Special case: super_admin can access user resources
+    if user_role == "super_admin" and required_role == "user":
+        return current_user
+
+    raise HTTPException(
+        status_code=status.HTTP_403_FORBIDDEN,
+        detail=f"Access denied. Required role: {required_role}",
+    )
+
+
+async def get_dashboard_user(
+    current_user: Annotated[User, Depends(get_current_active_user)],
+) -> User:
+    """
+    Dependency for dashboard access - both regular users and super admins can access.
+    This ensures the user is active and verified.
+    """
+    # Additional checks for dashboard access
+    if not current_user.is_verified:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Account verification required for dashboard access",
+        )
+
+    return current_user
+
+
+async def get_vote_owner_or_admin(
+    current_user: Annotated[User, Depends(get_current_active_user)],
+    vote_creator_id: UUID,
+) -> User:
+    """
+    Dependency to check if user is vote owner or super admin.
+    Used for vote management operations.
+    """
+    # Check if user is super admin
+    is_admin = current_user.is_super_admin or (
+        hasattr(current_user, "role") and current_user.role == "super_admin"
+    )
+
+    # Allow access if user is super admin or owns the vote
+    if is_admin or current_user.id == vote_creator_id:
+        return current_user
+
+    raise HTTPException(
+        status_code=status.HTTP_403_FORBIDDEN,
+        detail="Access denied. You can only manage your own votes or need admin privileges.",
+    )
 
 
 async def get_optional_current_user(
@@ -168,5 +244,29 @@ async def get_optional_current_user(
 CurrentUser = Annotated[User, Depends(get_current_user)]
 CurrentActiveUser = Annotated[User, Depends(get_current_active_user)]
 CurrentSuperAdmin = Annotated[User, Depends(get_current_super_admin)]
+DashboardUser = Annotated[User, Depends(get_dashboard_user)]
 OptionalCurrentUser = Annotated[User | None, Depends(get_optional_current_user)]
 AsyncDatabaseSession = Annotated[AsyncSession, Depends(get_async_session)]
+
+
+# Role-based dependency factories
+def require_role(role: str):
+    """Factory function to create role-specific dependencies."""
+
+    async def _get_user_with_required_role(
+        current_user: Annotated[User, Depends(get_current_active_user)],
+    ) -> User:
+        return await get_user_with_role(current_user, role)
+
+    return _get_user_with_required_role
+
+
+def require_vote_ownership_or_admin(vote_creator_id: UUID):
+    """Factory function to create vote ownership dependencies."""
+
+    async def _get_vote_owner_or_admin(
+        current_user: Annotated[User, Depends(get_current_active_user)],
+    ) -> User:
+        return await get_vote_owner_or_admin(current_user, vote_creator_id)
+
+    return _get_vote_owner_or_admin

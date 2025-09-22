@@ -144,7 +144,7 @@ async def super_admin_dashboard(
 
     try:
         return templates.TemplateResponse(
-            "super_admin/dashboard.html",
+            "dashboard/admin_dashboard.html",
             {
                 "request": request,
                 "user": current_user,

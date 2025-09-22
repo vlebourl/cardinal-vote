@@ -874,7 +874,8 @@ body {
   box-shadow: var(--md-elevation-level0);
   position: sticky;
   top: 0;
-  z-index: 100;
+  z-index: 2000; /* Increased z-index to ensure toolbar is always on top */
+  pointer-events: auto; /* Explicitly enable pointer events for toolbar */
 }
 
 .md-top-app-bar-elevated {
@@ -903,12 +904,22 @@ body {
   color: inherit;
   font-size: 24px;
   position: relative;
-  z-index: 300;
+  z-index: 1000; /* Increased z-index to ensure buttons are clickable */
+  pointer-events: auto; /* Explicitly enable pointer events */
 }
 
 .md-top-app-bar-navigation-icon:hover,
 .md-top-app-bar-action:hover {
   background-color: rgba(0, 0, 0, 0.04);
+}
+
+/* Ensure top app bar actions container is clickable */
+.md-top-app-bar-actions {
+  display: flex;
+  align-items: center;
+  z-index: 2001; /* Higher than toolbar itself */
+  pointer-events: auto; /* Explicitly enable pointer events */
+  position: relative;
 }
 
 /* Navigation Drawer */
@@ -1454,6 +1465,46 @@ body {
   clip: rect(0, 0, 0, 0);
   white-space: nowrap;
   border: 0;
+}
+
+/* Logo Styles */
+.app-bar-logo {
+  height: 32px;
+  width: 32px;
+  margin-right: 12px;
+  vertical-align: middle;
+  border-radius: 8px;
+  object-fit: contain;
+}
+
+.logo-image {
+  height: 40px;
+  width: 40px;
+  margin-right: 12px;
+  vertical-align: middle;
+  border-radius: 8px;
+  object-fit: contain;
+}
+
+.admin-logo .logo-image {
+  height: 32px;
+  width: 32px;
+  margin-right: 8px;
+}
+
+/* Responsive logo sizing */
+@media (max-width: 768px) {
+  .app-bar-logo {
+    height: 28px;
+    width: 28px;
+    margin-right: 8px;
+  }
+
+  .logo-image {
+    height: 32px;
+    width: 32px;
+    margin-right: 8px;
+  }
 }
 
 /* Print Styles */

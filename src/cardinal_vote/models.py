@@ -10,11 +10,14 @@ from sqlalchemy import (
     CheckConstraint,
     Column,
     DateTime,
+    Enum,
     ForeignKey,
     Index,
     Integer,
+    Numeric,
     String,
     Text,
+    UniqueConstraint,
 )
 from sqlalchemy.dialects.postgresql import CITEXT, INET, JSONB
 from sqlalchemy.dialects.postgresql import UUID as PostgreSQL_UUID
@@ -73,8 +76,14 @@ class User(Base):
         DateTime(timezone=True), server_default=func.now(), onupdate=func.now()
     )
     last_login = Column(DateTime(timezone=True))
-    # Dashboard activity tracking (already exists but adding comment for clarity)
-    # last_login is used for dashboard user activity analytics
+
+    # Dashboard system enhancements
+    role = Column(
+        Enum("user", "super_admin", name="user_role_enum"),
+        nullable=False,
+        server_default="user",
+    )
+    preferences = Column(JSONB, nullable=True)  # Dashboard settings and preferences
 
     # Relationships
     votes: Mapped["list[Vote]"] = relationship(
@@ -85,6 +94,8 @@ class User(Base):
     __table_args__ = (
         Index("idx_users_email", "email"),
         Index("idx_users_is_super_admin", "is_super_admin"),
+        Index("idx_users_role", "role"),
+        Index("idx_users_role_active", "role", "is_verified"),
     )
 
     def __repr__(self) -> str:
@@ -94,6 +105,273 @@ class User(Base):
     def full_name(self) -> str:
         """Get the full name of the user."""
         return f"{self.first_name} {self.last_name}"
+
+
+class Dashboard(Base):
+    """SQLAlchemy model for user dashboard configurations."""
+
+    __tablename__ = "dashboards"
+
+    id = Column(
+        PostgreSQL_UUID(as_uuid=True),
+        primary_key=True,
+        server_default=func.gen_random_uuid(),
+    )
+    user_id = Column(
+        PostgreSQL_UUID(as_uuid=True),
+        ForeignKey("users.id", ondelete="CASCADE"),
+        nullable=False,
+        unique=True,
+    )
+    layout_config = Column(JSONB, nullable=True)
+    theme_preference = Column(String(20), nullable=False, server_default="light")
+    notification_settings = Column(JSONB, nullable=True)
+    last_accessed = Column(DateTime(timezone=True))
+    widget_states = Column(JSONB, nullable=True)
+    created_at = Column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False
+    )
+    updated_at = Column(
+        DateTime(timezone=True), server_default=func.now(), onupdate=func.now()
+    )
+
+    # Relationships
+    user: Mapped["User"] = relationship("User")
+
+    # Constraints and Indexes
+    __table_args__ = (
+        CheckConstraint(
+            "theme_preference IN ('light', 'dark', 'auto')",
+            name="check_theme_preference",
+        ),
+        Index("idx_dashboards_user_id", "user_id"),
+        Index("idx_dashboards_last_accessed", "last_accessed"),
+        Index("idx_dashboards_theme", "theme_preference"),
+    )
+
+    def __repr__(self) -> str:
+        return f"<Dashboard(id={self.id}, user_id={self.user_id}, theme='{self.theme_preference}')>"
+
+
+class UserActivity(Base):
+    """SQLAlchemy model for tracking user activities and analytics."""
+
+    __tablename__ = "user_activities"
+
+    id = Column(
+        PostgreSQL_UUID(as_uuid=True),
+        primary_key=True,
+        server_default=func.gen_random_uuid(),
+    )
+    user_id = Column(
+        PostgreSQL_UUID(as_uuid=True),
+        ForeignKey("users.id", ondelete="CASCADE"),
+        nullable=False,
+    )
+    activity_type = Column(
+        Enum(
+            "login",
+            "logout",
+            "vote_created",
+            "vote_participated",
+            "vote_modified",
+            "vote_closed",
+            "vote_shared",
+            "dashboard_viewed",
+            "profile_updated",
+            "preferences_updated",
+            name="activity_type_enum",
+        ),
+        nullable=False,
+    )
+    entity_type = Column(String(50), nullable=True)
+    entity_id = Column(PostgreSQL_UUID(as_uuid=True), nullable=True)
+    activity_data = Column(JSONB, nullable=True)
+    created_at = Column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False
+    )
+    ip_address = Column(INET, nullable=True)
+    user_agent = Column(Text, nullable=True)
+
+    # Relationships
+    user: Mapped["User"] = relationship("User")
+
+    # Constraints and Indexes
+    __table_args__ = (
+        CheckConstraint(
+            "(entity_type IS NULL AND entity_id IS NULL) OR (entity_type IS NOT NULL AND entity_id IS NOT NULL)",
+            name="check_entity_consistency",
+        ),
+        Index("idx_user_activities_user_id", "user_id"),
+        Index("idx_user_activities_created_at", "created_at"),
+        Index("idx_user_activities_user_time", "user_id", "created_at"),
+        Index("idx_user_activities_activity_type", "activity_type"),
+        Index("idx_user_activities_entity", "entity_type", "entity_id"),
+        Index(
+            "idx_user_activities_dashboard", "user_id", "activity_type", "created_at"
+        ),
+    )
+
+    def __repr__(self) -> str:
+        return f"<UserActivity(id={self.id}, user_id={self.user_id}, type='{self.activity_type}')>"
+
+
+class Statistics(Base):
+    """SQLAlchemy model for aggregated metrics and dashboard statistics."""
+
+    __tablename__ = "statistics"
+
+    id = Column(
+        PostgreSQL_UUID(as_uuid=True),
+        primary_key=True,
+        server_default=func.gen_random_uuid(),
+    )
+    metric_type = Column(
+        Enum(
+            "votes_created",
+            "votes_participated",
+            "votes_closed",
+            "responses_received",
+            "user_logins",
+            "dashboard_views",
+            "vote_shares",
+            "avg_response_time",
+            "system_total_users",
+            "system_total_votes",
+            "system_total_responses",
+            "system_active_votes",
+            "user_engagement_score",
+            name="metric_type_enum",
+        ),
+        nullable=False,
+    )
+    user_id = Column(
+        PostgreSQL_UUID(as_uuid=True),
+        ForeignKey("users.id", ondelete="CASCADE"),
+        nullable=True,  # NULL for system-wide statistics
+    )
+    time_period = Column(
+        Enum(
+            "daily",
+            "weekly",
+            "monthly",
+            "quarterly",
+            "yearly",
+            "all_time",
+            name="time_period_enum",
+        ),
+        nullable=False,
+    )
+    period_start = Column(DateTime(timezone=True), nullable=False)
+    period_end = Column(DateTime(timezone=True), nullable=False)
+    metric_value = Column(Numeric(precision=15, scale=4), nullable=False)
+    additional_data = Column(JSONB, nullable=True)
+    calculated_at = Column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False
+    )
+    is_current = Column(Boolean, nullable=False, server_default="true")
+
+    # Relationships
+    user: Mapped["User"] = relationship("User")
+
+    # Constraints and Indexes
+    __table_args__ = (
+        CheckConstraint("period_start <= period_end", name="check_period_order"),
+        UniqueConstraint(
+            "metric_type",
+            "user_id",
+            "time_period",
+            "period_start",
+            "is_current",
+            name="unique_current_statistic",
+        ),
+        Index("idx_statistics_metric_type", "metric_type"),
+        Index("idx_statistics_user_id", "user_id"),
+        Index("idx_statistics_time_period", "time_period"),
+        Index("idx_statistics_calculated_at", "calculated_at"),
+        Index("idx_statistics_is_current", "is_current"),
+        Index("idx_statistics_user_current", "user_id", "is_current"),
+        Index(
+            "idx_statistics_metric_user_current", "metric_type", "user_id", "is_current"
+        ),
+        Index(
+            "idx_statistics_period_range", "time_period", "period_start", "period_end"
+        ),
+    )
+
+    def __repr__(self) -> str:
+        return f"<Statistics(id={self.id}, metric='{self.metric_type}', value={self.metric_value})>"
+
+
+class Notification(Base):
+    """SQLAlchemy model for system notifications and user messages."""
+
+    __tablename__ = "notifications"
+
+    id = Column(
+        PostgreSQL_UUID(as_uuid=True),
+        primary_key=True,
+        server_default=func.gen_random_uuid(),
+    )
+    user_id = Column(
+        PostgreSQL_UUID(as_uuid=True),
+        ForeignKey("users.id", ondelete="CASCADE"),
+        nullable=True,  # NULL for system-wide notifications
+    )
+    notification_type = Column(
+        Enum(
+            "system_announcement",
+            "vote_created",
+            "vote_response",
+            "vote_closed",
+            "vote_shared",
+            "account_update",
+            "security_alert",
+            "feature_update",
+            "maintenance_notice",
+            "welcome_message",
+            name="notification_type_enum",
+        ),
+        nullable=False,
+    )
+    title = Column(String(100), nullable=False)
+    message = Column(Text, nullable=False)
+    priority = Column(
+        Enum("low", "medium", "high", "urgent", name="priority_enum"),
+        nullable=False,
+        server_default="medium",
+    )
+    is_read = Column(Boolean, nullable=False, server_default="false")
+    created_at = Column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False
+    )
+    read_at = Column(DateTime(timezone=True), nullable=True)
+    expires_at = Column(DateTime(timezone=True), nullable=True)
+    action_url = Column(String(500), nullable=True)
+    notification_metadata = Column(JSONB, nullable=True)
+
+    # Relationships
+    user: Mapped["User"] = relationship("User")
+
+    # Constraints and Indexes
+    __table_args__ = (
+        CheckConstraint("LENGTH(title) >= 1", name="check_title_length"),
+        CheckConstraint("LENGTH(message) >= 1", name="check_message_length"),
+        CheckConstraint(
+            "expires_at IS NULL OR expires_at > created_at", name="check_expires_future"
+        ),
+        Index("idx_notifications_user_id", "user_id"),
+        Index("idx_notifications_created_at", "created_at"),
+        Index("idx_notifications_is_read", "is_read"),
+        Index("idx_notifications_priority", "priority"),
+        Index("idx_notifications_type", "notification_type"),
+        Index("idx_notifications_expires_at", "expires_at"),
+        Index("idx_notifications_user_unread", "user_id", "is_read", "created_at"),
+        Index("idx_notifications_user_priority", "user_id", "priority", "created_at"),
+    )
+
+    def __repr__(self) -> str:
+        return f"<Notification(id={self.id}, title='{self.title}', priority='{self.priority}')>"
 
 
 class Vote(Base):
