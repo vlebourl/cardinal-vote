@@ -2,7 +2,7 @@
 # Optimized for production with security best practices
 
 # Build stage
-FROM python:3.13-slim AS builder
+FROM python:3.14-slim AS builder
 
 # Set environment variables for build
 ENV PYTHONUNBUFFERED=1
@@ -34,7 +34,7 @@ ENV VIRTUAL_ENV=/build/.venv
 ENV PATH="/build/.venv/bin:$PATH"
 
 # Production stage
-FROM python:3.13-slim AS production
+FROM python:3.14-slim AS production
 
 # Set environment variables
 ENV PYTHONUNBUFFERED=1
